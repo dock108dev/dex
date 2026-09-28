@@ -1,0 +1,21 @@
+marketplace: EBAY_US
+currency: USD
+environment: production
+delivery_country: US
+delivery_postal_code: ''
+thresholds:
+  fixed_price_per_card: '2.00'
+  auction_per_card: '1.00'
+minimum_cards: 25
+maximum_purchase:
+  fixed_price: '120.00'
+  auction: '150.00'
+alerts:
+  minimum_priority: medium
+  max_hits: 5
+  material_price_change: '0.20'
+  macos_notification: false
+search:
+  page_size: 100
+  max_pages: 2
+  detail_limit: 30

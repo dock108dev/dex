@@ -1,0 +1,66 @@
+{
+  "repository": "https://github.com/PokemonTCG/pokemon-tcg-data",
+  "commit": "39a26a144c8b6ef6c2fb17b2c29d0bb7121e3a11",
+  "sets": [
+    {
+      "id": "base_set",
+      "name": "Base Set",
+      "source_url": "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/39a26a144c8b6ef6c2fb17b2c29d0bb7121e3a11/cards/en/base1.json",
+      "count": 102
+    },
+    {
+      "id": "jungle",
+      "name": "Jungle",
+      "source_url": "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/39a26a144c8b6ef6c2fb17b2c29d0bb7121e3a11/cards/en/base2.json",
+      "count": 64
+    },
+    {
+      "id": "fossil",
+      "name": "Fossil",
+      "source_url": "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/39a26a144c8b6ef6c2fb17b2c29d0bb7121e3a11/cards/en/base3.json",
+      "count": 62
+    },
+    {
+      "id": "base_set_2",
+      "name": "Base Set 2",
+      "source_url": "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/39a26a144c8b6ef6c2fb17b2c29d0bb7121e3a11/cards/en/base4.json",
+      "count": 130
+    },
+    {
+      "id": "team_rocket",
+      "name": "Team Rocket",
+      "source_url": "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/39a26a144c8b6ef6c2fb17b2c29d0bb7121e3a11/cards/en/base5.json",
+      "count": 83
+    },
+    {
+      "id": "wizards_black_star_promos",
+      "name": "Wizards Black Star Promos",
+      "source_url": "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/39a26a144c8b6ef6c2fb17b2c29d0bb7121e3a11/cards/en/basep.json",
+      "count": 53
+    },
+    {
+      "id": "neo_genesis",
+      "name": "Neo Genesis",
+      "source_url": "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/39a26a144c8b6ef6c2fb17b2c29d0bb7121e3a11/cards/en/neo1.json",
+      "count": 111
+    },
+    {
+      "id": "neo_discovery",
+      "name": "Neo Discovery",
+      "source_url": "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/39a26a144c8b6ef6c2fb17b2c29d0bb7121e3a11/cards/en/neo2.json",
+      "count": 75
+    },
+    {
+      "id": "neo_revelation",
+      "name": "Neo Revelation",
+      "source_url": "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/39a26a144c8b6ef6c2fb17b2c29d0bb7121e3a11/cards/en/neo3.json",
+      "count": 66
+    },
+    {
+      "id": "neo_destiny",
+      "name": "Neo Destiny",
+      "source_url": "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/39a26a144c8b6ef6c2fb17b2c29d0bb7121e3a11/cards/en/neo4.json",
+      "count": 113
+    }
+  ]
+}

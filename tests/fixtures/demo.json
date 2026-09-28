@@ -1,0 +1,146 @@
+{
+  "itemSummaries": [
+    {
+      "itemId": "demo-neo-bin",
+      "title": "72 Pokemon cards Neo Genesis Neo Discovery Jungle lot no trainers or energy",
+      "itemWebUrl": "https://www.ebay.com/itm/100000000001",
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "price": {
+        "value": "39.99",
+        "currency": "USD"
+      },
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "6",
+            "currency": "USD"
+          }
+        }
+      ],
+      "seller": {
+        "username": "SYNTHETIC_EXAMPLE_NOT_A_SELLER"
+      }
+    },
+    {
+      "itemId": "demo-neo-auction",
+      "title": "120 Pokemon cards Neo Genesis Neo Revelation Fossil played lot",
+      "itemWebUrl": "https://www.ebay.com/itm/100000000002",
+      "buyingOptions": [
+        "AUCTION"
+      ],
+      "price": {
+        "value": "39.99",
+        "currency": "USD"
+      },
+      "shippingOptions": [
+        {
+          "shippingCost": {
+            "value": "9",
+            "currency": "USD"
+          }
+        }
+      ],
+      "seller": {
+        "username": "SYNTHETIC_EXAMPLE_NOT_A_SELLER"
+      },
+      "currentBidPrice": {
+        "value": "28",
+        "currency": "USD"
+      },
+      "bidCount": 4,
+      "itemEndDate": "2026-09-25T07:42:00Z"
+    },
+    {
+      "itemId": "demo-kanto",
+      "title": "50 Pokemon cards Jungle Fossil bulk lot",
+      "itemWebUrl": "https://www.ebay.com/itm/100000000003",
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "price": {
+        "value": "22",
+        "currency": "USD"
+      },
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "6",
+            "currency": "USD"
+          }
+        }
+      ],
+      "seller": {
+        "username": "SYNTHETIC_EXAMPLE_NOT_A_SELLER"
+      }
+    },
+    {
+      "itemId": "demo-unknown-shipping",
+      "title": "72 Pokemon cards Neo Genesis Neo Discovery Jungle lot no trainers or energy",
+      "itemWebUrl": "https://www.ebay.com/itm/100000000004",
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "price": {
+        "value": "39.99",
+        "currency": "USD"
+      },
+      "shippingOptions": [],
+      "seller": {
+        "username": "SYNTHETIC_EXAMPLE_NOT_A_SELLER"
+      }
+    },
+    {
+      "itemId": "demo-mystery",
+      "title": "100 Pokemon cards Neo Genesis mystery pack lot",
+      "itemWebUrl": "https://www.ebay.com/itm/100000000005",
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "price": {
+        "value": "39.99",
+        "currency": "USD"
+      },
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "6",
+            "currency": "USD"
+          }
+        }
+      ],
+      "seller": {
+        "username": "SYNTHETIC_EXAMPLE_NOT_A_SELLER"
+      }
+    },
+    {
+      "itemId": "demo-neo-bin",
+      "title": "72 Pokemon cards Neo Genesis Neo Discovery Jungle lot no trainers or energy",
+      "itemWebUrl": "https://www.ebay.com/itm/100000000006",
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "price": {
+        "value": "39.99",
+        "currency": "USD"
+      },
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "6",
+            "currency": "USD"
+          }
+        }
+      ],
+      "seller": {
+        "username": "SYNTHETIC_EXAMPLE_NOT_A_SELLER"
+      }
+    }
+  ],
+  "observedAt": "2026-09-24T12:00:00Z"
+}
