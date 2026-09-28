@@ -94,9 +94,12 @@ node --check web/app.js
 
 ## Subsequent owner feedback: feature parity needs revision
 
-After opening B2, Mike reported that it was missing many features from the local app. The implemented slice's technical checks remain valid, but it is not a feature-complete successor to the original interface and has not received owner acceptance. The [roadmap parity revision](ROADMAP.md#b2-owner-feedback--local-feature-parity-revision-required) records the missing overview/Pokédex, set/type/rarity views, first-edition controls, value scenarios, hunt/missing-singles and saved-find experiences. Restoring these inside the authenticated inventory is the next engineering priority before photo entry.
+After opening B2, Mike reported that it was missing many features from the local app. The implemented slice's technical checks remain valid, but it is not a feature-complete successor to the original interface and has not received owner acceptance. The [roadmap parity revision](ROADMAP.md#b2-owner-feedback--local-feature-parity-revision-required) records the missing overview/Pokédex, set/type/rarity views, first-edition controls, value scenarios, hunt/missing-singles and saved-find experiences. These gaps were subsequently addressed by the parity revision below; current next steps are in [PM status](PM_STATUS.md).
 
 
 ## Feature parity revision outcome — September 28, 2026
 
 The reported coverage gaps have been implemented inside the authenticated app: Overview, Pokédex, My Cards, per-copy edition controls, conditional guide scenarios, sample hunts/missing singles and private saved-find replay/reveal. Existing B2 flows remain. See the [completed parity matrix, verification and new launch instructions](B2_PARITY.md). Historical evidence above still belongs to its original candidate and environment. The fresh revision evidence is in `b2-parity-20260928/`; the prepared prior review data and credentials are preserved. **Next actor: Mike for focused restored-experience review. Stop before B3; owner acceptance remains unestablished.**
+
+
+Current review update: the revised app is running with an isolated disposable account and Mike's initial feedback was “great”. [PM status](PM_STATUS.md) records the remaining review closeout, separate B1 gate and B3 hold.

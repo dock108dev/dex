@@ -50,14 +50,18 @@ Real iOS Safari/Android Chrome, hosted source rights, provider qualification and
 
 ## Launch the revised review app
 
-The new `review-local` root is prepared with copied evidence and no account credentials. Do not initialize or reset it. From the repository, choose a disposable rehearsal password at the private prompt, then run:
+The `review-local` app was launched at Mike's request and has an initialized disposable review account. Login details are stored privately in its `review-login.txt`; never commit or reproduce the password. Do not initialize, reset or bootstrap it again for routine use. If the server has stopped, restart it with:
 
 ```sh
 cd /Users/michaelfuscoletti/Desktop/dex
-uv run python -m pokemon_hunter.beta.cli --root /Users/michaelfuscoletti/dex-private/b2-parity-20260928/review-local bootstrap
 uv run python -m pokemon_hunter.beta.cli --root /Users/michaelfuscoletti/dex-private/b2-parity-20260928/review-local serve
 ```
 
-Open `http://127.0.0.1:8011/overview/`; sign in as `admin`. If redirected to Collection after login, choose Overview. Use only one B1/B2 server on port 8011. A second bootstrap preserves the existing account/password. This rehearsal is separate from B1 actual-owner provisioning.
+Open `http://127.0.0.1:8011/overview/`; sign in as `admin`. If redirected to Collection after login, choose Overview. Use only one B1/B2 server on port 8011. Use the existing rehearsal login. This account is separate from B1 actual-owner provisioning.
 
 Mike's focused review: compare Overview/Pokédex/My Cards with the original; inspect a copy and its conditional guide evidence; preview an edition change and undo it; run/reveal/reopen sample finds; verify comfort on the narrow layout and retained collection/goals/import flows. **Wait for that feedback before B3.** Tests do not supply Mike's verdict.
+
+
+## Owner-review checkpoint
+
+Mike requested that the engineer run the app, then responded “great”. Initial feedback is positive and no new defect was reported. Focused review closeout and authorization to begin B3 remain unrecorded; no release acceptance is inferred. See [PM status](PM_STATUS.md) for next actors. Candidate `f2c876b` passed 158 tests, clean-checkout and desktop/narrow browser checks, and [GitHub CI](https://github.com/dock108dev/dex/actions/runs/36370863538). Work continues on local/remote `main` unless Mike requests otherwise.

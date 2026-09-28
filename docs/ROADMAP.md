@@ -1,8 +1,8 @@
 # Dex — Pokémon-first collection beta roadmap
 
-Updated: September 27, 2026 (America/New_York).
+Updated: September 28, 2026 (UTC; September 27 evening in America/New_York).
 
-**Status: B0 TECHNICALLY COMPLETE; B1 LOCAL IMPLEMENTATION VERIFIED, ACTUAL OWNER PROVISIONING PENDING; B2 PARITY REVISION IMPLEMENTED, FOCUSED OWNER REVIEW PENDING; LOCAL APP PRESERVED; NOT RELEASED.**
+**Status: B0 TECHNICALLY COMPLETE; B1 LOCAL IMPLEMENTATION VERIFIED, ACTUAL OWNER PROVISIONING PENDING; B2 PARITY VERIFIED, INITIAL OWNER FEEDBACK POSITIVE, REVIEW CLOSEOUT PENDING; LOCAL APP PRESERVED; NOT RELEASED.**
 
 This is the authoritative next-steps tracker for `/Users/michaelfuscoletti/Desktop/dex`. It replaces the earlier daily-watcher beta plan. The product is now a personal card-collection app that can expand across games. Pokémon ships first. Vintage 251 becomes a built-in collecting goal, while the current local app remains usable during development.
 
@@ -16,24 +16,24 @@ First beta: invite-only, responsive web app for phones and computers. Start with
 
 Mike is the first user, with login name `admin` and the owner/admin role. His existing Pokédex, exact-card collection, first-edition selections and saved hunts must survive. New users start empty and never inherit his collection. A username is not an authorization mechanism; permissions attach to the authenticated account's stable ID.
 
-A password was supplied directly for this account. Do not reproduce it in documentation, seed files, fixtures, logs or source. Provision it through the authentication system's supported secure path when accounts are implemented; a password-based implementation stores only a modern salted password hash. If secure delivery to the implementation is needed later, use local secret entry. The account does not exist yet; documentation is not account creation.
+A password was supplied directly for this account. Do not reproduce it in documentation, seed files, fixtures, logs or source. Provision it through the authentication system's supported secure path when accounts are implemented; a password-based implementation stores only a modern salted password hash. If secure delivery to the implementation is needed later, use local secret entry. The actual B1 owner account remains unprovisioned. The disposable B2 review account is separate and does not close that gate.
 
 ## 2. Current baseline, verified versus planned
 
-| Area | Current baseline | Beta gap |
+| Area | Current baseline | Remaining gate |
 | --- | --- | --- |
-| Application | FastAPI and browser frontend; loopback-only request restriction | Account-aware hosted operation and deployment |
-| Collection | `config/pokedex_251.json`; 859 catalog records across ten sets | Shared catalog separated from private per-user inventory |
-| Owner inventory | September 27 read: 207 owned printings; 133/151 Kanto, 20/100 Johto, 153/251 total; one owned first-edition selection | Preserve exact records, not just aggregate totals |
-| Copies | One owned flag per printing, with edition checkbox | Multiple independently editable physical copies |
-| Goals | Vintage 251 projection and set summaries | User-selected set goals and custom checklists |
-| Images | No upload or photo identification flow | Private upload, recognition, confirmation, corrections |
-| Hunts | Local SQLite history; sample/live separation; spoiler-controlled reveal | User-scoped history if exposed in beta; live provider qualification remains separate |
-| Values | Dated guide snapshots and labeled grade scenarios | Optional feature; current source redistribution rights and coverage need review before hosted use |
-| Accounts | None | First owner account, invite flow, recovery, isolation and admin access |
-| Catalog growth | Ten pinned Pokémon snapshots | Versioned ingestion, review, reconciliation and rollback |
-| Verification | APP_SPEC records earlier tests and browser checks | Those are historical local evidence, not hosted beta acceptance |
-| Source identity | Private `dock108dev/dex`; baseline `08aa566` | B0 implementation commit recorded in Git/private handoff; hosted candidate remains future work |
+| Application | Authenticated local Django review app; original FastAPI app preserved | Hosted operation and deployment remain unqualified |
+| Collection | Shared catalog and session-owned physical copies; 859 entries across ten sets | Broader catalog/variant coverage is B4 |
+| Owner preservation | Copied-snapshot verification: 207 copies, one first-edition selection, 133 Kanto + 20 Johto = 153 species | Actual owner account binding and eventual cutover remain separate |
+| Copies | Intentional duplicates, copy attributes, first-edition selection, reviewed edits/removals and undo | Unknown editions/finishes stay unresolved; photos are B3 |
+| Goals and organization | Private binders, frozen set/custom/Vintage goals, reviewed set additions | Further owner feedback; no inventory duplication from goals |
+| Original experience | Overview, Pokédex, My Cards and rarity/set summaries restored | Focused review closeout; initial owner response was positive |
+| Images | Manual catalog entry works; no photo identification workflow | B3 photo upload, recognition, confirmation and corrections |
+| Hunts | Private sample hunts, missing singles, saved-search replay and explicit reveal | New live search disabled pending separate provider qualification |
+| Values | Local dated guide scenarios with coverage/interpolation labels | Unresolved variants excluded from confirmed values; hosted source rights pending |
+| Accounts | Local sessions/invites/recovery and isolation implemented; disposable review account running | Actual B1 owner provisioning still pending; review account is separate |
+| Verification | Candidate `f2c876b`: 158 tests, clean checkout, desktop/narrow browser checks and GitHub CI passed | Real-device and hosted acceptance remain open |
+| Source | Private `dock108dev/dex`; development and sync on local/remote `main` | No feature branches unless Mike explicitly requests one |
 
 Ten initial sets: Base Set, Jungle, Fossil, Base Set 2, Team Rocket, Wizards Black Star Promos, Neo Genesis, Neo Discovery, Neo Revelation and Neo Destiny. The legacy watcher's broader search configuration is not the app's catalog coverage.
 
@@ -159,7 +159,7 @@ The existing eBay hunt and legacy daily watcher remain preserved, optional modul
 
 ## 8. Immediate next action and continuation
 
-**Next: Mike reviews the restored authenticated experience using the [B2 parity launch](B2_PARITY.md#launch-the-revised-review-app). Stop before B3.** Actual owner provisioning and subsequent binding verification remain a separate pending B1 gate. B0 is complete. B1 authentication uses a separate copied database; the live collection remains authoritative and unchanged.
+**Next: close out Mike's focused review of the running [B2 parity app](B2_PARITY.md#launch-the-revised-review-app). His initial response was “great”; no new defect was reported. Review completion and permission to start B3 have not yet been explicitly recorded.** Actual owner provisioning and subsequent binding verification remain a separate pending B1 gate. B0 is complete. B1 authentication uses a separate copied database; the live collection remains authoritative and unchanged.
 
 Read this tracker, BETA_DESIGN and APP_SPEC before implementation. Use the current collection at execution time, not only these dated counts. Preserve credentials and data, continue the first incomplete stage, and update this file with evidence as stages finish. Routine implementation choices do not need another broad planning interview. Resolve concrete required secrets, provider costs or deployment details at the step that needs them.
 
@@ -245,3 +245,17 @@ Next actor: Mike for focused review of the completed local parity revision. Stop
 [Completed parity matrix, behavior differences, evidence and exact launch](B2_PARITY.md). The same authenticated inventory now supplies Overview, Pokédex, My Cards, per-copy edition selection, local guide scenarios, sample hunts/missing singles and spoiler-safe saved-find replay. B2 collection/binder/goal/import/export/undo flows remain. The fresh copied baseline agrees on 859 entries, 251 species, 207 copies, 153 species owned and two saved hunts. Unresolved variants have no confirmed value; old guide totals remain explicitly conditional.
 
 Private candidate evidence: `/Users/michaelfuscoletti/dex-private/b2-parity-20260928/`; exact tested/pushed identity and final check results are in `handoff.json`. The original application and all owner sources remain authoritative until separately authorized cutover. **Mike reviews this restored experience next; B3 stays on hold.** B1 actual-owner provisioning, provider/source-rights qualification, hosting and real-device acceptance remain separate pending gates.
+
+
+## PM checkpoint — review app running; initial feedback positive
+
+The parity candidate is `f2c876b1f70ee4643df70260bd8d2d023fc583c8`. Its 158-test, clean-checkout, browser and GitHub evidence remains bound to that candidate; later documentation updates do not relabel those runs. [PM summary and assigned next steps](PM_STATUS.md).
+
+At Mike's request, the engineer launched the isolated copied-data app at `http://127.0.0.1:8011/overview/` and initialized its disposable review account. Existing credentials and prior environments were preserved. Mike responded “great”. Record this as positive initial feedback; do not infer completion of every review flow, release acceptance or authorization for photo/API work.
+
+1. **Mike / PM:** record completion of the focused B2 review or identify specific remaining changes. No new defect is currently reported.
+2. **Engineer:** address any focused feedback, then await an explicit go-ahead for a bounded B3 photo-entry slice. Preserve manual entry, uncertain identities and exactly-once confirmation/undo. Paid or live API use needs separate authorization and limits.
+3. **Mike / engineer, independently:** complete actual B1 owner provisioning and verify its stable binding/preservation; the disposable review login is not that account.
+4. **Later:** B4 catalog expansion, B5 hosting/source-rights/provider/real-device qualification, then B6 owner-approved pilot. No deployment or cutover is currently authorized.
+
+**Working convention:** stay on local `main` and sync remote `main`; create no branches unless Mike says otherwise. Keep review data and credentials intact. Do not restart or reinitialize the running review environment merely for documentation work.
