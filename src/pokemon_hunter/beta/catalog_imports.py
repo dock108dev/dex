@@ -6,7 +6,6 @@ import uuid
 from typing import Literal
 
 from django.core.exceptions import PermissionDenied
-from django.db import transaction
 from django.http import Http404
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -15,6 +14,7 @@ from pokemon_hunter.migration import digest, encode
 
 from . import collection as inv
 from . import store
+from . import transactions as transaction
 
 ADAPTERS = {
     "pokemon": {"name": "Pokémon", "version": "pokemon-catalog-v1", "synthetic": False},
@@ -180,7 +180,7 @@ def rows_for(package):
         if mapping and mapping[0]["internal_id"] != pid:
             raise ValueError("External identity is already mapped to a different printing")
         same_identity = store.rows(
-            "SELECT id FROM printings WHERE set_id=%s AND collector_number=%s AND edition IS %s AND finish IS %s AND variant IS %s AND id<>%s",
+            "SELECT id FROM printings WHERE set_id=%s AND collector_number=%s AND edition IS NOT DISTINCT FROM %s AND finish IS NOT DISTINCT FROM %s AND variant IS NOT DISTINCT FROM %s AND id<>%s",
             [sid, c["number"], c["edition"], c["finish"], c["variant"], pid],
         )
         if same_identity:
@@ -311,7 +311,7 @@ def aliases(package):
         if rows and rows[0]["identity_key"] != key:
             raise inv.Conflict("Reviewed alias already identifies another set")
         inv.execute(
-            "INSERT OR IGNORE INTO catalog_aliases VALUES(%s,%s,%s,%s)",
+            "INSERT INTO catalog_aliases VALUES(%s,%s,%s,%s) ON CONFLICT DO NOTHING",
             [package["game"], package["language"], value, key],
         )
 
@@ -343,7 +343,7 @@ def transition(actor, key, action):
         aliases(p)
         adapter = ADAPTERS[p["game"]]
         inv.execute(
-            "INSERT OR IGNORE INTO games VALUES(%s,%s,%s,%s,%s,%s)",
+            "INSERT INTO games VALUES(%s,%s,%s,%s,%s,%s) ON CONFLICT DO NOTHING",
             [
                 setrow["game_id"],
                 p["game"],
@@ -360,7 +360,7 @@ def transition(actor, key, action):
         if mapping and mapping[0]["internal_id"] != setrow["id"]:
             raise ValueError("Source set identity conflict")
         inv.execute(
-            "INSERT OR IGNORE INTO external_mappings VALUES(%s,'set',%s,%s)",
+            "INSERT INTO external_mappings VALUES(%s,'set',%s,%s) ON CONFLICT DO NOTHING",
             [p["provider"] + ":" + p["language"], p["set_key"], setrow["id"]],
         )
         write("catalog_sets", setrow)
@@ -369,7 +369,7 @@ def transition(actor, key, action):
             write("printings", row)
             provenance = json.loads(row["provenance"])
             inv.execute(
-                "INSERT OR IGNORE INTO external_mappings VALUES(%s,'printing',%s,%s)",
+                "INSERT INTO external_mappings VALUES(%s,'printing',%s,%s) ON CONFLICT DO NOTHING",
                 [provenance["provider"], provenance["external_id"], row["id"]],
             )
         inv.execute(

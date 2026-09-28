@@ -5,7 +5,6 @@ import time
 import uuid
 
 from django.core.exceptions import PermissionDenied
-from django.db import transaction
 from django.http import Http404
 
 from pokemon_hunter.inventory import stable_id
@@ -14,6 +13,7 @@ from pokemon_hunter.migration import encode
 from . import catalog_imports as catalogs
 from . import collection as inv
 from . import scans, store
+from . import transactions as transaction
 
 
 def clean_hints(data):
@@ -82,8 +82,8 @@ def create(actor, data):
         return detail(actor, prior[0]["id"])
     if (
         store.rows(
-            "SELECT count(*) AS n FROM catalog_submissions WHERE user_id=%s AND created>datetime('now','-1 day')",
-            [actor.user_id],
+            "SELECT count(*) AS n FROM catalog_submissions WHERE user_id=%s AND created>%s",
+            [actor.user_id, time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(time.time() - 86400))],
         )[0]["n"]
         >= 30
     ):
@@ -174,7 +174,8 @@ def mine(actor):
     return [
         detail(actor, s["id"])
         for s in store.rows(
-            "SELECT id FROM catalog_submissions WHERE user_id=%s ORDER BY rowid DESC", [actor.user_id]
+            "SELECT id FROM catalog_submissions WHERE user_id=%s ORDER BY created DESC,id DESC",
+            [actor.user_id],
         )
     ]
 
@@ -216,7 +217,7 @@ def resolve(actor, key, data):
 
 def review_list(actor):
     catalogs.admin(actor)
-    requests = store.rows("SELECT * FROM catalog_requests ORDER BY rowid DESC")
+    requests = store.rows("SELECT * FROM catalog_requests ORDER BY id DESC")
     for r in requests:
         r["requesters"] = store.rows(
             "SELECT count(DISTINCT user_id) AS n FROM catalog_submissions WHERE request_id=%s", [r["id"]]

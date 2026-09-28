@@ -24,7 +24,7 @@ The historical B2 tested runtime candidate is `f2c876b1f70ee4643df70260bd8d2d023
 | --- | --- | --- |
 | Mike / engineer | Configure the server API key when available and run a small representative recognition evaluation | Local photo/manual/fixture flow is operable; no hosted or real-recognition qualification is inferred |
 | Mike, then engineer | Securely provision the actual B1 owner and verify binding/preservation when convenient | Independent setup item, not a B3 engineering blocker; preserve existing credentials |
-| Later stages | B5 hosted/source/privacy/cost/real-device qualification, then B6 pilot | No release or pilot readiness claimed |
+| Engineer / operator | Use the B5 staging package for actual hosted observations once Render access, secrets and ingress configuration are available | Local foundation delivered; no deployment or pilot readiness claimed |
 
 Mike's latest direction supersedes the earlier stop-before-B3 instruction. B3 and B4 local engineering are delivered; continue with the bounded recognition evaluation once its setup dependencies are available. Existing available recognition credentials may be integrated through secure configuration; missing credentials are a concrete setup dependency, not a reason to stop independent work. Do not purchase services or deploy as part of this local milestone.
 
@@ -47,3 +47,12 @@ B3 tested runtime: `a456ab7fcc3db5c22860c8d90d217196309b1ce2`; 173 tests in work
 Review: `http://127.0.0.1:8011/requests/`; the existing owner-role review login can open Catalog review. Actual owner provisioning remains separate. Real B3 recognition is still unmeasured (zero API calls); B5 deployment and live cutover are outside this delivery. The current candidate and private evidence are recorded in `/Users/michaelfuscoletti/dex-private/b4-catalog-20260928/handoff.json`.
 
 B4 tested runtime: `9dc074d8d05ed94f88a6c278502b30d5ae9dc424`. All 188 tests passed in working and clean checkouts, along with lint/format and full B2/B3/B4 desktop/narrow browser verification. Source/review preservation passed, including unchanged credentials and spend reservations. These results establish local engineering delivery, not real recognition, actual-owner or hosted acceptance.
+
+
+## B5 operational foundation
+
+[Runnable staging package and operator runbook](B5_OPERATIONS.md) delivered on local/remote main. Django + Render web/worker + managed PostgreSQL 17 is the single selected path; private photos are transactionally stored with the database for this small pre-alpha. Copied migration/restore, restart/recovery, HTTPS/session isolation, privacy erasure, retention, feedback and spending limits are locally exercised. Full candidate identity and evidence remain private under `/Users/michaelfuscoletti/dex-private/b5-20260928/`.
+
+The original collection and review credentials remain intact. B4 evidence stays bound to `9dc074d`/`5bf44b9`. Staging source gates disable unsupported metadata/artwork/pricing redistribution while retaining private records and manual use. Estimated infrastructure is $21.50/month plus variable charges, not purchased. Zero real recognition calls; secure API key and consented evaluation photos remain dependencies.
+
+**Next actor: operator/engineer** for the exact Render account, HTTPS origin, trusted proxy CIDRs, database and shared secrets listed in the runbook; then actual hosted restore/restart/isolation and iOS/Android observations. B5 remains open until those exist. No purchase, public deployment, invitations or live collection cutover was performed or implied by local test results.

@@ -27,7 +27,7 @@ def principal(subject):
     found = rows(
         """SELECT u.id,u.role FROM users u JOIN auth_user a
                     ON u.auth_subject=CAST(a.id AS TEXT)
-                    WHERE a.id=%s AND a.is_active=1 AND u.state='active'""",
+                    WHERE a.id=%s AND a.is_active=TRUE AND u.state='active'""",
         [subject],
     )
     if not found:

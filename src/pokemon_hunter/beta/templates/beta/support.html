@@ -1,0 +1,9 @@
+{% extends "beta/base.html" %}{% block content %}
+<h1>Privacy and support</h1><p><a href="/">Collection</a> · <a href="/settings/">Settings</a></p>
+{% if notice %}<p role="status">{{ notice }}</p>{% endif %}
+{% if user.is_authenticated %}
+<h2>Beta feedback</h2><p>Describe what happened. Do not include passwords, recovery links or private photos. Feedback expires after 30 days.</p>
+<form method="post" action="/support/feedback/">{% csrf_token %}<label>Feedback <textarea name="message" maxlength="2000" required rows="5"></textarea></label><button>Save feedback</button></form>
+<h2>Delete account</h2><p>This permanently removes your collection, photos, private evidence and feedback. Shared catalog entries remain. Backups expire within seven days; restored backups must have deletions reapplied before access. Non-login spending records remain to enforce existing limits.</p>
+<form method="post" action="/support/delete/">{% csrf_token %}<label>Current password <input name="password" type="password" autocomplete="current-password" required></label><label>Type DELETE <input name="confirmation" required></label><button>Delete my account and photos</button></form>
+{% endif %}{% endblock %}

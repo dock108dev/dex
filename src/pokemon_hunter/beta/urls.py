@@ -85,3 +85,13 @@ if settings.B4_ENABLED:
         path("api/catalog-imports/<uuid:key>/<str:action>/", catalogs.import_action),
         path("api/catalog-packages/<str:name>/", catalogs.package),
     ] + urlpatterns
+
+if getattr(settings, "STAGING", False) or (settings.ROOT / "B5_ISOLATED").is_file():
+    from . import support
+
+    urlpatterns += [
+        path("support/", support.page),
+        path("support/feedback/", support.feedback),
+        path("support/delete/", support.erase),
+        path("healthz/", support.health),
+    ]

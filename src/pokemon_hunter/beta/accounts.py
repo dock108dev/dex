@@ -5,12 +5,13 @@ import uuid
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.db import connection, transaction
+from django.db import connection
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
 from pokemon_hunter.inventory import OWNER_ID
 
+from . import transactions as transaction
 from .store import rows
 
 
@@ -38,7 +39,10 @@ def bootstrap(password):
     user.set_password(password)
     user.save()
     with connection.cursor() as c:
-        c.execute("INSERT OR IGNORE INTO users VALUES(%s,NULL,'admin','owner','unprovisioned')", [OWNER_ID])
+        c.execute(
+            "INSERT INTO users VALUES(%s,NULL,'admin','owner','unprovisioned') ON CONFLICT DO NOTHING",
+            [OWNER_ID],
+        )
         c.execute(
             "UPDATE users SET auth_subject=%s,state='active' WHERE id=%s AND auth_subject IS NULL",
             [str(user.pk), OWNER_ID],

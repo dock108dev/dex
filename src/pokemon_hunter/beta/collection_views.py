@@ -45,7 +45,12 @@ def home(request):
     return render(
         request,
         "beta/b2.html",
-        {"parity": settings.PARITY_ENABLED, "scans": settings.B3_ENABLED, "expansion": settings.B4_ENABLED},
+        {
+            "parity": settings.PARITY_ENABLED,
+            "scans": settings.B3_ENABLED,
+            "expansion": settings.B4_ENABLED,
+            "staging": getattr(settings, "STAGING", False),
+        },
     )
 
 
@@ -76,7 +81,7 @@ def dashboard(request):
         + "ORDER BY name"
     )
     data["operations"] = store.rows(
-        "SELECT id,kind,state,created FROM collection_operations WHERE user_id=%s ORDER BY rowid DESC LIMIT 40",
+        "SELECT id,kind,state,created FROM collection_operations WHERE user_id=%s ORDER BY created DESC,id DESC LIMIT 40",
         [who.user_id],
     )
     return JsonResponse(data)

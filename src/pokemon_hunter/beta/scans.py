@@ -12,13 +12,13 @@ from typing import Literal
 import httpx
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
-from django.db import transaction
 from django.http import Http404
 from PIL import Image, ImageOps
 from pydantic import BaseModel, ConfigDict, Field
 
 from . import collection as inventory
 from . import store
+from . import transactions as transaction
 
 MODEL = "gpt-4.1-mini-2025-04-14"
 VERSION = "dex-photo-v1"
@@ -57,6 +57,18 @@ def initialize(db):
 
 
 def config():
+    if getattr(settings, "STAGING", False):
+        value = json.loads(
+            store.rows("SELECT value FROM beta_operations WHERE key='scan_config'")[0]["value"]
+        )
+        if value.get("mode") not in {"manual", "fixture", "openai"} or not isinstance(
+            value.get("enabled"), bool
+        ):
+            raise ValueError("Invalid persistent scan configuration")
+        for key, limit in (("ceiling_usd", 1.0), ("user_ceiling_usd", 0.5)):
+            if not 0 <= float(value[key]) <= limit:
+                raise ValueError("Staging ceilings cannot exceed existing limits")
+        return value
     path = settings.ROOT / "scan-config.json"
     value = json.loads(path.read_text()) if path.exists() else {}
     return {"enabled": True, "mode": "manual", "ceiling_usd": 1.0, "user_ceiling_usd": 0.5, **value}

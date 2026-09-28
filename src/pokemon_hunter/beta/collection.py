@@ -13,13 +13,14 @@ from datetime import date
 from decimal import Decimal, InvalidOperation
 
 from django.conf import settings
-from django.db import connection, transaction
+from django.db import connection
 from django.http import Http404
 
 from pokemon_hunter.inventory import stable_id
 from pokemon_hunter.migration import COPY_FIELDS, digest, encode
 
 from . import store
+from . import transactions as transaction
 
 SCHEMA = "dex-collection-v2"
 TABLES = {"copy": "owned_copies", "binder": "binders", "goal": "collection_goals"}
@@ -69,7 +70,7 @@ def generation(actor):
 
 def bump(actor):
     execute(
-        "INSERT INTO collection_generations VALUES(%s,1) ON CONFLICT(user_id) DO UPDATE SET value=value+1",
+        "INSERT INTO collection_generations VALUES(%s,1) ON CONFLICT(user_id) DO UPDATE SET value=collection_generations.value+1",
         [actor.user_id],
     )
 
@@ -85,6 +86,12 @@ def catalog(actor, query="", set_id="", include_archived=False):
         )
         + "ORDER BY s.name,p.collector_number"
     )
+    if getattr(settings, "STAGING", False):
+        result = [
+            r
+            for r in result
+            if json.loads(r["provenance"]).get("provider", "").split(":")[0] in {"tcgdex", "dex-synthetic"}
+        ]
     for row in result:
         row["attributes"] = json.loads(row["attributes"])
         row["unresolved_fields"] = json.loads(row["unresolved_fields"])

@@ -5,7 +5,7 @@ let data, catalog = [], currentOperation, busy = false, searchSequence = 0;
 const previewIntents = new Map();
 const operationNames={resolve:'Resolve provisional copy',photo:'Add photo copy',edition:'Change copy edition',add:'Add copy',edit:'Edit copy',remove:'Remove copy',set:'Add owned set',binder:'Create binder',binder_edit:'Rename binder',binder_remove:'Remove binder',goal:'Track goal',goal_remove:'Remove goal',import:'Import inventory'};
 const policyOptions = '<option value="reject">Stop if already owned</option><option value="skip">Skip already-owned printings</option><option value="allow">Intentionally add duplicate copies</option>';
-const csrf = () => document.cookie.split('; ').find(s => s.startsWith('dex_b1_csrf='))?.split('=')[1];
+const csrf = () => document.querySelector('input[name=csrfmiddlewaretoken]').value;
 async function api(path, payload) {
   const response = await fetch(path, {credentials:'same-origin', headers:payload === undefined ? {} : {'Content-Type':'application/json','X-CSRFToken':csrf()}, ...(payload === undefined ? {} : {method:'POST',body:JSON.stringify(payload)})});
   if (response.redirected) { location.href = '/login/'; throw new Error('Session ended. Sign in again.'); }

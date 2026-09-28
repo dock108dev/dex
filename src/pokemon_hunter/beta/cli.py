@@ -100,7 +100,16 @@ def main():
     os.umask(0o077)
     if args.action == "init":
         initialize(args.root, args.copied_inventory, b2=args.b2, parity=args.parity)
+    if os.environ.get("DEX_PROFILE") == "staging" and args.action not in {
+        "bootstrap",
+        "invite",
+        "recovery",
+        "revoke",
+        "check",
+    }:
+        raise ValueError("Use the staging deployment operator for this action")
     setup(args.root)
+    from django.conf import settings
     from django.contrib.auth import get_user_model
     from django.core.management import call_command
 
@@ -138,7 +147,11 @@ def main():
                 if args.action == "invite"
                 else get_user_model().objects.get(username=args.username)
             )
-            output.write("http://127.0.0.1:8011" + accounts.issue_link(user, args.action) + "\n")
+            output.write(
+                getattr(settings, "PUBLIC_ORIGIN", "http://127.0.0.1:8011")
+                + accounts.issue_link(user, args.action)
+                + "\n"
+            )
         print("Private one-use link written. No message was sent. Expires in 30 minutes.")
     elif args.action == "revoke":
         accounts.revoke(get_user_model().objects.get(username=args.username))

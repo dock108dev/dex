@@ -1,0 +1,35 @@
+# Reference blueprint: review exact host/proxy settings before any deployment.
+# No automatic database import, account creation, invitation or authoritative cutover.
+services:
+  - type: web
+    name: dex-staging-web
+    healthCheckPath: /healthz/
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./deploy/Dockerfile
+    autoDeployTrigger: off
+    envVars:
+      - fromGroup: dex-staging-secrets
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dex-staging-db
+          property: connectionString
+  - type: worker
+    name: dex-staging-worker
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./deploy/Dockerfile
+    dockerCommand: /app/.venv/bin/python -m pokemon_hunter.beta.deployment worker
+    autoDeployTrigger: off
+    envVars:
+      - fromGroup: dex-staging-secrets
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dex-staging-db
+          property: connectionString
+databases:
+  - name: dex-staging-db
+    plan: basic-256mb
+    postgresMajorVersion: "17"
+    diskSizeGB: 5
+    ipAllowList: []

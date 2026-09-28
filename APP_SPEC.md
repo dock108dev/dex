@@ -27,7 +27,7 @@ Catalog evidence is a local, pinned historical snapshot of PokemonTCG/pokemon-tc
 - Missing cards: singles pool; queries derived from every eligible printing of currently missing species.
 - eBay finds: persistent local search history; sample/live separation and explicit reveal. Reopening a saved search hides identities again and recomputes fit against the current collection.
 
-The local interface uses FastAPI and a small browser frontend. React/Next.js was a suggested stack in the supplied brief; this implementation keeps the existing Python project and avoids a second development server. SQLite persists search snapshots; atomic JSON writes persist ownership.
+The preserved legacy interface uses FastAPI and a small browser frontend. The authenticated application uses Django 5.2/ASGI with the existing frontend; its B5 staging package selects Render web/worker and managed PostgreSQL, including private photo bytes. See docs/B5_OPERATIONS.md. React/Next.js was a suggested stack in the supplied brief; this implementation keeps the existing Python project and avoids a second development server. SQLite persists search snapshots; atomic JSON writes persist ownership.
 
 ## Spoiler boundary
 

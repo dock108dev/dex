@@ -66,7 +66,7 @@ B0 has passed its technical exit on copied data. B1 has a verified isolated loca
 | B2 — Collection and goals | Mobile inventory, copies, binders, set/custom goals, imports/exports/undo; B1 | End-to-end manual collection use; existing Vintage 251 result preserved; no duplicate inventory from goals | LOCAL ENGINEERING PASS — owner review separate |
 | B3 — Photo entry | Private upload, asynchronous OpenAI recognition, catalog candidates, confirm/cancel/undo; B1–B2 | Exactly-once confirmation and uncertain/failure states verified locally; live recognition quality/cost unmeasured | LOCAL ENGINEERING IMPLEMENTED — API setup/evaluation pending |
 | B4 — Catalog expansion | Game adapter contract, unknown scan queue, admin ingestion/review/publish/reconcile; B0/B3 | English Gym Heroes through ordinary ingestion/rollback; synthetic Orbits through shared request/matching/inventory paths | LOCAL ENGINEERING IMPLEMENTED — hosted qualification separate |
-| B5 — Hosted beta qualification | Staging deploy, restore, privacy/data controls, support, mobile checks; B1–B4 | Acceptance matrix below; candidate manifest; actual hosted observations; cost limits verified | OPEN |
+| B5 — Hosted beta qualification | PostgreSQL staging package, restore, privacy/support and local HTTPS rehearsal | [B5 matrix](B5_OPERATIONS.md); actual hosted/device observations still required | LOCAL FOUNDATION IMPLEMENTED — HOSTED/DEVICE QUALIFICATION OPEN |
 | B6 — Invite pilot | Owner review, then small invited cohort; B5 | Owner verdict and pilot outcomes recorded separately; known issues and rollback instructions delivered | OPEN |
 
 ### B0 — Preserve the existing collection first
@@ -110,7 +110,7 @@ Onboard one additional Pokémon set through the same importer and validate a syn
 
 ### B5 — Make the beta operable
 
-Proposed architecture: keep FastAPI and the current frontend where practical; shared PostgreSQL inventory/catalog, private object storage for photos, and a database-backed job queue/worker for scans/imports. Managed auth, database and storage may share a provider. No microservice platform or frontend rewrite is required. Lock provider selection after a small deployment/cost proof rather than maintaining multiple implementations.
+Selected architecture: Django 5.2 with the existing frontend, Render web and independent database-backed worker, and managed PostgreSQL 17 for accounts, inventory/catalog, jobs and private photo bytes. One consistent database backup includes assets and consent. The legacy FastAPI app is preserved. See [B5 operational foundation](B5_OPERATIONS.md) for the runnable package, current cost estimate, source restrictions and operator steps. No framework rewrite or microservice platform.
 
 Before pilot: configure staging/production separation, secrets, migrations, health/error monitoring, redacted logs, backups and an observed restore. Support account/photo deletion and a stated retention policy. Confirm rights/terms for each hosted catalog, image and pricing source; existing local snapshots do not establish hosted redistribution rights. Omit unavailable images or pricing features rather than guessing permission. Keep pending catalog/image rights visible as a coverage blocker, not a reason to stop unrelated engineering.
 
@@ -268,3 +268,12 @@ Mike initially responded “great” to the restored app and subsequently direct
 [Catalog expansion implementation](B4_CATALOG_EXPANSION.md): private requests and optional evidence sharing; reviewed aliases and distinct-requester merging; admin ingestion and atomic publication/rollback; English Gym Heroes (132 metadata entries); retry-safe resolution of an existing physical copy; synthetic second-game adapter. Frozen goal membership and existing inventory remain intact. B3 recognition remains simulated with zero real API calls; actual owner provisioning and B5 hosted/source/real-device qualification remain separate.
 
 B4 runtime `9dc074d8d05ed94f88a6c278502b30d5ae9dc424`: 188 tests passed in working and clean checkouts; lint/format, B2/B3/B4 desktop/narrow browser flows and source/review preservation passed. See the B4 implementation record for exact evidence and remaining gates.
+
+
+## B5 operational foundation — September 28, 2026
+
+[Implementation, source review, acceptance matrix and exact operator instructions](B5_OPERATIONS.md). PostgreSQL 17 copied migration preserves and compares source rows, account identities, private bytes, consent, catalog/journal history and spending reservations. Web and worker are packaged independently with fail-closed HTTPS configuration, readiness, graceful shutdown, recovery, consistent backup/empty-target restore, account erasure, retention and private feedback. The original SQLite collection and review environment remain preserved.
+
+Render web + worker + managed PostgreSQL is selected (about $21.50/month before variable charges; not purchased). For this small beta, private photos remain transactional PostgreSQL bytes. Staged shared catalog browsing permits reviewed TCGdex metadata and synthetic fixtures; unqualified legacy metadata, artwork, guide pricing and marketplace projections are disabled in staging, while the original local experience remains intact. Manual supported collection use does not require prices, artwork or recognition.
+
+B5 is **not fully qualified**: actual Render ingress/TLS/restart/backup observations, actual iOS/Android results and real recognition evaluation remain open. API key and consented evaluation photos are unavailable; zero real API calls. Actual B1 owner provisioning remains independent. No public deploy, external invitation, service purchase or authoritative cutover. Continue from the concrete configuration and observation gates in the B5 runbook.

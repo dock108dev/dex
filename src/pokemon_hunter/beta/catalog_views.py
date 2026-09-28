@@ -91,7 +91,7 @@ def imports(request):
         {
             "imports": [
                 catalogs.get(who, r["id"])
-                for r in store.rows("SELECT id FROM catalog_imports ORDER BY rowid DESC")
+                for r in store.rows("SELECT id FROM catalog_imports ORDER BY created DESC,id DESC")
             ]
         }
     )

@@ -1,0 +1,11 @@
+*
+!pyproject.toml
+!uv.lock
+!src/
+!src/**
+!config/
+!config/catalog-imports/
+!config/catalog-imports/**
+!deploy/
+!deploy/Dockerfile
+**/__pycache__

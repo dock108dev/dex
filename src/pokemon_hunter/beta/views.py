@@ -2,12 +2,13 @@ import json
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import PasswordResetConfirmView
-from django.db import connection, transaction
+from django.db import connection
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_GET, require_http_methods
 
 from . import store
+from . import transactions as transaction
 from .accounts import invite_token, recovery_token
 
 

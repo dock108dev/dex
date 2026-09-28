@@ -92,3 +92,7 @@ The authenticated isolated review app now includes Scan/Add: private photos, dur
 ### B4 catalog expansion
 
 Catalog requests connect unsupported scans/provisional copies to owner-role review, explicit photo consent, versioned publication/rollback and resolution of the existing copy. English Gym Heroes adds 132 metadata entries through the ordinary importer. [Behavior, source rights, setup and limits](docs/B4_CATALOG_EXPANSION.md).
+
+## B5 staging operations
+
+The authenticated Django app now has a PostgreSQL 17 staging package, independent web/worker operation, consistent database/photo backup and restore, account erasure, retention and private feedback. See [B5 operational runbook](docs/B5_OPERATIONS.md) for exact configuration, commands, source gates, cost estimate and acceptance matrix. Local staging checks do not establish hosted or real-device acceptance; no deployment or collection cutover has occurred. The original local app remains preserved.

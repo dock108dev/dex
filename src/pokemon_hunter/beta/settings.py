@@ -4,16 +4,23 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
-ROOT = Path(os.environ["DEX_B1_ROOT"]).resolve(strict=True)
+STAGING = os.environ.get("DEX_PROFILE", "local") == "staging"
+if os.environ.get("DEX_PROFILE", "local") not in {"local", "staging"}:
+    raise RuntimeError("Unknown DEX_PROFILE")
 PROJECT = Path(__file__).resolve().parents[3]
-if ROOT.is_relative_to(PROJECT) or not (ROOT / "B1_ISOLATED").is_file():
-    raise RuntimeError("B1 requires an initialized isolated directory outside the checkout")
-if ROOT.stat().st_mode & 0o077:
-    raise RuntimeError("B1 directory must be owner-only (chmod 700)")
-for name in ("inventory.db", "secret.key"):
-    if (ROOT / name).is_symlink() or (ROOT / name).stat().st_mode & 0o077:
-        raise RuntimeError("B1 files must be private regular files")
-SECRET_KEY = (ROOT / "secret.key").read_text().strip()
+if STAGING:
+    ROOT = Path(os.environ.get("DEX_B1_ROOT", "/tmp/dex-staging"))
+    SECRET_KEY = ""  # Required and validated below.
+else:
+    ROOT = Path(os.environ["DEX_B1_ROOT"]).resolve(strict=True)
+    if ROOT.is_relative_to(PROJECT) or not (ROOT / "B1_ISOLATED").is_file():
+        raise RuntimeError("B1 requires an initialized isolated directory outside the checkout")
+    if ROOT.stat().st_mode & 0o077:
+        raise RuntimeError("B1 directory must be owner-only (chmod 700)")
+    for name in ("inventory.db", "secret.key"):
+        if (ROOT / name).is_symlink() or (ROOT / name).stat().st_mode & 0o077:
+            raise RuntimeError("B1 files must be private regular files")
+    SECRET_KEY = (ROOT / "secret.key").read_text().strip()
 DEBUG = False
 ALLOWED_HOSTS = ["127.0.0.1"]
 INSTALLED_APPS = ["django.contrib.auth", "django.contrib.contenttypes", "django.contrib.sessions", "axes"]
@@ -43,6 +50,7 @@ TEMPLATES = [
             "context_processors": [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
+                "pokemon_hunter.beta.security.profile_context",
             ]
         },
     }
@@ -94,3 +102,11 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 1_000_000
 DATA_UPLOAD_MAX_NUMBER_FILES = 2
 
 B4_ENABLED = (ROOT / "B4_ISOLATED").is_file()
+
+if STAGING:
+    from .staging_config import configuration
+
+    globals().update(configuration())
+    MIDDLEWARE[0] = "pokemon_hunter.beta.security.StagingMiddleware"
+    B2_ENABLED = PARITY_ENABLED = B3_ENABLED = B4_ENABLED = True
+    DATA_UPLOAD_MAX_MEMORY_SIZE = 2_000_000

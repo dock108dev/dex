@@ -6,7 +6,6 @@ from datetime import UTC, datetime
 from decimal import Decimal
 
 from django.conf import settings
-from django.db import transaction
 from django.http import Http404
 
 from pokemon_hunter.app import SearchRequest
@@ -18,9 +17,18 @@ from pokemon_hunter.valuation import valuation_records
 
 from . import collection as service
 from . import store
+from . import transactions as transaction
 
 
 def evidence(filename, default):
+    if getattr(settings, "STAGING", False):
+        # Source review permits metadata only. No legacy pricing or hunt redistribution.
+        if filename == "species.json":
+            from .store import rows
+
+            saved = rows("SELECT value FROM beta_operations WHERE key='species'")
+            return json.loads(saved[0]["value"]) if saved else default
+        return default
     path = settings.ROOT / "parity-evidence" / filename
     return json.loads(path.read_text()) if path.is_file() else default
 
