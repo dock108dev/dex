@@ -1,4 +1,4 @@
-# Deployment package template. Replace IMAGE_DIGEST with release.json's OCI digest.
+# Deployment package template. Exact immutable candidate: see release.json.
 # Push that exact archive to the PRIVATE ghcr.io/dock108dev/dex-staging repository.
 # Dedicated staging workspace: same-workspace private peers are trusted by Render ingress.
 # Database must be seeded separately before starting these services. No live-owner import.
@@ -9,14 +9,14 @@ services:
     healthCheckPath: /healthz/
     runtime: image
     image:
-      url: ghcr.io/dock108dev/dex-staging@IMAGE_DIGEST
+      url: ghcr.io/dock108dev/dex-staging@sha256:46facd36fc6bb15603960722bba10e015bc4189a73ef30a0208be051a6a52c8b
       creds:
         fromRegistryCreds:
           name: dex-staging-ghcr
     plan: 0.5c-512mb
     numInstances: 1
     maxShutdownDelaySeconds: 60
-    autoDeployTrigger: off
+    autoDeployTrigger: "off"
     envVars:
       - fromGroup: dex-staging-secrets
       - key: DEX_PROFILE
@@ -34,7 +34,7 @@ services:
     region: virginia
     runtime: image
     image:
-      url: ghcr.io/dock108dev/dex-staging@IMAGE_DIGEST
+      url: ghcr.io/dock108dev/dex-staging@sha256:46facd36fc6bb15603960722bba10e015bc4189a73ef30a0208be051a6a52c8b
       creds:
         fromRegistryCreds:
           name: dex-staging-ghcr
@@ -42,7 +42,7 @@ services:
     numInstances: 1
     maxShutdownDelaySeconds: 60
     dockerCommand: /app/.venv/bin/python -m pokemon_hunter.beta.deployment worker
-    autoDeployTrigger: off
+    autoDeployTrigger: "off"
     envVars:
       - fromGroup: dex-staging-secrets
       - key: DEX_PROFILE

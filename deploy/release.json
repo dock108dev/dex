@@ -1,0 +1,32 @@
+{
+  "runtime_commit": "0f17cc9ff337ee1ce90cdb32875afd7de6d03e38",
+  "runtime_tree": "dabc8c597799af89bd8d23bb75c3dff94381900f",
+  "platform": "linux/amd64",
+  "image_manifest_digest": "sha256:46facd36fc6bb15603960722bba10e015bc4189a73ef30a0208be051a6a52c8b",
+  "image_config_digest": "sha256:c1c89354f5a2987b9b05c3569b7df17c42447981001c20bab63305831c7c1b86",
+  "intended_private_registry_reference": "ghcr.io/dock108dev/dex-staging@sha256:46facd36fc6bb15603960722bba10e015bc4189a73ef30a0208be051a6a52c8b",
+  "registry_published": false,
+  "source_manifest_sha256": "61429aeb4e8948971bca0678201f055188295822207cb3ae72ea45a7e2bf06b3",
+  "oci_archive": "dex-b5-0f17cc9-amd64.oci.tar",
+  "oci_archive_sha256": "fb253b1b7c27640f2066189ed23d384e2de02d665c890f165529fd574a3c6e0b",
+  "runtime_tests": {
+    "working": 198,
+    "clean_checkout": 198
+  },
+  "hosted_qualified": false,
+  "actual_devices_qualified": false,
+  "recognition_real_calls": 0,
+  "rollback": {
+    "qualified_previous_render_image": null,
+    "first_deploy_failure": "Suspend web and worker, retain database and all writes/reservations; no restore over current data.",
+    "future_compatible_rollback_target": "sha256:46facd36fc6bb15603960722bba10e015bc4189a73ef30a0208be051a6a52c8b"
+  },
+  "build_materials": [
+    {
+      "uri": "pkg:docker/python@3.12-slim-trixie?platform=linux%2Famd64",
+      "digest": {
+        "sha256": "f77ac9e44ae96ef2c90b8053ea08c31f8be030f824196b0ae4db6d462c84e51f"
+      }
+    }
+  ]
+}
