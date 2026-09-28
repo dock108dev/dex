@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 
 import pytest
+from conftest import synthetic_collection, synthetic_project
 from fastapi.testclient import TestClient
 
 from pokemon_hunter.app import create_app
@@ -14,22 +15,22 @@ ROOT = Path(__file__).resolve().parents[1]
 
 @pytest.fixture
 def collection():
-    return read(ROOT / "config/pokedex_251.json")
+    return synthetic_collection()
 
 
 @pytest.fixture
 def local(tmp_path):
-    shutil.copytree(ROOT / "config", tmp_path / "config")
+    synthetic_project(tmp_path)
     shutil.copytree(ROOT / "web", tmp_path / "web")
     return tmp_path
 
 
 def test_confirmed_import_and_catalog(collection):
     assert totals(collection) == {
-        "kanto": 133,
-        "johto": 20,
-        "total": 153,
-        "exact_cards": 207,
+        "kanto": 2,
+        "johto": 0,
+        "total": 2,
+        "exact_cards": 2,
         "unavailable_species": 0,
     }
     assert len(collection["pokedex"]) == 251
@@ -55,13 +56,13 @@ def test_confirmed_import_and_catalog(collection):
 def test_quantities_deduplicate_species_and_persist(local):
     path = local / "config/pokedex_251.json"
     update_card(path, "base_set-15", True)
-    assert totals(read(path))["total"] == 154
+    assert totals(read(path))["total"] == 3
     update_card(path, "base_set_2-18", True)
-    assert totals(read(path))["total"] == 154
+    assert totals(read(path))["total"] == 3
     update_card(path, "base_set-15", False)
-    assert totals(read(path))["total"] == 154
+    assert totals(read(path))["total"] == 3
     update_card(path, "base_set_2-18", False)
-    assert totals(read(path))["total"] == 153
+    assert totals(read(path))["total"] == 2
     for value in (-1, 1, 1.5, 10000):
         with pytest.raises(ValueError):
             update_card(path, "base_set-15", value)
@@ -136,7 +137,7 @@ def test_app_sample_never_calls_ebay_and_reveal_is_explicit(local, monkeypatch):
     monkeypatch.setattr("pokemon_hunter.app.discover", forbidden)
     with TestClient(create_app(local)) as client:
         assert client.get("/").status_code == 200
-        assert client.get("/api/collection").json()["totals"]["total"] == 153
+        assert client.get("/api/collection").json()["totals"]["total"] == 2
         response = client.post("/api/hunts", json={"demo": True, "pool": "known_lots", "budget": "150"})
         assert response.status_code == 200
         body = response.json()
@@ -154,7 +155,7 @@ def test_app_sample_never_calls_ebay_and_reveal_is_explicit(local, monkeypatch):
             == "Dex opportunity"
         )
         assert client.post("/api/hunts", json={"pool": "mystery"}).json()["results"][0]["score"] is None
-        assert client.put("/api/cards/base_set-15", json={"owned": True}).json()["totals"]["total"] == 154
+        assert client.put("/api/cards/base_set-15", json={"owned": True}).json()["totals"]["total"] == 3
         assert client.put("/api/cards/base_set-15", json={"owned": -1}).status_code == 422
         assert client.put("/api/cards/base_set-15", json={"owned": 1}).status_code == 422
         assert (
@@ -166,7 +167,7 @@ def test_app_sample_never_calls_ebay_and_reveal_is_explicit(local, monkeypatch):
         assert client.get("/api/export").json()["cards"]["base_set-15"]["owned"] is True
     # Restart creates no second collection and preserves history.
     with TestClient(create_app(local)) as client:
-        assert client.get("/api/collection").json()["totals"]["total"] == 154
+        assert client.get("/api/collection").json()["totals"]["total"] == 3
         assert len(client.get("/api/hunts").json()) == 4
 
 

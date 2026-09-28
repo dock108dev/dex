@@ -4,7 +4,7 @@ A local vintage Pokémon collection app with a spoiler-controlled hunt experienc
 
 ## Path to a collection beta
 
-The [next-steps roadmap](../dex_next_steps.md) now targets an invite-only, Pokémon-first collection app: personal accounts, preserved owner inventory, duplicate copies, photo confirmation, set/custom goals and a reviewed catalog-onboarding queue. [Beta design](docs/BETA_DESIGN.md) defines the shared foundation for later games. These features are planned, not available in the local app yet. Mike is the first planned account (`admin`); his existing Pokédex must be preserved. No account has been created by this documentation update.
+The [next-steps roadmap](docs/ROADMAP.md) now targets an invite-only, Pokémon-first collection app: personal accounts, preserved owner inventory, duplicate copies, photo confirmation, set/custom goals and a reviewed catalog-onboarding queue. [Beta design](docs/BETA_DESIGN.md) defines the shared foundation for later games. These features are planned, not available in the local app yet. Mike is the first planned account (`admin`); his existing Pokédex must be preserved. No account has been created by this documentation update.
 
 ## Open the app
 
@@ -16,7 +16,7 @@ uv run pokemon-hunter app --port 8766
 
 Visit [Vintage 251](http://127.0.0.1:8766). Everything saves locally. Sample hunts need no credentials. Stop the server with Ctrl-C.
 
-Your confirmed collection is imported: **207 exact printings · Kanto 133/151 · Johto 20/100 · total 153/251**. These are import-baseline counts; current totals always derive from your recorded ownership.
+Existing local collections are preserved. Fresh checkouts start empty; examples never contain personal inventory. B0 preservation and copied-data migration passed; see [implementation results](docs/B0_IMPLEMENTATION.md). Accounts and hosted operation remain future work.
 
 - Browse and filter all 251 species; see every eligible vintage printing.
 - Track owned/not owned and first edition in ten sets. Dark and trainer-owned cards never fill a species slot.

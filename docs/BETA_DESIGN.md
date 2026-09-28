@@ -1,8 +1,8 @@
 # Collection beta — data and workflow design
 
-Updated: September 27, 2026. **Target design; not implemented.**
+Updated: September 27, 2026. **B0 schema and copied-data rehearsal implemented; remaining workflows are target design.**
 
-[Authoritative roadmap and stage status](../../dex_next_steps.md) · [Current implementation](../APP_SPEC.md)
+[Authoritative roadmap and stage status](ROADMAP.md) · [Current implementation](../APP_SPEC.md)
 
 ## Product boundary
 

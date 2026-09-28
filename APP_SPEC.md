@@ -1,6 +1,6 @@
 # Vintage 251
 
-This document describes the **current local implementation**. The [collection-beta roadmap](../dex_next_steps.md) replaces the earlier watcher-first next steps; [BETA_DESIGN](docs/BETA_DESIGN.md) specifies planned accounts, per-copy inventory, scan confirmation and catalog expansion. Those beta features are not implemented. The first planned owner account is `admin`, with the existing collection preserved. Vintage 251 becomes a goal within the future shared collection app.
+This document describes the **current local implementation**. The [collection-beta roadmap](docs/ROADMAP.md) replaces the earlier watcher-first next steps; [BETA_DESIGN](docs/BETA_DESIGN.md) specifies planned accounts, per-copy inventory, scan confirmation and catalog expansion. B0 schema and copied-data rehearsal are implemented separately; the live application remains unchanged. See [B0 results](docs/B0_IMPLEMENTATION.md). Other beta features are not implemented. The first planned owner account is `admin`, with the existing collection preserved. Vintage 251 becomes a goal within the future shared collection app.
 
 A local, spoiler-controlled collection journal and discovery app for English vintage Pokémon cards. Card ownership is the authority. The goal is to complete species #001–251 while retaining the experience of discovery, with exact printing completion tracked separately.
 

@@ -40,3 +40,30 @@ def raw():
             "seller": {"username": "synthetic-fixture"},
         }
     )
+
+
+def synthetic_collection():
+    """Public catalog with two explicitly synthetic owned cards; never read owner inventory."""
+    import json
+
+    from pokemon_hunter.collection import derive
+
+    data = json.loads((ROOT / "config/pokedex_251.example.json").read_text())
+    for key in ("base_set-2", "team_rocket-50"):
+        data["cards"][key]["owned"] = True
+    data["metadata"]["ownership_import_complete"] = True
+    return derive(data)
+
+
+def synthetic_project(destination):
+    import json
+    import shutil
+
+    config = destination / "config"
+    config.mkdir()
+    for name in ("sets.yaml", "searches.yaml", "hunt.json", "demo_hunts.json", "raw_values.json"):
+        shutil.copy2(ROOT / "config" / name, config / name)
+    shutil.copy2(ROOT / "config/settings.example.yaml", config / "settings.yaml")
+    (config / "pokedex_251.json").write_text(json.dumps(synthetic_collection()))
+    (config / "market_values.json").write_text("[]")
+    return destination

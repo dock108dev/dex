@@ -1,8 +1,8 @@
-import shutil
 import sqlite3
 from pathlib import Path
 
 import pytest
+from conftest import synthetic_project
 
 from pokemon_hunter.main import main
 
@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 @pytest.fixture
 def project(tmp_path):
-    shutil.copytree(ROOT / "config", tmp_path / "config")
+    synthetic_project(tmp_path)
     return tmp_path
 
 

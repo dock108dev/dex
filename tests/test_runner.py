@@ -5,11 +5,12 @@ from datetime import timedelta
 from pathlib import Path
 
 import pytest
+from conftest import synthetic_collection
 
 from pokemon_hunter.database import Database
 from pokemon_hunter.normalize import evaluate
 from pokemon_hunter.notifier import Notifier
-from pokemon_hunter.pokedex import missing_rates, read_pokedex, summary
+from pokemon_hunter.pokedex import missing_rates, summary
 from pokemon_hunter.runner import run, run_lock
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -17,13 +18,22 @@ ROOT = Path(__file__).resolve().parents[1]
 
 @pytest.fixture
 def pokedex():
-    return read_pokedex(ROOT / "config/pokedex.json")
+    return [
+        {
+            "dex_number": n,
+            "pokemon_name": row["name"],
+            "generation": row["generation"],
+            "owned": n <= 133 or 152 <= n <= 171,
+        }
+        for key, row in synthetic_collection()["pokedex"].items()
+        for n in [int(key)]
+    ]
 
 
 def test_collection_is_exact(pokedex):
     assert summary(pokedex) == "Kanto 133/151 · Johto 20/100 · Total 153/251 · Missing 98"
     assert missing_rates(pokedex) == (18 / 151, 0.8)
-    assert pokedex[247]["owned"] is True
+    assert pokedex[170]["owned"] is True
     assert pokedex[250]["owned"] is False
 
 

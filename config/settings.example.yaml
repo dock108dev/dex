@@ -2,7 +2,7 @@ marketplace: EBAY_US
 currency: USD
 environment: production
 delivery_country: US
-delivery_postal_code: ''
+delivery_postal_code: null
 thresholds:
   fixed_price_per_card: '2.00'
   auction_per_card: '1.00'
