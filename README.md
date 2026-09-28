@@ -2,11 +2,15 @@
 
 A local vintage Pokémon collection app with a spoiler-controlled hunt experience.
 
-## Path to a collection beta
+## Current local pre-alpha
 
-The [next-steps roadmap](docs/ROADMAP.md) now targets an invite-only, Pokémon-first collection app: personal accounts, preserved owner inventory, duplicate copies, photo confirmation, set/custom goals and a reviewed catalog-onboarding queue. [Beta design](docs/BETA_DESIGN.md) defines the shared foundation for later games. These features are planned, not available in the local app yet. Mike is the first planned account (`admin`); his existing Pokédex must be preserved. No account has been created by this documentation update.
+The [roadmap](docs/ROADMAP.md) targets Mike alone on his Mac. The authenticated app at [Overview](http://127.0.0.1:8011/overview/) includes collection/Pokédex parity, copies, binders, goals, imports/exports/undo, photo entry and catalog requests. Preserve the existing login and data; do not initialize it again. [Local launch instructions](docs/B2_PARITY.md#launch-the-revised-review-app) apply if it is stopped.
 
-## Open the app
+[Scan/Add](http://127.0.0.1:8011/scan/) currently has documented simulated/manual recognition; real API setup and a small evaluation are next. See [photo configuration](docs/B3_PHOTO_ENTRY.md). Hosting, LAN HTTPS and phone/operational qualification are deferred. [PM status](docs/PM_STATUS.md) records current priorities.
+
+## Original local app — preserved
+
+The commands below run the original app, not the authenticated app on 8011. Preserve existing environments; no reinitialization is required for the current task.
 
 ```sh
 uv sync --frozen --extra dev
@@ -16,7 +20,7 @@ uv run pokemon-hunter app --port 8766
 
 Visit [Vintage 251](http://127.0.0.1:8766). Everything saves locally. Sample hunts need no credentials. Stop the server with Ctrl-C.
 
-Existing local collections are preserved. Fresh checkouts start empty; examples never contain personal inventory. B0 preservation and copied-data migration passed; see [implementation results](docs/B0_IMPLEMENTATION.md). Accounts and hosted operation remain future work.
+Existing local collections are preserved. Fresh checkouts start empty; examples never contain personal inventory. B0 preservation and copied-data migration passed; see [implementation results](docs/B0_IMPLEMENTATION.md). Local authenticated accounts are implemented in the app on 8011; hosted operation is deferred.
 
 - Browse and filter all 251 species; see every eligible vintage printing.
 - Track owned/not owned and first edition in ten sets. Dark and trainer-owned cards never fill a species slot.

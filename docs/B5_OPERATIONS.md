@@ -1,5 +1,8 @@
 # B5 operations — Mac-hosted private staging
 
+> **DEFERRED — optional future reference, not active next steps.** Mike’s September 28 direction makes the existing localhost app the sole current target. All setup/checklist requirements below are inactive for current local use, including hosting/LAN HTTPS, device tests, managed startup/reboot and external backup infrastructure. Preserve prior evidence; do not execute this runbook unless that scope is reopened. The [current roadmap](ROADMAP.md) takes precedence.
+
+
 **Current host: Mike's Mac, with test phones on the home network.** [The active closeout checklist](B5_DEPLOYMENT.md) replaces Render setup. B5 remains OPEN for final endpoint, restart/backup operation and actual-device observations. Existing results retain their original candidate identities; no cloud or phone result is inferred from local emulation.
 
 ## Selected architecture and cost

@@ -1,5 +1,8 @@
 # B5 closeout — Mac-hosted private staging
 
+> **DEFERRED — optional future reference, not active next steps.** Mike’s September 28 direction makes the existing localhost app the sole current target. All setup/checklist requirements below are inactive for current local use, including hosting/LAN HTTPS, device tests, managed startup/reboot and external backup infrastructure. Preserve prior evidence; do not execute this runbook unless that scope is reopened. The [current roadmap](ROADMAP.md) takes precedence.
+
+
 **Current decision: use Mike's Mac, with phones on the same trusted home Wi-Fi. Render, GHCR publishing and paid hosting are not required. B5 remains OPEN until the observations below are recorded.** This replaces the Render account/provisioning next step. It does not turn earlier emulation into actual phone evidence.
 
 The existing Django web process, independent worker and PostgreSQL 17 run on the Mac. Use the isolated synthetic staging database, not Mike's collection or historical private evidence. Keep the original review app on 8011 and previous loopback staging on 8443 intact. No invitations, public signup, router port forwarding, public tunnel or authoritative collection cutover is part of this closeout. Away-from-home access can be a separate later requirement; it is not necessary for this home-network scope.

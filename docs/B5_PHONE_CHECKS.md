@@ -1,5 +1,8 @@
 # B5 phone walkthrough
 
+> **DEFERRED — optional future reference, not active next steps.** Mike’s September 28 direction makes the existing localhost app the sole current target. All setup/checklist requirements below are inactive for current local use, including hosting/LAN HTTPS, device tests, managed startup/reboot and external backup infrastructure. Preserve prior evidence; do not execute this runbook unless that scope is reopened. The [current roadmap](ROADMAP.md) takes precedence.
+
+
 Use the Mac-hosted HTTPS staging URL on the same home Wi-Fi and **synthetic credentials only**. Render and public internet exposure are unnecessary. Run once on an actual iPhone in Safari and once on an actual Android phone in Chrome. Record device model, OS/browser version, UTC time, runtime commit and image digest. Desktop responsive mode does not count. A manual walkthrough needs no Xcode license or ADB installation; Mike can perform the phone actions while the engineer records results.
 
 1. Sign in; refresh and reopen a page. Confirm the correct synthetic collection, no browser certificate warning, and a usable portrait layout. Sign out and verify Back/refresh does not restore private content.

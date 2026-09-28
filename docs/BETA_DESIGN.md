@@ -6,6 +6,10 @@ Updated: September 27, 2026. **B0 migration, B1 local authentication and B2 coll
 
 [Authoritative roadmap and stage status](ROADMAP.md) · [Current implementation](../APP_SPEC.md)
 
+## Current scope
+
+The [roadmap](ROADMAP.md) now targets Mike alone on the existing localhost app. Shared data/workflow contracts below remain useful; hosted, cross-device, separate owner-bootstrap and pilot provisions are deferred, not prerequisites for local use. Preserve the working login and collection.
+
 ## Product boundary
 
 One shared collection platform, with Pokémon first and game-specific catalog adapters. Existing Vintage 251 rules become a named, versioned goal template. They must not become global rules that reject Yu-Gi-Oh!, Digimon, sports cards or Pokémon outside species 1–251. A user may own any supported printing even when it contributes to no active goal.

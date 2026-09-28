@@ -1,5 +1,8 @@
 # B5 Render reference — inactive alternative
 
+> **DEFERRED — optional future reference, not active next steps.** Mike’s September 28 direction makes the existing localhost app the sole current target. All setup/checklist requirements below are inactive for current local use, including hosting/LAN HTTPS, device tests, managed startup/reboot and external backup infrastructure. Preserve prior evidence; do not execute this runbook unless that scope is reopened. The [current roadmap](ROADMAP.md) takes precedence.
+
+
 **Historical preparation only. Render is no longer the selected B5 host or a closure dependency.** Use [the Mac staging closeout](B5_DEPLOYMENT.md). This reference preserves the prior image/configuration and evidence; do not provision these resources as part of the current plan.
 
 **Prepared, not deployed.** Runtime `0f17cc9ff337ee1ce90cdb32875afd7de6d03e38`, from `9b7e1a1`, is committed on main. The [release manifest](../deploy/release.json) binds the exact source tree, source-content manifest, OCI archive and Linux AMD64 image. Later handoff-only commits do not change this runtime.
