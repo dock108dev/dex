@@ -61,7 +61,8 @@ def confirm(page):
     page.locator("#review-body").get_by_text(
         "Changes saved. Retrying confirmation will not add them again."
     ).wait_for()
-    op = page.locator("#review-body code").first.inner_text()
+    op = page.locator("#review-body code").first.text_content().strip()
+    assert op, "Operation reference must remain readable when its disclosure is collapsed"
     close(page)
     return op
 
