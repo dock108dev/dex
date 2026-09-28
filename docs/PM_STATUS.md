@@ -26,7 +26,7 @@ The historical B2 tested runtime candidate is `f2c876b1f70ee4643df70260bd8d2d023
 | Mike, then engineer | Securely provision the actual B1 owner and verify binding/preservation when convenient | Independent setup item, not a B3 engineering blocker; preserve existing credentials |
 | Later stages | B5 hosted/source/privacy/cost/real-device qualification, then B6 pilot | No release or pilot readiness claimed |
 
-Mike's latest direction supersedes the earlier stop-before-B3 instruction. Proceed with the B3 implementation prompt. Existing available recognition credentials may be integrated through secure configuration; missing credentials are a concrete setup dependency, not a reason to stop independent work. Do not purchase services or deploy as part of this local milestone.
+Mike's latest direction supersedes the earlier stop-before-B3 instruction. B3 and B4 local engineering are delivered; continue with the bounded recognition evaluation once its setup dependencies are available. Existing available recognition credentials may be integrated through secure configuration; missing credentials are a concrete setup dependency, not a reason to stop independent work. Do not purchase services or deploy as part of this local milestone.
 
 ## Current access and sources of truth
 
@@ -45,3 +45,5 @@ B3 tested runtime: `a456ab7fcc3db5c22860c8d90d217196309b1ce2`; 173 tests in work
 [Catalog expansion](B4_CATALOG_EXPANSION.md) adds private support requests, explicit evidence consent, admin triage/merge, versioned preview/verify/publish/rollback and retry-safe resolution of the existing copy. English Gym Heroes adds 132 TCGdex metadata entries through the ordinary importer. A synthetic second-game package exercises the same paths without Pokémon species requirements. No images or prices are imported.
 
 Review: `http://127.0.0.1:8011/requests/`; the existing owner-role review login can open Catalog review. Actual owner provisioning remains separate. Real B3 recognition is still unmeasured (zero API calls); B5 deployment and live cutover are outside this delivery. The current candidate and private evidence are recorded in `/Users/michaelfuscoletti/dex-private/b4-catalog-20260928/handoff.json`.
+
+B4 tested runtime: `9dc074d8d05ed94f88a6c278502b30d5ae9dc424`. All 188 tests passed in working and clean checkouts, along with lint/format and full B2/B3/B4 desktop/narrow browser verification. Source/review preservation passed, including unchanged credentials and spend reservations. These results establish local engineering delivery, not real recognition, actual-owner or hosted acceptance.

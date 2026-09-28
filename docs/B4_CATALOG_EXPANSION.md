@@ -56,3 +56,13 @@ The English Gym Heroes package is published in that copied review catalog after 
 No `OPENAI_API_KEY` was available in the implementation environment. **Zero real recognition calls and $0 API spend** in B4; correct/wrong/unresolved rates, real latency and actual returned usage costs are unmeasured. Suitable consented evaluation photos plus a securely configured key remain prerequisites for the bounded B3 evaluation. Existing reservations were preserved, not reset. Fixture outcomes, synthetic game checks and browser images are engineering evidence only.
 
 B3 runtime `a456ab7` and documentation closeout `1e99996` remain historical exact candidates. B4 source identity, clean-checkout/browser results, source/review preservation, source metadata and publication evidence are retained privately under `/Users/michaelfuscoletti/dex-private/b4-catalog-20260928/`; final identity is in `handoff.json`. Failed browser attempts are retained separately and never presented as successful evidence. They exposed one consent-form lookup bug for digit-leading request IDs (fixed); other harness corrections respected CSP and the existing 48-entry pagination. No real-device, hosted, actual-owner or pilot acceptance is claimed.
+
+## Verified B4 candidate
+
+Tested runtime commit: `9dc074d8d05ed94f88a6c278502b30d5ae9dc424`; source tree: `007f7808ce2b02f9f5d996ec71becea03addc014`. Later documentation-only closeout does not change this runtime test identity.
+
+- 188 tests passed in both working and clean checkouts; lint and formatting passed. One existing Starlette TestClient deprecation warning remains.
+- Complete restored B2 parity, B3 confirmation/undo and B4 request/consent/triage/publication/same-copy resolution/rollback/republish browser flows passed in desktop and narrow Chromium. B4 screenshots were inspected. These are not real-device results.
+- Tests cover cross-account isolation, merge/demand counts, repeated imports, identity conflicts, partial coverage, interrupted atomic publication, rollback with referenced copies, concurrent retry-safe resolution, frozen goals and the synthetic second-game adapter.
+- Original source data and restored legacy smoke checks passed. Every pre-existing review database row, credential/configuration file and recognition reservation was preserved. Gym Heroes passed preview, verification, publication, rollback and republication in the preserved review environment.
+- Private reports: `clean-regression.txt`, `clean-browser/browser-report.json`, `clean-browser/b4-browser-report.json`, `preservation.json`, `review-preservation.json` and `review-publication.json` under the B4 evidence directory above.

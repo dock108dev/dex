@@ -266,3 +266,5 @@ Mike initially responded “great” to the restored app and subsequently direct
 ## B4 delivery
 
 [Catalog expansion implementation](B4_CATALOG_EXPANSION.md): private requests and optional evidence sharing; reviewed aliases and distinct-requester merging; admin ingestion and atomic publication/rollback; English Gym Heroes (132 metadata entries); retry-safe resolution of an existing physical copy; synthetic second-game adapter. Frozen goal membership and existing inventory remain intact. B3 recognition remains simulated with zero real API calls; actual owner provisioning and B5 hosted/source/real-device qualification remain separate.
+
+B4 runtime `9dc074d8d05ed94f88a6c278502b30d5ae9dc424`: 188 tests passed in working and clean checkouts; lint/format, B2/B3/B4 desktop/narrow browser flows and source/review preservation passed. See the B4 implementation record for exact evidence and remaining gates.
