@@ -80,3 +80,7 @@ Django authentication, invite setup, local recovery and private inventory now ru
 B2 extends the authenticated application with physical copies, private binders, versioned goals, previewed set additions and CSV/JSON imports, complete JSON export and conflict-aware undo. The original local app remains unchanged. **B1 actual owner provisioning remains pending; B2 engineering checks do not establish owner acceptance or hosted readiness.**
 
 Follow [B2 launch, implemented flows and verification](docs/B2_IMPLEMENTATION.md) to use the prepared private `review-local` root. A new B2 root uses `init --b2 --copied-inventory` with a copied B0 rehearsal database; existing roots are refused. Never initialize or upgrade the prepared B1 `owner-local` root for B2. The authoritative next-steps record is [ROADMAP](docs/ROADMAP.md).
+
+### B2 restored-experience review
+
+The authenticated parity revision restores Overview, Pokédex, My Cards, copy edition controls, local guide scenarios, sample hunts and spoiler-safe saved finds alongside existing B2 flows. Follow the [parity matrix and fresh review launch](docs/B2_PARITY.md). Stop for Mike's focused review before B3. B1 actual-owner provisioning remains a separate pending gate.

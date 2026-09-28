@@ -14,6 +14,7 @@ from pokemon_hunter.beta.cli import setup
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--root", type=__import__("pathlib").Path, required=True)
+parser.add_argument("--parity", action="store_true")
 args = parser.parse_args()
 os.umask(0o077)
 assert (args.root / "B2_ISOLATED").is_file()
@@ -262,6 +263,11 @@ with sync_playwright() as p:
         assert forbidden["copy"] not in {c["id"] for c in exported(context)["copies"]}
     after = {c["id"]: c for c in exported(a)["copies"]}
     assert all(after[c["id"]] == c for c in baseline["copies"])
+    if args.parity:
+        from verify_parity_browser import parity_flow
+
+        parity_flow(pa, a, args.root, "desktop", records_a)
+        parity_flow(pb, b, args.root, "narrow", records_b)
     assert not errors, errors
     (args.root / "browser-report.json").write_text(
         json.dumps(

@@ -225,3 +225,29 @@ def public_listing(row, reveal=False):
 
 def load_json(path):
     return json.loads(path.read_text())
+
+
+def project_results(raws, body, demo, data, config, values):
+    results = [analyze(r, data, config, values, demo=demo) for r in raws]
+    results = [
+        r
+        for r in results
+        if r["active"]
+        and r["delivered"] is not None
+        and Decimal(r["delivered"]) <= body.budget
+        and r["pool"] == body.pool
+    ]
+    if body.pool == "singles":
+        results = [r for r in results if r["dex_hits"]]
+    if body.focus in ("kanto", "johto"):
+        results = [r for r in results if r[f"{body.focus}_hits"] or not r["cards"]]
+    if body.focus == "rares":
+        results = [r for r in results if r["has_rare"] or not r["cards"]]
+    if body.focus == "bulk":
+        results = [r for r in results if r["count"] and r["count"] >= 25]
+    for row in results:
+        if row["max_bid"] is not None:
+            row["max_bid"] = str(
+                max(Decimal(0), min(Decimal(row["max_bid"]), body.budget - Decimal(row["shipping"])))
+            )
+    return sorted(results, key=lambda r: (r["score"] is not None, r["score"] or 0), reverse=True)

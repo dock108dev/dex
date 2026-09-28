@@ -4,6 +4,7 @@ import json
 from functools import wraps
 from pathlib import Path
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render
@@ -41,12 +42,12 @@ def body(request):
 @require_GET
 def home(request):
     actor(request)
-    return render(request, "beta/b2.html")
+    return render(request, "beta/b2.html", {"parity": settings.PARITY_ENABLED})
 
 
 @require_GET
 def asset(request, filename):
-    if filename not in {"collection.js", "collection.css"}:
+    if filename not in {"collection.js", "collection.css", "parity.js"}:
         raise Http404
     return HttpResponse(
         (Path(__file__).parent / "static" / filename).read_text(),

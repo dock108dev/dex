@@ -2,7 +2,7 @@
 
 Updated: September 27, 2026 (America/New_York).
 
-**Status: B0 TECHNICALLY COMPLETE; B1 LOCAL IMPLEMENTATION VERIFIED, ACTUAL OWNER PROVISIONING PENDING; B2 LOCAL ENGINEERING VERIFIED; LOCAL APP PRESERVED; NOT RELEASED.**
+**Status: B0 TECHNICALLY COMPLETE; B1 LOCAL IMPLEMENTATION VERIFIED, ACTUAL OWNER PROVISIONING PENDING; B2 PARITY REVISION IMPLEMENTED, FOCUSED OWNER REVIEW PENDING; LOCAL APP PRESERVED; NOT RELEASED.**
 
 This is the authoritative next-steps tracker for `/Users/michaelfuscoletti/Desktop/dex`. It replaces the earlier daily-watcher beta plan. The product is now a personal card-collection app that can expand across games. Pokémon ships first. Vintage 251 becomes a built-in collecting goal, while the current local app remains usable during development.
 
@@ -159,7 +159,7 @@ The existing eBay hunt and legacy daily watcher remain preserved, optional modul
 
 ## 8. Immediate next action and continuation
 
-**Next: Mike securely provisions the actual owner in the prepared isolated B1 environment, then the engineer verifies the binding and records the final B1 gate.** B0 is complete. B1 authentication uses a separate copied database; the live collection remains authoritative and unchanged.
+**Next: Mike reviews the restored authenticated experience using the [B2 parity launch](B2_PARITY.md#launch-the-revised-review-app). Stop before B3.** Actual owner provisioning and subsequent binding verification remain a separate pending B1 gate. B0 is complete. B1 authentication uses a separate copied database; the live collection remains authoritative and unchanged.
 
 Read this tracker, BETA_DESIGN and APP_SPEC before implementation. Use the current collection at execution time, not only these dated counts. Preserve credentials and data, continue the first incomplete stage, and update this file with evidence as stages finish. Routine implementation choices do not need another broad planning interview. Resolve concrete required secrets, provider costs or deployment details at the step that needs them.
 
@@ -219,4 +219,29 @@ The password prompt does not echo or accept a password argument. Open `http://12
 - Fresh copied preservation reconciles 859 source records, 207 owned copies, one first-edition selection, two hunts and 153/251 Vintage species. All owner/config/frontend hashes and original databases remain unchanged; restored legacy app reads pass.
 - Evidence remains private under `/Users/michaelfuscoletti/dex-private/b2-20260928/`; exact committed-candidate regression, clean-checkout and browser results are in the handoff. No cutover, deployment, external message, paid recognition or credential change occurred.
 
-**Next concrete action:** Mike can launch `review-local` using the B2 guide, choose a disposable rehearsal password, and review manual add/edit/remove, goals and import preview. Separately, Mike still owns actual B1 credential entry, followed by engineer actual-account verification. B3 photo entry and B4 catalog onboarding remain later work; do not mark hosted release or owner acceptance from these checks.
+**Superseded review environment:** use the new [B2 parity review launch](B2_PARITY.md#launch-the-revised-review-app) for the restored experience. The prior `b2-20260928/review-local` data and credentials remain preserved. Separately, Mike still owns actual B1 credential entry, followed by engineer actual-account verification. B3 photo entry and B4 catalog onboarding remain later work; do not mark hosted release or owner acceptance from these checks.
+
+
+## B2 owner feedback — local feature parity revision required
+
+Owner feedback after opening the isolated B2 app: “its fine but its missing a lot of features we had locally.....” This is feedback on incomplete product coverage, not owner acceptance. The B2 engineering checks above remain valid for the implemented slice; they do not establish parity with the original local application.
+
+The feedback identified these gaps in the original B2 slice (implemented by the subsequent revision below):
+
+- Rich overview with separate Kanto/Johto progress, set summaries and rarity breakdowns.
+- Interactive Pokédex with species search, region and owned/missing/unavailable filters, and eligible-printing detail.
+- My Cards set/type/rarity browsing, owned/missing summaries and explicit first-edition selection controls.
+- Collection estimates and per-card ungraded/graded scenarios, dated sources, interpolation labels and coverage/uncertainty. Purchase amounts in B2 do not replace these estimates.
+- Mystery hunt and missing-singles search, budget/focus controls and spoiler-safe reveal.
+- Readable saved-find history and reopening/re-scoring against the user's current collection; the preserved raw hunt endpoint is not equivalent UI functionality.
+
+**Revision scope (now implemented):** restore the existing local experience within the authenticated application before adding photo-entry functionality. Retain B2 physical copies, binders, versioned goals, imports and safe undo; derive all restored views from the same session-owned inventory. Do not reopen unauthenticated legacy writers or create a second authoritative collection. Preserve unknown edition/variant information, distinguish recorded purchase costs from value estimates, and retain sample/live and spoiler boundaries. Existing provider access and hosted source-rights gates remain in force; no live search or paid call is authorized by this feedback.
+
+Next actor: Mike for focused review of the completed local parity revision. Stop before B3. B1 actual-owner provisioning and hosted qualification remain separate pending gates.
+
+
+## B2 parity revision — September 28, 2026
+
+[Completed parity matrix, behavior differences, evidence and exact launch](B2_PARITY.md). The same authenticated inventory now supplies Overview, Pokédex, My Cards, per-copy edition selection, local guide scenarios, sample hunts/missing singles and spoiler-safe saved-find replay. B2 collection/binder/goal/import/export/undo flows remain. The fresh copied baseline agrees on 859 entries, 251 species, 207 copies, 153 species owned and two saved hunts. Unresolved variants have no confirmed value; old guide totals remain explicitly conditional.
+
+Private candidate evidence: `/Users/michaelfuscoletti/dex-private/b2-parity-20260928/`; exact tested/pushed identity and final check results are in `handoff.json`. The original application and all owner sources remain authoritative until separately authorized cutover. **Mike reviews this restored experience next; B3 stays on hold.** B1 actual-owner provisioning, provider/source-rights qualification, hosting and real-device acceptance remain separate pending gates.

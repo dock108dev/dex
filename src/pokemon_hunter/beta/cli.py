@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 
-def initialize(root, source=None, b2=False):
+def initialize(root, source=None, b2=False, parity=False):
     root = root.expanduser().absolute()
     project = Path(__file__).resolve().parents[3]
     if root.resolve().is_relative_to(project):
@@ -31,12 +31,42 @@ def initialize(root, source=None, b2=False):
             id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id),
             kind TEXT NOT NULL CHECK(kind IN ('photos','scan_jobs','goals','request_evidence')),
             payload TEXT NOT NULL)""")
+    if parity:
+        b2 = True
     if b2:
         from .collection import initialize as initialize_collection
 
         with connect(root / "inventory.db") as db:
             initialize_collection(db)
         (root / "B2_ISOLATED").write_text("Disposable B2 environment; never owner-local\n")
+    if parity:
+        import json
+
+        evidence = root / "parity-evidence"
+        evidence.mkdir(mode=0o700)
+        with sqlite3.connect(root / "inventory.db") as db:
+            for filename in (
+                "market_values.json",
+                "raw_values.json",
+                "hunt.json",
+                "demo_hunts.json",
+                "pokedex_251.json",
+            ):
+                row = db.execute(
+                    "SELECT content FROM private_archives WHERE path=? ORDER BY rowid LIMIT 1",
+                    ("config/" + filename,),
+                ).fetchone()
+                if not row:
+                    continue
+                value = json.loads(bytes(row[0]))
+                if filename == "pokedex_251.json":
+                    value = {
+                        key: {k: v for k, v in species.items() if k in ("name", "dex_number", "generation")}
+                        for key, species in value.get("pokedex", {}).items()
+                    }
+                    filename = "species.json"
+                (evidence / filename).write_text(json.dumps(value))
+        (root / "B2_PARITY_ISOLATED").write_text("Fresh B2 parity rehearsal; no live providers\n")
     (root / "secret.key").write_text(secrets.token_urlsafe(64))
     for name in ("secret.key", "inventory.db", "B1_ISOLATED"):
         os.chmod(root / name, 0o600)
@@ -58,6 +88,7 @@ def main():
     init = sub.add_parser("init")
     init.add_argument("--copied-inventory", type=Path)
     init.add_argument("--b2", action="store_true", help="Enable B2 only in this new isolated root")
+    init.add_argument("--parity", action="store_true", help="Fresh B2 parity root with copied local evidence")
     for command in ("bootstrap", "serve", "check"):
         sub.add_parser(command)
     for command in ("invite", "recovery", "revoke"):
@@ -68,7 +99,7 @@ def main():
     args = parser.parse_args()
     os.umask(0o077)
     if args.action == "init":
-        initialize(args.root, args.copied_inventory, b2=args.b2)
+        initialize(args.root, args.copied_inventory, b2=args.b2, parity=args.parity)
     setup(args.root)
     from django.contrib.auth import get_user_model
     from django.core.management import call_command
@@ -77,7 +108,7 @@ def main():
 
     if args.action == "init":
         call_command("migrate", verbosity=0)
-        stage = "B2" if args.b2 else "B1"
+        stage = "B2 parity" if args.parity else "B2" if args.b2 else "B1"
         print(f"Isolated {stage} database initialized. Provision an isolated account before inviting anyone.")
     elif args.action == "bootstrap":
         from pokemon_hunter.inventory import OWNER_ID

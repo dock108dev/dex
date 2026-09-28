@@ -8,6 +8,11 @@ from decimal import Decimal, InvalidOperation
 def valuation(data, path, today=None):
     today = today or date.today()
     records = json.loads(path.read_text()) if path.exists() else []
+    return valuation_records(data, records, today)
+
+
+def valuation_records(data, records, today=None):
+    today = today or date.today()
     owned = {k: c for k, c in data["cards"].items() if c["owned"]}
     matched = {k: {} for k in owned}
     for row in records:

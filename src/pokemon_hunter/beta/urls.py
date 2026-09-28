@@ -44,3 +44,17 @@ if settings.B2_ENABLED:
         path("api/inventory/<str:key>/", b2.copy_detail),
         path("api/export/", b2.export),
     ] + urlpatterns
+
+if settings.PARITY_ENABLED:
+    from . import parity_views as parity
+
+    urlpatterns = [
+        *[
+            path(route + "/", b2.home)
+            for route in ("overview", "pokedex", "cards", "hunt", "missing", "finds")
+        ],
+        path("api/parity/", parity.projection),
+        path("api/hunts/", parity.hunts),
+        path("api/hunts/<uuid:batch>/<int:key>/", parity.saved),
+        path("api/hunts/<uuid:batch>/<int:key>/reveal/<uuid:result>/", parity.reveal),
+    ] + urlpatterns

@@ -335,9 +335,9 @@ def plan(actor, kind, request, operation_id):
             **attrs,
             "batch_id": operation_id,
             "legacy_id": None,
-            "first_edition_selected": int(p["edition"] == "first_edition")
-            if p
-            else int(raw.get("first_edition_selected", 0)),
+            "first_edition_selected": int(
+                raw.get("first_edition_selected", p["edition"] == "first_edition" if p else 0)
+            ),
             "state": "active",
             "revision": 0,
             "source_copy_id": source_id,
@@ -402,7 +402,7 @@ def plan(actor, kind, request, operation_id):
         result["warnings"].append(
             "Only listed catalog entries are proposed. Unresolved editions/variants stay unset; full variant coverage is not established."
         )
-    elif kind in {"edit", "remove", "binder_edit", "binder_remove", "goal_remove"}:
+    elif kind in {"edit", "edition", "remove", "binder_edit", "binder_remove", "goal_remove"}:
         entity = "binder" if kind.startswith("binder") else "goal" if kind.startswith("goal") else "copy"
         before = one(actor, entity, request.get("id"))
         if request.get("revision") != before["revision"]:
@@ -416,6 +416,32 @@ def plan(actor, kind, request, operation_id):
                 **attributes(actor, {**{k: before[k] for k in FIELDS}, **attrs}),
                 "revision": before["revision"] + 1,
             }
+        elif kind == "edition":
+            selected = request.get("selection")
+            if selected not in {"first_edition", "unresolved"}:
+                raise ValueError("Choose first_edition or unresolved; unchecked never means unlimited")
+            p = resolve(before["printing_id"])
+            legacy = json.loads(p["provenance"]).get("legacy_id", "")
+            if selected == "first_edition" and legacy.startswith(
+                ("base_set_2-", "wizards_black_star_promos-")
+            ):
+                raise ValueError("This set has no standard first-edition printing")
+            identity = json.loads(before["provisional_identity"] or "{}")
+            unresolved = set(identity.get("unresolved_fields", [])) | set(p["unresolved_fields"])
+            if selected == "first_edition":
+                unresolved.discard("edition")
+            else:
+                unresolved.add("edition")
+            identity.update(edition_selection=selected, unresolved_fields=sorted(unresolved))
+            after = {
+                **before,
+                "first_edition_selected": int(selected == "first_edition"),
+                "provisional_identity": encode(identity),
+                "revision": before["revision"] + 1,
+            }
+            result["warnings"].append(
+                f"{p['name']} #{p['collector_number']} · {p['set_name']}: only this physical copy changes. Finish and variant uncertainty remain; unchecked means edition unresolved."
+            )
         elif kind == "remove":
             after = {**before, "state": "removed", "revision": before["revision"] + 1}
         elif kind == "binder_edit":
@@ -516,9 +542,21 @@ def plan(actor, kind, request, operation_id):
                             raise ValueError(
                                 "Catalog identity differs from the exported snapshot; reconcile before importing"
                             )
-                    if "first_edition_selected" in raw and raw["first_edition_selected"] != int(
-                        p["edition"] == "first_edition"
-                    ):
+                    identity = json.loads(raw.get("provisional_identity") or "{}")
+                    if not isinstance(identity, dict):
+                        raise ValueError("Invalid provisional identity")
+                    selection = identity.get("edition_selection")
+                    if selection not in (None, "first_edition", "unresolved"):
+                        raise ValueError("Invalid copy edition selection")
+                    expected = selection == "first_edition" if selection else p["edition"] == "first_edition"
+                    legacy = json.loads(p["provenance"]).get("legacy_id", "")
+                    if expected and legacy.startswith(("base_set_2-", "wizards_black_star_promos-")):
+                        raise ValueError("This set has no standard first-edition printing")
+                    if selection and "first_edition_selected" not in raw:
+                        raise ValueError("Copy edition selection requires its explicit first-edition flag")
+                    if selection == "unresolved" and "edition" not in identity.get("unresolved_fields", []):
+                        raise ValueError("Unresolved edition must retain edition uncertainty")
+                    if "first_edition_selected" in raw and raw["first_edition_selected"] != int(expected):
                         raise ValueError("First-edition selection conflicts with the catalog identity")
                 count = counts.get(raw.get("printing_id"), 0) if p else 0
                 result["checklist"].append(
@@ -622,6 +660,7 @@ def preview(actor, kind, request, operation_id):
         "add": {"printing_id", "attributes", "duplicate_policy"},
         "set": {"set_id", "attributes", "duplicate_policy"},
         "edit": {"id", "revision", "attributes"},
+        "edition": {"id", "revision", "selection"},
         "remove": {"id", "revision"},
         "binder": {"name"},
         "binder_edit": {"id", "revision", "name"},
