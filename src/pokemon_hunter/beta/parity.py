@@ -27,7 +27,13 @@ def evidence(filename, default):
             from .store import rows
 
             saved = rows("SELECT value FROM beta_operations WHERE key='species'")
-            return json.loads(saved[0]["value"]) if saved else default
+            return (
+                json.loads(saved[0]["value"])
+                if saved
+                else json.loads(
+                    (settings.PROJECT / "config/catalog-imports/staging-ten/species.json").read_text()
+                )
+            )
         return default
     path = settings.ROOT / "parity-evidence" / filename
     return json.loads(path.read_text()) if path.is_file() else default

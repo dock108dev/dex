@@ -1,0 +1,1581 @@
+{
+  "schema_version": "dex-catalog-v1",
+  "game": "pokemon",
+  "set_key": "base4",
+  "set_name": "Base Set 2",
+  "language": "en",
+  "aliases": [
+    "Base Set 2"
+  ],
+  "provider": "tcgdex",
+  "version": "309aab7060b165925fee48573e730275dfbd737c",
+  "source_url": "https://github.com/tcgdex/cards-database/tree/309aab7060b165925fee48573e730275dfbd737c/data/Base",
+  "source_sha256": "8a887d5ba810457d609aef5c6f754e352cc2941a7f844d27e86e2ce1645c1548",
+  "metadata_permission": "TCGdex cards-database MIT; copyright (c) 2021 TCGdex. Attribution retained in TCGDEX_LICENSE.txt. Minimal hosted metadata; no artwork, prices or rules text.",
+  "image_permission": "not-included",
+  "coverage": "catalog-entries",
+  "expected_count": 130,
+  "reconcile_legacy_set": "base_set_2",
+  "cards": [
+    {
+      "external_id": "base4-1",
+      "number": "1",
+      "name": "Alakazam",
+      "legacy_id": "base_set_2-1",
+      "metadata": {
+        "pokemon_dex": 65,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-2",
+      "number": "2",
+      "name": "Blastoise",
+      "legacy_id": "base_set_2-2",
+      "metadata": {
+        "pokemon_dex": 9,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-3",
+      "number": "3",
+      "name": "Chansey",
+      "legacy_id": "base_set_2-3",
+      "metadata": {
+        "pokemon_dex": 113,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-4",
+      "number": "4",
+      "name": "Charizard",
+      "legacy_id": "base_set_2-4",
+      "metadata": {
+        "pokemon_dex": 6,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-5",
+      "number": "5",
+      "name": "Clefable",
+      "legacy_id": "base_set_2-5",
+      "metadata": {
+        "pokemon_dex": 36,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-6",
+      "number": "6",
+      "name": "Clefairy",
+      "legacy_id": "base_set_2-6",
+      "metadata": {
+        "pokemon_dex": 35,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-7",
+      "number": "7",
+      "name": "Gyarados",
+      "legacy_id": "base_set_2-7",
+      "metadata": {
+        "pokemon_dex": 130,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-8",
+      "number": "8",
+      "name": "Hitmonchan",
+      "legacy_id": "base_set_2-8",
+      "metadata": {
+        "pokemon_dex": 107,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-9",
+      "number": "9",
+      "name": "Magneton",
+      "legacy_id": "base_set_2-9",
+      "metadata": {
+        "pokemon_dex": 82,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-10",
+      "number": "10",
+      "name": "Mewtwo",
+      "legacy_id": "base_set_2-10",
+      "metadata": {
+        "pokemon_dex": 150,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-11",
+      "number": "11",
+      "name": "Nidoking",
+      "legacy_id": "base_set_2-11",
+      "metadata": {
+        "pokemon_dex": 34,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-12",
+      "number": "12",
+      "name": "Nidoqueen",
+      "legacy_id": "base_set_2-12",
+      "metadata": {
+        "pokemon_dex": 31,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-13",
+      "number": "13",
+      "name": "Ninetales",
+      "legacy_id": "base_set_2-13",
+      "metadata": {
+        "pokemon_dex": 38,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-14",
+      "number": "14",
+      "name": "Pidgeot",
+      "legacy_id": "base_set_2-14",
+      "metadata": {
+        "pokemon_dex": 18,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-15",
+      "number": "15",
+      "name": "Poliwrath",
+      "legacy_id": "base_set_2-15",
+      "metadata": {
+        "pokemon_dex": 62,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-16",
+      "number": "16",
+      "name": "Raichu",
+      "legacy_id": "base_set_2-16",
+      "metadata": {
+        "pokemon_dex": 26,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-17",
+      "number": "17",
+      "name": "Scyther",
+      "legacy_id": "base_set_2-17",
+      "metadata": {
+        "pokemon_dex": 123,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-18",
+      "number": "18",
+      "name": "Venusaur",
+      "legacy_id": "base_set_2-18",
+      "metadata": {
+        "pokemon_dex": 3,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-19",
+      "number": "19",
+      "name": "Wigglytuff",
+      "legacy_id": "base_set_2-19",
+      "metadata": {
+        "pokemon_dex": 40,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-20",
+      "number": "20",
+      "name": "Zapdos",
+      "legacy_id": "base_set_2-20",
+      "metadata": {
+        "pokemon_dex": 145,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-21",
+      "number": "21",
+      "name": "Beedrill",
+      "legacy_id": "base_set_2-21",
+      "metadata": {
+        "pokemon_dex": 15,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-22",
+      "number": "22",
+      "name": "Dragonair",
+      "legacy_id": "base_set_2-22",
+      "metadata": {
+        "pokemon_dex": 148,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-23",
+      "number": "23",
+      "name": "Dugtrio",
+      "legacy_id": "base_set_2-23",
+      "metadata": {
+        "pokemon_dex": 51,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-24",
+      "number": "24",
+      "name": "Electabuzz",
+      "legacy_id": "base_set_2-24",
+      "metadata": {
+        "pokemon_dex": 125,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-25",
+      "number": "25",
+      "name": "Electrode",
+      "legacy_id": "base_set_2-25",
+      "metadata": {
+        "pokemon_dex": 101,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-26",
+      "number": "26",
+      "name": "Kangaskhan",
+      "legacy_id": "base_set_2-26",
+      "metadata": {
+        "pokemon_dex": 115,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-27",
+      "number": "27",
+      "name": "Mr. Mime",
+      "legacy_id": "base_set_2-27",
+      "metadata": {
+        "pokemon_dex": 122,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-28",
+      "number": "28",
+      "name": "Pidgeotto",
+      "legacy_id": "base_set_2-28",
+      "metadata": {
+        "pokemon_dex": 17,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-29",
+      "number": "29",
+      "name": "Pinsir",
+      "legacy_id": "base_set_2-29",
+      "metadata": {
+        "pokemon_dex": 127,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-30",
+      "number": "30",
+      "name": "Snorlax",
+      "legacy_id": "base_set_2-30",
+      "metadata": {
+        "pokemon_dex": 143,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-31",
+      "number": "31",
+      "name": "Venomoth",
+      "legacy_id": "base_set_2-31",
+      "metadata": {
+        "pokemon_dex": 49,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-32",
+      "number": "32",
+      "name": "Victreebel",
+      "legacy_id": "base_set_2-32",
+      "metadata": {
+        "pokemon_dex": 71,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-33",
+      "number": "33",
+      "name": "Arcanine",
+      "legacy_id": "base_set_2-33",
+      "metadata": {
+        "pokemon_dex": 59,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-34",
+      "number": "34",
+      "name": "Butterfree",
+      "legacy_id": "base_set_2-34",
+      "metadata": {
+        "pokemon_dex": 12,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-35",
+      "number": "35",
+      "name": "Charmeleon",
+      "legacy_id": "base_set_2-35",
+      "metadata": {
+        "pokemon_dex": 5,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-36",
+      "number": "36",
+      "name": "Dewgong",
+      "legacy_id": "base_set_2-36",
+      "metadata": {
+        "pokemon_dex": 87,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-37",
+      "number": "37",
+      "name": "Dodrio",
+      "legacy_id": "base_set_2-37",
+      "metadata": {
+        "pokemon_dex": 85,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-38",
+      "number": "38",
+      "name": "Dratini",
+      "legacy_id": "base_set_2-38",
+      "metadata": {
+        "pokemon_dex": 147,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-39",
+      "number": "39",
+      "name": "Exeggutor",
+      "legacy_id": "base_set_2-39",
+      "metadata": {
+        "pokemon_dex": 103,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-40",
+      "number": "40",
+      "name": "Farfetch'd",
+      "legacy_id": "base_set_2-40",
+      "metadata": {
+        "pokemon_dex": 83,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-41",
+      "number": "41",
+      "name": "Fearow",
+      "legacy_id": "base_set_2-41",
+      "metadata": {
+        "pokemon_dex": 22,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-42",
+      "number": "42",
+      "name": "Growlithe",
+      "legacy_id": "base_set_2-42",
+      "metadata": {
+        "pokemon_dex": 58,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-43",
+      "number": "43",
+      "name": "Haunter",
+      "legacy_id": "base_set_2-43",
+      "metadata": {
+        "pokemon_dex": 93,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-44",
+      "number": "44",
+      "name": "Ivysaur",
+      "legacy_id": "base_set_2-44",
+      "metadata": {
+        "pokemon_dex": 2,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-45",
+      "number": "45",
+      "name": "Jynx",
+      "legacy_id": "base_set_2-45",
+      "metadata": {
+        "pokemon_dex": 124,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-46",
+      "number": "46",
+      "name": "Kadabra",
+      "legacy_id": "base_set_2-46",
+      "metadata": {
+        "pokemon_dex": 64,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-47",
+      "number": "47",
+      "name": "Kakuna",
+      "legacy_id": "base_set_2-47",
+      "metadata": {
+        "pokemon_dex": 14,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-48",
+      "number": "48",
+      "name": "Lickitung",
+      "legacy_id": "base_set_2-48",
+      "metadata": {
+        "pokemon_dex": 108,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-49",
+      "number": "49",
+      "name": "Machoke",
+      "legacy_id": "base_set_2-49",
+      "metadata": {
+        "pokemon_dex": 67,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-50",
+      "number": "50",
+      "name": "Magikarp",
+      "legacy_id": "base_set_2-50",
+      "metadata": {
+        "pokemon_dex": 129,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-51",
+      "number": "51",
+      "name": "Magmar",
+      "legacy_id": "base_set_2-51",
+      "metadata": {
+        "pokemon_dex": 126,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-52",
+      "number": "52",
+      "name": "Marowak",
+      "legacy_id": "base_set_2-52",
+      "metadata": {
+        "pokemon_dex": 105,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-53",
+      "number": "53",
+      "name": "Nidorina",
+      "legacy_id": "base_set_2-53",
+      "metadata": {
+        "pokemon_dex": 30,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-54",
+      "number": "54",
+      "name": "Nidorino",
+      "legacy_id": "base_set_2-54",
+      "metadata": {
+        "pokemon_dex": 33,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-55",
+      "number": "55",
+      "name": "Parasect",
+      "legacy_id": "base_set_2-55",
+      "metadata": {
+        "pokemon_dex": 47,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-56",
+      "number": "56",
+      "name": "Persian",
+      "legacy_id": "base_set_2-56",
+      "metadata": {
+        "pokemon_dex": 53,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-57",
+      "number": "57",
+      "name": "Poliwhirl",
+      "legacy_id": "base_set_2-57",
+      "metadata": {
+        "pokemon_dex": 61,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-58",
+      "number": "58",
+      "name": "Raticate",
+      "legacy_id": "base_set_2-58",
+      "metadata": {
+        "pokemon_dex": 20,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-59",
+      "number": "59",
+      "name": "Rhydon",
+      "legacy_id": "base_set_2-59",
+      "metadata": {
+        "pokemon_dex": 112,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-60",
+      "number": "60",
+      "name": "Seaking",
+      "legacy_id": "base_set_2-60",
+      "metadata": {
+        "pokemon_dex": 119,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-61",
+      "number": "61",
+      "name": "Seel",
+      "legacy_id": "base_set_2-61",
+      "metadata": {
+        "pokemon_dex": 86,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-62",
+      "number": "62",
+      "name": "Tauros",
+      "legacy_id": "base_set_2-62",
+      "metadata": {
+        "pokemon_dex": 128,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-63",
+      "number": "63",
+      "name": "Wartortle",
+      "legacy_id": "base_set_2-63",
+      "metadata": {
+        "pokemon_dex": 8,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-64",
+      "number": "64",
+      "name": "Weepinbell",
+      "legacy_id": "base_set_2-64",
+      "metadata": {
+        "pokemon_dex": 70,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-65",
+      "number": "65",
+      "name": "Abra",
+      "legacy_id": "base_set_2-65",
+      "metadata": {
+        "pokemon_dex": 63,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-66",
+      "number": "66",
+      "name": "Bellsprout",
+      "legacy_id": "base_set_2-66",
+      "metadata": {
+        "pokemon_dex": 69,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-67",
+      "number": "67",
+      "name": "Bulbasaur",
+      "legacy_id": "base_set_2-67",
+      "metadata": {
+        "pokemon_dex": 1,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-68",
+      "number": "68",
+      "name": "Caterpie",
+      "legacy_id": "base_set_2-68",
+      "metadata": {
+        "pokemon_dex": 10,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-69",
+      "number": "69",
+      "name": "Charmander",
+      "legacy_id": "base_set_2-69",
+      "metadata": {
+        "pokemon_dex": 4,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-70",
+      "number": "70",
+      "name": "Cubone",
+      "legacy_id": "base_set_2-70",
+      "metadata": {
+        "pokemon_dex": 104,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-71",
+      "number": "71",
+      "name": "Diglett",
+      "legacy_id": "base_set_2-71",
+      "metadata": {
+        "pokemon_dex": 50,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-72",
+      "number": "72",
+      "name": "Doduo",
+      "legacy_id": "base_set_2-72",
+      "metadata": {
+        "pokemon_dex": 84,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-73",
+      "number": "73",
+      "name": "Drowzee",
+      "legacy_id": "base_set_2-73",
+      "metadata": {
+        "pokemon_dex": 96,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-74",
+      "number": "74",
+      "name": "Exeggcute",
+      "legacy_id": "base_set_2-74",
+      "metadata": {
+        "pokemon_dex": 102,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-75",
+      "number": "75",
+      "name": "Gastly",
+      "legacy_id": "base_set_2-75",
+      "metadata": {
+        "pokemon_dex": 92,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-76",
+      "number": "76",
+      "name": "Goldeen",
+      "legacy_id": "base_set_2-76",
+      "metadata": {
+        "pokemon_dex": 118,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-77",
+      "number": "77",
+      "name": "Jigglypuff",
+      "legacy_id": "base_set_2-77",
+      "metadata": {
+        "pokemon_dex": 39,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-78",
+      "number": "78",
+      "name": "Machop",
+      "legacy_id": "base_set_2-78",
+      "metadata": {
+        "pokemon_dex": 66,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-79",
+      "number": "79",
+      "name": "Magnemite",
+      "legacy_id": "base_set_2-79",
+      "metadata": {
+        "pokemon_dex": 81,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-80",
+      "number": "80",
+      "name": "Meowth",
+      "legacy_id": "base_set_2-80",
+      "metadata": {
+        "pokemon_dex": 52,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-81",
+      "number": "81",
+      "name": "Metapod",
+      "legacy_id": "base_set_2-81",
+      "metadata": {
+        "pokemon_dex": 11,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-82",
+      "number": "82",
+      "name": "Nidoran♀",
+      "legacy_id": "base_set_2-82",
+      "metadata": {
+        "pokemon_dex": 29,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-83",
+      "number": "83",
+      "name": "Nidoran♂",
+      "legacy_id": "base_set_2-83",
+      "metadata": {
+        "pokemon_dex": 32,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-84",
+      "number": "84",
+      "name": "Onix",
+      "legacy_id": "base_set_2-84",
+      "metadata": {
+        "pokemon_dex": 95,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-85",
+      "number": "85",
+      "name": "Paras",
+      "legacy_id": "base_set_2-85",
+      "metadata": {
+        "pokemon_dex": 46,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-86",
+      "number": "86",
+      "name": "Pidgey",
+      "legacy_id": "base_set_2-86",
+      "metadata": {
+        "pokemon_dex": 16,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-87",
+      "number": "87",
+      "name": "Pikachu",
+      "legacy_id": "base_set_2-87",
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-88",
+      "number": "88",
+      "name": "Poliwag",
+      "legacy_id": "base_set_2-88",
+      "metadata": {
+        "pokemon_dex": 60,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-89",
+      "number": "89",
+      "name": "Rattata",
+      "legacy_id": "base_set_2-89",
+      "metadata": {
+        "pokemon_dex": 19,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-90",
+      "number": "90",
+      "name": "Rhyhorn",
+      "legacy_id": "base_set_2-90",
+      "metadata": {
+        "pokemon_dex": 111,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-91",
+      "number": "91",
+      "name": "Sandshrew",
+      "legacy_id": "base_set_2-91",
+      "metadata": {
+        "pokemon_dex": 27,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-92",
+      "number": "92",
+      "name": "Spearow",
+      "legacy_id": "base_set_2-92",
+      "metadata": {
+        "pokemon_dex": 21,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-93",
+      "number": "93",
+      "name": "Squirtle",
+      "legacy_id": "base_set_2-93",
+      "metadata": {
+        "pokemon_dex": 7,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-94",
+      "number": "94",
+      "name": "Starmie",
+      "legacy_id": "base_set_2-94",
+      "metadata": {
+        "pokemon_dex": 121,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-95",
+      "number": "95",
+      "name": "Staryu",
+      "legacy_id": "base_set_2-95",
+      "metadata": {
+        "pokemon_dex": 120,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-96",
+      "number": "96",
+      "name": "Tangela",
+      "legacy_id": "base_set_2-96",
+      "metadata": {
+        "pokemon_dex": 114,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-97",
+      "number": "97",
+      "name": "Venonat",
+      "legacy_id": "base_set_2-97",
+      "metadata": {
+        "pokemon_dex": 48,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-98",
+      "number": "98",
+      "name": "Voltorb",
+      "legacy_id": "base_set_2-98",
+      "metadata": {
+        "pokemon_dex": 100,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-99",
+      "number": "99",
+      "name": "Vulpix",
+      "legacy_id": "base_set_2-99",
+      "metadata": {
+        "pokemon_dex": 37,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-100",
+      "number": "100",
+      "name": "Weedle",
+      "legacy_id": "base_set_2-100",
+      "metadata": {
+        "pokemon_dex": 13,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-101",
+      "number": "101",
+      "name": "Computer Search",
+      "legacy_id": "base_set_2-101",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-102",
+      "number": "102",
+      "name": "Impostor Professor Oak",
+      "legacy_id": "base_set_2-102",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-103",
+      "number": "103",
+      "name": "Item Finder",
+      "legacy_id": "base_set_2-103",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-104",
+      "number": "104",
+      "name": "Lass",
+      "legacy_id": "base_set_2-104",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-105",
+      "number": "105",
+      "name": "Pokémon Breeder",
+      "legacy_id": "base_set_2-105",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-106",
+      "number": "106",
+      "name": "Pokémon Trader",
+      "legacy_id": "base_set_2-106",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-107",
+      "number": "107",
+      "name": "Scoop Up",
+      "legacy_id": "base_set_2-107",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-108",
+      "number": "108",
+      "name": "Super Energy Removal",
+      "legacy_id": "base_set_2-108",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base4-109",
+      "number": "109",
+      "name": "Defender",
+      "legacy_id": "base_set_2-109",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-110",
+      "number": "110",
+      "name": "Energy Retrieval",
+      "legacy_id": "base_set_2-110",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-111",
+      "number": "111",
+      "name": "Full Heal",
+      "legacy_id": "base_set_2-111",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-112",
+      "number": "112",
+      "name": "Maintenance",
+      "legacy_id": "base_set_2-112",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-113",
+      "number": "113",
+      "name": "PlusPower",
+      "legacy_id": "base_set_2-113",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-114",
+      "number": "114",
+      "name": "Pokémon Center",
+      "legacy_id": "base_set_2-114",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-115",
+      "number": "115",
+      "name": "Pokédex",
+      "legacy_id": "base_set_2-115",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-116",
+      "number": "116",
+      "name": "Professor Oak",
+      "legacy_id": "base_set_2-116",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-117",
+      "number": "117",
+      "name": "Super Potion",
+      "legacy_id": "base_set_2-117",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-118",
+      "number": "118",
+      "name": "Bill",
+      "legacy_id": "base_set_2-118",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-119",
+      "number": "119",
+      "name": "Energy Removal",
+      "legacy_id": "base_set_2-119",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-120",
+      "number": "120",
+      "name": "Gust of Wind",
+      "legacy_id": "base_set_2-120",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-121",
+      "number": "121",
+      "name": "Poké Ball",
+      "legacy_id": "base_set_2-121",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-122",
+      "number": "122",
+      "name": "Potion",
+      "legacy_id": "base_set_2-122",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-123",
+      "number": "123",
+      "name": "Switch",
+      "legacy_id": "base_set_2-123",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-124",
+      "number": "124",
+      "name": "Double Colorless Energy",
+      "legacy_id": "base_set_2-124",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base4-125",
+      "number": "125",
+      "name": "Fighting Energy",
+      "legacy_id": "base_set_2-125",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-126",
+      "number": "126",
+      "name": "Fire Energy",
+      "legacy_id": "base_set_2-126",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-127",
+      "number": "127",
+      "name": "Grass Energy",
+      "legacy_id": "base_set_2-127",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-128",
+      "number": "128",
+      "name": "Lightning Energy",
+      "legacy_id": "base_set_2-128",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-129",
+      "number": "129",
+      "name": "Psychic Energy",
+      "legacy_id": "base_set_2-129",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base4-130",
+      "number": "130",
+      "name": "Water Energy",
+      "legacy_id": "base_set_2-130",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Common"
+      }
+    }
+  ]
+}

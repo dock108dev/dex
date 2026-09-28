@@ -1,0 +1,789 @@
+{
+  "schema_version": "dex-catalog-v1",
+  "game": "pokemon",
+  "set_key": "base2",
+  "set_name": "Jungle",
+  "language": "en",
+  "aliases": [
+    "Jungle"
+  ],
+  "provider": "tcgdex",
+  "version": "309aab7060b165925fee48573e730275dfbd737c",
+  "source_url": "https://github.com/tcgdex/cards-database/tree/309aab7060b165925fee48573e730275dfbd737c/data/Base",
+  "source_sha256": "af03bc570e18439bd92c700826679465dc4379ce35e430c2e54ca20668678db7",
+  "metadata_permission": "TCGdex cards-database MIT; copyright (c) 2021 TCGdex. Attribution retained in TCGDEX_LICENSE.txt. Minimal hosted metadata; no artwork, prices or rules text.",
+  "image_permission": "not-included",
+  "coverage": "catalog-entries",
+  "expected_count": 64,
+  "reconcile_legacy_set": "jungle",
+  "cards": [
+    {
+      "external_id": "base2-1",
+      "number": "1",
+      "name": "Clefable",
+      "legacy_id": "jungle-1",
+      "metadata": {
+        "pokemon_dex": 36,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-2",
+      "number": "2",
+      "name": "Electrode",
+      "legacy_id": "jungle-2",
+      "metadata": {
+        "pokemon_dex": 101,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-3",
+      "number": "3",
+      "name": "Flareon",
+      "legacy_id": "jungle-3",
+      "metadata": {
+        "pokemon_dex": 136,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-4",
+      "number": "4",
+      "name": "Jolteon",
+      "legacy_id": "jungle-4",
+      "metadata": {
+        "pokemon_dex": 135,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-5",
+      "number": "5",
+      "name": "Kangaskhan",
+      "legacy_id": "jungle-5",
+      "metadata": {
+        "pokemon_dex": 115,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-6",
+      "number": "6",
+      "name": "Mr. Mime",
+      "legacy_id": "jungle-6",
+      "metadata": {
+        "pokemon_dex": 122,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-7",
+      "number": "7",
+      "name": "Nidoqueen",
+      "legacy_id": "jungle-7",
+      "metadata": {
+        "pokemon_dex": 31,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-8",
+      "number": "8",
+      "name": "Pidgeot",
+      "legacy_id": "jungle-8",
+      "metadata": {
+        "pokemon_dex": 18,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-9",
+      "number": "9",
+      "name": "Pinsir",
+      "legacy_id": "jungle-9",
+      "metadata": {
+        "pokemon_dex": 127,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-10",
+      "number": "10",
+      "name": "Scyther",
+      "legacy_id": "jungle-10",
+      "metadata": {
+        "pokemon_dex": 123,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-11",
+      "number": "11",
+      "name": "Snorlax",
+      "legacy_id": "jungle-11",
+      "metadata": {
+        "pokemon_dex": 143,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-12",
+      "number": "12",
+      "name": "Vaporeon",
+      "legacy_id": "jungle-12",
+      "metadata": {
+        "pokemon_dex": 134,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-13",
+      "number": "13",
+      "name": "Venomoth",
+      "legacy_id": "jungle-13",
+      "metadata": {
+        "pokemon_dex": 49,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-14",
+      "number": "14",
+      "name": "Victreebel",
+      "legacy_id": "jungle-14",
+      "metadata": {
+        "pokemon_dex": 71,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-15",
+      "number": "15",
+      "name": "Vileplume",
+      "legacy_id": "jungle-15",
+      "metadata": {
+        "pokemon_dex": 45,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-16",
+      "number": "16",
+      "name": "Wigglytuff",
+      "legacy_id": "jungle-16",
+      "metadata": {
+        "pokemon_dex": 40,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-17",
+      "number": "17",
+      "name": "Clefable",
+      "legacy_id": "jungle-17",
+      "metadata": {
+        "pokemon_dex": 36,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-18",
+      "number": "18",
+      "name": "Electrode",
+      "legacy_id": "jungle-18",
+      "metadata": {
+        "pokemon_dex": 101,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-19",
+      "number": "19",
+      "name": "Flareon",
+      "legacy_id": "jungle-19",
+      "metadata": {
+        "pokemon_dex": 136,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-20",
+      "number": "20",
+      "name": "Jolteon",
+      "legacy_id": "jungle-20",
+      "metadata": {
+        "pokemon_dex": 135,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-21",
+      "number": "21",
+      "name": "Kangaskhan",
+      "legacy_id": "jungle-21",
+      "metadata": {
+        "pokemon_dex": 115,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-22",
+      "number": "22",
+      "name": "Mr. Mime",
+      "legacy_id": "jungle-22",
+      "metadata": {
+        "pokemon_dex": 122,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-23",
+      "number": "23",
+      "name": "Nidoqueen",
+      "legacy_id": "jungle-23",
+      "metadata": {
+        "pokemon_dex": 31,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-24",
+      "number": "24",
+      "name": "Pidgeot",
+      "legacy_id": "jungle-24",
+      "metadata": {
+        "pokemon_dex": 18,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-25",
+      "number": "25",
+      "name": "Pinsir",
+      "legacy_id": "jungle-25",
+      "metadata": {
+        "pokemon_dex": 127,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-26",
+      "number": "26",
+      "name": "Scyther",
+      "legacy_id": "jungle-26",
+      "metadata": {
+        "pokemon_dex": 123,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-27",
+      "number": "27",
+      "name": "Snorlax",
+      "legacy_id": "jungle-27",
+      "metadata": {
+        "pokemon_dex": 143,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-28",
+      "number": "28",
+      "name": "Vaporeon",
+      "legacy_id": "jungle-28",
+      "metadata": {
+        "pokemon_dex": 134,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-29",
+      "number": "29",
+      "name": "Venomoth",
+      "legacy_id": "jungle-29",
+      "metadata": {
+        "pokemon_dex": 49,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-30",
+      "number": "30",
+      "name": "Victreebel",
+      "legacy_id": "jungle-30",
+      "metadata": {
+        "pokemon_dex": 71,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-31",
+      "number": "31",
+      "name": "Vileplume",
+      "legacy_id": "jungle-31",
+      "metadata": {
+        "pokemon_dex": 45,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-32",
+      "number": "32",
+      "name": "Wigglytuff",
+      "legacy_id": "jungle-32",
+      "metadata": {
+        "pokemon_dex": 40,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base2-33",
+      "number": "33",
+      "name": "Butterfree",
+      "legacy_id": "jungle-33",
+      "metadata": {
+        "pokemon_dex": 12,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base2-34",
+      "number": "34",
+      "name": "Dodrio",
+      "legacy_id": "jungle-34",
+      "metadata": {
+        "pokemon_dex": 85,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base2-35",
+      "number": "35",
+      "name": "Exeggutor",
+      "legacy_id": "jungle-35",
+      "metadata": {
+        "pokemon_dex": 103,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base2-36",
+      "number": "36",
+      "name": "Fearow",
+      "legacy_id": "jungle-36",
+      "metadata": {
+        "pokemon_dex": 22,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base2-37",
+      "number": "37",
+      "name": "Gloom",
+      "legacy_id": "jungle-37",
+      "metadata": {
+        "pokemon_dex": 44,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base2-38",
+      "number": "38",
+      "name": "Lickitung",
+      "legacy_id": "jungle-38",
+      "metadata": {
+        "pokemon_dex": 108,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base2-39",
+      "number": "39",
+      "name": "Marowak",
+      "legacy_id": "jungle-39",
+      "metadata": {
+        "pokemon_dex": 105,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base2-40",
+      "number": "40",
+      "name": "Nidorina",
+      "legacy_id": "jungle-40",
+      "metadata": {
+        "pokemon_dex": 30,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base2-41",
+      "number": "41",
+      "name": "Parasect",
+      "legacy_id": "jungle-41",
+      "metadata": {
+        "pokemon_dex": 47,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base2-42",
+      "number": "42",
+      "name": "Persian",
+      "legacy_id": "jungle-42",
+      "metadata": {
+        "pokemon_dex": 53,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base2-43",
+      "number": "43",
+      "name": "Primeape",
+      "legacy_id": "jungle-43",
+      "metadata": {
+        "pokemon_dex": 57,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base2-44",
+      "number": "44",
+      "name": "Rapidash",
+      "legacy_id": "jungle-44",
+      "metadata": {
+        "pokemon_dex": 78,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base2-45",
+      "number": "45",
+      "name": "Rhydon",
+      "legacy_id": "jungle-45",
+      "metadata": {
+        "pokemon_dex": 112,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base2-46",
+      "number": "46",
+      "name": "Seaking",
+      "legacy_id": "jungle-46",
+      "metadata": {
+        "pokemon_dex": 119,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base2-47",
+      "number": "47",
+      "name": "Tauros",
+      "legacy_id": "jungle-47",
+      "metadata": {
+        "pokemon_dex": 128,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base2-48",
+      "number": "48",
+      "name": "Weepinbell",
+      "legacy_id": "jungle-48",
+      "metadata": {
+        "pokemon_dex": 70,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base2-49",
+      "number": "49",
+      "name": "Bellsprout",
+      "legacy_id": "jungle-49",
+      "metadata": {
+        "pokemon_dex": 69,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base2-50",
+      "number": "50",
+      "name": "Cubone",
+      "legacy_id": "jungle-50",
+      "metadata": {
+        "pokemon_dex": 104,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base2-51",
+      "number": "51",
+      "name": "Eevee",
+      "legacy_id": "jungle-51",
+      "metadata": {
+        "pokemon_dex": 133,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base2-52",
+      "number": "52",
+      "name": "Exeggcute",
+      "legacy_id": "jungle-52",
+      "metadata": {
+        "pokemon_dex": 102,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base2-53",
+      "number": "53",
+      "name": "Goldeen",
+      "legacy_id": "jungle-53",
+      "metadata": {
+        "pokemon_dex": 118,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base2-54",
+      "number": "54",
+      "name": "Jigglypuff",
+      "legacy_id": "jungle-54",
+      "metadata": {
+        "pokemon_dex": 39,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base2-55",
+      "number": "55",
+      "name": "Mankey",
+      "legacy_id": "jungle-55",
+      "metadata": {
+        "pokemon_dex": 56,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base2-56",
+      "number": "56",
+      "name": "Meowth",
+      "legacy_id": "jungle-56",
+      "metadata": {
+        "pokemon_dex": 52,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base2-57",
+      "number": "57",
+      "name": "Nidoran♀",
+      "legacy_id": "jungle-57",
+      "metadata": {
+        "pokemon_dex": 29,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base2-58",
+      "number": "58",
+      "name": "Oddish",
+      "legacy_id": "jungle-58",
+      "metadata": {
+        "pokemon_dex": 43,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base2-59",
+      "number": "59",
+      "name": "Paras",
+      "legacy_id": "jungle-59",
+      "metadata": {
+        "pokemon_dex": 46,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base2-60",
+      "number": "60",
+      "name": "Pikachu",
+      "legacy_id": "jungle-60",
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base2-61",
+      "number": "61",
+      "name": "Rhyhorn",
+      "legacy_id": "jungle-61",
+      "metadata": {
+        "pokemon_dex": 111,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base2-62",
+      "number": "62",
+      "name": "Spearow",
+      "legacy_id": "jungle-62",
+      "metadata": {
+        "pokemon_dex": 21,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base2-63",
+      "number": "63",
+      "name": "Venonat",
+      "legacy_id": "jungle-63",
+      "metadata": {
+        "pokemon_dex": 48,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base2-64",
+      "number": "64",
+      "name": "Poké Ball",
+      "legacy_id": "jungle-64",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    }
+  ]
+}

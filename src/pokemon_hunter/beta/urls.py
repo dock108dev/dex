@@ -9,8 +9,6 @@ urlpatterns = [
     path("login/", LoginView.as_view(template_name="beta/login.html")),
     path("logout/", LogoutView.as_view()),
     path("recovery/", views.recovery_help),
-    path("recovery/<uidb64>/<token>/", views.RedeemView.as_view()),
-    path("invite/<uidb64>/<token>/", views.InviteView.as_view()),
     path("api/inventory/", views.inventory),
     path("api/inventory/<str:key>/", views.copy_detail),
     path("api/hunts/", views.hunts),
@@ -94,4 +92,19 @@ if getattr(settings, "STAGING", False) or (settings.ROOT / "B5_ISOLATED").is_fil
         path("support/feedback/", support.feedback),
         path("support/delete/", support.erase),
         path("healthz/", support.health),
+    ]
+
+if getattr(settings, "STAGING", False):
+    from . import access
+
+    urlpatterns += [
+        path("access/", access.landing),
+        path("access/script.js", access.script),
+        path("access/start/", access.start),
+        path("access/reset/", access.ResetView.as_view()),
+    ]
+else:
+    urlpatterns += [
+        path("recovery/<uidb64>/<token>/", views.RedeemView.as_view()),
+        path("invite/<uidb64>/<token>/", views.InviteView.as_view()),
     ]

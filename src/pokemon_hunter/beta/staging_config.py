@@ -6,11 +6,9 @@ from urllib.parse import unquote, urlsplit
 
 def configuration(env=None):
     env = os.environ if env is None else env
-    required = ("DATABASE_URL", "DEX_SECRET_KEY", "DEX_PUBLIC_ORIGIN", "DEX_PROXY_NETWORKS")
+    required = ("DATABASE_URL", "DEX_SECRET_KEY", "DEX_PUBLIC_ORIGIN")
     if any(not env.get(k) for k in required):
-        raise RuntimeError(
-            "Staging requires DATABASE_URL, DEX_SECRET_KEY, DEX_PUBLIC_ORIGIN and DEX_PROXY_NETWORKS"
-        )
+        raise RuntimeError("Staging requires DATABASE_URL, DEX_SECRET_KEY and DEX_PUBLIC_ORIGIN")
     origin = urlsplit(env["DEX_PUBLIC_ORIGIN"])
     if (
         origin.scheme != "https"
@@ -25,9 +23,27 @@ def configuration(env=None):
         raise RuntimeError("Staging secret must contain at least 50 characters")
     import ipaddress
 
-    networks = [ipaddress.ip_network(n.strip()) for n in env["DEX_PROXY_NETWORKS"].split(",")]
-    if any(n.prefixlen == 0 for n in networks):
-        raise RuntimeError("Trust only the verified proxy network, never every address")
+    ingress = env.get("DEX_INGRESS", "proxy")
+    networks = []
+    if ingress == "render":
+        if (
+            env.get("RENDER") != "true"
+            or not env.get("RENDER_SERVICE_ID")
+            or env.get("RENDER_SERVICE_TYPE") not in {"web", "worker"}
+        ):
+            raise RuntimeError("Render ingress requires the provider service environment")
+        if env["RENDER_SERVICE_TYPE"] == "web" and env.get("RENDER_EXTERNAL_HOSTNAME") != origin.hostname:
+            raise RuntimeError("Qualification uses the exact Render service hostname")
+        if env.get("DEX_PROXY_NETWORKS"):
+            raise RuntimeError("Do not invent Render proxy CIDRs")
+    elif ingress == "proxy":
+        if not env.get("DEX_PROXY_NETWORKS"):
+            raise RuntimeError("Proxy ingress requires DEX_PROXY_NETWORKS")
+        networks = [ipaddress.ip_network(n.strip()) for n in env["DEX_PROXY_NETWORKS"].split(",")]
+        if any(n.prefixlen == 0 for n in networks):
+            raise RuntimeError("Trust only the verified proxy network, never every address")
+    else:
+        raise RuntimeError("Unknown ingress profile")
     url = urlsplit(env["DATABASE_URL"])
     if url.scheme not in ("postgres", "postgresql") or not url.hostname or not url.path.strip("/"):
         raise RuntimeError("A PostgreSQL database URL is required")
@@ -40,6 +56,8 @@ def configuration(env=None):
         "ALLOWED_HOSTS": [origin.hostname],
         "PUBLIC_ORIGIN": env["DEX_PUBLIC_ORIGIN"],
         "PROXY_NETWORKS": networks,
+        "INGRESS": ingress,
+        "SECURE_REDIRECT_EXEMPT": [r"^healthz/$"] if ingress == "render" else [],
         "CSRF_TRUSTED_ORIGINS": [env["DEX_PUBLIC_ORIGIN"]],
         "SESSION_COOKIE_NAME": "__Host-dex_session",
         "CSRF_COOKIE_NAME": "__Host-dex_csrf",

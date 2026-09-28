@@ -1,0 +1,765 @@
+{
+  "schema_version": "dex-catalog-v1",
+  "game": "pokemon",
+  "set_key": "base3",
+  "set_name": "Fossil",
+  "language": "en",
+  "aliases": [
+    "Fossil"
+  ],
+  "provider": "tcgdex",
+  "version": "309aab7060b165925fee48573e730275dfbd737c",
+  "source_url": "https://github.com/tcgdex/cards-database/tree/309aab7060b165925fee48573e730275dfbd737c/data/Base",
+  "source_sha256": "f03ae6bf293f27c9f3e2096c722efbf25bbc6c940a0b2c3dc660999af2aa64f4",
+  "metadata_permission": "TCGdex cards-database MIT; copyright (c) 2021 TCGdex. Attribution retained in TCGDEX_LICENSE.txt. Minimal hosted metadata; no artwork, prices or rules text.",
+  "image_permission": "not-included",
+  "coverage": "catalog-entries",
+  "expected_count": 62,
+  "reconcile_legacy_set": "fossil",
+  "cards": [
+    {
+      "external_id": "base3-1",
+      "number": "1",
+      "name": "Aerodactyl",
+      "legacy_id": "fossil-1",
+      "metadata": {
+        "pokemon_dex": 142,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-2",
+      "number": "2",
+      "name": "Articuno",
+      "legacy_id": "fossil-2",
+      "metadata": {
+        "pokemon_dex": 144,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-3",
+      "number": "3",
+      "name": "Ditto",
+      "legacy_id": "fossil-3",
+      "metadata": {
+        "pokemon_dex": 132,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-4",
+      "number": "4",
+      "name": "Dragonite",
+      "legacy_id": "fossil-4",
+      "metadata": {
+        "pokemon_dex": 149,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-5",
+      "number": "5",
+      "name": "Gengar",
+      "legacy_id": "fossil-5",
+      "metadata": {
+        "pokemon_dex": 94,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-6",
+      "number": "6",
+      "name": "Haunter",
+      "legacy_id": "fossil-6",
+      "metadata": {
+        "pokemon_dex": 93,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-7",
+      "number": "7",
+      "name": "Hitmonlee",
+      "legacy_id": "fossil-7",
+      "metadata": {
+        "pokemon_dex": 106,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-8",
+      "number": "8",
+      "name": "Hypno",
+      "legacy_id": "fossil-8",
+      "metadata": {
+        "pokemon_dex": 97,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-9",
+      "number": "9",
+      "name": "Kabutops",
+      "legacy_id": "fossil-9",
+      "metadata": {
+        "pokemon_dex": 141,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-10",
+      "number": "10",
+      "name": "Lapras",
+      "legacy_id": "fossil-10",
+      "metadata": {
+        "pokemon_dex": 131,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-11",
+      "number": "11",
+      "name": "Magneton",
+      "legacy_id": "fossil-11",
+      "metadata": {
+        "pokemon_dex": 82,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-12",
+      "number": "12",
+      "name": "Moltres",
+      "legacy_id": "fossil-12",
+      "metadata": {
+        "pokemon_dex": 146,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-13",
+      "number": "13",
+      "name": "Muk",
+      "legacy_id": "fossil-13",
+      "metadata": {
+        "pokemon_dex": 89,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-14",
+      "number": "14",
+      "name": "Raichu",
+      "legacy_id": "fossil-14",
+      "metadata": {
+        "pokemon_dex": 26,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-15",
+      "number": "15",
+      "name": "Zapdos",
+      "legacy_id": "fossil-15",
+      "metadata": {
+        "pokemon_dex": 145,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-16",
+      "number": "16",
+      "name": "Aerodactyl",
+      "legacy_id": "fossil-16",
+      "metadata": {
+        "pokemon_dex": 142,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-17",
+      "number": "17",
+      "name": "Articuno",
+      "legacy_id": "fossil-17",
+      "metadata": {
+        "pokemon_dex": 144,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-18",
+      "number": "18",
+      "name": "Ditto",
+      "legacy_id": "fossil-18",
+      "metadata": {
+        "pokemon_dex": 132,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-19",
+      "number": "19",
+      "name": "Dragonite",
+      "legacy_id": "fossil-19",
+      "metadata": {
+        "pokemon_dex": 149,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-20",
+      "number": "20",
+      "name": "Gengar",
+      "legacy_id": "fossil-20",
+      "metadata": {
+        "pokemon_dex": 94,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-21",
+      "number": "21",
+      "name": "Haunter",
+      "legacy_id": "fossil-21",
+      "metadata": {
+        "pokemon_dex": 93,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-22",
+      "number": "22",
+      "name": "Hitmonlee",
+      "legacy_id": "fossil-22",
+      "metadata": {
+        "pokemon_dex": 106,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-23",
+      "number": "23",
+      "name": "Hypno",
+      "legacy_id": "fossil-23",
+      "metadata": {
+        "pokemon_dex": 97,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-24",
+      "number": "24",
+      "name": "Kabutops",
+      "legacy_id": "fossil-24",
+      "metadata": {
+        "pokemon_dex": 141,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-25",
+      "number": "25",
+      "name": "Lapras",
+      "legacy_id": "fossil-25",
+      "metadata": {
+        "pokemon_dex": 131,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-26",
+      "number": "26",
+      "name": "Magneton",
+      "legacy_id": "fossil-26",
+      "metadata": {
+        "pokemon_dex": 82,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-27",
+      "number": "27",
+      "name": "Moltres",
+      "legacy_id": "fossil-27",
+      "metadata": {
+        "pokemon_dex": 146,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-28",
+      "number": "28",
+      "name": "Muk",
+      "legacy_id": "fossil-28",
+      "metadata": {
+        "pokemon_dex": 89,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-29",
+      "number": "29",
+      "name": "Raichu",
+      "legacy_id": "fossil-29",
+      "metadata": {
+        "pokemon_dex": 26,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-30",
+      "number": "30",
+      "name": "Zapdos",
+      "legacy_id": "fossil-30",
+      "metadata": {
+        "pokemon_dex": 145,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base3-31",
+      "number": "31",
+      "name": "Arbok",
+      "legacy_id": "fossil-31",
+      "metadata": {
+        "pokemon_dex": 24,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base3-32",
+      "number": "32",
+      "name": "Cloyster",
+      "legacy_id": "fossil-32",
+      "metadata": {
+        "pokemon_dex": 91,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base3-33",
+      "number": "33",
+      "name": "Gastly",
+      "legacy_id": "fossil-33",
+      "metadata": {
+        "pokemon_dex": 92,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base3-34",
+      "number": "34",
+      "name": "Golbat",
+      "legacy_id": "fossil-34",
+      "metadata": {
+        "pokemon_dex": 42,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base3-35",
+      "number": "35",
+      "name": "Golduck",
+      "legacy_id": "fossil-35",
+      "metadata": {
+        "pokemon_dex": 55,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base3-36",
+      "number": "36",
+      "name": "Golem",
+      "legacy_id": "fossil-36",
+      "metadata": {
+        "pokemon_dex": 76,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base3-37",
+      "number": "37",
+      "name": "Graveler",
+      "legacy_id": "fossil-37",
+      "metadata": {
+        "pokemon_dex": 75,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base3-38",
+      "number": "38",
+      "name": "Kingler",
+      "legacy_id": "fossil-38",
+      "metadata": {
+        "pokemon_dex": 99,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base3-39",
+      "number": "39",
+      "name": "Magmar",
+      "legacy_id": "fossil-39",
+      "metadata": {
+        "pokemon_dex": 126,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base3-40",
+      "number": "40",
+      "name": "Omastar",
+      "legacy_id": "fossil-40",
+      "metadata": {
+        "pokemon_dex": 139,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base3-41",
+      "number": "41",
+      "name": "Sandslash",
+      "legacy_id": "fossil-41",
+      "metadata": {
+        "pokemon_dex": 28,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base3-42",
+      "number": "42",
+      "name": "Seadra",
+      "legacy_id": "fossil-42",
+      "metadata": {
+        "pokemon_dex": 117,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base3-43",
+      "number": "43",
+      "name": "Slowbro",
+      "legacy_id": "fossil-43",
+      "metadata": {
+        "pokemon_dex": 80,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base3-44",
+      "number": "44",
+      "name": "Tentacruel",
+      "legacy_id": "fossil-44",
+      "metadata": {
+        "pokemon_dex": 73,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base3-45",
+      "number": "45",
+      "name": "Weezing",
+      "legacy_id": "fossil-45",
+      "metadata": {
+        "pokemon_dex": 110,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base3-46",
+      "number": "46",
+      "name": "Ekans",
+      "legacy_id": "fossil-46",
+      "metadata": {
+        "pokemon_dex": 23,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base3-47",
+      "number": "47",
+      "name": "Geodude",
+      "legacy_id": "fossil-47",
+      "metadata": {
+        "pokemon_dex": 74,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base3-48",
+      "number": "48",
+      "name": "Grimer",
+      "legacy_id": "fossil-48",
+      "metadata": {
+        "pokemon_dex": 88,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base3-49",
+      "number": "49",
+      "name": "Horsea",
+      "legacy_id": "fossil-49",
+      "metadata": {
+        "pokemon_dex": 116,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base3-50",
+      "number": "50",
+      "name": "Kabuto",
+      "legacy_id": "fossil-50",
+      "metadata": {
+        "pokemon_dex": 140,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base3-51",
+      "number": "51",
+      "name": "Krabby",
+      "legacy_id": "fossil-51",
+      "metadata": {
+        "pokemon_dex": 98,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base3-52",
+      "number": "52",
+      "name": "Omanyte",
+      "legacy_id": "fossil-52",
+      "metadata": {
+        "pokemon_dex": 138,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base3-53",
+      "number": "53",
+      "name": "Psyduck",
+      "legacy_id": "fossil-53",
+      "metadata": {
+        "pokemon_dex": 54,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base3-54",
+      "number": "54",
+      "name": "Shellder",
+      "legacy_id": "fossil-54",
+      "metadata": {
+        "pokemon_dex": 90,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base3-55",
+      "number": "55",
+      "name": "Slowpoke",
+      "legacy_id": "fossil-55",
+      "metadata": {
+        "pokemon_dex": 79,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base3-56",
+      "number": "56",
+      "name": "Tentacool",
+      "legacy_id": "fossil-56",
+      "metadata": {
+        "pokemon_dex": 72,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base3-57",
+      "number": "57",
+      "name": "Zubat",
+      "legacy_id": "fossil-57",
+      "metadata": {
+        "pokemon_dex": 41,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base3-58",
+      "number": "58",
+      "name": "Mr. Fuji",
+      "legacy_id": "fossil-58",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base3-59",
+      "number": "59",
+      "name": "Energy Search",
+      "legacy_id": "fossil-59",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base3-60",
+      "number": "60",
+      "name": "Gambler",
+      "legacy_id": "fossil-60",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base3-61",
+      "number": "61",
+      "name": "Recycle",
+      "legacy_id": "fossil-61",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base3-62",
+      "number": "62",
+      "name": "Mysterious Fossil",
+      "legacy_id": "fossil-62",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    }
+  ]
+}

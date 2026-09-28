@@ -22,11 +22,21 @@ ADAPTERS = {
 }
 
 
+class Metadata(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    pokemon_dex: int | None = Field(default=None, ge=1, le=251)
+    dex_eligible: bool
+    supertype: Literal["Pokémon", "Trainer", "Energy"]
+    rarity: str = Field(min_length=1, max_length=80)
+
+
 class Record(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
     external_id: str = Field(min_length=1, max_length=120)
     number: str = Field(min_length=1, max_length=80)
     name: str = Field(min_length=1, max_length=160)
+    legacy_id: str | None = None
+    metadata: Metadata | None = None
     edition: str | None = None
     finish: str | None = None
     variant: str | None = None
@@ -48,6 +58,7 @@ class Package(BaseModel):
     image_permission: Literal["not-included"]
     coverage: Literal["catalog-entries", "partial"]
     expected_count: int = Field(ge=1, le=2000)
+    reconcile_legacy_set: str | None = None
     cards: list[Record] = Field(min_length=1, max_length=2000)
 
 
@@ -126,6 +137,18 @@ def fingerprint(value):
 
 def validate(raw):
     package = Package.model_validate(raw).model_dump()
+    if package["reconcile_legacy_set"] is None:
+        del package["reconcile_legacy_set"]
+    else:
+        from .catalog_reconcile import approved
+
+        approved(package)
+    for card in package["cards"]:
+        for optional in ("legacy_id", "metadata"):
+            if card[optional] is None:
+                del card[optional]
+        if card.get("legacy_id") and not package.get("reconcile_legacy_set"):
+            raise ValueError("Legacy identities require explicit reviewed reconciliation")
     identity(package["game"], package["set_key"], package["language"])
     cards = package["cards"]
     if len(cards) > package["expected_count"] or (
@@ -150,7 +173,13 @@ def validate(raw):
 
 def rows_for(package):
     key = identity(package["game"], package["set_key"], package["language"])
-    sid = stable_id("catalog-set", key)
+    from . import catalog_reconcile
+
+    sid = (
+        catalog_reconcile.set_id(package)
+        if package.get("reconcile_legacy_set")
+        else stable_id("catalog-set", key)
+    )
     gid = stable_id("game", package["game"])
     existing_game = store.rows("SELECT id FROM games WHERE game_key=%s", [package["game"]])
     if existing_game:
@@ -173,6 +202,11 @@ def rows_for(package):
     provider = package["provider"] + ":" + package["language"]
     for c in package["cards"]:
         pid = stable_id("catalog-printing", provider + ":" + c["external_id"])
+        prior = None
+        if package.get("reconcile_legacy_set"):
+            pid, prior = catalog_reconcile.printing(package, c, sid)
+            if prior:
+                c = {**c, **{k: prior[k] for k in ("edition", "finish", "variant")}}
         mapping = store.rows(
             "SELECT internal_id FROM external_mappings WHERE provider=%s AND entity_kind='printing' AND external_id=%s",
             [provider, c["external_id"]],
@@ -209,7 +243,7 @@ def rows_for(package):
                 edition=c["edition"],
                 finish=c["finish"],
                 variant=c["variant"],
-                unresolved_fields=encode(unresolved),
+                unresolved_fields=prior["unresolved_fields"] if prior else encode(unresolved),
                 attributes=encode(
                     {
                         "name": c["name"],
@@ -218,10 +252,13 @@ def rows_for(package):
                         "dex_eligible": False,
                         "supertype": "Unknown",
                         "rarity": "Unknown",
+                        **c.get("metadata", {}),
                     }
                 ),
                 provenance=encode(
                     {
+                        **(json.loads(prior["provenance"]) if prior else {}),
+                        **({"legacy_id": c["legacy_id"]} if c.get("legacy_id") else {}),
                         "provider": provider,
                         "external_id": c["external_id"],
                         "source_version": package["version"],
@@ -363,6 +400,11 @@ def transition(actor, key, action):
             "INSERT INTO external_mappings VALUES(%s,'set',%s,%s) ON CONFLICT DO NOTHING",
             [p["provider"] + ":" + p["language"], p["set_key"], setrow["id"]],
         )
+        if p.get("reconcile_legacy_set"):
+            inv.execute(
+                "INSERT INTO external_mappings VALUES('legacy','set',%s,%s) ON CONFLICT DO NOTHING",
+                [p["reconcile_legacy_set"], setrow["id"]],
+            )
         write("catalog_sets", setrow)
         inv.execute("UPDATE printings SET publication_state='archived' WHERE set_id=%s", [op["set_id"]])
         for row in cards:

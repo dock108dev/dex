@@ -48,7 +48,9 @@ class StagingMiddleware:
             trusted = any(peer in network for network in settings.PROXY_NETWORKS)
         except ValueError:
             trusted = False
-        if not trusted or request.META.get("HTTP_X_FORWARDED_PROTO") != "https":
+        render = getattr(settings, "INGRESS", "proxy") == "render"
+        health = render and request.path == "/healthz/" and request.method in {"GET", "HEAD"}
+        if not health and (not (trusted or render) or request.META.get("HTTP_X_FORWARDED_PROTO") != "https"):
             return HttpResponseForbidden("Trusted HTTPS proxy required")
         if request.get_host() != settings.PUBLIC_ORIGIN.removeprefix("https://"):
             return HttpResponseForbidden("Unexpected host")

@@ -1,0 +1,657 @@
+{
+  "schema_version": "dex-catalog-v1",
+  "game": "pokemon",
+  "set_key": "basep",
+  "set_name": "Wizards Black Star Promos",
+  "language": "en",
+  "aliases": [
+    "Wizards Black Star Promos"
+  ],
+  "provider": "tcgdex",
+  "version": "309aab7060b165925fee48573e730275dfbd737c",
+  "source_url": "https://github.com/tcgdex/cards-database/tree/309aab7060b165925fee48573e730275dfbd737c/data/Base",
+  "source_sha256": "43d8833047e52473579097607846dcd872e36cf90fbf6677ff2b55eb4f4825e4",
+  "metadata_permission": "TCGdex cards-database MIT; copyright (c) 2021 TCGdex. Attribution retained in TCGDEX_LICENSE.txt. Minimal hosted metadata; no artwork, prices or rules text.",
+  "image_permission": "not-included",
+  "coverage": "catalog-entries",
+  "expected_count": 53,
+  "reconcile_legacy_set": "wizards_black_star_promos",
+  "cards": [
+    {
+      "external_id": "basep-1",
+      "number": "1",
+      "name": "Pikachu",
+      "legacy_id": "wizards_black_star_promos-1",
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-2",
+      "number": "2",
+      "name": "Electabuzz",
+      "legacy_id": "wizards_black_star_promos-2",
+      "metadata": {
+        "pokemon_dex": 125,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-3",
+      "number": "3",
+      "name": "Mewtwo",
+      "legacy_id": "wizards_black_star_promos-3",
+      "metadata": {
+        "pokemon_dex": 150,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-4",
+      "number": "4",
+      "name": "Pikachu",
+      "legacy_id": "wizards_black_star_promos-4",
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-5",
+      "number": "5",
+      "name": "Dragonite",
+      "legacy_id": "wizards_black_star_promos-5",
+      "metadata": {
+        "pokemon_dex": 149,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-6",
+      "number": "6",
+      "name": "Arcanine",
+      "legacy_id": "wizards_black_star_promos-6",
+      "metadata": {
+        "pokemon_dex": 59,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-7",
+      "number": "7",
+      "name": "Jigglypuff",
+      "legacy_id": "wizards_black_star_promos-7",
+      "metadata": {
+        "pokemon_dex": 39,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-8",
+      "number": "8",
+      "name": "Mew",
+      "legacy_id": "wizards_black_star_promos-8",
+      "metadata": {
+        "pokemon_dex": 151,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-9",
+      "number": "9",
+      "name": "Mew",
+      "legacy_id": "wizards_black_star_promos-9",
+      "metadata": {
+        "pokemon_dex": 151,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-10",
+      "number": "10",
+      "name": "Meowth",
+      "legacy_id": "wizards_black_star_promos-10",
+      "metadata": {
+        "pokemon_dex": 52,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-11",
+      "number": "11",
+      "name": "Eevee",
+      "legacy_id": "wizards_black_star_promos-11",
+      "metadata": {
+        "pokemon_dex": 133,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-12",
+      "number": "12",
+      "name": "Mewtwo",
+      "legacy_id": "wizards_black_star_promos-12",
+      "metadata": {
+        "pokemon_dex": 150,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-13",
+      "number": "13",
+      "name": "Venusaur",
+      "legacy_id": "wizards_black_star_promos-13",
+      "metadata": {
+        "pokemon_dex": 3,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-14",
+      "number": "14",
+      "name": "Mewtwo",
+      "legacy_id": "wizards_black_star_promos-14",
+      "metadata": {
+        "pokemon_dex": 150,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-15",
+      "number": "15",
+      "name": "Cool Porygon",
+      "legacy_id": "wizards_black_star_promos-15",
+      "metadata": {
+        "pokemon_dex": 137,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-16",
+      "number": "16",
+      "name": "Computer Error",
+      "legacy_id": "wizards_black_star_promos-16",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-17",
+      "number": "17",
+      "name": "Dark Persian",
+      "legacy_id": "wizards_black_star_promos-17",
+      "metadata": {
+        "pokemon_dex": 53,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-18",
+      "number": "18",
+      "name": "Team Rocket's Meowth",
+      "legacy_id": "wizards_black_star_promos-18",
+      "metadata": {
+        "pokemon_dex": 52,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-19",
+      "number": "19",
+      "name": "Sabrina's Abra",
+      "legacy_id": "wizards_black_star_promos-19",
+      "metadata": {
+        "pokemon_dex": 63,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-20",
+      "number": "20",
+      "name": "Psyduck",
+      "legacy_id": "wizards_black_star_promos-20",
+      "metadata": {
+        "pokemon_dex": 54,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-21",
+      "number": "21",
+      "name": "Moltres",
+      "legacy_id": "wizards_black_star_promos-21",
+      "metadata": {
+        "pokemon_dex": 146,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-22",
+      "number": "22",
+      "name": "Articuno",
+      "legacy_id": "wizards_black_star_promos-22",
+      "metadata": {
+        "pokemon_dex": 144,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-23",
+      "number": "23",
+      "name": "Zapdos",
+      "legacy_id": "wizards_black_star_promos-23",
+      "metadata": {
+        "pokemon_dex": 145,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-24",
+      "number": "24",
+      "name": "___________'s Pikachu",
+      "legacy_id": "wizards_black_star_promos-24",
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-25",
+      "number": "25",
+      "name": "Flying Pikachu",
+      "legacy_id": "wizards_black_star_promos-25",
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-26",
+      "number": "26",
+      "name": "Pikachu",
+      "legacy_id": "wizards_black_star_promos-26",
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-27",
+      "number": "27",
+      "name": "Pikachu",
+      "legacy_id": "wizards_black_star_promos-27",
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-28",
+      "number": "28",
+      "name": "Surfing Pikachu",
+      "legacy_id": "wizards_black_star_promos-28",
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-29",
+      "number": "29",
+      "name": "Marill",
+      "legacy_id": "wizards_black_star_promos-29",
+      "metadata": {
+        "pokemon_dex": 183,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-30",
+      "number": "30",
+      "name": "Togepi",
+      "legacy_id": "wizards_black_star_promos-30",
+      "metadata": {
+        "pokemon_dex": 175,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-31",
+      "number": "31",
+      "name": "Cleffa",
+      "legacy_id": "wizards_black_star_promos-31",
+      "metadata": {
+        "pokemon_dex": 173,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-32",
+      "number": "32",
+      "name": "Smeargle",
+      "legacy_id": "wizards_black_star_promos-32",
+      "metadata": {
+        "pokemon_dex": 235,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-33",
+      "number": "33",
+      "name": "Scizor",
+      "legacy_id": "wizards_black_star_promos-33",
+      "metadata": {
+        "pokemon_dex": 212,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-34",
+      "number": "34",
+      "name": "Entei",
+      "legacy_id": "wizards_black_star_promos-34",
+      "metadata": {
+        "pokemon_dex": 244,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-35",
+      "number": "35",
+      "name": "Pichu",
+      "legacy_id": "wizards_black_star_promos-35",
+      "metadata": {
+        "pokemon_dex": 172,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-36",
+      "number": "36",
+      "name": "Igglybuff",
+      "legacy_id": "wizards_black_star_promos-36",
+      "metadata": {
+        "pokemon_dex": 174,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-37",
+      "number": "37",
+      "name": "Hitmontop",
+      "legacy_id": "wizards_black_star_promos-37",
+      "metadata": {
+        "pokemon_dex": 237,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-38",
+      "number": "38",
+      "name": "Unown [J]",
+      "legacy_id": "wizards_black_star_promos-38",
+      "metadata": {
+        "pokemon_dex": 201,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-39",
+      "number": "39",
+      "name": "Misdreavus",
+      "legacy_id": "wizards_black_star_promos-39",
+      "metadata": {
+        "pokemon_dex": 200,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-40",
+      "number": "40",
+      "name": "Pokémon Center",
+      "legacy_id": "wizards_black_star_promos-40",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-41",
+      "number": "41",
+      "name": "Lucky Stadium",
+      "legacy_id": "wizards_black_star_promos-41",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-42",
+      "number": "42",
+      "name": "Pokémon Tower",
+      "legacy_id": "wizards_black_star_promos-42",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-43",
+      "number": "43",
+      "name": "Machamp",
+      "legacy_id": "wizards_black_star_promos-43",
+      "metadata": {
+        "pokemon_dex": 68,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-44",
+      "number": "44",
+      "name": "Magmar",
+      "legacy_id": "wizards_black_star_promos-44",
+      "metadata": {
+        "pokemon_dex": 126,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-45",
+      "number": "45",
+      "name": "Scyther",
+      "legacy_id": "wizards_black_star_promos-45",
+      "metadata": {
+        "pokemon_dex": 123,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-46",
+      "number": "46",
+      "name": "Electabuzz",
+      "legacy_id": "wizards_black_star_promos-46",
+      "metadata": {
+        "pokemon_dex": 125,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-47",
+      "number": "47",
+      "name": "Mew",
+      "legacy_id": "wizards_black_star_promos-47",
+      "metadata": {
+        "pokemon_dex": 151,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-48",
+      "number": "48",
+      "name": "Articuno",
+      "legacy_id": "wizards_black_star_promos-48",
+      "metadata": {
+        "pokemon_dex": 144,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-49",
+      "number": "49",
+      "name": "Snorlax",
+      "legacy_id": "wizards_black_star_promos-49",
+      "metadata": {
+        "pokemon_dex": 143,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-50",
+      "number": "50",
+      "name": "Celebi",
+      "legacy_id": "wizards_black_star_promos-50",
+      "metadata": {
+        "pokemon_dex": 251,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-51",
+      "number": "51",
+      "name": "Rapidash",
+      "legacy_id": "wizards_black_star_promos-51",
+      "metadata": {
+        "pokemon_dex": 78,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-52",
+      "number": "52",
+      "name": "Ho-oh",
+      "legacy_id": "wizards_black_star_promos-52",
+      "metadata": {
+        "pokemon_dex": 250,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "basep-53",
+      "number": "53",
+      "name": "Suicune",
+      "legacy_id": "wizards_black_star_promos-53",
+      "metadata": {
+        "pokemon_dex": 245,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    }
+  ]
+}

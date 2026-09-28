@@ -7,13 +7,13 @@ import uuid
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
 
-from pokemon_hunter.inventory import stable_id
 from pokemon_hunter.migration import encode
 
 from . import catalog_imports as catalogs
 from . import collection as inv
 from . import scans, store
 from . import transactions as transaction
+from .catalog_reconcile import request_set_id
 
 
 def clean_hints(data):
@@ -103,7 +103,7 @@ def create(actor, data):
             if identity
             and store.rows(
                 "SELECT id FROM catalog_sets WHERE id=%s AND publication_state='published'",
-                [stable_id("catalog-set", identity)],
+                [request_set_id(identity)],
             )
             else "new"
         )
@@ -128,7 +128,7 @@ def proposed(actor, s):
     key = request["identity_key"]
     if not key:
         return []
-    sid = stable_id("catalog-set", key)
+    sid = request_set_id(key)
     candidates = inv.catalog(actor, set_id=sid)
     # Never infer a card from a set alone. Owners can correct hints and search again.
     if not hints["name"] and not hints["number"]:

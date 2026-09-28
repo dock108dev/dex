@@ -1,35 +1,65 @@
-# Reference blueprint: review exact host/proxy settings before any deployment.
-# No automatic database import, account creation, invitation or authoritative cutover.
+# Deployment package template. Replace IMAGE_DIGEST with release.json's OCI digest.
+# Push that exact archive to the PRIVATE ghcr.io/dock108dev/dex-staging repository.
+# Dedicated staging workspace: same-workspace private peers are trusted by Render ingress.
+# Database must be seeded separately before starting these services. No live-owner import.
 services:
   - type: web
     name: dex-staging-web
+    region: virginia
     healthCheckPath: /healthz/
-    runtime: docker
-    plan: starter
-    dockerfilePath: ./deploy/Dockerfile
+    runtime: image
+    image:
+      url: ghcr.io/dock108dev/dex-staging@IMAGE_DIGEST
+      creds:
+        fromRegistryCreds:
+          name: dex-staging-ghcr
+    plan: 0.5c-512mb
+    numInstances: 1
+    maxShutdownDelaySeconds: 60
     autoDeployTrigger: off
     envVars:
       - fromGroup: dex-staging-secrets
+      - key: DEX_PROFILE
+        value: staging
+      - key: DEX_INGRESS
+        value: render
+      - key: DEX_DATABASE_SSLMODE
+        value: require
       - key: DATABASE_URL
         fromDatabase:
           name: dex-staging-db
           property: connectionString
   - type: worker
     name: dex-staging-worker
-    runtime: docker
-    plan: starter
-    dockerfilePath: ./deploy/Dockerfile
+    region: virginia
+    runtime: image
+    image:
+      url: ghcr.io/dock108dev/dex-staging@IMAGE_DIGEST
+      creds:
+        fromRegistryCreds:
+          name: dex-staging-ghcr
+    plan: 0.5c-512mb
+    numInstances: 1
+    maxShutdownDelaySeconds: 60
     dockerCommand: /app/.venv/bin/python -m pokemon_hunter.beta.deployment worker
     autoDeployTrigger: off
     envVars:
       - fromGroup: dex-staging-secrets
+      - key: DEX_PROFILE
+        value: staging
+      - key: DEX_INGRESS
+        value: render
+      - key: DEX_DATABASE_SSLMODE
+        value: require
       - key: DATABASE_URL
         fromDatabase:
           name: dex-staging-db
           property: connectionString
 databases:
   - name: dex-staging-db
-    plan: basic-256mb
+    region: virginia
+    plan: 0.1c-256mb
     postgresMajorVersion: "17"
     diskSizeGB: 5
+    storageAutoscalingEnabled: false
     ipAllowList: []

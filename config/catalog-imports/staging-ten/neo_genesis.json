@@ -1,0 +1,1353 @@
+{
+  "schema_version": "dex-catalog-v1",
+  "game": "pokemon",
+  "set_key": "neo1",
+  "set_name": "Neo Genesis",
+  "language": "en",
+  "aliases": [
+    "Neo Genesis"
+  ],
+  "provider": "tcgdex",
+  "version": "309aab7060b165925fee48573e730275dfbd737c",
+  "source_url": "https://github.com/tcgdex/cards-database/tree/309aab7060b165925fee48573e730275dfbd737c/data/Neo",
+  "source_sha256": "bc829b63e736f72748c782ad698e3dfc919e4438867744ac30d1990b58e98966",
+  "metadata_permission": "TCGdex cards-database MIT; copyright (c) 2021 TCGdex. Attribution retained in TCGDEX_LICENSE.txt. Minimal hosted metadata; no artwork, prices or rules text.",
+  "image_permission": "not-included",
+  "coverage": "catalog-entries",
+  "expected_count": 111,
+  "reconcile_legacy_set": "neo_genesis",
+  "cards": [
+    {
+      "external_id": "neo1-1",
+      "number": "1",
+      "name": "Ampharos",
+      "legacy_id": "neo_genesis-1",
+      "metadata": {
+        "pokemon_dex": 181,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-2",
+      "number": "2",
+      "name": "Azumarill",
+      "legacy_id": "neo_genesis-2",
+      "metadata": {
+        "pokemon_dex": 184,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-3",
+      "number": "3",
+      "name": "Bellossom",
+      "legacy_id": "neo_genesis-3",
+      "metadata": {
+        "pokemon_dex": 182,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-4",
+      "number": "4",
+      "name": "Feraligatr",
+      "legacy_id": "neo_genesis-4",
+      "metadata": {
+        "pokemon_dex": 160,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-5",
+      "number": "5",
+      "name": "Feraligatr",
+      "legacy_id": "neo_genesis-5",
+      "metadata": {
+        "pokemon_dex": 160,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-6",
+      "number": "6",
+      "name": "Heracross",
+      "legacy_id": "neo_genesis-6",
+      "metadata": {
+        "pokemon_dex": 214,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-7",
+      "number": "7",
+      "name": "Jumpluff",
+      "legacy_id": "neo_genesis-7",
+      "metadata": {
+        "pokemon_dex": 189,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-8",
+      "number": "8",
+      "name": "Kingdra",
+      "legacy_id": "neo_genesis-8",
+      "metadata": {
+        "pokemon_dex": 230,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-9",
+      "number": "9",
+      "name": "Lugia",
+      "legacy_id": "neo_genesis-9",
+      "metadata": {
+        "pokemon_dex": 249,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-10",
+      "number": "10",
+      "name": "Meganium",
+      "legacy_id": "neo_genesis-10",
+      "metadata": {
+        "pokemon_dex": 154,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-11",
+      "number": "11",
+      "name": "Meganium",
+      "legacy_id": "neo_genesis-11",
+      "metadata": {
+        "pokemon_dex": 154,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-12",
+      "number": "12",
+      "name": "Pichu",
+      "legacy_id": "neo_genesis-12",
+      "metadata": {
+        "pokemon_dex": 172,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-13",
+      "number": "13",
+      "name": "Skarmory",
+      "legacy_id": "neo_genesis-13",
+      "metadata": {
+        "pokemon_dex": 227,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-14",
+      "number": "14",
+      "name": "Slowking",
+      "legacy_id": "neo_genesis-14",
+      "metadata": {
+        "pokemon_dex": 199,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-15",
+      "number": "15",
+      "name": "Steelix",
+      "legacy_id": "neo_genesis-15",
+      "metadata": {
+        "pokemon_dex": 208,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-16",
+      "number": "16",
+      "name": "Togetic",
+      "legacy_id": "neo_genesis-16",
+      "metadata": {
+        "pokemon_dex": 176,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-17",
+      "number": "17",
+      "name": "Typhlosion",
+      "legacy_id": "neo_genesis-17",
+      "metadata": {
+        "pokemon_dex": 157,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-18",
+      "number": "18",
+      "name": "Typhlosion",
+      "legacy_id": "neo_genesis-18",
+      "metadata": {
+        "pokemon_dex": 157,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-19",
+      "number": "19",
+      "name": "Metal Energy",
+      "legacy_id": "neo_genesis-19",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-20",
+      "number": "20",
+      "name": "Cleffa",
+      "legacy_id": "neo_genesis-20",
+      "metadata": {
+        "pokemon_dex": 173,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-21",
+      "number": "21",
+      "name": "Donphan",
+      "legacy_id": "neo_genesis-21",
+      "metadata": {
+        "pokemon_dex": 232,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-22",
+      "number": "22",
+      "name": "Elekid",
+      "legacy_id": "neo_genesis-22",
+      "metadata": {
+        "pokemon_dex": 239,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-23",
+      "number": "23",
+      "name": "Magby",
+      "legacy_id": "neo_genesis-23",
+      "metadata": {
+        "pokemon_dex": 240,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-24",
+      "number": "24",
+      "name": "Murkrow",
+      "legacy_id": "neo_genesis-24",
+      "metadata": {
+        "pokemon_dex": 198,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-25",
+      "number": "25",
+      "name": "Sneasel",
+      "legacy_id": "neo_genesis-25",
+      "metadata": {
+        "pokemon_dex": 215,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-26",
+      "number": "26",
+      "name": "Aipom",
+      "legacy_id": "neo_genesis-26",
+      "metadata": {
+        "pokemon_dex": 190,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-27",
+      "number": "27",
+      "name": "Ariados",
+      "legacy_id": "neo_genesis-27",
+      "metadata": {
+        "pokemon_dex": 168,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-28",
+      "number": "28",
+      "name": "Bayleef",
+      "legacy_id": "neo_genesis-28",
+      "metadata": {
+        "pokemon_dex": 153,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-29",
+      "number": "29",
+      "name": "Bayleef",
+      "legacy_id": "neo_genesis-29",
+      "metadata": {
+        "pokemon_dex": 153,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-30",
+      "number": "30",
+      "name": "Clefairy",
+      "legacy_id": "neo_genesis-30",
+      "metadata": {
+        "pokemon_dex": 35,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-31",
+      "number": "31",
+      "name": "Croconaw",
+      "legacy_id": "neo_genesis-31",
+      "metadata": {
+        "pokemon_dex": 159,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-32",
+      "number": "32",
+      "name": "Croconaw",
+      "legacy_id": "neo_genesis-32",
+      "metadata": {
+        "pokemon_dex": 159,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-33",
+      "number": "33",
+      "name": "Electabuzz",
+      "legacy_id": "neo_genesis-33",
+      "metadata": {
+        "pokemon_dex": 125,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-34",
+      "number": "34",
+      "name": "Flaaffy",
+      "legacy_id": "neo_genesis-34",
+      "metadata": {
+        "pokemon_dex": 180,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-35",
+      "number": "35",
+      "name": "Furret",
+      "legacy_id": "neo_genesis-35",
+      "metadata": {
+        "pokemon_dex": 162,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-36",
+      "number": "36",
+      "name": "Gloom",
+      "legacy_id": "neo_genesis-36",
+      "metadata": {
+        "pokemon_dex": 44,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-37",
+      "number": "37",
+      "name": "Granbull",
+      "legacy_id": "neo_genesis-37",
+      "metadata": {
+        "pokemon_dex": 210,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-38",
+      "number": "38",
+      "name": "Lanturn",
+      "legacy_id": "neo_genesis-38",
+      "metadata": {
+        "pokemon_dex": 171,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-39",
+      "number": "39",
+      "name": "Ledian",
+      "legacy_id": "neo_genesis-39",
+      "metadata": {
+        "pokemon_dex": 166,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-40",
+      "number": "40",
+      "name": "Magmar",
+      "legacy_id": "neo_genesis-40",
+      "metadata": {
+        "pokemon_dex": 126,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-41",
+      "number": "41",
+      "name": "Miltank",
+      "legacy_id": "neo_genesis-41",
+      "metadata": {
+        "pokemon_dex": 241,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-42",
+      "number": "42",
+      "name": "Noctowl",
+      "legacy_id": "neo_genesis-42",
+      "metadata": {
+        "pokemon_dex": 164,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-43",
+      "number": "43",
+      "name": "Phanpy",
+      "legacy_id": "neo_genesis-43",
+      "metadata": {
+        "pokemon_dex": 231,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-44",
+      "number": "44",
+      "name": "Piloswine",
+      "legacy_id": "neo_genesis-44",
+      "metadata": {
+        "pokemon_dex": 221,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-45",
+      "number": "45",
+      "name": "Quagsire",
+      "legacy_id": "neo_genesis-45",
+      "metadata": {
+        "pokemon_dex": 195,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-46",
+      "number": "46",
+      "name": "Quilava",
+      "legacy_id": "neo_genesis-46",
+      "metadata": {
+        "pokemon_dex": 156,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-47",
+      "number": "47",
+      "name": "Quilava",
+      "legacy_id": "neo_genesis-47",
+      "metadata": {
+        "pokemon_dex": 156,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-48",
+      "number": "48",
+      "name": "Seadra",
+      "legacy_id": "neo_genesis-48",
+      "metadata": {
+        "pokemon_dex": 117,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-49",
+      "number": "49",
+      "name": "Skiploom",
+      "legacy_id": "neo_genesis-49",
+      "metadata": {
+        "pokemon_dex": 188,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-50",
+      "number": "50",
+      "name": "Sunflora",
+      "legacy_id": "neo_genesis-50",
+      "metadata": {
+        "pokemon_dex": 192,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-51",
+      "number": "51",
+      "name": "Togepi",
+      "legacy_id": "neo_genesis-51",
+      "metadata": {
+        "pokemon_dex": 175,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-52",
+      "number": "52",
+      "name": "Xatu",
+      "legacy_id": "neo_genesis-52",
+      "metadata": {
+        "pokemon_dex": 178,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-53",
+      "number": "53",
+      "name": "Chikorita",
+      "legacy_id": "neo_genesis-53",
+      "metadata": {
+        "pokemon_dex": 152,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-54",
+      "number": "54",
+      "name": "Chikorita",
+      "legacy_id": "neo_genesis-54",
+      "metadata": {
+        "pokemon_dex": 152,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-55",
+      "number": "55",
+      "name": "Chinchou",
+      "legacy_id": "neo_genesis-55",
+      "metadata": {
+        "pokemon_dex": 170,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-56",
+      "number": "56",
+      "name": "Cyndaquil",
+      "legacy_id": "neo_genesis-56",
+      "metadata": {
+        "pokemon_dex": 155,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-57",
+      "number": "57",
+      "name": "Cyndaquil",
+      "legacy_id": "neo_genesis-57",
+      "metadata": {
+        "pokemon_dex": 155,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-58",
+      "number": "58",
+      "name": "Girafarig",
+      "legacy_id": "neo_genesis-58",
+      "metadata": {
+        "pokemon_dex": 203,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-59",
+      "number": "59",
+      "name": "Gligar",
+      "legacy_id": "neo_genesis-59",
+      "metadata": {
+        "pokemon_dex": 207,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-60",
+      "number": "60",
+      "name": "Hoothoot",
+      "legacy_id": "neo_genesis-60",
+      "metadata": {
+        "pokemon_dex": 163,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-61",
+      "number": "61",
+      "name": "Hoppip",
+      "legacy_id": "neo_genesis-61",
+      "metadata": {
+        "pokemon_dex": 187,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-62",
+      "number": "62",
+      "name": "Horsea",
+      "legacy_id": "neo_genesis-62",
+      "metadata": {
+        "pokemon_dex": 116,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-63",
+      "number": "63",
+      "name": "Ledyba",
+      "legacy_id": "neo_genesis-63",
+      "metadata": {
+        "pokemon_dex": 165,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-64",
+      "number": "64",
+      "name": "Mantine",
+      "legacy_id": "neo_genesis-64",
+      "metadata": {
+        "pokemon_dex": 226,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-65",
+      "number": "65",
+      "name": "Mareep",
+      "legacy_id": "neo_genesis-65",
+      "metadata": {
+        "pokemon_dex": 179,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-66",
+      "number": "66",
+      "name": "Marill",
+      "legacy_id": "neo_genesis-66",
+      "metadata": {
+        "pokemon_dex": 183,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-67",
+      "number": "67",
+      "name": "Natu",
+      "legacy_id": "neo_genesis-67",
+      "metadata": {
+        "pokemon_dex": 177,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-68",
+      "number": "68",
+      "name": "Oddish",
+      "legacy_id": "neo_genesis-68",
+      "metadata": {
+        "pokemon_dex": 43,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-69",
+      "number": "69",
+      "name": "Onix",
+      "legacy_id": "neo_genesis-69",
+      "metadata": {
+        "pokemon_dex": 95,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-70",
+      "number": "70",
+      "name": "Pikachu",
+      "legacy_id": "neo_genesis-70",
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-71",
+      "number": "71",
+      "name": "Sentret",
+      "legacy_id": "neo_genesis-71",
+      "metadata": {
+        "pokemon_dex": 161,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-72",
+      "number": "72",
+      "name": "Shuckle",
+      "legacy_id": "neo_genesis-72",
+      "metadata": {
+        "pokemon_dex": 213,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-73",
+      "number": "73",
+      "name": "Slowpoke",
+      "legacy_id": "neo_genesis-73",
+      "metadata": {
+        "pokemon_dex": 79,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-74",
+      "number": "74",
+      "name": "Snubbull",
+      "legacy_id": "neo_genesis-74",
+      "metadata": {
+        "pokemon_dex": 209,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-75",
+      "number": "75",
+      "name": "Spinarak",
+      "legacy_id": "neo_genesis-75",
+      "metadata": {
+        "pokemon_dex": 167,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-76",
+      "number": "76",
+      "name": "Stantler",
+      "legacy_id": "neo_genesis-76",
+      "metadata": {
+        "pokemon_dex": 234,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-77",
+      "number": "77",
+      "name": "Sudowoodo",
+      "legacy_id": "neo_genesis-77",
+      "metadata": {
+        "pokemon_dex": 185,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-78",
+      "number": "78",
+      "name": "Sunkern",
+      "legacy_id": "neo_genesis-78",
+      "metadata": {
+        "pokemon_dex": 191,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-79",
+      "number": "79",
+      "name": "Swinub",
+      "legacy_id": "neo_genesis-79",
+      "metadata": {
+        "pokemon_dex": 220,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-80",
+      "number": "80",
+      "name": "Totodile",
+      "legacy_id": "neo_genesis-80",
+      "metadata": {
+        "pokemon_dex": 158,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-81",
+      "number": "81",
+      "name": "Totodile",
+      "legacy_id": "neo_genesis-81",
+      "metadata": {
+        "pokemon_dex": 158,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-82",
+      "number": "82",
+      "name": "Wooper",
+      "legacy_id": "neo_genesis-82",
+      "metadata": {
+        "pokemon_dex": 194,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-83",
+      "number": "83",
+      "name": "Arcade Game",
+      "legacy_id": "neo_genesis-83",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-84",
+      "number": "84",
+      "name": "Ecogym",
+      "legacy_id": "neo_genesis-84",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-85",
+      "number": "85",
+      "name": "Energy Charge",
+      "legacy_id": "neo_genesis-85",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-86",
+      "number": "86",
+      "name": "Focus Band",
+      "legacy_id": "neo_genesis-86",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-87",
+      "number": "87",
+      "name": "Mary",
+      "legacy_id": "neo_genesis-87",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-88",
+      "number": "88",
+      "name": "PokéGear",
+      "legacy_id": "neo_genesis-88",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-89",
+      "number": "89",
+      "name": "Super Energy Retrieval",
+      "legacy_id": "neo_genesis-89",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-90",
+      "number": "90",
+      "name": "Time Capsule",
+      "legacy_id": "neo_genesis-90",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-91",
+      "number": "91",
+      "name": "Bill's Teleporter",
+      "legacy_id": "neo_genesis-91",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-92",
+      "number": "92",
+      "name": "Card-Flip Game",
+      "legacy_id": "neo_genesis-92",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-93",
+      "number": "93",
+      "name": "Gold Berry",
+      "legacy_id": "neo_genesis-93",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-94",
+      "number": "94",
+      "name": "Miracle Berry",
+      "legacy_id": "neo_genesis-94",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-95",
+      "number": "95",
+      "name": "New Pokédex",
+      "legacy_id": "neo_genesis-95",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-96",
+      "number": "96",
+      "name": "Professor Elm",
+      "legacy_id": "neo_genesis-96",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-97",
+      "number": "97",
+      "name": "Sprout Tower",
+      "legacy_id": "neo_genesis-97",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-98",
+      "number": "98",
+      "name": "Super Scoop Up",
+      "legacy_id": "neo_genesis-98",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "neo1-99",
+      "number": "99",
+      "name": "Berry",
+      "legacy_id": "neo_genesis-99",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-100",
+      "number": "100",
+      "name": "Double Gust",
+      "legacy_id": "neo_genesis-100",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-101",
+      "number": "101",
+      "name": "Moo-Moo Milk",
+      "legacy_id": "neo_genesis-101",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-102",
+      "number": "102",
+      "name": "Pokémon March",
+      "legacy_id": "neo_genesis-102",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-103",
+      "number": "103",
+      "name": "Super Rod",
+      "legacy_id": "neo_genesis-103",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-104",
+      "number": "104",
+      "name": "Darkness Energy",
+      "legacy_id": "neo_genesis-104",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-105",
+      "number": "105",
+      "name": "Recycle Energy",
+      "legacy_id": "neo_genesis-105",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "neo1-106",
+      "number": "106",
+      "name": "Fighting Energy",
+      "legacy_id": "neo_genesis-106",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-107",
+      "number": "107",
+      "name": "Fire Energy",
+      "legacy_id": "neo_genesis-107",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-108",
+      "number": "108",
+      "name": "Grass Energy",
+      "legacy_id": "neo_genesis-108",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-109",
+      "number": "109",
+      "name": "Lightning Energy",
+      "legacy_id": "neo_genesis-109",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-110",
+      "number": "110",
+      "name": "Psychic Energy",
+      "legacy_id": "neo_genesis-110",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "neo1-111",
+      "number": "111",
+      "name": "Water Energy",
+      "legacy_id": "neo_genesis-111",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Common"
+      }
+    }
+  ]
+}

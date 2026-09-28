@@ -90,7 +90,10 @@ def issue_link(user, kind):
     user.set_unusable_password()
     user.save(update_fields=["password"])
     generator = invite_token if kind == "invite" else recovery_token
-    return f"/{kind}/{urlsafe_base64_encode(force_bytes(user.pk))}/{generator.make_token(user)}/"
+    from django.conf import settings
+
+    path = f"{kind}/{urlsafe_base64_encode(force_bytes(user.pk))}/{generator.make_token(user)}"
+    return "/access/#" + path if getattr(settings, "STAGING", False) else "/" + path + "/"
 
 
 @transaction.atomic

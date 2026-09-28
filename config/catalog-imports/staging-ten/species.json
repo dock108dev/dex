@@ -1,0 +1,1257 @@
+{
+  "1": {
+    "name": "Bulbasaur",
+    "dex_number": 1,
+    "generation": 1
+  },
+  "2": {
+    "name": "Ivysaur",
+    "dex_number": 2,
+    "generation": 1
+  },
+  "3": {
+    "name": "Venusaur",
+    "dex_number": 3,
+    "generation": 1
+  },
+  "4": {
+    "name": "Charmander",
+    "dex_number": 4,
+    "generation": 1
+  },
+  "5": {
+    "name": "Charmeleon",
+    "dex_number": 5,
+    "generation": 1
+  },
+  "6": {
+    "name": "Charizard",
+    "dex_number": 6,
+    "generation": 1
+  },
+  "7": {
+    "name": "Squirtle",
+    "dex_number": 7,
+    "generation": 1
+  },
+  "8": {
+    "name": "Wartortle",
+    "dex_number": 8,
+    "generation": 1
+  },
+  "9": {
+    "name": "Blastoise",
+    "dex_number": 9,
+    "generation": 1
+  },
+  "10": {
+    "name": "Caterpie",
+    "dex_number": 10,
+    "generation": 1
+  },
+  "11": {
+    "name": "Metapod",
+    "dex_number": 11,
+    "generation": 1
+  },
+  "12": {
+    "name": "Butterfree",
+    "dex_number": 12,
+    "generation": 1
+  },
+  "13": {
+    "name": "Weedle",
+    "dex_number": 13,
+    "generation": 1
+  },
+  "14": {
+    "name": "Kakuna",
+    "dex_number": 14,
+    "generation": 1
+  },
+  "15": {
+    "name": "Beedrill",
+    "dex_number": 15,
+    "generation": 1
+  },
+  "16": {
+    "name": "Pidgey",
+    "dex_number": 16,
+    "generation": 1
+  },
+  "17": {
+    "name": "Pidgeotto",
+    "dex_number": 17,
+    "generation": 1
+  },
+  "18": {
+    "name": "Pidgeot",
+    "dex_number": 18,
+    "generation": 1
+  },
+  "19": {
+    "name": "Rattata",
+    "dex_number": 19,
+    "generation": 1
+  },
+  "20": {
+    "name": "Raticate",
+    "dex_number": 20,
+    "generation": 1
+  },
+  "21": {
+    "name": "Spearow",
+    "dex_number": 21,
+    "generation": 1
+  },
+  "22": {
+    "name": "Fearow",
+    "dex_number": 22,
+    "generation": 1
+  },
+  "23": {
+    "name": "Ekans",
+    "dex_number": 23,
+    "generation": 1
+  },
+  "24": {
+    "name": "Arbok",
+    "dex_number": 24,
+    "generation": 1
+  },
+  "25": {
+    "name": "Pikachu",
+    "dex_number": 25,
+    "generation": 1
+  },
+  "26": {
+    "name": "Raichu",
+    "dex_number": 26,
+    "generation": 1
+  },
+  "27": {
+    "name": "Sandshrew",
+    "dex_number": 27,
+    "generation": 1
+  },
+  "28": {
+    "name": "Sandslash",
+    "dex_number": 28,
+    "generation": 1
+  },
+  "29": {
+    "name": "Nidoran♀",
+    "dex_number": 29,
+    "generation": 1
+  },
+  "30": {
+    "name": "Nidorina",
+    "dex_number": 30,
+    "generation": 1
+  },
+  "31": {
+    "name": "Nidoqueen",
+    "dex_number": 31,
+    "generation": 1
+  },
+  "32": {
+    "name": "Nidoran♂",
+    "dex_number": 32,
+    "generation": 1
+  },
+  "33": {
+    "name": "Nidorino",
+    "dex_number": 33,
+    "generation": 1
+  },
+  "34": {
+    "name": "Nidoking",
+    "dex_number": 34,
+    "generation": 1
+  },
+  "35": {
+    "name": "Clefairy",
+    "dex_number": 35,
+    "generation": 1
+  },
+  "36": {
+    "name": "Clefable",
+    "dex_number": 36,
+    "generation": 1
+  },
+  "37": {
+    "name": "Vulpix",
+    "dex_number": 37,
+    "generation": 1
+  },
+  "38": {
+    "name": "Ninetales",
+    "dex_number": 38,
+    "generation": 1
+  },
+  "39": {
+    "name": "Jigglypuff",
+    "dex_number": 39,
+    "generation": 1
+  },
+  "40": {
+    "name": "Wigglytuff",
+    "dex_number": 40,
+    "generation": 1
+  },
+  "41": {
+    "name": "Zubat",
+    "dex_number": 41,
+    "generation": 1
+  },
+  "42": {
+    "name": "Golbat",
+    "dex_number": 42,
+    "generation": 1
+  },
+  "43": {
+    "name": "Oddish",
+    "dex_number": 43,
+    "generation": 1
+  },
+  "44": {
+    "name": "Gloom",
+    "dex_number": 44,
+    "generation": 1
+  },
+  "45": {
+    "name": "Vileplume",
+    "dex_number": 45,
+    "generation": 1
+  },
+  "46": {
+    "name": "Paras",
+    "dex_number": 46,
+    "generation": 1
+  },
+  "47": {
+    "name": "Parasect",
+    "dex_number": 47,
+    "generation": 1
+  },
+  "48": {
+    "name": "Venonat",
+    "dex_number": 48,
+    "generation": 1
+  },
+  "49": {
+    "name": "Venomoth",
+    "dex_number": 49,
+    "generation": 1
+  },
+  "50": {
+    "name": "Diglett",
+    "dex_number": 50,
+    "generation": 1
+  },
+  "51": {
+    "name": "Dugtrio",
+    "dex_number": 51,
+    "generation": 1
+  },
+  "52": {
+    "name": "Meowth",
+    "dex_number": 52,
+    "generation": 1
+  },
+  "53": {
+    "name": "Persian",
+    "dex_number": 53,
+    "generation": 1
+  },
+  "54": {
+    "name": "Psyduck",
+    "dex_number": 54,
+    "generation": 1
+  },
+  "55": {
+    "name": "Golduck",
+    "dex_number": 55,
+    "generation": 1
+  },
+  "56": {
+    "name": "Mankey",
+    "dex_number": 56,
+    "generation": 1
+  },
+  "57": {
+    "name": "Primeape",
+    "dex_number": 57,
+    "generation": 1
+  },
+  "58": {
+    "name": "Growlithe",
+    "dex_number": 58,
+    "generation": 1
+  },
+  "59": {
+    "name": "Arcanine",
+    "dex_number": 59,
+    "generation": 1
+  },
+  "60": {
+    "name": "Poliwag",
+    "dex_number": 60,
+    "generation": 1
+  },
+  "61": {
+    "name": "Poliwhirl",
+    "dex_number": 61,
+    "generation": 1
+  },
+  "62": {
+    "name": "Poliwrath",
+    "dex_number": 62,
+    "generation": 1
+  },
+  "63": {
+    "name": "Abra",
+    "dex_number": 63,
+    "generation": 1
+  },
+  "64": {
+    "name": "Kadabra",
+    "dex_number": 64,
+    "generation": 1
+  },
+  "65": {
+    "name": "Alakazam",
+    "dex_number": 65,
+    "generation": 1
+  },
+  "66": {
+    "name": "Machop",
+    "dex_number": 66,
+    "generation": 1
+  },
+  "67": {
+    "name": "Machoke",
+    "dex_number": 67,
+    "generation": 1
+  },
+  "68": {
+    "name": "Machamp",
+    "dex_number": 68,
+    "generation": 1
+  },
+  "69": {
+    "name": "Bellsprout",
+    "dex_number": 69,
+    "generation": 1
+  },
+  "70": {
+    "name": "Weepinbell",
+    "dex_number": 70,
+    "generation": 1
+  },
+  "71": {
+    "name": "Victreebel",
+    "dex_number": 71,
+    "generation": 1
+  },
+  "72": {
+    "name": "Tentacool",
+    "dex_number": 72,
+    "generation": 1
+  },
+  "73": {
+    "name": "Tentacruel",
+    "dex_number": 73,
+    "generation": 1
+  },
+  "74": {
+    "name": "Geodude",
+    "dex_number": 74,
+    "generation": 1
+  },
+  "75": {
+    "name": "Graveler",
+    "dex_number": 75,
+    "generation": 1
+  },
+  "76": {
+    "name": "Golem",
+    "dex_number": 76,
+    "generation": 1
+  },
+  "77": {
+    "name": "Ponyta",
+    "dex_number": 77,
+    "generation": 1
+  },
+  "78": {
+    "name": "Rapidash",
+    "dex_number": 78,
+    "generation": 1
+  },
+  "79": {
+    "name": "Slowpoke",
+    "dex_number": 79,
+    "generation": 1
+  },
+  "80": {
+    "name": "Slowbro",
+    "dex_number": 80,
+    "generation": 1
+  },
+  "81": {
+    "name": "Magnemite",
+    "dex_number": 81,
+    "generation": 1
+  },
+  "82": {
+    "name": "Magneton",
+    "dex_number": 82,
+    "generation": 1
+  },
+  "83": {
+    "name": "Farfetch'd",
+    "dex_number": 83,
+    "generation": 1
+  },
+  "84": {
+    "name": "Doduo",
+    "dex_number": 84,
+    "generation": 1
+  },
+  "85": {
+    "name": "Dodrio",
+    "dex_number": 85,
+    "generation": 1
+  },
+  "86": {
+    "name": "Seel",
+    "dex_number": 86,
+    "generation": 1
+  },
+  "87": {
+    "name": "Dewgong",
+    "dex_number": 87,
+    "generation": 1
+  },
+  "88": {
+    "name": "Grimer",
+    "dex_number": 88,
+    "generation": 1
+  },
+  "89": {
+    "name": "Muk",
+    "dex_number": 89,
+    "generation": 1
+  },
+  "90": {
+    "name": "Shellder",
+    "dex_number": 90,
+    "generation": 1
+  },
+  "91": {
+    "name": "Cloyster",
+    "dex_number": 91,
+    "generation": 1
+  },
+  "92": {
+    "name": "Gastly",
+    "dex_number": 92,
+    "generation": 1
+  },
+  "93": {
+    "name": "Haunter",
+    "dex_number": 93,
+    "generation": 1
+  },
+  "94": {
+    "name": "Gengar",
+    "dex_number": 94,
+    "generation": 1
+  },
+  "95": {
+    "name": "Onix",
+    "dex_number": 95,
+    "generation": 1
+  },
+  "96": {
+    "name": "Drowzee",
+    "dex_number": 96,
+    "generation": 1
+  },
+  "97": {
+    "name": "Hypno",
+    "dex_number": 97,
+    "generation": 1
+  },
+  "98": {
+    "name": "Krabby",
+    "dex_number": 98,
+    "generation": 1
+  },
+  "99": {
+    "name": "Kingler",
+    "dex_number": 99,
+    "generation": 1
+  },
+  "100": {
+    "name": "Voltorb",
+    "dex_number": 100,
+    "generation": 1
+  },
+  "101": {
+    "name": "Electrode",
+    "dex_number": 101,
+    "generation": 1
+  },
+  "102": {
+    "name": "Exeggcute",
+    "dex_number": 102,
+    "generation": 1
+  },
+  "103": {
+    "name": "Exeggutor",
+    "dex_number": 103,
+    "generation": 1
+  },
+  "104": {
+    "name": "Cubone",
+    "dex_number": 104,
+    "generation": 1
+  },
+  "105": {
+    "name": "Marowak",
+    "dex_number": 105,
+    "generation": 1
+  },
+  "106": {
+    "name": "Hitmonlee",
+    "dex_number": 106,
+    "generation": 1
+  },
+  "107": {
+    "name": "Hitmonchan",
+    "dex_number": 107,
+    "generation": 1
+  },
+  "108": {
+    "name": "Lickitung",
+    "dex_number": 108,
+    "generation": 1
+  },
+  "109": {
+    "name": "Koffing",
+    "dex_number": 109,
+    "generation": 1
+  },
+  "110": {
+    "name": "Weezing",
+    "dex_number": 110,
+    "generation": 1
+  },
+  "111": {
+    "name": "Rhyhorn",
+    "dex_number": 111,
+    "generation": 1
+  },
+  "112": {
+    "name": "Rhydon",
+    "dex_number": 112,
+    "generation": 1
+  },
+  "113": {
+    "name": "Chansey",
+    "dex_number": 113,
+    "generation": 1
+  },
+  "114": {
+    "name": "Tangela",
+    "dex_number": 114,
+    "generation": 1
+  },
+  "115": {
+    "name": "Kangaskhan",
+    "dex_number": 115,
+    "generation": 1
+  },
+  "116": {
+    "name": "Horsea",
+    "dex_number": 116,
+    "generation": 1
+  },
+  "117": {
+    "name": "Seadra",
+    "dex_number": 117,
+    "generation": 1
+  },
+  "118": {
+    "name": "Goldeen",
+    "dex_number": 118,
+    "generation": 1
+  },
+  "119": {
+    "name": "Seaking",
+    "dex_number": 119,
+    "generation": 1
+  },
+  "120": {
+    "name": "Staryu",
+    "dex_number": 120,
+    "generation": 1
+  },
+  "121": {
+    "name": "Starmie",
+    "dex_number": 121,
+    "generation": 1
+  },
+  "122": {
+    "name": "Mr. Mime",
+    "dex_number": 122,
+    "generation": 1
+  },
+  "123": {
+    "name": "Scyther",
+    "dex_number": 123,
+    "generation": 1
+  },
+  "124": {
+    "name": "Jynx",
+    "dex_number": 124,
+    "generation": 1
+  },
+  "125": {
+    "name": "Electabuzz",
+    "dex_number": 125,
+    "generation": 1
+  },
+  "126": {
+    "name": "Magmar",
+    "dex_number": 126,
+    "generation": 1
+  },
+  "127": {
+    "name": "Pinsir",
+    "dex_number": 127,
+    "generation": 1
+  },
+  "128": {
+    "name": "Tauros",
+    "dex_number": 128,
+    "generation": 1
+  },
+  "129": {
+    "name": "Magikarp",
+    "dex_number": 129,
+    "generation": 1
+  },
+  "130": {
+    "name": "Gyarados",
+    "dex_number": 130,
+    "generation": 1
+  },
+  "131": {
+    "name": "Lapras",
+    "dex_number": 131,
+    "generation": 1
+  },
+  "132": {
+    "name": "Ditto",
+    "dex_number": 132,
+    "generation": 1
+  },
+  "133": {
+    "name": "Eevee",
+    "dex_number": 133,
+    "generation": 1
+  },
+  "134": {
+    "name": "Vaporeon",
+    "dex_number": 134,
+    "generation": 1
+  },
+  "135": {
+    "name": "Jolteon",
+    "dex_number": 135,
+    "generation": 1
+  },
+  "136": {
+    "name": "Flareon",
+    "dex_number": 136,
+    "generation": 1
+  },
+  "137": {
+    "name": "Porygon",
+    "dex_number": 137,
+    "generation": 1
+  },
+  "138": {
+    "name": "Omanyte",
+    "dex_number": 138,
+    "generation": 1
+  },
+  "139": {
+    "name": "Omastar",
+    "dex_number": 139,
+    "generation": 1
+  },
+  "140": {
+    "name": "Kabuto",
+    "dex_number": 140,
+    "generation": 1
+  },
+  "141": {
+    "name": "Kabutops",
+    "dex_number": 141,
+    "generation": 1
+  },
+  "142": {
+    "name": "Aerodactyl",
+    "dex_number": 142,
+    "generation": 1
+  },
+  "143": {
+    "name": "Snorlax",
+    "dex_number": 143,
+    "generation": 1
+  },
+  "144": {
+    "name": "Articuno",
+    "dex_number": 144,
+    "generation": 1
+  },
+  "145": {
+    "name": "Zapdos",
+    "dex_number": 145,
+    "generation": 1
+  },
+  "146": {
+    "name": "Moltres",
+    "dex_number": 146,
+    "generation": 1
+  },
+  "147": {
+    "name": "Dratini",
+    "dex_number": 147,
+    "generation": 1
+  },
+  "148": {
+    "name": "Dragonair",
+    "dex_number": 148,
+    "generation": 1
+  },
+  "149": {
+    "name": "Dragonite",
+    "dex_number": 149,
+    "generation": 1
+  },
+  "150": {
+    "name": "Mewtwo",
+    "dex_number": 150,
+    "generation": 1
+  },
+  "151": {
+    "name": "Mew",
+    "dex_number": 151,
+    "generation": 1
+  },
+  "152": {
+    "name": "Chikorita",
+    "dex_number": 152,
+    "generation": 2
+  },
+  "153": {
+    "name": "Bayleef",
+    "dex_number": 153,
+    "generation": 2
+  },
+  "154": {
+    "name": "Meganium",
+    "dex_number": 154,
+    "generation": 2
+  },
+  "155": {
+    "name": "Cyndaquil",
+    "dex_number": 155,
+    "generation": 2
+  },
+  "156": {
+    "name": "Quilava",
+    "dex_number": 156,
+    "generation": 2
+  },
+  "157": {
+    "name": "Typhlosion",
+    "dex_number": 157,
+    "generation": 2
+  },
+  "158": {
+    "name": "Totodile",
+    "dex_number": 158,
+    "generation": 2
+  },
+  "159": {
+    "name": "Croconaw",
+    "dex_number": 159,
+    "generation": 2
+  },
+  "160": {
+    "name": "Feraligatr",
+    "dex_number": 160,
+    "generation": 2
+  },
+  "161": {
+    "name": "Sentret",
+    "dex_number": 161,
+    "generation": 2
+  },
+  "162": {
+    "name": "Furret",
+    "dex_number": 162,
+    "generation": 2
+  },
+  "163": {
+    "name": "Hoothoot",
+    "dex_number": 163,
+    "generation": 2
+  },
+  "164": {
+    "name": "Noctowl",
+    "dex_number": 164,
+    "generation": 2
+  },
+  "165": {
+    "name": "Ledyba",
+    "dex_number": 165,
+    "generation": 2
+  },
+  "166": {
+    "name": "Ledian",
+    "dex_number": 166,
+    "generation": 2
+  },
+  "167": {
+    "name": "Spinarak",
+    "dex_number": 167,
+    "generation": 2
+  },
+  "168": {
+    "name": "Ariados",
+    "dex_number": 168,
+    "generation": 2
+  },
+  "169": {
+    "name": "Crobat",
+    "dex_number": 169,
+    "generation": 2
+  },
+  "170": {
+    "name": "Chinchou",
+    "dex_number": 170,
+    "generation": 2
+  },
+  "171": {
+    "name": "Lanturn",
+    "dex_number": 171,
+    "generation": 2
+  },
+  "172": {
+    "name": "Pichu",
+    "dex_number": 172,
+    "generation": 2
+  },
+  "173": {
+    "name": "Cleffa",
+    "dex_number": 173,
+    "generation": 2
+  },
+  "174": {
+    "name": "Igglybuff",
+    "dex_number": 174,
+    "generation": 2
+  },
+  "175": {
+    "name": "Togepi",
+    "dex_number": 175,
+    "generation": 2
+  },
+  "176": {
+    "name": "Togetic",
+    "dex_number": 176,
+    "generation": 2
+  },
+  "177": {
+    "name": "Natu",
+    "dex_number": 177,
+    "generation": 2
+  },
+  "178": {
+    "name": "Xatu",
+    "dex_number": 178,
+    "generation": 2
+  },
+  "179": {
+    "name": "Mareep",
+    "dex_number": 179,
+    "generation": 2
+  },
+  "180": {
+    "name": "Flaaffy",
+    "dex_number": 180,
+    "generation": 2
+  },
+  "181": {
+    "name": "Ampharos",
+    "dex_number": 181,
+    "generation": 2
+  },
+  "182": {
+    "name": "Bellossom",
+    "dex_number": 182,
+    "generation": 2
+  },
+  "183": {
+    "name": "Marill",
+    "dex_number": 183,
+    "generation": 2
+  },
+  "184": {
+    "name": "Azumarill",
+    "dex_number": 184,
+    "generation": 2
+  },
+  "185": {
+    "name": "Sudowoodo",
+    "dex_number": 185,
+    "generation": 2
+  },
+  "186": {
+    "name": "Politoed",
+    "dex_number": 186,
+    "generation": 2
+  },
+  "187": {
+    "name": "Hoppip",
+    "dex_number": 187,
+    "generation": 2
+  },
+  "188": {
+    "name": "Skiploom",
+    "dex_number": 188,
+    "generation": 2
+  },
+  "189": {
+    "name": "Jumpluff",
+    "dex_number": 189,
+    "generation": 2
+  },
+  "190": {
+    "name": "Aipom",
+    "dex_number": 190,
+    "generation": 2
+  },
+  "191": {
+    "name": "Sunkern",
+    "dex_number": 191,
+    "generation": 2
+  },
+  "192": {
+    "name": "Sunflora",
+    "dex_number": 192,
+    "generation": 2
+  },
+  "193": {
+    "name": "Yanma",
+    "dex_number": 193,
+    "generation": 2
+  },
+  "194": {
+    "name": "Wooper",
+    "dex_number": 194,
+    "generation": 2
+  },
+  "195": {
+    "name": "Quagsire",
+    "dex_number": 195,
+    "generation": 2
+  },
+  "196": {
+    "name": "Espeon",
+    "dex_number": 196,
+    "generation": 2
+  },
+  "197": {
+    "name": "Umbreon",
+    "dex_number": 197,
+    "generation": 2
+  },
+  "198": {
+    "name": "Murkrow",
+    "dex_number": 198,
+    "generation": 2
+  },
+  "199": {
+    "name": "Slowking",
+    "dex_number": 199,
+    "generation": 2
+  },
+  "200": {
+    "name": "Misdreavus",
+    "dex_number": 200,
+    "generation": 2
+  },
+  "201": {
+    "name": "Unown",
+    "dex_number": 201,
+    "generation": 2
+  },
+  "202": {
+    "name": "Wobbuffet",
+    "dex_number": 202,
+    "generation": 2
+  },
+  "203": {
+    "name": "Girafarig",
+    "dex_number": 203,
+    "generation": 2
+  },
+  "204": {
+    "name": "Pineco",
+    "dex_number": 204,
+    "generation": 2
+  },
+  "205": {
+    "name": "Forretress",
+    "dex_number": 205,
+    "generation": 2
+  },
+  "206": {
+    "name": "Dunsparce",
+    "dex_number": 206,
+    "generation": 2
+  },
+  "207": {
+    "name": "Gligar",
+    "dex_number": 207,
+    "generation": 2
+  },
+  "208": {
+    "name": "Steelix",
+    "dex_number": 208,
+    "generation": 2
+  },
+  "209": {
+    "name": "Snubbull",
+    "dex_number": 209,
+    "generation": 2
+  },
+  "210": {
+    "name": "Granbull",
+    "dex_number": 210,
+    "generation": 2
+  },
+  "211": {
+    "name": "Qwilfish",
+    "dex_number": 211,
+    "generation": 2
+  },
+  "212": {
+    "name": "Scizor",
+    "dex_number": 212,
+    "generation": 2
+  },
+  "213": {
+    "name": "Shuckle",
+    "dex_number": 213,
+    "generation": 2
+  },
+  "214": {
+    "name": "Heracross",
+    "dex_number": 214,
+    "generation": 2
+  },
+  "215": {
+    "name": "Sneasel",
+    "dex_number": 215,
+    "generation": 2
+  },
+  "216": {
+    "name": "Teddiursa",
+    "dex_number": 216,
+    "generation": 2
+  },
+  "217": {
+    "name": "Ursaring",
+    "dex_number": 217,
+    "generation": 2
+  },
+  "218": {
+    "name": "Slugma",
+    "dex_number": 218,
+    "generation": 2
+  },
+  "219": {
+    "name": "Magcargo",
+    "dex_number": 219,
+    "generation": 2
+  },
+  "220": {
+    "name": "Swinub",
+    "dex_number": 220,
+    "generation": 2
+  },
+  "221": {
+    "name": "Piloswine",
+    "dex_number": 221,
+    "generation": 2
+  },
+  "222": {
+    "name": "Corsola",
+    "dex_number": 222,
+    "generation": 2
+  },
+  "223": {
+    "name": "Remoraid",
+    "dex_number": 223,
+    "generation": 2
+  },
+  "224": {
+    "name": "Octillery",
+    "dex_number": 224,
+    "generation": 2
+  },
+  "225": {
+    "name": "Delibird",
+    "dex_number": 225,
+    "generation": 2
+  },
+  "226": {
+    "name": "Mantine",
+    "dex_number": 226,
+    "generation": 2
+  },
+  "227": {
+    "name": "Skarmory",
+    "dex_number": 227,
+    "generation": 2
+  },
+  "228": {
+    "name": "Houndour",
+    "dex_number": 228,
+    "generation": 2
+  },
+  "229": {
+    "name": "Houndoom",
+    "dex_number": 229,
+    "generation": 2
+  },
+  "230": {
+    "name": "Kingdra",
+    "dex_number": 230,
+    "generation": 2
+  },
+  "231": {
+    "name": "Phanpy",
+    "dex_number": 231,
+    "generation": 2
+  },
+  "232": {
+    "name": "Donphan",
+    "dex_number": 232,
+    "generation": 2
+  },
+  "233": {
+    "name": "Porygon2",
+    "dex_number": 233,
+    "generation": 2
+  },
+  "234": {
+    "name": "Stantler",
+    "dex_number": 234,
+    "generation": 2
+  },
+  "235": {
+    "name": "Smeargle",
+    "dex_number": 235,
+    "generation": 2
+  },
+  "236": {
+    "name": "Tyrogue",
+    "dex_number": 236,
+    "generation": 2
+  },
+  "237": {
+    "name": "Hitmontop",
+    "dex_number": 237,
+    "generation": 2
+  },
+  "238": {
+    "name": "Smoochum",
+    "dex_number": 238,
+    "generation": 2
+  },
+  "239": {
+    "name": "Elekid",
+    "dex_number": 239,
+    "generation": 2
+  },
+  "240": {
+    "name": "Magby",
+    "dex_number": 240,
+    "generation": 2
+  },
+  "241": {
+    "name": "Miltank",
+    "dex_number": 241,
+    "generation": 2
+  },
+  "242": {
+    "name": "Blissey",
+    "dex_number": 242,
+    "generation": 2
+  },
+  "243": {
+    "name": "Raikou",
+    "dex_number": 243,
+    "generation": 2
+  },
+  "244": {
+    "name": "Entei",
+    "dex_number": 244,
+    "generation": 2
+  },
+  "245": {
+    "name": "Suicune",
+    "dex_number": 245,
+    "generation": 2
+  },
+  "246": {
+    "name": "Larvitar",
+    "dex_number": 246,
+    "generation": 2
+  },
+  "247": {
+    "name": "Pupitar",
+    "dex_number": 247,
+    "generation": 2
+  },
+  "248": {
+    "name": "Tyranitar",
+    "dex_number": 248,
+    "generation": 2
+  },
+  "249": {
+    "name": "Lugia",
+    "dex_number": 249,
+    "generation": 2
+  },
+  "250": {
+    "name": "Ho-oh",
+    "dex_number": 250,
+    "generation": 2
+  },
+  "251": {
+    "name": "Celebi",
+    "dex_number": 251,
+    "generation": 2
+  }
+}

@@ -1,0 +1,1017 @@
+{
+  "schema_version": "dex-catalog-v1",
+  "game": "pokemon",
+  "set_key": "base5",
+  "set_name": "Team Rocket",
+  "language": "en",
+  "aliases": [
+    "Team Rocket"
+  ],
+  "provider": "tcgdex",
+  "version": "309aab7060b165925fee48573e730275dfbd737c",
+  "source_url": "https://github.com/tcgdex/cards-database/tree/309aab7060b165925fee48573e730275dfbd737c/data/Base",
+  "source_sha256": "a126f780908771a9b5566e4c4ae629e59cc566ee2ad6c3f22092f1a14de38598",
+  "metadata_permission": "TCGdex cards-database MIT; copyright (c) 2021 TCGdex. Attribution retained in TCGDEX_LICENSE.txt. Minimal hosted metadata; no artwork, prices or rules text.",
+  "image_permission": "not-included",
+  "coverage": "catalog-entries",
+  "expected_count": 83,
+  "reconcile_legacy_set": "team_rocket",
+  "cards": [
+    {
+      "external_id": "base5-1",
+      "number": "1",
+      "name": "Dark Alakazam",
+      "legacy_id": "team_rocket-1",
+      "metadata": {
+        "pokemon_dex": 65,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-2",
+      "number": "2",
+      "name": "Dark Arbok",
+      "legacy_id": "team_rocket-2",
+      "metadata": {
+        "pokemon_dex": 24,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-3",
+      "number": "3",
+      "name": "Dark Blastoise",
+      "legacy_id": "team_rocket-3",
+      "metadata": {
+        "pokemon_dex": 9,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-4",
+      "number": "4",
+      "name": "Dark Charizard",
+      "legacy_id": "team_rocket-4",
+      "metadata": {
+        "pokemon_dex": 6,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-5",
+      "number": "5",
+      "name": "Dark Dragonite",
+      "legacy_id": "team_rocket-5",
+      "metadata": {
+        "pokemon_dex": 149,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-6",
+      "number": "6",
+      "name": "Dark Dugtrio",
+      "legacy_id": "team_rocket-6",
+      "metadata": {
+        "pokemon_dex": 51,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-7",
+      "number": "7",
+      "name": "Dark Golbat",
+      "legacy_id": "team_rocket-7",
+      "metadata": {
+        "pokemon_dex": 42,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-8",
+      "number": "8",
+      "name": "Dark Gyarados",
+      "legacy_id": "team_rocket-8",
+      "metadata": {
+        "pokemon_dex": 130,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-9",
+      "number": "9",
+      "name": "Dark Hypno",
+      "legacy_id": "team_rocket-9",
+      "metadata": {
+        "pokemon_dex": 97,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-10",
+      "number": "10",
+      "name": "Dark Machamp",
+      "legacy_id": "team_rocket-10",
+      "metadata": {
+        "pokemon_dex": 68,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-11",
+      "number": "11",
+      "name": "Dark Magneton",
+      "legacy_id": "team_rocket-11",
+      "metadata": {
+        "pokemon_dex": 82,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-12",
+      "number": "12",
+      "name": "Dark Slowbro",
+      "legacy_id": "team_rocket-12",
+      "metadata": {
+        "pokemon_dex": 80,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-13",
+      "number": "13",
+      "name": "Dark Vileplume",
+      "legacy_id": "team_rocket-13",
+      "metadata": {
+        "pokemon_dex": 45,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-14",
+      "number": "14",
+      "name": "Dark Weezing",
+      "legacy_id": "team_rocket-14",
+      "metadata": {
+        "pokemon_dex": 110,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-15",
+      "number": "15",
+      "name": "Here Comes Team Rocket!",
+      "legacy_id": "team_rocket-15",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-16",
+      "number": "16",
+      "name": "Rocket's Sneak Attack",
+      "legacy_id": "team_rocket-16",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-17",
+      "number": "17",
+      "name": "Rainbow Energy",
+      "legacy_id": "team_rocket-17",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-18",
+      "number": "18",
+      "name": "Dark Alakazam",
+      "legacy_id": "team_rocket-18",
+      "metadata": {
+        "pokemon_dex": 65,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-19",
+      "number": "19",
+      "name": "Dark Arbok",
+      "legacy_id": "team_rocket-19",
+      "metadata": {
+        "pokemon_dex": 24,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-20",
+      "number": "20",
+      "name": "Dark Blastoise",
+      "legacy_id": "team_rocket-20",
+      "metadata": {
+        "pokemon_dex": 9,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-21",
+      "number": "21",
+      "name": "Dark Charizard",
+      "legacy_id": "team_rocket-21",
+      "metadata": {
+        "pokemon_dex": 6,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-22",
+      "number": "22",
+      "name": "Dark Dragonite",
+      "legacy_id": "team_rocket-22",
+      "metadata": {
+        "pokemon_dex": 149,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-23",
+      "number": "23",
+      "name": "Dark Dugtrio",
+      "legacy_id": "team_rocket-23",
+      "metadata": {
+        "pokemon_dex": 51,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-24",
+      "number": "24",
+      "name": "Dark Golbat",
+      "legacy_id": "team_rocket-24",
+      "metadata": {
+        "pokemon_dex": 42,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-25",
+      "number": "25",
+      "name": "Dark Gyarados",
+      "legacy_id": "team_rocket-25",
+      "metadata": {
+        "pokemon_dex": 130,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-26",
+      "number": "26",
+      "name": "Dark Hypno",
+      "legacy_id": "team_rocket-26",
+      "metadata": {
+        "pokemon_dex": 97,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-27",
+      "number": "27",
+      "name": "Dark Machamp",
+      "legacy_id": "team_rocket-27",
+      "metadata": {
+        "pokemon_dex": 68,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-28",
+      "number": "28",
+      "name": "Dark Magneton",
+      "legacy_id": "team_rocket-28",
+      "metadata": {
+        "pokemon_dex": 82,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-29",
+      "number": "29",
+      "name": "Dark Slowbro",
+      "legacy_id": "team_rocket-29",
+      "metadata": {
+        "pokemon_dex": 80,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-30",
+      "number": "30",
+      "name": "Dark Vileplume",
+      "legacy_id": "team_rocket-30",
+      "metadata": {
+        "pokemon_dex": 45,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-31",
+      "number": "31",
+      "name": "Dark Weezing",
+      "legacy_id": "team_rocket-31",
+      "metadata": {
+        "pokemon_dex": 110,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-32",
+      "number": "32",
+      "name": "Dark Charmeleon",
+      "legacy_id": "team_rocket-32",
+      "metadata": {
+        "pokemon_dex": 5,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-33",
+      "number": "33",
+      "name": "Dark Dragonair",
+      "legacy_id": "team_rocket-33",
+      "metadata": {
+        "pokemon_dex": 148,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-34",
+      "number": "34",
+      "name": "Dark Electrode",
+      "legacy_id": "team_rocket-34",
+      "metadata": {
+        "pokemon_dex": 101,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-35",
+      "number": "35",
+      "name": "Dark Flareon",
+      "legacy_id": "team_rocket-35",
+      "metadata": {
+        "pokemon_dex": 136,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-36",
+      "number": "36",
+      "name": "Dark Gloom",
+      "legacy_id": "team_rocket-36",
+      "metadata": {
+        "pokemon_dex": 44,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-37",
+      "number": "37",
+      "name": "Dark Golduck",
+      "legacy_id": "team_rocket-37",
+      "metadata": {
+        "pokemon_dex": 55,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-38",
+      "number": "38",
+      "name": "Dark Jolteon",
+      "legacy_id": "team_rocket-38",
+      "metadata": {
+        "pokemon_dex": 135,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-39",
+      "number": "39",
+      "name": "Dark Kadabra",
+      "legacy_id": "team_rocket-39",
+      "metadata": {
+        "pokemon_dex": 64,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-40",
+      "number": "40",
+      "name": "Dark Machoke",
+      "legacy_id": "team_rocket-40",
+      "metadata": {
+        "pokemon_dex": 67,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-41",
+      "number": "41",
+      "name": "Dark Muk",
+      "legacy_id": "team_rocket-41",
+      "metadata": {
+        "pokemon_dex": 89,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-42",
+      "number": "42",
+      "name": "Dark Persian",
+      "legacy_id": "team_rocket-42",
+      "metadata": {
+        "pokemon_dex": 53,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-43",
+      "number": "43",
+      "name": "Dark Primeape",
+      "legacy_id": "team_rocket-43",
+      "metadata": {
+        "pokemon_dex": 57,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-44",
+      "number": "44",
+      "name": "Dark Rapidash",
+      "legacy_id": "team_rocket-44",
+      "metadata": {
+        "pokemon_dex": 78,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-45",
+      "number": "45",
+      "name": "Dark Vaporeon",
+      "legacy_id": "team_rocket-45",
+      "metadata": {
+        "pokemon_dex": 134,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-46",
+      "number": "46",
+      "name": "Dark Wartortle",
+      "legacy_id": "team_rocket-46",
+      "metadata": {
+        "pokemon_dex": 8,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-47",
+      "number": "47",
+      "name": "Magikarp",
+      "legacy_id": "team_rocket-47",
+      "metadata": {
+        "pokemon_dex": 129,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-48",
+      "number": "48",
+      "name": "Porygon",
+      "legacy_id": "team_rocket-48",
+      "metadata": {
+        "pokemon_dex": 137,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-49",
+      "number": "49",
+      "name": "Abra",
+      "legacy_id": "team_rocket-49",
+      "metadata": {
+        "pokemon_dex": 63,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-50",
+      "number": "50",
+      "name": "Charmander",
+      "legacy_id": "team_rocket-50",
+      "metadata": {
+        "pokemon_dex": 4,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-51",
+      "number": "51",
+      "name": "Dark Raticate",
+      "legacy_id": "team_rocket-51",
+      "metadata": {
+        "pokemon_dex": 20,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-52",
+      "number": "52",
+      "name": "Diglett",
+      "legacy_id": "team_rocket-52",
+      "metadata": {
+        "pokemon_dex": 50,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-53",
+      "number": "53",
+      "name": "Dratini",
+      "legacy_id": "team_rocket-53",
+      "metadata": {
+        "pokemon_dex": 147,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-54",
+      "number": "54",
+      "name": "Drowzee",
+      "legacy_id": "team_rocket-54",
+      "metadata": {
+        "pokemon_dex": 96,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-55",
+      "number": "55",
+      "name": "Eevee",
+      "legacy_id": "team_rocket-55",
+      "metadata": {
+        "pokemon_dex": 133,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-56",
+      "number": "56",
+      "name": "Ekans",
+      "legacy_id": "team_rocket-56",
+      "metadata": {
+        "pokemon_dex": 23,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-57",
+      "number": "57",
+      "name": "Grimer",
+      "legacy_id": "team_rocket-57",
+      "metadata": {
+        "pokemon_dex": 88,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-58",
+      "number": "58",
+      "name": "Koffing",
+      "legacy_id": "team_rocket-58",
+      "metadata": {
+        "pokemon_dex": 109,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-59",
+      "number": "59",
+      "name": "Machop",
+      "legacy_id": "team_rocket-59",
+      "metadata": {
+        "pokemon_dex": 66,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-60",
+      "number": "60",
+      "name": "Magnemite",
+      "legacy_id": "team_rocket-60",
+      "metadata": {
+        "pokemon_dex": 81,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-61",
+      "number": "61",
+      "name": "Mankey",
+      "legacy_id": "team_rocket-61",
+      "metadata": {
+        "pokemon_dex": 56,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-62",
+      "number": "62",
+      "name": "Meowth",
+      "legacy_id": "team_rocket-62",
+      "metadata": {
+        "pokemon_dex": 52,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-63",
+      "number": "63",
+      "name": "Oddish",
+      "legacy_id": "team_rocket-63",
+      "metadata": {
+        "pokemon_dex": 43,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-64",
+      "number": "64",
+      "name": "Ponyta",
+      "legacy_id": "team_rocket-64",
+      "metadata": {
+        "pokemon_dex": 77,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-65",
+      "number": "65",
+      "name": "Psyduck",
+      "legacy_id": "team_rocket-65",
+      "metadata": {
+        "pokemon_dex": 54,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-66",
+      "number": "66",
+      "name": "Rattata",
+      "legacy_id": "team_rocket-66",
+      "metadata": {
+        "pokemon_dex": 19,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-67",
+      "number": "67",
+      "name": "Slowpoke",
+      "legacy_id": "team_rocket-67",
+      "metadata": {
+        "pokemon_dex": 79,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-68",
+      "number": "68",
+      "name": "Squirtle",
+      "legacy_id": "team_rocket-68",
+      "metadata": {
+        "pokemon_dex": 7,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-69",
+      "number": "69",
+      "name": "Voltorb",
+      "legacy_id": "team_rocket-69",
+      "metadata": {
+        "pokemon_dex": 100,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-70",
+      "number": "70",
+      "name": "Zubat",
+      "legacy_id": "team_rocket-70",
+      "metadata": {
+        "pokemon_dex": 41,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-71",
+      "number": "71",
+      "name": "Here Comes Team Rocket!",
+      "legacy_id": "team_rocket-71",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-72",
+      "number": "72",
+      "name": "Rocket's Sneak Attack",
+      "legacy_id": "team_rocket-72",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-73",
+      "number": "73",
+      "name": "The Boss's Way",
+      "legacy_id": "team_rocket-73",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-74",
+      "number": "74",
+      "name": "Challenge!",
+      "legacy_id": "team_rocket-74",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-75",
+      "number": "75",
+      "name": "Digger",
+      "legacy_id": "team_rocket-75",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-76",
+      "number": "76",
+      "name": "Imposter Oak's Revenge",
+      "legacy_id": "team_rocket-76",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-77",
+      "number": "77",
+      "name": "Nightly Garbage Run",
+      "legacy_id": "team_rocket-77",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-78",
+      "number": "78",
+      "name": "Goop Gas Attack",
+      "legacy_id": "team_rocket-78",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-79",
+      "number": "79",
+      "name": "Sleep!",
+      "legacy_id": "team_rocket-79",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "base5-80",
+      "number": "80",
+      "name": "Rainbow Energy",
+      "legacy_id": "team_rocket-80",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "base5-81",
+      "number": "81",
+      "name": "Full Heal Energy",
+      "legacy_id": "team_rocket-81",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-82",
+      "number": "82",
+      "name": "Potion Energy",
+      "legacy_id": "team_rocket-82",
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "base5-83",
+      "number": "83",
+      "name": "Dark Raichu",
+      "legacy_id": "team_rocket-83",
+      "metadata": {
+        "pokemon_dex": 26,
+        "dex_eligible": false,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    }
+  ]
+}

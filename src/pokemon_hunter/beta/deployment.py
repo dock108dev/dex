@@ -275,6 +275,7 @@ def main():
         "action",
         choices=[
             "migrate-copy",
+            "publish-staging-catalog",
             "migrate",
             "web",
             "worker",
@@ -291,7 +292,15 @@ def main():
     args = parser.parse_args()
     os.umask(0o077)
     setup()
-    if args.action == "migrate-copy":
+    if args.action == "publish-staging-catalog":
+        from pokemon_hunter.inventory import OWNER_ID
+
+        from . import store
+        from .catalog_reconcile import publish_all
+
+        owner = store.rows("SELECT auth_subject FROM users WHERE id=%s", [OWNER_ID])[0]
+        publish_all(store.principal(owner["auth_subject"]))
+    elif args.action == "migrate-copy":
         migrate_copy(args.path)
     elif args.action == "migrate":
         initialize()
