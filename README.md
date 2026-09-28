@@ -6,7 +6,7 @@ A local vintage Pokémon collection app with a spoiler-controlled hunt experienc
 
 The [roadmap](docs/ROADMAP.md) targets Mike alone on his Mac. The authenticated app at [Overview](http://127.0.0.1:8011/overview/) includes collection/Pokédex parity, copies, binders, goals, imports/exports/undo, photo entry and catalog requests. Preserve the existing login and data; do not initialize it again. [Local launch instructions](docs/B2_PARITY.md#launch-the-revised-review-app) apply if it is stopped.
 
-[Scan/Add](http://127.0.0.1:8011/scan/) currently has documented simulated/manual recognition; Codex CLI recognition using the existing login is next, with API-key support retained for future deployment. See [photo configuration](docs/B3_PHOTO_ENTRY.md). Hosting, LAN HTTPS and phone/operational qualification are deferred. [PM status](docs/PM_STATUS.md) records current priorities.
+[Scan/Add](http://127.0.0.1:8011/scan/) supports explicit `codex_cli` recognition using the existing Codex ChatGPT login, plus `openai` API-key, manual and fixture providers. CLI is the selected local mode; images go to OpenAI and subscription limits apply. Real-card accuracy still needs labeled photos. See [photo configuration](docs/B3_PHOTO_ENTRY.md). Hosting, LAN HTTPS and phone/operational qualification are deferred. [PM status](docs/PM_STATUS.md) records current priorities.
 
 ## Original local app — preserved
 
@@ -50,7 +50,7 @@ Add your eBay application credentials locally using `.env.example`, then restart
 
 Live searches are bounded and report coverage; next-batch search is available for longer query plans. Prices include known shipping and exclude tax. Check the revealed seller page for current availability. The app never buys or bids.
 
-Current recognition uses explicit seller text, not photos. Unknown lot contents remain unknown. No raw market-price feed is connected, so value and recommended-bid estimates stay unavailable unless sourced LP/NM records and enough inventory/condition evidence exist. Sample results are synthetic examples, not purchase recommendations.
+The original lot watcher uses explicit seller text, not photos. Unknown lot contents remain unknown. No raw market-price feed is connected, so value and recommended-bid estimates stay unavailable unless sourced LP/NM records and enough inventory/condition evidence exist. Sample results are synthetic examples, not purchase recommendations.
 
 ## Verification
 

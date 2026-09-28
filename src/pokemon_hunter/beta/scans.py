@@ -16,8 +16,8 @@ from django.http import Http404
 from PIL import Image, ImageOps
 from pydantic import BaseModel, ConfigDict, Field
 
+from . import codex_recognition, store
 from . import collection as inventory
-from . import store
 from . import transactions as transaction
 
 MODEL = "gpt-4.1-mini-2025-04-14"
@@ -61,7 +61,7 @@ def config():
         value = json.loads(
             store.rows("SELECT value FROM beta_operations WHERE key='scan_config'")[0]["value"]
         )
-        if value.get("mode") not in {"manual", "fixture", "openai"} or not isinstance(
+        if value.get("mode") not in {"manual", "fixture", "openai", "codex_cli"} or not isinstance(
             value.get("enabled"), bool
         ):
             raise ValueError("Invalid persistent scan configuration")
@@ -126,7 +126,7 @@ def create(actor, key, uploads, fixture="valid"):
     cfg = config()
     if not cfg["enabled"]:
         raise ValueError("Scanning is disabled. Manual collection entry remains available.")
-    if cfg["mode"] not in {"manual", "fixture", "openai"}:
+    if cfg["mode"] not in {"manual", "fixture", "openai", "codex_cli"}:
         raise ValueError("Invalid scan configuration")
     if fixture not in {"valid", "ambiguous", "unreadable", "unsupported", "failed"}:
         raise ValueError("Invalid simulation")
@@ -141,7 +141,15 @@ def create(actor, key, uploads, fixture="valid"):
     images = [normalized(u) for u in uploads]
     inventory.execute(
         "INSERT INTO scan_jobs(id,user_id,state,mode,fixture,created,version,model) VALUES(%s,%s,'queued',%s,%s,%s,%s,%s)",
-        [key, actor.user_id, cfg["mode"], fixture, time.time(), VERSION, MODEL],
+        [
+            key,
+            actor.user_id,
+            cfg["mode"],
+            fixture,
+            time.time(),
+            VERSION,
+            codex_recognition.MODEL if cfg["mode"] == "codex_cli" else MODEL,
+        ],
     )
     for image in images:
         inventory.execute(
@@ -247,7 +255,7 @@ def recognize(images):
     return clues, cost
 
 
-def process_one():
+def process_one(stop=None):
     with transaction.atomic():
         # A crashed worker never auto-retries a possibly billed call.
         inventory.execute(
@@ -260,6 +268,10 @@ def process_one():
         if not pending:
             return False
         row = pending[0]
+        if row["mode"] == "codex_cli" and store.rows(
+            "SELECT id FROM scan_jobs WHERE mode='codex_cli' AND state='processing'"
+        ):
+            return False
         try:
             actor = store.principal(row["auth_subject"])
         except PermissionDenied:
@@ -270,6 +282,10 @@ def process_one():
         error = ""
         if not cfg["enabled"]:
             error = "Scanning disabled"
+        if row["mode"] not in {"manual", "fixture", "openai", "codex_cli"}:
+            error = "Unknown recognition provider. Choose manually."
+        if row["mode"] != cfg["mode"]:
+            error = "Selected provider changed. Start a new photo entry or choose manually."
         if row["mode"] == "openai":
             total = store.rows("SELECT coalesce(sum(reserved_usd),0) AS n FROM scan_jobs")[0]["n"]
             own = store.rows(
@@ -320,10 +336,32 @@ def process_one():
                     finish=None,
                     variant=None,
                 )
+            elif row["mode"] == "codex_cli":
+
+                def cancelled():
+                    if stop is not None and stop.is_set():
+                        return True
+                    active = store.rows(
+                        "SELECT j.state,u.state AS account_state FROM scan_jobs j JOIN users u ON u.id=j.user_id WHERE j.id=%s",
+                        [row["id"]],
+                    )
+                    return (
+                        not active
+                        or active[0]["state"] != "processing"
+                        or active[0]["account_state"] != "active"
+                        or not config()["enabled"]
+                    )
+
+                clues, usage = codex_recognition.recognize(images, settings.ROOT, cancelled, row["id"])
             else:
                 clues, cost = recognize(images)
             state, result = match(actor, clues)
+            if row["mode"] == "codex_cli":
+                result["usage"] = usage
+                result["available_usage"] = None
         error = ""
+    except codex_recognition.RecognitionError as exc:
+        state, result, error = "failed", {}, str(exc)
     except Exception:
         state, result, error = (
             "failed",
@@ -339,7 +377,7 @@ def process_one():
             "UPDATE scan_jobs SET state=%s,result=%s,error=%s,cost_usd=%s,latency=%s WHERE id=%s AND state='processing' AND started=%s",
             [state, json.dumps(result), error, cost, time.monotonic() - started, row["id"], claimed],
         )
-        if cost is not None:
+        if cost is not None or row["mode"] == "codex_cli":
             inventory.execute(
                 "UPDATE scan_jobs SET cost_usd=%s,latency=%s WHERE id=%s AND started=%s",
                 [cost, time.monotonic() - started, row["id"], claimed],

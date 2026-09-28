@@ -184,21 +184,29 @@ def main():
         import uvicorn
         from django.core.asgi import get_asgi_application
 
+        worker = None
         if (args.root / "B3_ISOLATED").is_file():
             import threading
 
             from .scan_worker import run
 
-            threading.Thread(target=run, daemon=True).start()
+            stop = threading.Event()
+            worker = threading.Thread(target=run, args=(stop,), daemon=True)
+            worker.start()
 
-        uvicorn.run(
-            get_asgi_application(),
-            host="127.0.0.1",
-            port=8011,
-            access_log=False,
-            proxy_headers=False,
-            log_level="warning",
-        )
+        try:
+            uvicorn.run(
+                get_asgi_application(),
+                host="127.0.0.1",
+                port=8011,
+                access_log=False,
+                proxy_headers=False,
+                log_level="warning",
+            )
+        finally:
+            if worker is not None:
+                stop.set()
+                worker.join(timeout=5)
 
 
 if __name__ == "__main__":

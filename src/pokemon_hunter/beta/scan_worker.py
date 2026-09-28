@@ -29,7 +29,7 @@ def run(stop=None):
                 )
             else:
                 scans.cleanup()
-            worked = scans.process_one()
+            worked = scans.process_one(stop)
         except Exception:
             # Fixed event name only; never log exception text or request content.
             if getattr(settings, "STAGING", False):

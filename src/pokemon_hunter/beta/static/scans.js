@@ -14,7 +14,7 @@ async function api(url, data) {
 function fail(e) { $('#status').textContent=e.message; }
 async function refreshHistory() {
   const data = await api('/api/scans/');
-  $('#history').innerHTML=data.jobs.map(j=>`<p><button class="secondary" data-job="${j.id}">${escapeText(new Date(j.created*1000).toLocaleString())} · ${escapeText(stateLabel(j.state))}${j.mode==='fixture'?' · simulated':''}</button></p>`).join('') || '<p>No photo entries yet.</p>';
+  $('#history').innerHTML=data.jobs.map(j=>`<p><button class="secondary" data-job="${j.id}">${escapeText(new Date(j.created*1000).toLocaleString())} · ${escapeText(stateLabel(j.state))} · ${escapeText(j.mode)}</button></p>`).join('') || '<p>No photo entries yet.</p>';
   document.querySelectorAll('[data-job]').forEach(b=>b.onclick=()=>openJob(b.dataset.job).catch(fail));
 }
 async function openJob(id) {
@@ -23,7 +23,7 @@ async function openJob(id) {
 }
 function render() {
   const j=current, r=j.result, done=!!j.operation_id;
-  $('#current').innerHTML=`<h2>Review photo entry</h2><p><strong>${escapeText(stateLabel(j.state))}</strong> ${j.mode==='fixture'?'· SIMULATED':''}</p><p>${escapeText(j.error || r.notice || '')}</p><div class="scan-photos">${j.photos.map(id=>`<img alt="Your uploaded card" src="/scan-photos/${id}/" style="max-width:220px;max-height:300px;object-fit:contain">`).join('')}</div>${r.clues?`<p>Visible clues: ${escapeText([r.clues.name,r.clues.set_name,r.clues.number,r.clues.language,r.clues.edition,r.clues.finish,r.clues.variant].filter(Boolean).join(' · '))}</p>`:''}<p>Edition, language, finish and variant remain unresolved. A catalog choice does not verify an exact variant. No condition, authenticity, grade or price is inferred.</p>`;
+  $('#current').innerHTML=`<h2>Review photo entry</h2><p><strong>${escapeText(stateLabel(j.state))}</strong> ${j.mode==='fixture'?'· SIMULATED':escapeText(j.mode)}</p>${j.mode==='codex_cli'?`<p>CLI attempts: ${j.attempts} · Last latency: ${j.latency == null ? 'pending' : j.latency.toFixed(1)+'s'}. Subscription capacity remaining: unavailable.${r.usage ? ' Tokens reported: '+escapeText(JSON.stringify(r.usage)) : ''}</p>`:''}<p>${escapeText(j.error || r.notice || '')}</p><div class="scan-photos">${j.photos.map(id=>`<img alt="Your uploaded card" src="/scan-photos/${id}/" style="max-width:220px;max-height:300px;object-fit:contain">`).join('')}</div>${r.clues?`<p>Visible clues: ${escapeText([r.clues.name,r.clues.set_name,r.clues.number,r.clues.language,r.clues.edition,r.clues.finish,r.clues.variant].filter(Boolean).join(' · '))}</p>`:''}<p>Edition, language, finish and variant remain unresolved. A catalog choice does not verify an exact variant. No condition, authenticity, grade or price is inferred.</p>`;
   if (done) {
     $('#current').insertAdjacentHTML('beforeend',`<p>${j.operation.state==='undone'?'Addition undone.':'One copy added to your collection.'} <a href="/">Open collection</a></p>${j.operation.state==='confirmed'?'<button data-action="undo">Undo this addition</button>':''}<button data-action="delete-photos">Delete retained photos</button>`);
   } else if (j.state !== 'cancelled') {
