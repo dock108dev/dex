@@ -57,6 +57,12 @@ def close(page):
 
 
 def confirm(page):
+    button = page.get_by_role("button", name="Confirm changes", exact=True)
+    button.wait_for(state="visible")
+    box = button.bounding_box()
+    assert box and box["y"] >= 0 and box["y"] + box["height"] <= page.viewport_size["height"], (
+        "Confirmation must remain visible without scrolling the review dialog"
+    )
     page.get_by_role("button", name="Confirm changes", exact=True).click()
     page.locator("#review-body").get_by_text(
         "Changes saved. Retrying confirmation will not add them again."

@@ -18,7 +18,7 @@ All collection, catalog, binder, goal, preview, confirmation, history, export an
 - **Owned-set addition:** a separate reviewed checklist shows each entry, catalog version/coverage, edition/finish/variant uncertainty, existing copies, duplicate policy and proposed additions. Tracking never calls this writer. Unknown variant coverage never becomes a master-set claim. The batch commits atomically and undo removes only its own additions.
 - **Imports/exports:** preview CSV or JSON, see row-level errors, choose duplicate handling, then confirm. Any error blocks the whole import. JSON exports include schema `dex-collection-v2`, active copies and identities, unresolved fields, all attributes, binders and frozen goals. JSON round trips restore supported inventory into an empty isolated account; local IDs are remapped to that account and original copy identity retained in `source_copy_id`. Original migration archives and owner exports remain intact.
 
-The interface uses red/white/black Collection, Goals and Settings navigation, clear manual-add controls, native modal focus behavior, labels, visible errors, empty states and controls at least 44 pixels tall. Operation/printing references are expandable. No images, pricing or recognition calls are required.
+The interface uses red/white/black Collection, Goals and Settings navigation, clear manual-add controls, native modal focus behavior, labels, visible errors, empty states and controls at least 44 pixels tall. Operation/printing references are expandable. Review actions remain visible while the checklist scrolls, including on narrow screens. No images, pricing or recognition calls are required.
 
 ## Transaction and replay contract
 
@@ -47,7 +47,7 @@ Private evidence is under `/Users/michaelfuscoletti/dex-private/b2-20260928/`, o
 | `copied-preservation.json` | Original copied owner identities, attributes, first-edition choice, hunts and Vintage result still match the fresh source after B2 exercise |
 | `regression-final.txt`, `b2-final.txt`, check logs | Regression and targeted synthetic B2 checks; exact final count recorded in handoff |
 | `browser-final/` | Working-tree browser flow and visual inspection; two separate Chromium contexts at 1280px and 390px |
-| `clean-browser-final/`, `clean-*.txt` | Exact committed candidate in a clean checkout, independent browser contexts, checks and copied-data verification |
+| `clean-browser-release/`, `clean-*.txt` | Exact committed candidate in a clean checkout, independent browser contexts, checks and copied-data verification |
 | `handoff.json` and source manifest | Exact tested/pushed commit and tree, source hashes, repository visibility and evidence paths |
 
 The fresh source contains 859 catalog records, 207 owned copies, one first-edition selection, two saved hunts and Vintage progress 133 Kanto + 20 Johto = 153/251. These were reconciled from the current authority, not forced from historical totals. All 207 copied records retain some unresolved detail. Browser-created records are explicitly synthetic additions; original owner records are compared individually, not inferred from aggregate totals.
