@@ -69,3 +69,19 @@ if settings.B3_ENABLED:
         path("api/scans/<uuid:key>/<str:action>/", scans.mutate),
         path("scan-photos/<uuid:key>/", scans.photo),
     ] + urlpatterns
+
+if settings.B4_ENABLED:
+    from . import catalog_views as catalogs
+
+    urlpatterns = [
+        path("requests/", catalogs.home),
+        path("catalog-review/", catalogs.review_home),
+        path("api/catalog-requests/", catalogs.requests),
+        path("api/catalog-requests/<uuid:key>/<str:action>/", catalogs.request_action),
+        path("api/catalog-review/", catalogs.review),
+        path("api/catalog-review/<uuid:key>/", catalogs.review_action),
+        path("api/catalog-evidence/<uuid:key>/<uuid:photo>/", catalogs.evidence),
+        path("api/catalog-imports/", catalogs.imports),
+        path("api/catalog-imports/<uuid:key>/<str:action>/", catalogs.import_action),
+        path("api/catalog-packages/<str:name>/", catalogs.package),
+    ] + urlpatterns

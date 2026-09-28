@@ -88,3 +88,7 @@ The authenticated parity revision restores Overview, Pokédex, My Cards, copy ed
 ### B3 photo entry
 
 The authenticated isolated review app now includes Scan/Add: private photos, durable recognition jobs, catalog/manual review, provisional copies, safe confirmation and undo. See [B3 behavior, setup and evidence limits](docs/B3_PHOTO_ENTRY.md). The default needs no API key; live recognition requires secure configuration. Simulated review results are explicitly labeled.
+
+### B4 catalog expansion
+
+Catalog requests connect unsupported scans/provisional copies to owner-role review, explicit photo consent, versioned publication/rollback and resolution of the existing copy. English Gym Heroes adds 132 metadata entries through the ordinary importer. [Behavior, source rights, setup and limits](docs/B4_CATALOG_EXPANSION.md).

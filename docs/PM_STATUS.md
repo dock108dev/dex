@@ -2,7 +2,7 @@
 
 September 28, 2026 UTC (September 27 evening, America/New_York).
 
-**B1 account engineering and B2 feature parity are implemented. Mike has directed continuation of pre-alpha development; B3 photo-entry engineering is now implemented; live recognition evaluation awaits secure API configuration. No additional B2 review approval is required. Actual B1 owner provisioning remains a separate setup item.**
+**B1 account engineering and B2 feature parity are implemented. Mike has directed continuation of pre-alpha development; B3 photo-entry and B4 catalog-expansion engineering are implemented; live recognition evaluation awaits secure API configuration. No additional B2 review approval is required. Actual B1 owner provisioning remains a separate setup item.**
 
 ## Delivered
 
@@ -24,7 +24,7 @@ The historical B2 tested runtime candidate is `f2c876b1f70ee4643df70260bd8d2d023
 | --- | --- | --- |
 | Mike / engineer | Configure the server API key when available and run a small representative recognition evaluation | Local photo/manual/fixture flow is operable; no hosted or real-recognition qualification is inferred |
 | Mike, then engineer | Securely provision the actual B1 owner and verify binding/preservation when convenient | Independent setup item, not a B3 engineering blocker; preserve existing credentials |
-| Later stages | B4 catalog expansion, B5 hosted/source/privacy/cost/real-device qualification, then B6 pilot | No release or pilot readiness claimed |
+| Later stages | B5 hosted/source/privacy/cost/real-device qualification, then B6 pilot | No release or pilot readiness claimed |
 
 Mike's latest direction supersedes the earlier stop-before-B3 instruction. Proceed with the B3 implementation prompt. Existing available recognition credentials may be integrated through secure configuration; missing credentials are a concrete setup dependency, not a reason to stop independent work. Do not purchase services or deploy as part of this local milestone.
 
@@ -39,3 +39,9 @@ Review app: `http://127.0.0.1:8011/overview/`. The existing disposable review ac
 See [B3 photo entry](B3_PHOTO_ENTRY.md). Review at `http://127.0.0.1:8011/scan/` with the existing disposable login. The review environment retains the existing account and collection. Fixture recognition is visibly simulated; no real API calls or measured recognition accuracy/cost. Current runtime identity and verification supersede the historical B2 candidate above and are retained in `/Users/michaelfuscoletti/dex-private/b3-photo-20260928/handoff.json`.
 
 B3 tested runtime: `a456ab7fcc3db5c22860c8d90d217196309b1ce2`; 173 tests in working and clean checkouts, lint/format/syntax checks, complete B2 parity and B3 desktop/narrow browser flows passed. Source and existing review-account/inventory preservation checks passed. Real recognition, cost/latency and real-device quality remain unmeasured.
+
+## B4 local delivery
+
+[Catalog expansion](B4_CATALOG_EXPANSION.md) adds private support requests, explicit evidence consent, admin triage/merge, versioned preview/verify/publish/rollback and retry-safe resolution of the existing copy. English Gym Heroes adds 132 TCGdex metadata entries through the ordinary importer. A synthetic second-game package exercises the same paths without Pokémon species requirements. No images or prices are imported.
+
+Review: `http://127.0.0.1:8011/requests/`; the existing owner-role review login can open Catalog review. Actual owner provisioning remains separate. Real B3 recognition is still unmeasured (zero API calls); B5 deployment and live cutover are outside this delivery. The current candidate and private evidence are recorded in `/Users/michaelfuscoletti/dex-private/b4-catalog-20260928/handoff.json`.

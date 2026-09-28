@@ -1,0 +1,36 @@
+{
+  "schema_version": "dex-catalog-v1",
+  "game": "synthetic-orbits",
+  "set_key": "demo-one",
+  "set_name": "Synthetic Orbits \u2014 Demonstration",
+  "language": "en",
+  "aliases": [
+    "Demo One"
+  ],
+  "provider": "dex-synthetic",
+  "version": "synthetic-v1",
+  "source_url": "synthetic://dex/orbits-v1",
+  "source_sha256": "d43bf262c3c24235ddbec128b40d2a26e278c9a3d7b92fe6dce1cc105bcead46",
+  "metadata_permission": "Original synthetic test metadata; no real second-game coverage",
+  "image_permission": "not-included",
+  "coverage": "catalog-entries",
+  "expected_count": 2,
+  "cards": [
+    {
+      "external_id": "demo-plain",
+      "number": "AX-007/A",
+      "name": "Synthetic Navigator",
+      "variant": "orbit:plain",
+      "edition": "demo",
+      "finish": "matte"
+    },
+    {
+      "external_id": "demo-nebula",
+      "number": "AX-007/A",
+      "name": "Synthetic Navigator",
+      "variant": "orbit:nebula",
+      "edition": "demo",
+      "finish": "foil"
+    }
+  ]
+}

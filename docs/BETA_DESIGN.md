@@ -1,6 +1,6 @@
 # Collection beta — data and workflow design
 
-Updated: September 27, 2026. **B0 migration, B1 local authentication and B2 collection workflows are implemented; B3 local photo entry is implemented; catalog onboarding and hosted workflows remain target design. Actual owner provisioning remains pending.**
+Updated: September 27, 2026. **B0 migration, B1 local authentication and B2 collection workflows are implemented; B3 local photo entry is implemented; B4 local catalog onboarding is implemented; hosted workflows remain target design. Actual owner provisioning remains pending.**
 
 [B2 implementation and verification](B2_IMPLEMENTATION.md) records the shipped local slice and its limitations.
 
@@ -134,3 +134,5 @@ Record accuracy by supported set/variant and image quality, unresolved frequency
 The first beta must remain useful when scan identification fails: manual search/add and private provisional copies are permanent paths, not temporary development workarounds.
 
 Local B3 implementation, retention and provider configuration: [B3 photo entry](B3_PHOTO_ENTRY.md). Target beta recognition thresholds remain unqualified until real evaluation.
+
+Local B4 request, consent, publication and resolution contracts: [B4 catalog expansion](B4_CATALOG_EXPANSION.md). Synthetic adapter evidence does not establish real second-game coverage.

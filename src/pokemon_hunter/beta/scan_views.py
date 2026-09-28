@@ -1,5 +1,6 @@
 import time
 
+from django.conf import settings
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_GET, require_POST
@@ -13,7 +14,9 @@ from .views import actor
 @require_GET
 def home(request):
     actor(request)
-    return render(request, "beta/scans.html", {"mode": scans.config()["mode"]})
+    return render(
+        request, "beta/scans.html", {"mode": scans.config()["mode"], "expansion": settings.B4_ENABLED}
+    )
 
 
 @endpoint

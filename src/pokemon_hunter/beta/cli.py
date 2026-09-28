@@ -89,7 +89,7 @@ def main():
     init.add_argument("--copied-inventory", type=Path)
     init.add_argument("--b2", action="store_true", help="Enable B2 only in this new isolated root")
     init.add_argument("--parity", action="store_true", help="Fresh B2 parity root with copied local evidence")
-    for command in ("bootstrap", "serve", "check", "enable-scans", "scan-worker"):
+    for command in ("bootstrap", "serve", "check", "enable-scans", "scan-worker", "enable-catalog"):
         sub.add_parser(command)
     for command in ("invite", "recovery", "revoke"):
         p = sub.add_parser(command)
@@ -145,6 +145,15 @@ def main():
         print("Account, sessions and outstanding links revoked.")
     elif args.action == "check":
         call_command("check")
+    elif args.action == "enable-catalog":
+        if not (args.root / "B3_ISOLATED").is_file():
+            raise ValueError("Catalog expansion requires B3")
+        from .catalog_imports import initialize as initialize_catalog
+
+        with sqlite3.connect(args.root / "inventory.db") as db:
+            initialize_catalog(db)
+        (args.root / "B4_ISOLATED").write_text("B4 catalog expansion enabled; identities preserved\n")
+        print("B4 enabled. Restart the server.")
     elif args.action == "enable-scans":
         if not (args.root / "B2_ISOLATED").is_file():
             raise ValueError("Scans require the B2 inventory")

@@ -44,6 +44,7 @@ function render() {
     }
     $('#current').insertAdjacentHTML('beforeend','<button data-action="cancel">Cancel and delete uploads</button>');
   }
+  if (document.body.dataset.expansion==='true' && !['queued','processing','cancelled'].includes(j.state)) $('#current').insertAdjacentHTML('beforeend',`<p><a href="/requests/?origin=scan&origin_id=${j.id}">Request catalog support</a></p>`);
   document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>mutate(b.dataset.action,{}).catch(fail));
 }
 async function mutate(action, data) {

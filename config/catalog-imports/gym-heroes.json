@@ -1,0 +1,681 @@
+{
+  "schema_version": "dex-catalog-v1",
+  "game": "pokemon",
+  "set_key": "gym1",
+  "set_name": "Gym Heroes",
+  "language": "en",
+  "aliases": [
+    "Gym Heroes",
+    "G1"
+  ],
+  "provider": "tcgdex",
+  "version": "2026-09-28-9d19156dc3b1",
+  "source_url": "https://api.tcgdex.net/v2/en/sets/gym1",
+  "source_sha256": "9d19156dc3b163b94957f52fe1a9d18ab2c42aa1c12945ff8d0a9fbf0d56a7aa",
+  "metadata_permission": "TCGdex cards-database: MIT, copyright (c) 2021 TCGdex; license retained in TCGDEX_LICENSE.txt. Local catalog metadata only.",
+  "image_permission": "not-included",
+  "coverage": "catalog-entries",
+  "expected_count": 132,
+  "cards": [
+    {
+      "external_id": "gym1-1",
+      "number": "1",
+      "name": "Blaine's Moltres"
+    },
+    {
+      "external_id": "gym1-2",
+      "number": "2",
+      "name": "Brock's Rhydon"
+    },
+    {
+      "external_id": "gym1-3",
+      "number": "3",
+      "name": "Erika's Clefable"
+    },
+    {
+      "external_id": "gym1-4",
+      "number": "4",
+      "name": "Erika's Dragonair"
+    },
+    {
+      "external_id": "gym1-5",
+      "number": "5",
+      "name": "Erika's Vileplume"
+    },
+    {
+      "external_id": "gym1-6",
+      "number": "6",
+      "name": "Lt. Surge's Electabuzz"
+    },
+    {
+      "external_id": "gym1-7",
+      "number": "7",
+      "name": "Lt. Surge's Fearow"
+    },
+    {
+      "external_id": "gym1-8",
+      "number": "8",
+      "name": "Lt. Surge's Magneton"
+    },
+    {
+      "external_id": "gym1-9",
+      "number": "9",
+      "name": "Misty's Seadra"
+    },
+    {
+      "external_id": "gym1-10",
+      "number": "10",
+      "name": "Misty's Tentacruel"
+    },
+    {
+      "external_id": "gym1-11",
+      "number": "11",
+      "name": "Rocket's Hitmonchan"
+    },
+    {
+      "external_id": "gym1-12",
+      "number": "12",
+      "name": "Rocket's Moltres"
+    },
+    {
+      "external_id": "gym1-13",
+      "number": "13",
+      "name": "Rocket's Scyther"
+    },
+    {
+      "external_id": "gym1-14",
+      "number": "14",
+      "name": "Sabrina's Gengar"
+    },
+    {
+      "external_id": "gym1-15",
+      "number": "15",
+      "name": "Brock"
+    },
+    {
+      "external_id": "gym1-16",
+      "number": "16",
+      "name": "Erika"
+    },
+    {
+      "external_id": "gym1-17",
+      "number": "17",
+      "name": "Lt. Surge"
+    },
+    {
+      "external_id": "gym1-18",
+      "number": "18",
+      "name": "Misty"
+    },
+    {
+      "external_id": "gym1-19",
+      "number": "19",
+      "name": "The Rocket's Trap"
+    },
+    {
+      "external_id": "gym1-20",
+      "number": "20",
+      "name": "Brock's Golem"
+    },
+    {
+      "external_id": "gym1-21",
+      "number": "21",
+      "name": "Brock's Onix"
+    },
+    {
+      "external_id": "gym1-22",
+      "number": "22",
+      "name": "Brock's Rhyhorn"
+    },
+    {
+      "external_id": "gym1-23",
+      "number": "23",
+      "name": "Brock's Sandslash"
+    },
+    {
+      "external_id": "gym1-24",
+      "number": "24",
+      "name": "Brock's Zubat"
+    },
+    {
+      "external_id": "gym1-25",
+      "number": "25",
+      "name": "Erika's Clefairy"
+    },
+    {
+      "external_id": "gym1-26",
+      "number": "26",
+      "name": "Erika's Victreebel"
+    },
+    {
+      "external_id": "gym1-27",
+      "number": "27",
+      "name": "Lt. Surge's Electabuzz"
+    },
+    {
+      "external_id": "gym1-28",
+      "number": "28",
+      "name": "Lt. Surge's Raichu"
+    },
+    {
+      "external_id": "gym1-29",
+      "number": "29",
+      "name": "Misty's Cloyster"
+    },
+    {
+      "external_id": "gym1-30",
+      "number": "30",
+      "name": "Misty's Goldeen"
+    },
+    {
+      "external_id": "gym1-31",
+      "number": "31",
+      "name": "Misty's Poliwrath"
+    },
+    {
+      "external_id": "gym1-32",
+      "number": "32",
+      "name": "Misty's Tentacool"
+    },
+    {
+      "external_id": "gym1-33",
+      "number": "33",
+      "name": "Rocket's Snorlax"
+    },
+    {
+      "external_id": "gym1-34",
+      "number": "34",
+      "name": "Sabrina's Venomoth"
+    },
+    {
+      "external_id": "gym1-35",
+      "number": "35",
+      "name": "Blaine's Growlithe"
+    },
+    {
+      "external_id": "gym1-36",
+      "number": "36",
+      "name": "Blaine's Kangaskhan"
+    },
+    {
+      "external_id": "gym1-37",
+      "number": "37",
+      "name": "Blaine's Magmar"
+    },
+    {
+      "external_id": "gym1-38",
+      "number": "38",
+      "name": "Brock's Geodude"
+    },
+    {
+      "external_id": "gym1-39",
+      "number": "39",
+      "name": "Brock's Golbat"
+    },
+    {
+      "external_id": "gym1-40",
+      "number": "40",
+      "name": "Brock's Graveler"
+    },
+    {
+      "external_id": "gym1-41",
+      "number": "41",
+      "name": "Brock's Lickitung"
+    },
+    {
+      "external_id": "gym1-42",
+      "number": "42",
+      "name": "Erika's Dratini"
+    },
+    {
+      "external_id": "gym1-43",
+      "number": "43",
+      "name": "Erika's Exeggcute"
+    },
+    {
+      "external_id": "gym1-44",
+      "number": "44",
+      "name": "Erika's Exeggutor"
+    },
+    {
+      "external_id": "gym1-45",
+      "number": "45",
+      "name": "Erika's Gloom"
+    },
+    {
+      "external_id": "gym1-46",
+      "number": "46",
+      "name": "Erika's Gloom"
+    },
+    {
+      "external_id": "gym1-47",
+      "number": "47",
+      "name": "Erika's Oddish"
+    },
+    {
+      "external_id": "gym1-48",
+      "number": "48",
+      "name": "Erika's Weepinbell"
+    },
+    {
+      "external_id": "gym1-49",
+      "number": "49",
+      "name": "Erika's Weepinbell"
+    },
+    {
+      "external_id": "gym1-50",
+      "number": "50",
+      "name": "Lt. Surge's Magnemite"
+    },
+    {
+      "external_id": "gym1-51",
+      "number": "51",
+      "name": "Lt. Surge's Raticate"
+    },
+    {
+      "external_id": "gym1-52",
+      "number": "52",
+      "name": "Lt. Surge's Spearow"
+    },
+    {
+      "external_id": "gym1-53",
+      "number": "53",
+      "name": "Misty's Poliwhirl"
+    },
+    {
+      "external_id": "gym1-54",
+      "number": "54",
+      "name": "Misty's Psyduck"
+    },
+    {
+      "external_id": "gym1-55",
+      "number": "55",
+      "name": "Misty's Seaking"
+    },
+    {
+      "external_id": "gym1-56",
+      "number": "56",
+      "name": "Misty's Starmie"
+    },
+    {
+      "external_id": "gym1-57",
+      "number": "57",
+      "name": "Misty's Tentacool"
+    },
+    {
+      "external_id": "gym1-58",
+      "number": "58",
+      "name": "Sabrina's Haunter"
+    },
+    {
+      "external_id": "gym1-59",
+      "number": "59",
+      "name": "Sabrina's Jynx"
+    },
+    {
+      "external_id": "gym1-60",
+      "number": "60",
+      "name": "Sabrina's Slowbro"
+    },
+    {
+      "external_id": "gym1-61",
+      "number": "61",
+      "name": "Blaine's Charmander"
+    },
+    {
+      "external_id": "gym1-62",
+      "number": "62",
+      "name": "Blaine's Growlithe"
+    },
+    {
+      "external_id": "gym1-63",
+      "number": "63",
+      "name": "Blaine's Ponyta"
+    },
+    {
+      "external_id": "gym1-64",
+      "number": "64",
+      "name": "Blaine's Tauros"
+    },
+    {
+      "external_id": "gym1-65",
+      "number": "65",
+      "name": "Blaine's Vulpix"
+    },
+    {
+      "external_id": "gym1-66",
+      "number": "66",
+      "name": "Brock's Geodude"
+    },
+    {
+      "external_id": "gym1-67",
+      "number": "67",
+      "name": "Brock's Mankey"
+    },
+    {
+      "external_id": "gym1-68",
+      "number": "68",
+      "name": "Brock's Mankey"
+    },
+    {
+      "external_id": "gym1-69",
+      "number": "69",
+      "name": "Brock's Onix"
+    },
+    {
+      "external_id": "gym1-70",
+      "number": "70",
+      "name": "Brock's Rhyhorn"
+    },
+    {
+      "external_id": "gym1-71",
+      "number": "71",
+      "name": "Brock's Sandshrew"
+    },
+    {
+      "external_id": "gym1-72",
+      "number": "72",
+      "name": "Brock's Sandshrew"
+    },
+    {
+      "external_id": "gym1-73",
+      "number": "73",
+      "name": "Brock's Vulpix"
+    },
+    {
+      "external_id": "gym1-74",
+      "number": "74",
+      "name": "Brock's Zubat"
+    },
+    {
+      "external_id": "gym1-75",
+      "number": "75",
+      "name": "Erika's Bellsprout"
+    },
+    {
+      "external_id": "gym1-76",
+      "number": "76",
+      "name": "Erika's Bellsprout"
+    },
+    {
+      "external_id": "gym1-77",
+      "number": "77",
+      "name": "Erika's Exeggcute"
+    },
+    {
+      "external_id": "gym1-78",
+      "number": "78",
+      "name": "Erika's Oddish"
+    },
+    {
+      "external_id": "gym1-79",
+      "number": "79",
+      "name": "Erika's Tangela"
+    },
+    {
+      "external_id": "gym1-80",
+      "number": "80",
+      "name": "Lt. Surge's Magnemite"
+    },
+    {
+      "external_id": "gym1-81",
+      "number": "81",
+      "name": "Lt. Surge's Pikachu"
+    },
+    {
+      "external_id": "gym1-82",
+      "number": "82",
+      "name": "Lt. Surge's Rattata"
+    },
+    {
+      "external_id": "gym1-83",
+      "number": "83",
+      "name": "Lt. Surge's Spearow"
+    },
+    {
+      "external_id": "gym1-84",
+      "number": "84",
+      "name": "Lt. Surge's Voltorb"
+    },
+    {
+      "external_id": "gym1-85",
+      "number": "85",
+      "name": "Misty's Goldeen"
+    },
+    {
+      "external_id": "gym1-86",
+      "number": "86",
+      "name": "Misty's Horsea"
+    },
+    {
+      "external_id": "gym1-87",
+      "number": "87",
+      "name": "Misty's Poliwag"
+    },
+    {
+      "external_id": "gym1-88",
+      "number": "88",
+      "name": "Misty's Seel"
+    },
+    {
+      "external_id": "gym1-89",
+      "number": "89",
+      "name": "Misty's Shellder"
+    },
+    {
+      "external_id": "gym1-90",
+      "number": "90",
+      "name": "Misty's Staryu"
+    },
+    {
+      "external_id": "gym1-91",
+      "number": "91",
+      "name": "Sabrina's Abra"
+    },
+    {
+      "external_id": "gym1-92",
+      "number": "92",
+      "name": "Sabrina's Drowzee"
+    },
+    {
+      "external_id": "gym1-93",
+      "number": "93",
+      "name": "Sabrina's Gastly"
+    },
+    {
+      "external_id": "gym1-94",
+      "number": "94",
+      "name": "Sabrina's Mr. Mime"
+    },
+    {
+      "external_id": "gym1-95",
+      "number": "95",
+      "name": "Sabrina's Slowpoke"
+    },
+    {
+      "external_id": "gym1-96",
+      "number": "96",
+      "name": "Sabrina's Venonat"
+    },
+    {
+      "external_id": "gym1-97",
+      "number": "97",
+      "name": "Blaine's Quiz #1"
+    },
+    {
+      "external_id": "gym1-98",
+      "number": "98",
+      "name": "Brock"
+    },
+    {
+      "external_id": "gym1-99",
+      "number": "99",
+      "name": "Charity"
+    },
+    {
+      "external_id": "gym1-100",
+      "number": "100",
+      "name": "Erika"
+    },
+    {
+      "external_id": "gym1-101",
+      "number": "101",
+      "name": "Lt. Surge"
+    },
+    {
+      "external_id": "gym1-102",
+      "number": "102",
+      "name": "Misty"
+    },
+    {
+      "external_id": "gym1-103",
+      "number": "103",
+      "name": "No Removal Gym"
+    },
+    {
+      "external_id": "gym1-104",
+      "number": "104",
+      "name": "The Rocket's Training Gym"
+    },
+    {
+      "external_id": "gym1-105",
+      "number": "105",
+      "name": "Blaine's Last Resort"
+    },
+    {
+      "external_id": "gym1-106",
+      "number": "106",
+      "name": "Brock's Training Method"
+    },
+    {
+      "external_id": "gym1-107",
+      "number": "107",
+      "name": "Celadon City Gym"
+    },
+    {
+      "external_id": "gym1-108",
+      "number": "108",
+      "name": "Cerulean City Gym"
+    },
+    {
+      "external_id": "gym1-109",
+      "number": "109",
+      "name": "Erika's Maids"
+    },
+    {
+      "external_id": "gym1-110",
+      "number": "110",
+      "name": "Erika's Perfume"
+    },
+    {
+      "external_id": "gym1-111",
+      "number": "111",
+      "name": "Good Manners"
+    },
+    {
+      "external_id": "gym1-112",
+      "number": "112",
+      "name": "Lt. Surge's Treaty"
+    },
+    {
+      "external_id": "gym1-113",
+      "number": "113",
+      "name": "Minion of Team Rocket"
+    },
+    {
+      "external_id": "gym1-114",
+      "number": "114",
+      "name": "Misty's Wrath"
+    },
+    {
+      "external_id": "gym1-115",
+      "number": "115",
+      "name": "Pewter City Gym"
+    },
+    {
+      "external_id": "gym1-116",
+      "number": "116",
+      "name": "Recall"
+    },
+    {
+      "external_id": "gym1-117",
+      "number": "117",
+      "name": "Sabrina's ESP"
+    },
+    {
+      "external_id": "gym1-118",
+      "number": "118",
+      "name": "Secret Mission"
+    },
+    {
+      "external_id": "gym1-119",
+      "number": "119",
+      "name": "Tickling Machine"
+    },
+    {
+      "external_id": "gym1-120",
+      "number": "120",
+      "name": "Vermilion City Gym"
+    },
+    {
+      "external_id": "gym1-121",
+      "number": "121",
+      "name": "Blaine's Gamble"
+    },
+    {
+      "external_id": "gym1-122",
+      "number": "122",
+      "name": "Energy Flow"
+    },
+    {
+      "external_id": "gym1-123",
+      "number": "123",
+      "name": "Misty's Duel"
+    },
+    {
+      "external_id": "gym1-124",
+      "number": "124",
+      "name": "Narrow Gym"
+    },
+    {
+      "external_id": "gym1-125",
+      "number": "125",
+      "name": "Sabrina's Gaze"
+    },
+    {
+      "external_id": "gym1-126",
+      "number": "126",
+      "name": "Trash Exchange"
+    },
+    {
+      "external_id": "gym1-127",
+      "number": "127",
+      "name": "Fighting Energy"
+    },
+    {
+      "external_id": "gym1-128",
+      "number": "128",
+      "name": "Fire Energy"
+    },
+    {
+      "external_id": "gym1-129",
+      "number": "129",
+      "name": "Grass Energy"
+    },
+    {
+      "external_id": "gym1-130",
+      "number": "130",
+      "name": "Lightning Energy"
+    },
+    {
+      "external_id": "gym1-131",
+      "number": "131",
+      "name": "Psychic Energy"
+    },
+    {
+      "external_id": "gym1-132",
+      "number": "132",
+      "name": "Water Energy"
+    }
+  ]
+}

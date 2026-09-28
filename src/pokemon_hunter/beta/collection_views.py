@@ -42,12 +42,16 @@ def body(request):
 @require_GET
 def home(request):
     actor(request)
-    return render(request, "beta/b2.html", {"parity": settings.PARITY_ENABLED, "scans": settings.B3_ENABLED})
+    return render(
+        request,
+        "beta/b2.html",
+        {"parity": settings.PARITY_ENABLED, "scans": settings.B3_ENABLED, "expansion": settings.B4_ENABLED},
+    )
 
 
 @require_GET
 def asset(request, filename):
-    if filename not in {"collection.js", "collection.css", "parity.js", "scans.js"}:
+    if filename not in {"collection.js", "collection.css", "parity.js", "scans.js", "catalog.js"}:
         raise Http404
     return HttpResponse(
         (Path(__file__).parent / "static" / filename).read_text(),
@@ -63,11 +67,13 @@ def dashboard(request):
     owned_ids = {c["printing_id"] for c in data["copies"]}
     data["printing_details"] = {
         p["id"]: {k: p[k] for k in ("set_name", "edition", "finish", "variant")}
-        for p in service.catalog(who)
+        for p in service.catalog(who, include_archived=True)
         if p["id"] in owned_ids
     }
     data["sets"] = store.rows(
-        "SELECT id,name,coverage_status,catalog_version FROM catalog_sets ORDER BY name"
+        "SELECT id,name,coverage_status,catalog_version FROM catalog_sets "
+        + ("WHERE publication_state='published' " if settings.B4_ENABLED else "")
+        + "ORDER BY name"
     )
     data["operations"] = store.rows(
         "SELECT id,kind,state,created FROM collection_operations WHERE user_id=%s ORDER BY rowid DESC LIMIT 40",

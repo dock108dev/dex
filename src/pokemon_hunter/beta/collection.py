@@ -12,6 +12,7 @@ import uuid
 from datetime import date
 from decimal import Decimal, InvalidOperation
 
+from django.conf import settings
 from django.db import connection, transaction
 from django.http import Http404
 
@@ -73,10 +74,16 @@ def bump(actor):
     )
 
 
-def catalog(actor, query="", set_id=""):
+def catalog(actor, query="", set_id="", include_archived=False):
     store.verified(actor)
     result = store.rows(
-        "SELECT p.*,s.name AS set_name,s.catalog_version,s.coverage_status FROM printings p JOIN catalog_sets s ON s.id=p.set_id ORDER BY s.name,p.collector_number"
+        "SELECT p.*,s.name AS set_name,s.catalog_version,s.coverage_status FROM printings p JOIN catalog_sets s ON s.id=p.set_id "
+        + (
+            "WHERE p.publication_state='published' AND s.publication_state='published' "
+            if settings.B4_ENABLED and not include_archived
+            else ""
+        )
+        + "ORDER BY s.name,p.collector_number"
     )
     for row in result:
         row["attributes"] = json.loads(row["attributes"])
@@ -110,10 +117,12 @@ def goals(actor):
     store.verified(actor)
     active = copies(actor)
     owned = {c["printing_id"] for c in active}
+    published_ids = {p["id"] for p in catalog(actor)} if settings.B4_ENABLED else None
     exact_owned = {
         c["printing_id"]
         for c in active
         if c["printing_id"]
+        and (published_ids is None or c["printing_id"] in published_ids)
         and not json.loads(c["unresolved_fields"] or "[]")
         and not json.loads(c["provisional_identity"] or "{}").get("unresolved_fields")
     }
@@ -344,7 +353,7 @@ def plan(actor, kind, request, operation_id):
         }
         create("copy", row)
 
-    catalog_rows = catalog(actor)
+    catalog_rows = catalog(actor, include_archived=(kind == "import"))
     catalog_by_id = {p["id"]: p for p in catalog_rows}
 
     def resolve(key):
@@ -402,6 +411,29 @@ def plan(actor, kind, request, operation_id):
         result["warnings"].append(
             "Only listed catalog entries are proposed. Unresolved editions/variants stay unset; full variant coverage is not established."
         )
+    elif kind == "resolve":
+        before = one(actor, "copy", request.get("id"))
+        if (
+            before["state"] != "active"
+            or before["printing_id"]
+            or before["revision"] != request.get("revision")
+        ):
+            raise Conflict("Only an unchanged active provisional copy can be resolved")
+        p = resolve(request.get("printing_id"))
+        identity = json.loads(before["provisional_identity"] or "{}")
+        identity["resolution"] = {
+            "printing_id": p["id"],
+            "catalog_version": p["catalog_version"],
+            "operation": operation_id,
+        }
+        identity["unresolved_fields"] = p["unresolved_fields"]
+        after = {
+            **before,
+            "printing_id": p["id"],
+            "provisional_identity": encode(identity),
+            "revision": before["revision"] + 1,
+        }
+        result["updates"].append({"kind": "copy", "before": before, "after": after})
     elif kind == "photo":
         copy(
             {
@@ -666,6 +698,7 @@ def preview(actor, kind, request, operation_id):
     if not isinstance(request, dict):
         raise ValueError("Operation request must be an object")
     allowed = {
+        "resolve": {"id", "revision", "printing_id"},
         "photo": {"printing_id", "provisional_identity", "attributes"},
         "add": {"printing_id", "attributes", "duplicate_policy"},
         "set": {"set_id", "attributes", "duplicate_policy"},

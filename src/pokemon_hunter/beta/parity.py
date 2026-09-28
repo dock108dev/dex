@@ -49,7 +49,7 @@ def projection(actor):
     for p in catalog:
         legacy = json.loads(p["provenance"]).get("legacy_id")
         if not legacy:
-            continue
+            legacy = "catalog-" + p["id"]
         copies = by_printing.get(p["id"], [])
         cards[legacy] = {
             **p["attributes"],
@@ -58,6 +58,7 @@ def projection(actor):
             "set_id": sets.get(p["set_id"], p["set_id"]),
             "set": p["set_name"],
             "number": p["collector_number"],
+            "variant": p["variant"],
             "owned": bool(copies),
             "rarity": p["attributes"].get("rarity", "Unknown"),
             "supertype": p["attributes"].get("supertype", "Unknown"),

@@ -275,6 +275,12 @@ with sync_playwright() as p:
         scan_flow(pa, a, args.root, "desktop")
         scan_flow(pb, b, args.root, "narrow")
 
+    if (args.root / "B4_ISOLATED").is_file():
+        from verify_b4_browser import catalog_flow
+
+        catalog_flow(pa, a, pb, b, args.root)
+        assert not errors, errors
+
     (args.root / "browser-report.json").write_text(
         json.dumps(
             {
