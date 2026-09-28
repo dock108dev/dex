@@ -25,10 +25,10 @@ A password was supplied directly for this account. Do not reproduce it in docume
 | Application | Authenticated local Django review app; original FastAPI app preserved | Hosted operation and deployment remain unqualified |
 | Collection | Shared catalog and session-owned physical copies; 859 entries across ten sets | Broader catalog/variant coverage is B4 |
 | Owner preservation | Copied-snapshot verification: 207 copies, one first-edition selection, 133 Kanto + 20 Johto = 153 species | Actual owner account binding and eventual cutover remain separate |
-| Copies | Intentional duplicates, copy attributes, first-edition selection, reviewed edits/removals and undo | Unknown editions/finishes stay unresolved; photos are B3 |
+| Copies | Intentional duplicates, copy attributes, first-edition selection, reviewed edits/removals and undo | Unknown editions/finishes stay unresolved; photo entry implemented in B3 |
 | Goals and organization | Private binders, frozen set/custom/Vintage goals, reviewed set additions | Further owner feedback; no inventory duplication from goals |
 | Original experience | Overview, Pokédex, My Cards and rarity/set summaries restored | Focused review closeout; initial owner response was positive |
-| Images | Manual catalog entry works; no photo identification workflow | B3 photo upload, recognition, confirmation and corrections |
+| Images | Private photo upload, durable jobs, manual/fixture/OpenAI integration and safe confirmation/undo | Live recognition evaluation pending secure API configuration |
 | Hunts | Private sample hunts, missing singles, saved-search replay and explicit reveal | New live search disabled pending separate provider qualification |
 | Values | Local dated guide scenarios with coverage/interpolation labels | Unresolved variants excluded from confirmed values; hosted source rights pending |
 | Accounts | Local sessions/invites/recovery and isolation implemented; disposable review account running | Actual B1 owner provisioning still pending; review account is separate |
@@ -57,14 +57,14 @@ Suggested navigation: Collection, Scan/Add, Goals, Requests and Settings; Catalo
 
 ## 4. Sequenced implementation and completion gates
 
-B0 has passed its technical exit on copied data. B1 has a verified isolated local implementation with actual owner provisioning pending. B2 local collection engineering is verified independently of actual-owner provisioning; B3–B6 remain planned. Engineering proceeds in order where dependencies require it; UI work and catalog-source review can overlap. Finish coherent slices without another broad planning interview. The subsequent B0 execution authorized private repository creation, commits/pushes and copied-data rehearsal. No deployment, account creation, paid API use or live cutover was performed.
+B0 has passed its technical exit on copied data. B1 has a verified isolated local implementation with actual owner provisioning pending. B2 local collection engineering is verified independently of actual-owner provisioning; B3 local photo-entry engineering is implemented; live recognition evaluation and B4–B6 remain open. Engineering proceeds in order where dependencies require it; UI work and catalog-source review can overlap. Finish coherent slices without another broad planning interview. The subsequent B0 execution authorized private repository creation, commits/pushes and copied-data rehearsal. No deployment, account creation, paid API use or live cutover was performed.
 
 | Stage | Deliverable and dependencies | Completion evidence | Status |
 | --- | --- | --- | --- |
 | B0 — Preserve and design migration | Snapshot current owner files/history; implement catalog/copy schema and migration rehearsal on copies | Exact-record comparison, repeat-import check, rollback rehearsal; no owner source changes | TECHNICAL PASS — owner acceptance separate |
 | B1 — Accounts and private inventory | First `admin` owner account, invites, sessions/recovery; B0 schema | Two-user isolation including photos/jobs/exports/admin endpoints; owner import preserved; other user empty | LOCAL CHECKS PASS — actual owner provisioning pending |
 | B2 — Collection and goals | Mobile inventory, copies, binders, set/custom goals, imports/exports/undo; B1 | End-to-end manual collection use; existing Vintage 251 result preserved; no duplicate inventory from goals | LOCAL ENGINEERING PASS — owner review separate |
-| B3 — Photo entry | Private upload, asynchronous OpenAI recognition, catalog candidates, confirm/cancel/undo; B1–B2 | Measured recognition quality and cost, exactly-once confirmation, useful uncertain/failure states | OPEN |
+| B3 — Photo entry | Private upload, asynchronous OpenAI recognition, catalog candidates, confirm/cancel/undo; B1–B2 | Exactly-once confirmation and uncertain/failure states verified locally; live recognition quality/cost unmeasured | LOCAL ENGINEERING IMPLEMENTED — API setup/evaluation pending |
 | B4 — Catalog expansion | Game adapter contract, unknown scan queue, admin ingestion/review/publish/reconcile; B0/B3 | One additional Pokémon set through ordinary ingestion; one synthetic second-game adapter without core forks | OPEN |
 | B5 — Hosted beta qualification | Staging deploy, restore, privacy/data controls, support, mobile checks; B1–B4 | Acceptance matrix below; candidate manifest; actual hosted observations; cost limits verified | OPEN |
 | B6 — Invite pilot | Owner review, then small invited cohort; B5 | Owner verdict and pilot outcomes recorded separately; known issues and rollback instructions delivered | OPEN |
@@ -159,7 +159,7 @@ The existing eBay hunt and legacy daily watcher remain preserved, optional modul
 
 ## 8. Immediate next action and continuation
 
-**Next: close out Mike's focused review of the running [B2 parity app](B2_PARITY.md#launch-the-revised-review-app). His initial response was “great”; no new defect was reported. Review completion and permission to start B3 have not yet been explicitly recorded.** Actual owner provisioning and subsequent binding verification remain a separate pending B1 gate. B0 is complete. B1 authentication uses a separate copied database; the live collection remains authoritative and unchanged.
+**Next: close out Mike's focused review of the running [B2 parity app](B2_PARITY.md#launch-the-revised-review-app). His initial response was “great”; no new defect was reported. B3 continuation has since been explicitly authorized.** Actual owner provisioning and subsequent binding verification remain a separate pending B1 gate. B0 is complete. B1 authentication uses a separate copied database; the live collection remains authoritative and unchanged.
 
 Read this tracker, BETA_DESIGN and APP_SPEC before implementation. Use the current collection at execution time, not only these dated counts. Preserve credentials and data, continue the first incomplete stage, and update this file with evidence as stages finish. Routine implementation choices do not need another broad planning interview. Resolve concrete required secrets, provider costs or deployment details at the step that needs them.
 
@@ -219,7 +219,7 @@ The password prompt does not echo or accept a password argument. Open `http://12
 - Fresh copied preservation reconciles 859 source records, 207 owned copies, one first-edition selection, two hunts and 153/251 Vintage species. All owner/config/frontend hashes and original databases remain unchanged; restored legacy app reads pass.
 - Evidence remains private under `/Users/michaelfuscoletti/dex-private/b2-20260928/`; exact committed-candidate regression, clean-checkout and browser results are in the handoff. No cutover, deployment, external message, paid recognition or credential change occurred.
 
-**Superseded review environment:** use the new [B2 parity review launch](B2_PARITY.md#launch-the-revised-review-app) for the restored experience. The prior `b2-20260928/review-local` data and credentials remain preserved. Separately, Mike still owns actual B1 credential entry, followed by engineer actual-account verification. B3 photo entry and B4 catalog onboarding remain later work; do not mark hosted release or owner acceptance from these checks.
+**Superseded review environment:** use the new [B2 parity review launch](B2_PARITY.md#launch-the-revised-review-app) for the restored experience. The prior `b2-20260928/review-local` data and credentials remain preserved. Separately, Mike still owns actual B1 credential entry, followed by engineer actual-account verification. B3 is implemented as documented below; B4 catalog onboarding remains later work; do not mark hosted release or owner acceptance from these checks.
 
 
 ## B2 owner feedback — local feature parity revision required
@@ -237,25 +237,28 @@ The feedback identified these gaps in the original B2 slice (implemented by the 
 
 **Revision scope (now implemented):** restore the existing local experience within the authenticated application before adding photo-entry functionality. Retain B2 physical copies, binders, versioned goals, imports and safe undo; derive all restored views from the same session-owned inventory. Do not reopen unauthenticated legacy writers or create a second authoritative collection. Preserve unknown edition/variant information, distinguish recorded purchase costs from value estimates, and retain sample/live and spoiler boundaries. Existing provider access and hosted source-rights gates remain in force; no live search or paid call is authorized by this feedback.
 
-Next actor: Mike for focused review of the completed local parity revision. Stop before B3. B1 actual-owner provisioning and hosted qualification remain separate pending gates.
+Next actor: engineer for bounded real recognition evaluation when credentials are available. No further B2 review approval is required. B1 actual-owner provisioning and hosted qualification remain separate pending items.
 
 
 ## B2 parity revision — September 28, 2026
 
 [Completed parity matrix, behavior differences, evidence and exact launch](B2_PARITY.md). The same authenticated inventory now supplies Overview, Pokédex, My Cards, per-copy edition selection, local guide scenarios, sample hunts/missing singles and spoiler-safe saved-find replay. B2 collection/binder/goal/import/export/undo flows remain. The fresh copied baseline agrees on 859 entries, 251 species, 207 copies, 153 species owned and two saved hunts. Unresolved variants have no confirmed value; old guide totals remain explicitly conditional.
 
-Private candidate evidence: `/Users/michaelfuscoletti/dex-private/b2-parity-20260928/`; exact tested/pushed identity and final check results are in `handoff.json`. The original application and all owner sources remain authoritative until separately authorized cutover. **Mike reviews this restored experience next; B3 stays on hold.** B1 actual-owner provisioning, provider/source-rights qualification, hosting and real-device acceptance remain separate pending gates.
+Private candidate evidence: `/Users/michaelfuscoletti/dex-private/b2-parity-20260928/`; exact tested/pushed identity and final check results are in `handoff.json`. The original application and all owner sources remain authoritative until separately authorized cutover. **B2 is sufficient to proceed with B3 under Mike’s latest direction; no additional review stop applies.** B1 actual-owner provisioning, provider/source-rights qualification, hosting and real-device acceptance remain separate pending gates.
 
 
-## PM checkpoint — review app running; initial feedback positive
+## PM checkpoint — proceed to B3
 
 The parity candidate is `f2c876b1f70ee4643df70260bd8d2d023fc583c8`. Its 158-test, clean-checkout, browser and GitHub evidence remains bound to that candidate; later documentation updates do not relabel those runs. [PM summary and assigned next steps](PM_STATUS.md).
 
-At Mike's request, the engineer launched the isolated copied-data app at `http://127.0.0.1:8011/overview/` and initialized its disposable review account. Existing credentials and prior environments were preserved. Mike responded “great”. Record this as positive initial feedback; do not infer completion of every review flow, release acceptance or authorization for photo/API work.
+Mike initially responded “great” to the restored app and subsequently directed continued pre-alpha development without further routine approval requests. This supersedes the earlier B2 review-closeout stop. B1 account engineering and B2 collection/parity engineering are implemented; B3 local photo entry is implemented. Actual B1 owner provisioning remains pending independently and does not block B3 implementation. This does not claim hosted or pilot acceptance.
 
-1. **Mike / PM:** record completion of the focused B2 review or identify specific remaining changes. No new defect is currently reported.
-2. **Engineer:** address any focused feedback, then await an explicit go-ahead for a bounded B3 photo-entry slice. Preserve manual entry, uncertain identities and exactly-once confirmation/undo. Paid or live API use needs separate authorization and limits.
-3. **Mike / engineer, independently:** complete actual B1 owner provisioning and verify its stable binding/preservation; the disposable review login is not that account.
-4. **Later:** B4 catalog expansion, B5 hosting/source-rights/provider/real-device qualification, then B6 owner-approved pilot. No deployment or cutover is currently authorized.
+1. **Engineer:** B3 local engineering is delivered. Configure credentials when available and run a bounded real recognition evaluation; preserve the documented manual/fixture workflow and existing collection.
+2. **Mike / engineer, independently:** complete actual B1 owner provisioning and verify its stable binding/preservation; the disposable review login is not that account.
+3. **Later:** B4 catalog expansion, B5 hosting/source-rights/provider/real-device qualification, then B6 pilot. Deployment and live cutover are not part of the current local milestone.
 
-**Working convention:** stay on local `main` and sync remote `main`; create no branches unless Mike says otherwise. Keep review data and credentials intact. Do not restart or reinitialize the running review environment merely for documentation work.
+**Working convention:** stay on local `main` and sync remote `main`; create no branches unless Mike says otherwise. Preserve review data and credentials. Make routine reversible development decisions autonomously; do not restart or reinitialize the review environment merely for documentation work.
+
+## B3 delivery
+
+[Photo-entry implementation and configuration](B3_PHOTO_ENTRY.md) records the operable local flow, conservative limits, privacy/deletion behavior and verification boundaries. Fixtures are explicitly simulated. Actual owner provisioning remains independent; B4 catalog onboarding and B5 hosted/real-device qualification are not included.

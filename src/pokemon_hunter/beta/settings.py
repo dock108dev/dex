@@ -88,3 +88,7 @@ LOGGING = {
     "handlers": {"null": {"class": "logging.NullHandler"}},
     "loggers": {name: {"handlers": ["null"], "propagate": False} for name in ("django", "axes")},
 }
+
+B3_ENABLED = (ROOT / "B3_ISOLATED").is_file()
+FILE_UPLOAD_MAX_MEMORY_SIZE = 1_000_000
+DATA_UPLOAD_MAX_NUMBER_FILES = 2

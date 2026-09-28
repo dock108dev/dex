@@ -89,7 +89,7 @@ def main():
     init.add_argument("--copied-inventory", type=Path)
     init.add_argument("--b2", action="store_true", help="Enable B2 only in this new isolated root")
     init.add_argument("--parity", action="store_true", help="Fresh B2 parity root with copied local evidence")
-    for command in ("bootstrap", "serve", "check"):
+    for command in ("bootstrap", "serve", "check", "enable-scans", "scan-worker"):
         sub.add_parser(command)
     for command in ("invite", "recovery", "revoke"):
         p = sub.add_parser(command)
@@ -145,9 +145,29 @@ def main():
         print("Account, sessions and outstanding links revoked.")
     elif args.action == "check":
         call_command("check")
+    elif args.action == "enable-scans":
+        if not (args.root / "B2_ISOLATED").is_file():
+            raise ValueError("Scans require the B2 inventory")
+        from .scans import initialize as initialize_scans
+
+        with sqlite3.connect(args.root / "inventory.db") as db:
+            initialize_scans(db)
+        (args.root / "B3_ISOLATED").write_text("B3 photo entry enabled; original accounts preserved\n")
+        print("B3 enabled. Restart serve; default is manual photo entry.")
+    elif args.action == "scan-worker":
+        from .scan_worker import run
+
+        run()
     elif args.action == "serve":
         import uvicorn
         from django.core.asgi import get_asgi_application
+
+        if (args.root / "B3_ISOLATED").is_file():
+            import threading
+
+            from .scan_worker import run
+
+            threading.Thread(target=run, daemon=True).start()
 
         uvicorn.run(
             get_asgi_application(),

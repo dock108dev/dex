@@ -402,6 +402,15 @@ def plan(actor, kind, request, operation_id):
         result["warnings"].append(
             "Only listed catalog entries are proposed. Unresolved editions/variants stay unset; full variant coverage is not established."
         )
+    elif kind == "photo":
+        copy(
+            {
+                "printing_id": request.get("printing_id"),
+                "provisional_identity": request.get("provisional_identity"),
+                **request.get("attributes", {}),
+            },
+            0,
+        )
     elif kind in {"edit", "edition", "remove", "binder_edit", "binder_remove", "goal_remove"}:
         entity = "binder" if kind.startswith("binder") else "goal" if kind.startswith("goal") else "copy"
         before = one(actor, entity, request.get("id"))
@@ -657,6 +666,7 @@ def preview(actor, kind, request, operation_id):
     if not isinstance(request, dict):
         raise ValueError("Operation request must be an object")
     allowed = {
+        "photo": {"printing_id", "provisional_identity", "attributes"},
         "add": {"printing_id", "attributes", "duplicate_policy"},
         "set": {"set_id", "attributes", "duplicate_policy"},
         "edit": {"id", "revision", "attributes"},

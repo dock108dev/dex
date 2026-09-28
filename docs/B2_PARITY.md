@@ -1,6 +1,6 @@
 # B2 feature parity revision
 
-September 28, 2026. The authenticated local revision restores the original collection experience alongside B2 copies, binders, goals, imports and undo. **Stop for Mike's focused review before B3.** This is engineering evidence, not owner acceptance, actual B1 owner provisioning or hosted qualification.
+September 28, 2026. The authenticated local revision restores the original collection experience alongside B2 copies, binders, goals, imports and undo. **B3 continuation is authorized; the later PM direction supersedes the historical review checkpoint.** This is engineering evidence, not owner acceptance, actual B1 owner provisioning or hosted qualification.
 
 The repository [roadmap](ROADMAP.md) is the sequence authority. [Original app specification](../APP_SPEC.md) describes the preserved baseline; [B2 implementation](B2_IMPLEMENTATION.md) retains historical evidence. This revision started at `c26cc3f`, preserving the uncommitted owner-feedback sections in both documents. The exact tested/pushed candidate is recorded in the private handoff, rather than inserting a self-referential commit hash here.
 
@@ -59,9 +59,9 @@ uv run python -m pokemon_hunter.beta.cli --root /Users/michaelfuscoletti/dex-pri
 
 Open `http://127.0.0.1:8011/overview/`; sign in as `admin`. If redirected to Collection after login, choose Overview. Use only one B1/B2 server on port 8011. Use the existing rehearsal login. This account is separate from B1 actual-owner provisioning.
 
-Mike's focused review: compare Overview/Pokédex/My Cards with the original; inspect a copy and its conditional guide evidence; preview an edition change and undo it; run/reveal/reopen sample finds; verify comfort on the narrow layout and retained collection/goals/import flows. **Wait for that feedback before B3.** Tests do not supply Mike's verdict.
+Mike's focused review: compare Overview/Pokédex/My Cards with the original; inspect a copy and its conditional guide evidence; preview an edition change and undo it; run/reveal/reopen sample finds; verify comfort on the narrow layout and retained collection/goals/import flows. B3 engineering is authorized independently of further focused feedback. Tests do not supply Mike's verdict.
 
 
 ## Owner-review checkpoint
 
-Mike requested that the engineer run the app, then responded “great”. Initial feedback is positive and no new defect was reported. Focused review closeout and authorization to begin B3 remain unrecorded; no release acceptance is inferred. See [PM status](PM_STATUS.md) for next actors. Candidate `f2c876b` passed 158 tests, clean-checkout and desktop/narrow browser checks, and [GitHub CI](https://github.com/dock108dev/dex/actions/runs/36370863538). Work continues on local/remote `main` unless Mike requests otherwise.
+Mike requested that the engineer run the app, then responded “great”. Initial feedback is positive and no new defect was reported. Later direction authorized continued pre-alpha development including B3; no release acceptance is inferred. See [PM status](PM_STATUS.md) for next actors. Candidate `f2c876b` passed 158 tests, clean-checkout and desktop/narrow browser checks, and [GitHub CI](https://github.com/dock108dev/dex/actions/runs/36370863538). Work continues on local/remote `main` unless Mike requests otherwise.

@@ -269,6 +269,12 @@ with sync_playwright() as p:
         parity_flow(pa, a, args.root, "desktop", records_a)
         parity_flow(pb, b, args.root, "narrow", records_b)
     assert not errors, errors
+    if (args.root / "B3_ISOLATED").is_file():
+        from verify_b3_browser import scan_flow
+
+        scan_flow(pa, a, args.root, "desktop")
+        scan_flow(pb, b, args.root, "narrow")
+
     (args.root / "browser-report.json").write_text(
         json.dumps(
             {

@@ -42,12 +42,12 @@ def body(request):
 @require_GET
 def home(request):
     actor(request)
-    return render(request, "beta/b2.html", {"parity": settings.PARITY_ENABLED})
+    return render(request, "beta/b2.html", {"parity": settings.PARITY_ENABLED, "scans": settings.B3_ENABLED})
 
 
 @require_GET
 def asset(request, filename):
-    if filename not in {"collection.js", "collection.css", "parity.js"}:
+    if filename not in {"collection.js", "collection.css", "parity.js", "scans.js"}:
         raise Http404
     return HttpResponse(
         (Path(__file__).parent / "static" / filename).read_text(),

@@ -58,3 +58,14 @@ if settings.PARITY_ENABLED:
         path("api/hunts/<uuid:batch>/<int:key>/", parity.saved),
         path("api/hunts/<uuid:batch>/<int:key>/reveal/<uuid:result>/", parity.reveal),
     ] + urlpatterns
+
+if settings.B3_ENABLED:
+    from . import scan_views as scans
+
+    urlpatterns = [
+        path("scan/", scans.home),
+        path("api/scans/", scans.jobs),
+        path("api/scans/<uuid:key>/", scans.detail),
+        path("api/scans/<uuid:key>/<str:action>/", scans.mutate),
+        path("scan-photos/<uuid:key>/", scans.photo),
+    ] + urlpatterns

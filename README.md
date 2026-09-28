@@ -84,3 +84,7 @@ Follow [B2 launch, implemented flows and verification](docs/B2_IMPLEMENTATION.md
 ### B2 restored-experience review
 
 The authenticated parity revision restores Overview, Pokédex, My Cards, copy edition controls, local guide scenarios, sample hunts and spoiler-safe saved finds alongside existing B2 flows. Follow the [parity matrix and fresh review launch](docs/B2_PARITY.md). Stop for Mike's focused review before B3. B1 actual-owner provisioning remains a separate pending gate.
+
+### B3 photo entry
+
+The authenticated isolated review app now includes Scan/Add: private photos, durable recognition jobs, catalog/manual review, provisional copies, safe confirmation and undo. See [B3 behavior, setup and evidence limits](docs/B3_PHOTO_ENTRY.md). The default needs no API key; live recognition requires secure configuration. Simulated review results are explicitly labeled.
