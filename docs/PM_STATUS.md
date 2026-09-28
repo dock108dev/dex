@@ -37,3 +37,5 @@ Review app: `http://127.0.0.1:8011/overview/`. The existing disposable review ac
 ## B3 local delivery
 
 See [B3 photo entry](B3_PHOTO_ENTRY.md). Review at `http://127.0.0.1:8011/scan/` with the existing disposable login. The review environment retains the existing account and collection. Fixture recognition is visibly simulated; no real API calls or measured recognition accuracy/cost. Current runtime identity and verification supersede the historical B2 candidate above and are retained in `/Users/michaelfuscoletti/dex-private/b3-photo-20260928/handoff.json`.
+
+B3 tested runtime: `a456ab7fcc3db5c22860c8d90d217196309b1ce2`; 173 tests in working and clean checkouts, lint/format/syntax checks, complete B2 parity and B3 desktop/narrow browser flows passed. Source and existing review-account/inventory preservation checks passed. Real recognition, cost/latency and real-device quality remain unmeasured.

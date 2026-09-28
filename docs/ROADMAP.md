@@ -32,7 +32,7 @@ A password was supplied directly for this account. Do not reproduce it in docume
 | Hunts | Private sample hunts, missing singles, saved-search replay and explicit reveal | New live search disabled pending separate provider qualification |
 | Values | Local dated guide scenarios with coverage/interpolation labels | Unresolved variants excluded from confirmed values; hosted source rights pending |
 | Accounts | Local sessions/invites/recovery and isolation implemented; disposable review account running | Actual B1 owner provisioning still pending; review account is separate |
-| Verification | Candidate `f2c876b`: 158 tests, clean checkout, desktop/narrow browser checks and GitHub CI passed | Real-device and hosted acceptance remain open |
+| Verification | B3 runtime `a456ab7`: 173 tests, clean checkout, desktop/narrow B2+B3 browser checks passed | Real recognition, real-device and hosted acceptance remain open |
 | Source | Private `dock108dev/dex`; development and sync on local/remote `main` | No feature branches unless Mike explicitly requests one |
 
 Ten initial sets: Base Set, Jungle, Fossil, Base Set 2, Team Rocket, Wizards Black Star Promos, Neo Genesis, Neo Discovery, Neo Revelation and Neo Destiny. The legacy watcher's broader search configuration is not the app's catalog coverage.
