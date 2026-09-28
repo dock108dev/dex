@@ -73,3 +73,10 @@ Refresh public guide tables with `uv run python scripts/refresh_values.py`. It s
 ## Isolated B1 accounts
 
 Django authentication, invite setup, local recovery and private inventory now run separately on loopback. Actual owner provisioning is pending; the original app remains authoritative. See [B1 local launch and verification](docs/B1_IMPLEMENTATION.md). Do not expose the legacy unauthenticated app.
+
+
+## B2 isolated collection app
+
+B2 extends the authenticated application with physical copies, private binders, versioned goals, previewed set additions and CSV/JSON imports, complete JSON export and conflict-aware undo. The original local app remains unchanged. **B1 actual owner provisioning remains pending; B2 engineering checks do not establish owner acceptance or hosted readiness.**
+
+Follow [B2 launch, implemented flows and verification](docs/B2_IMPLEMENTATION.md) to use the prepared private `review-local` root. A new B2 root uses `init --b2 --copied-inventory` with a copied B0 rehearsal database; existing roots are refused. Never initialize or upgrade the prepared B1 `owner-local` root for B2. The authoritative next-steps record is [ROADMAP](docs/ROADMAP.md).

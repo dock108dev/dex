@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
 
@@ -19,3 +20,27 @@ urlpatterns = [
     path("api/export/", views.export),
     path("api/admin/catalog/", views.admin_catalog),
 ]
+
+# B2 is enabled only by new-root initialization. Prepared B1 roots retain B1 routes.
+
+if settings.B2_ENABLED:
+    from . import collection_views as b2
+
+    urlpatterns = [
+        path("", b2.home),
+        path("goals/", b2.home),
+        path("settings/", b2.home),
+        path("collection-assets/<str:filename>", b2.asset),
+        path("api/collection/", b2.dashboard),
+        path("api/catalog/", b2.catalog),
+        path("api/binders/", b2.binders),
+        path("api/binders/<str:key>/", b2.binder),
+        path("api/goals/", b2.goals),
+        path("api/goals/<str:key>/", b2.goal),
+        path("api/operations/preview/", b2.preview),
+        path("api/operations/<str:key>/", b2.operation),
+        path("api/operations/<str:key>/confirm/", b2.confirm),
+        path("api/operations/<str:key>/undo/", b2.undo),
+        path("api/inventory/<str:key>/", b2.copy_detail),
+        path("api/export/", b2.export),
+    ] + urlpatterns

@@ -77,7 +77,8 @@ LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/login/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 USE_TZ = True
-DATA_UPLOAD_MAX_MEMORY_SIZE = 16384
+B2_ENABLED = (ROOT / "B2_ISOLATED").is_file()
+DATA_UPLOAD_MAX_MEMORY_SIZE = 2_000_000 if B2_ENABLED else 16384
 SECURE_REFERRER_POLICY = "same-origin"
 # URLs can contain bearer setup links. No request/access logging in this isolated profile.
 LOGGING = {

@@ -2,7 +2,7 @@
 
 Updated: September 27, 2026 (America/New_York).
 
-**Status: B0 TECHNICALLY COMPLETE; B1 LOCAL IMPLEMENTATION VERIFIED, ACTUAL OWNER PROVISIONING PENDING; LOCAL APP PRESERVED; NOT RELEASED.**
+**Status: B0 TECHNICALLY COMPLETE; B1 LOCAL IMPLEMENTATION VERIFIED, ACTUAL OWNER PROVISIONING PENDING; B2 LOCAL ENGINEERING VERIFIED; LOCAL APP PRESERVED; NOT RELEASED.**
 
 This is the authoritative next-steps tracker for `/Users/michaelfuscoletti/Desktop/dex`. It replaces the earlier daily-watcher beta plan. The product is now a personal card-collection app that can expand across games. Pokémon ships first. Vintage 251 becomes a built-in collecting goal, while the current local app remains usable during development.
 
@@ -57,13 +57,13 @@ Suggested navigation: Collection, Scan/Add, Goals, Requests and Settings; Catalo
 
 ## 4. Sequenced implementation and completion gates
 
-B0 has passed its technical exit on copied data. B1 has a verified isolated local implementation with actual owner provisioning pending. B2–B6 remain planned, not completed. Engineering proceeds in order where dependencies require it; UI work and catalog-source review can overlap. Finish coherent slices without another broad planning interview. The subsequent B0 execution authorized private repository creation, commits/pushes and copied-data rehearsal. No deployment, account creation, paid API use or live cutover was performed.
+B0 has passed its technical exit on copied data. B1 has a verified isolated local implementation with actual owner provisioning pending. B2 local collection engineering is verified independently of actual-owner provisioning; B3–B6 remain planned. Engineering proceeds in order where dependencies require it; UI work and catalog-source review can overlap. Finish coherent slices without another broad planning interview. The subsequent B0 execution authorized private repository creation, commits/pushes and copied-data rehearsal. No deployment, account creation, paid API use or live cutover was performed.
 
 | Stage | Deliverable and dependencies | Completion evidence | Status |
 | --- | --- | --- | --- |
 | B0 — Preserve and design migration | Snapshot current owner files/history; implement catalog/copy schema and migration rehearsal on copies | Exact-record comparison, repeat-import check, rollback rehearsal; no owner source changes | TECHNICAL PASS — owner acceptance separate |
 | B1 — Accounts and private inventory | First `admin` owner account, invites, sessions/recovery; B0 schema | Two-user isolation including photos/jobs/exports/admin endpoints; owner import preserved; other user empty | LOCAL CHECKS PASS — actual owner provisioning pending |
-| B2 — Collection and goals | Mobile inventory, copies, binders, set/custom goals, imports/exports/undo; B1 | End-to-end manual collection use; existing Vintage 251 result preserved; no duplicate inventory from goals | OPEN |
+| B2 — Collection and goals | Mobile inventory, copies, binders, set/custom goals, imports/exports/undo; B1 | End-to-end manual collection use; existing Vintage 251 result preserved; no duplicate inventory from goals | LOCAL ENGINEERING PASS — owner review separate |
 | B3 — Photo entry | Private upload, asynchronous OpenAI recognition, catalog candidates, confirm/cancel/undo; B1–B2 | Measured recognition quality and cost, exactly-once confirmation, useful uncertain/failure states | OPEN |
 | B4 — Catalog expansion | Game adapter contract, unknown scan queue, admin ingestion/review/publish/reconcile; B0/B3 | One additional Pokémon set through ordinary ingestion; one synthetic second-game adapter without core forks | OPEN |
 | B5 — Hosted beta qualification | Staging deploy, restore, privacy/data controls, support, mobile checks; B1–B4 | Acceptance matrix below; candidate manifest; actual hosted observations; cost limits verified | OPEN |
@@ -205,3 +205,18 @@ uv run python -m pokemon_hunter.beta.cli --root /Users/michaelfuscoletti/dex-pri
 ```
 
 The password prompt does not echo or accept a password argument. Open `http://127.0.0.1:8011/login/`. This is a copied, visibly labeled rehearsal, not the authoritative collection. Next actor: Mike for credential entry, then engineer for the actual-account verification; B2 may build on the tested local boundary, while B1 actual-owner status remains explicit.
+
+
+## B2 execution result — September 27–28, 2026
+
+**B2 local engineering is verified; B1 actual owner provisioning remains PENDING. Owner acceptance and hosted-beta readiness are NOT established.** See [B2 implementation, evidence and launch](B2_IMPLEMENTATION.md). Starting candidate: B1 `224eb32`; the exact tested/pushed B2 commit, tree and source manifest are recorded in the private `b2-20260928/handoff.json` and Git history.
+
+- Extended the same authenticated Django application and B0 inventory: manual catalog search/add, intentional duplicates, exact copy attributes, edit/remove/undo, private binders, set/custom/Vintage goals and frozen checklists. Legacy app and prepared B1 owner-local are preserved.
+- Track-set adds no copies. Add-owned-set reviews catalog/variant coverage, existing ownership and duplicate policy, then confirms atomically under one durable operation ID.
+- CSV/JSON import previews validate rows and duplicate handling; errors block the whole batch. Complete JSON exports round-trip supported copies, attributes, uncertainty, binders and goals into an empty isolated account. Original archive/migration evidence stays intact.
+- Rechecked session ownership for every new read, mutation, batch, export and undo. Tested concurrent confirmation, retries, interrupted transactions, stale edits, scoped undo and later-edit conflicts.
+- Completed desktop and 390px Chromium browser flows in independent accounts, including cross-account denial. Keyboard focus, readable errors, empty states, touch-sized controls and screenshots checked. This is browser emulation, not real-device acceptance.
+- Fresh copied preservation reconciles 859 source records, 207 owned copies, one first-edition selection, two hunts and 153/251 Vintage species. All owner/config/frontend hashes and original databases remain unchanged; restored legacy app reads pass.
+- Evidence remains private under `/Users/michaelfuscoletti/dex-private/b2-20260928/`; exact committed-candidate regression, clean-checkout and browser results are in the handoff. No cutover, deployment, external message, paid recognition or credential change occurred.
+
+**Next concrete action:** Mike can launch `review-local` using the B2 guide, choose a disposable rehearsal password, and review manual add/edit/remove, goals and import preview. Separately, Mike still owns actual B1 credential entry, followed by engineer actual-account verification. B3 photo entry and B4 catalog onboarding remain later work; do not mark hosted release or owner acceptance from these checks.

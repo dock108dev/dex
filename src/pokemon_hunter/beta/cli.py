@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 
-def initialize(root, source=None):
+def initialize(root, source=None, b2=False):
     root = root.expanduser().absolute()
     project = Path(__file__).resolve().parents[3]
     if root.resolve().is_relative_to(project):
@@ -31,6 +31,12 @@ def initialize(root, source=None):
             id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id),
             kind TEXT NOT NULL CHECK(kind IN ('photos','scan_jobs','goals','request_evidence')),
             payload TEXT NOT NULL)""")
+    if b2:
+        from .collection import initialize as initialize_collection
+
+        with connect(root / "inventory.db") as db:
+            initialize_collection(db)
+        (root / "B2_ISOLATED").write_text("Disposable B2 environment; never owner-local\n")
     (root / "secret.key").write_text(secrets.token_urlsafe(64))
     for name in ("secret.key", "inventory.db", "B1_ISOLATED"):
         os.chmod(root / name, 0o600)
@@ -51,6 +57,7 @@ def main():
     sub = parser.add_subparsers(dest="action", required=True)
     init = sub.add_parser("init")
     init.add_argument("--copied-inventory", type=Path)
+    init.add_argument("--b2", action="store_true", help="Enable B2 only in this new isolated root")
     for command in ("bootstrap", "serve", "check"):
         sub.add_parser(command)
     for command in ("invite", "recovery", "revoke"):
@@ -61,7 +68,7 @@ def main():
     args = parser.parse_args()
     os.umask(0o077)
     if args.action == "init":
-        initialize(args.root, args.copied_inventory)
+        initialize(args.root, args.copied_inventory, b2=args.b2)
     setup(args.root)
     from django.contrib.auth import get_user_model
     from django.core.management import call_command
@@ -70,7 +77,8 @@ def main():
 
     if args.action == "init":
         call_command("migrate", verbosity=0)
-        print("Isolated B1 database initialized. Provision owner before inviting anyone.")
+        stage = "B2" if args.b2 else "B1"
+        print(f"Isolated {stage} database initialized. Provision an isolated account before inviting anyone.")
     elif args.action == "bootstrap":
         from pokemon_hunter.inventory import OWNER_ID
 

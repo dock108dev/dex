@@ -1,6 +1,8 @@
 # Collection beta — data and workflow design
 
-Updated: September 27, 2026. **B0 schema and copied-data rehearsal implemented; remaining workflows are target design.**
+Updated: September 27, 2026. **B0 migration, B1 local authentication and B2 collection workflows are implemented; photo/catalog/hosted workflows remain target design. Actual owner provisioning remains pending.**
+
+[B2 implementation and verification](B2_IMPLEMENTATION.md) records the shipped local slice and its limitations.
 
 [Authoritative roadmap and stage status](ROADMAP.md) · [Current implementation](../APP_SPEC.md)
 
