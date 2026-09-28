@@ -1,37 +1,33 @@
-# B5 operations — deployment preparation and remaining qualification
+# B5 operations — Mac-hosted private staging
 
-September 28, 2026. **Deployment preparation implemented; B5 hosted and real-device qualification remains OPEN.** The follow-up starts from `9b7e1a1`; exact runtime/image and setup steps are in [the deployment package](B5_DEPLOYMENT.md). No purchase, public deployment, external invitation, real recognition call or authoritative cutover was performed. B4 runtime `9dc074d` and documentation `5bf44b9` retain their original evidence.
+**Current host: Mike's Mac, with test phones on the home network.** [The active closeout checklist](B5_DEPLOYMENT.md) replaces Render setup. B5 remains OPEN for final endpoint, restart/backup operation and actual-device observations. Existing results retain their original candidate identities; no cloud or phone result is inferred from local emulation.
 
 ## Selected architecture and cost
 
-The authenticated app is **Django 5.2 / ASGI / Uvicorn**, with one web process and one independent database-backed worker. The legacy FastAPI app and SQLite/JSON collection remain preserved. Staging uses **Render paid web + background worker + managed PostgreSQL 17 in Virginia**. There is no framework rewrite, Redis or second deployment platform.
+The authenticated app is Django 5.2 / ASGI / Uvicorn with one web process, one independent database-backed worker and PostgreSQL 17 on the Mac. Preserve the legacy FastAPI app, original SQLite/JSON collection, review app on 8011 and earlier loopback rehearsal on 8443. Use isolated synthetic staging data for qualification. No new hosting subscription or registry publication is required. The Mac must be awake and connected for access; record outage/sleep and restart behavior. Independent backup storage may use an existing external drive or encrypted destination; do not purchase hardware or services implicitly.
 
-Private normalized JPEGs and archived private evidence use PostgreSQL `BYTEA`, served only through existing authorization checks. This is intentional for at most ten collectors: one consistent database backup includes assets, consent, accounts, inventory, catalogs, operations and spending reservations. No public media directory, ephemeral-disk photo store or separately inconsistent object backup. Reconsider object storage only if measured database size/latency warrants it. Each upload remains capped at two normalized images, daily account quotas and 1600px output.
-
-Prices checked September 28, 2026: web `0.5c-512mb` $7 + worker `0.5c-512mb` $7 + PostgreSQL `0.1c-256mb` $6 + 5 GB at $0.30/GB = **about $21.50/month**, before workspace plan changes, taxes, bandwidth/build overages and recognition. This is an estimate, not a purchase or quote; confirm the account's current pricing before provisioning. A larger DB may be needed after measurement. Recognition retains existing $1 global / $0.50 per-account lifetime ceilings and $0.05 reservations. No reservations are reset.
-
-Official sources reviewed: [Render pricing](https://render.com/pricing), [small-application cost breakdown](https://render.com/articles/how-much-does-cloud-application-hosting-cost-for-small-businesses), [PostgreSQL](https://render.com/docs/postgresql), [private networking](https://render.com/docs/private-network), [HTTPS web services](https://render.com/docs/web-services), [backup/recovery](https://render.com/docs/postgresql-backups). Paid Hobby PITR has a three-day window; exported provider backups expire after seven days. This is independent of locally retained engineering evidence.
+Private normalized JPEGs remain PostgreSQL BYTEA served through authorization checks. A consistent database backup includes accounts, inventory, catalogs, photos, consent, operations and spending reservations. Preserve the existing $1 global / $0.50 account lifetime ceilings and $0.05 reservations. No counter reset is part of setup or recovery.
 
 ## Package and required configuration
 
-`deploy/Dockerfile` builds the locked app with Python 3.12, PostgreSQL client tools and a non-root runtime. `deploy/render.yaml` describes the two services and database, using the pinned Linux AMD64 image and automatic deploys off. Image-based services do not automatically rebuild from Git; keep Blueprint auto-sync and deploy hooks disabled too. No owner data, photos, secrets, source archives or local config enter the Docker context. The blueprint is prepared, not applied. PostgreSQL 17 and the container are exercised locally; account-level validation and real Render ingress remain unobserved. The previous ARM64 `9b7e1a1` image is not a Render-compatible rollback artifact.
+Reuse runtime `0f17cc9` and the retained image identified in [B5_DEPLOYMENT.md](B5_DEPLOYMENT.md). Any source change or rebuild requires its own exact identity and affected checks. The prepared Render blueprint is an inactive alternative; see [historical Render instructions](B5_RENDER_REFERENCE.md) only if cloud hosting is explicitly reopened.
 
-Both services need the same secure environment group:
+Both local staging services use securely supplied configuration:
 
-- `DATABASE_URL`: selected managed database's internal connection URL, injected by Render. Keep it out of arguments, Git and ordinary logs.
-- `DEX_SECRET_KEY`: one newly generated random secret of at least 50 characters, securely shared between web and worker. Retain in the secret manager across restarts and restores. It is distinct from the preserved local secret.
-- `DEX_PUBLIC_ORIGIN`: exact HTTPS origin without a trailing slash, e.g. `https://dex-staging-web.onrender.com` or the chosen custom origin.
-- `DEX_INGRESS=render`: uses Render’s documented edge TLS/forwarded-protocol contract and dedicated workspace private-network boundary. It requires provider-injected `RENDER=true`, `RENDER_SERVICE_ID`, and web/worker service type; web hostname must equal the configured origin. Do not supply `DEX_PROXY_NETWORKS` on Render. Generic local rehearsal keeps `DEX_INGRESS=proxy` and an explicit narrow CIDR allowlist.
-- `DEX_PROFILE=staging`; `DEX_DATABASE_SSLMODE=require` (default). TLS may be disabled only for a database on loopback in local rehearsal. `PORT` comes from Render.
-- `OPENAI_API_KEY` only when securely available for the explicitly bounded evaluation. It is absent from the current process; suitable consented evaluation photos are also required. No secret files or unrelated credential stores were searched.
+- `DATABASE_URL`: the isolated PostgreSQL target. Keep the database unreachable from phones/public networks. Preserve existing data and reservations.
+- `DEX_SECRET_KEY`: retain the target's existing secure key across restarts and restores. Do not rotate it merely because another unused key was generated during Render preparation.
+- `DEX_PUBLIC_ORIGIN`: the exact phone-facing HTTPS origin. No certificate-warning bypass counts as qualification.
+- `DEX_PROFILE=staging`, `DEX_INGRESS=proxy`, and `DEX_PROXY_NETWORKS`: only the actual narrow proxy peer addresses. If the proxy connects over loopback, trust that loopback peer only; Docker networking must be observed rather than guessed. The proxy replaces forwarded headers and the backend must not be directly reachable from the LAN.
+- `DEX_DATABASE_SSLMODE=require` by default; the existing implementation permits disabling database TLS only for loopback. Never weaken that check to accommodate a different network arrangement.
+- `OPENAI_API_KEY` only for the separately bounded real evaluation when suitable images are available. Missing configuration leaves recognition manual/simulated.
 
-Missing configuration fails startup; there is no SQLite, weak-cookie or HTTP fallback. The original loopback profile retains its exact Host/peer/forwarding guard. Staging validates exact Host, Origin and forwarded HTTPS; generic proxy mode also validates peer CIDRs. Render mode trusts the isolated provider workspace network, not a guessed IP range; secure host-only cookies, one-hour sessions, CSRF, Axes throttling, no-store and CSP remain enforced. HSTS is one hour without subdomain/preload opt-in; Django's two warnings for those deliberate domain-wide settings are documented, not silently suppressed.
+The fixed loopback review profile remains unchanged. Staging continues strict Host/Origin, secure cookies, CSRF, throttling, no-store and CSP. The loopback rehearsal proxy and browser test exception are prior test tools, not a ready phone-facing deployment. Actual endpoint/startup configuration and certificate trust still need implementation and observation. No public tunnel or router port forwarding is part of the selected home-network scope.
 
 ## Synthetic seed, migrate and start
 
 **Default: synthetic staging only.** Run `uv run python -m pokemon_hunter.beta.synthetic --output /private/NEW_SYNTHETIC_ROOT` in the pinned checkout, or use `/app/.venv/bin/python` in the image. This refuses an existing output directory, reads only packaged permitted catalogs, and generates two random-password accounts, six copies including provisional photos, private/shared request consent, four frozen goals, 12 catalog publications with rollback history and a retained $0.05 synthetic reservation. The photos are original geometric fixtures, not evaluation cards. The output includes `synthetic.copied.sqlite3`, its scan-config sidecar and a mode-600 `credentials.json`. No invitation is sent; this is not actual B1 owner provisioning.
 
-The precise first-boot sequence for an empty managed database is in [B5_DEPLOYMENT.md](B5_DEPLOYMENT.md). Keep seed files and passwords private, outside Git, and never attach them to provider logs. The migration input below is the synthetic copied database.
+For the Mac, reuse the existing isolated synthetic PostgreSQL target and its credentials. Generate/migrate a seed only for an explicitly new empty target, never as a restart step. Keep seed files and passwords private, outside Git, and never attach them to provider logs. The migration input below is the synthetic copied database.
 
 Owner-data migration is a **separate later operation**, not part of hosted qualification. The existing `scripts/copy_b5_source.py` remains available only for a separately authorized copied snapshot; this follow-up uploads no owner collection or retained evidence.
 
@@ -66,7 +62,7 @@ uv run python -m pokemon_hunter.beta.deployment expire-backups --path /private/b
 
 A native custom-format `pg_dump` shares an exported repeatable-read snapshot with the row/content manifest. It includes private assets atomically with consent and inventory. The bundle has a SHA-256 checksum and seven-day expiration. Restore is transactional, refuses any nonempty target and verifies all table counts/content hashes. PostgreSQL client version must support the server version; use the built container for PostgreSQL 17. Backups contain sensitive data: use private encrypted operator storage, keep access restricted, never attach them to Git or issue reports. Store deployment secrets separately in the secret manager, not in backups.
 
-Run an off-host logical backup daily and before schema/release changes; schedule `expire-backups` daily in the same restricted operator environment. The prepared scripts implement expiry, but no external scheduler/account was configured by this task. Provider PITR/export retention is separately managed by Render. Stop rollout if backup or restore checks fail.
+Run a logical backup daily and before schema/release changes; schedule `expire-backups` in the restricted operator environment. Keep a protected copy on an independent physical device or existing encrypted backup destination. Backup scheduling and that independent copy have not yet been observed. Stop rollout if backup or restore checks fail. Render PITR is not a dependency for the Mac target.
 
 **Do not roll back data by overwriting the current database with an old backup.** For a compatible application rollback, redeploy a previous B5 image against the current PostgreSQL schema, preserving new writes. B4's SQLite runtime is not a compatible PostgreSQL rollback image. If a data rollback is needed, stop writes and worker, retain a final current backup, restore the earlier backup into a separate database, then reconcile all intervening operations, accounts, deletions, photo consent, catalog changes and spend reservations. Reapply deletions and revoked consent before allowing access; never re-enable a deleted account from an old dump. Do not reduce spending counters. Keep both databases and do not switch until reconciliation is reviewed. A restored engineering test database containing synthetic accounts is never authoritative. The original SQLite copy remains the before-migration rehearsal fallback; it cannot accept post-cutover competing writes.
 
@@ -106,19 +102,10 @@ Missing recognition, images or prices never blocks supported manual add/edit/rem
 
 ## Acceptance matrix and remaining gates
 
-| Gate | Local observation | Actual hosted / real device |
-| --- | --- | --- |
-| Copied migration | All source table values compared on PostgreSQL 17, including IDs, bytes, auth, catalog, history, consent and reservations | Not observed |
-| Restore | One-snapshot native dump restored to empty PG17 DB; all table manifests match; password, photo/consent authorization, copies/catalog/journal read back | Not observed |
-| B2/B3/B4 | Concurrent exactly-once add, private photo confirmation, request consent, publish/rollback/republish; desktop/narrow HTTPS browser exercised | Not observed |
-| Security | Separate HTTPS profile, secure login cookies, CSRF, trusted-peer/host/origin rejection, account isolation | Render ingress/network/managed certificate pending |
-| Operations | Container build, independent web/worker, persisted interrupted-job handling and no automatic billed retry; health/diagnostics | Provider restart/backup jobs pending |
-| Privacy/spend | Deletion preserves other users/catalog and reservation sum; retention and backup expiry tests | Provider deletion/expiry observation pending |
-| Recognition | Manual/fixture engineering only; no key available; zero real calls, cost $0, correct/wrong/unresolved/latency unmeasured | Consented evaluation photos + secure key needed |
-| Devices | Desktop and 390px Chromium emulation only; [phone walkthrough](B5_PHONE_CHECKS.md) prepared | Actual iOS Safari and Android Chrome not run |
+The active [Mac closeout checklist](B5_DEPLOYMENT.md) is the source of truth. Existing exact-image PostgreSQL migration, backup/empty-target restore and post-backup write/reservation preservation were actually observed on this Mac under `/Users/michaelfuscoletti/dex-private/b5-followup-20260928/`; these need no repeat solely because Render was removed. Earlier foundation evidence remains under `/Users/michaelfuscoletti/dex-private/b5-20260928/` with its own candidate identity.
 
-Private evidence: `/Users/michaelfuscoletti/dex-private/b5-20260928/`. Exact candidate identity, image identity and final regression/clean-checkout results are recorded in `handoff.json`; original source/review preservation records remain outside Git. Failed preliminary attempts are retained separately and are not qualified results.
+Still required: the final trusted home-network HTTPS endpoint and account/photo/core-flow checks through it; managed service startup, process/Mac restart persistence and sleep behavior; observed recurring backup plus an independent protected copy; actual iOS Safari and Android Chrome walkthroughs. Render ingress, provider billing, cloud restart and managed backup checks are not applicable to the selected target. Unavailable devices remain an open observation, not an emulation pass.
 
-The follow-up local observations and exact image are recorded in [B5_DEPLOYMENT.md](B5_DEPLOYMENT.md) and `/Users/michaelfuscoletti/dex-private/b5-followup-20260928/`. Prior observations above retain their original identity; they are not relabeled hosted results.
+Real recognition remains a separately reported B3 evaluation gap if its key/images are absent. Operational B5 completion would not imply live recognition, owner acceptance, actual B1 provisioning, full local feature parity or B6 readiness. No invitations or authoritative cutover are authorized by this closeout.
 
-Next action: supply the existing authorized Render workspace/target and registry access, or have the owner provision the listed paid resources. The engineer then applies the pinned package and performs the hosted checks. There is no new routine code approval gate. B5 remains open; B6 and actual B1 owner provisioning do not advance from these local results.
+Next action: engineer configures the Mac endpoint using the preserved synthetic setup. Mike supplies the actual phones, an available backup destination and a convenient time for a Mac restart check. No Render account or additional routine engineering approval is needed.

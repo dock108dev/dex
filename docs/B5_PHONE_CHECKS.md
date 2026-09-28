@@ -1,6 +1,6 @@
 # B5 phone walkthrough
 
-Use the deployed HTTPS staging URL and **synthetic credentials only**. Run once on an actual iPhone in Safari and once on an actual Android phone in Chrome. Record device model, OS/browser version, UTC time, runtime commit and image digest. Desktop responsive mode does not count.
+Use the Mac-hosted HTTPS staging URL on the same home Wi-Fi and **synthetic credentials only**. Render and public internet exposure are unnecessary. Run once on an actual iPhone in Safari and once on an actual Android phone in Chrome. Record device model, OS/browser version, UTC time, runtime commit and image digest. Desktop responsive mode does not count. A manual walkthrough needs no Xcode license or ADB installation; Mike can perform the phone actions while the engineer records results.
 
 1. Sign in; refresh and reopen a page. Confirm the correct synthetic collection, no browser certificate warning, and a usable portrait layout. Sign out and verify Back/refresh does not restore private content.
 2. Open Scan/Add. Try the camera chooser and take a photo of a synthetic test card; separately choose a library image. Check orientation and front/back selection. Cancel the chooser once: no job or copy should appear.
@@ -15,7 +15,7 @@ Stop a failing flow, retain sanitized evidence, fix the concrete failure and rep
 
 | Actual device | Observation on September 28, 2026 | Result |
 | --- | --- | --- |
-| iOS Safari | No usable device session available. Local Apple device inventory is blocked by an unaccepted Xcode license; the task did not accept it. | Not run |
-| Android Chrome | No configured device/ADB session available. | Not run |
+| iOS Safari | No actual Safari walkthrough recorded. Prior automated inventory hit an Xcode license prompt; that does not block a manual phone walkthrough. | Not run |
+| Android Chrome | No actual Chrome phone walkthrough recorded; ADB is not required for manual testing. | Not run |
 
 The prior 390px Chromium observations remain browser emulation only. Recognition accuracy is a separate evaluation using suitable consented card images, not the geometric synthetic photos in the staging seed.

@@ -66,7 +66,7 @@ B0 has passed its technical exit on copied data. B1 has a verified isolated loca
 | B2 — Collection and goals | Mobile inventory, copies, binders, set/custom goals, imports/exports/undo; B1 | End-to-end manual collection use; existing Vintage 251 result preserved; no duplicate inventory from goals | LOCAL ENGINEERING PASS — owner review separate |
 | B3 — Photo entry | Private upload, asynchronous OpenAI recognition, catalog candidates, confirm/cancel/undo; B1–B2 | Exactly-once confirmation and uncertain/failure states verified locally; live recognition quality/cost unmeasured | LOCAL ENGINEERING IMPLEMENTED — API setup/evaluation pending |
 | B4 — Catalog expansion | Game adapter contract, unknown scan queue, admin ingestion/review/publish/reconcile; B0/B3 | English Gym Heroes through ordinary ingestion/rollback; synthetic Orbits through shared request/matching/inventory paths | LOCAL ENGINEERING IMPLEMENTED — hosted qualification separate |
-| B5 — Hosted beta qualification | PostgreSQL staging package, restore, privacy/support and local HTTPS rehearsal | [B5 matrix](B5_OPERATIONS.md); actual hosted/device observations still required | LOCAL FOUNDATION IMPLEMENTED — HOSTED/DEVICE QUALIFICATION OPEN |
+| B5 — Mac-hosted private staging | Existing web/worker/PostgreSQL, trusted home-network HTTPS, recovery and real phones | [Current closeout checklist](B5_DEPLOYMENT.md); final endpoint, startup/recovery, backup operation and actual phones | OPEN — MAC/PHONE OBSERVATIONS REQUIRED |
 | B6 — Invite pilot | Owner review, then small invited cohort; B5 | Owner verdict and pilot outcomes recorded separately; known issues and rollback instructions delivered | OPEN |
 
 ### B0 — Preserve the existing collection first
@@ -110,7 +110,7 @@ Onboard one additional Pokémon set through the same importer and validate a syn
 
 ### B5 — Make the beta operable
 
-Selected architecture: Django 5.2 with the existing frontend, Render web and independent database-backed worker, and managed PostgreSQL 17 for accounts, inventory/catalog, jobs and private photo bytes. One consistent database backup includes assets and consent. The legacy FastAPI app is preserved. See [B5 operational foundation](B5_OPERATIONS.md) for the runnable package, current cost estimate, source restrictions and operator steps. No framework rewrite or microservice platform.
+Selected architecture: Django 5.2 with the existing frontend, an independent worker and PostgreSQL 17 on Mike's Mac. A dedicated trusted HTTPS endpoint serves test phones on the home network; database and backend access remain private. One consistent database backup includes photo bytes and consent. Preserve the existing review app and legacy FastAPI collection. [Current B5 closeout](B5_DEPLOYMENT.md) replaces Render provisioning: no Render account, registry publication, cloud subscription or away-from-home access is required for this scope. Final network/device and operational observations remain required; prior passing component checks are retained.
 
 Before pilot: configure staging/production separation, secrets, migrations, health/error monitoring, redacted logs, backups and an observed restore. Support account/photo deletion and a stated retention policy. Confirm rights/terms for each hosted catalog, image and pricing source; existing local snapshots do not establish hosted redistribution rights. Omit unavailable images or pricing features rather than guessing permission. Keep pending catalog/image rights visible as a coverage blocker, not a reason to stop unrelated engineering.
 
@@ -270,7 +270,7 @@ Mike initially responded “great” to the restored app and subsequently direct
 B4 runtime `9dc074d8d05ed94f88a6c278502b30d5ae9dc424`: 188 tests passed in working and clean checkouts; lint/format, B2/B3/B4 desktop/narrow browser flows and source/review preservation passed. See the B4 implementation record for exact evidence and remaining gates.
 
 
-## B5 operational foundation — September 28, 2026
+## Historical B5 operational foundation — September 28, 2026
 
 [Implementation, source review, acceptance matrix and exact operator instructions](B5_OPERATIONS.md). PostgreSQL 17 copied migration preserves and compares source rows, account identities, private bytes, consent, catalog/journal history and spending reservations. Web and worker are packaged independently with fail-closed HTTPS configuration, readiness, graceful shutdown, recovery, consistent backup/empty-target restore, account erasure, retention and private feedback. The original SQLite collection and review environment remain preserved.
 
@@ -279,7 +279,7 @@ Render web + worker + managed PostgreSQL is selected (about $21.50/month before 
 B5 is **not fully qualified**: actual Render ingress/TLS/restart/backup observations, actual iOS/Android results and real recognition evaluation remain open. API key and consented evaluation photos are unavailable; zero real API calls. Actual B1 owner provisioning remains independent. No public deploy, external invitation, service purchase or authoritative cutover. Continue from the concrete configuration and observation gates in the B5 runbook.
 
 
-## B5 deployment preparation follow-up — September 28, 2026
+## Historical B5 deployment preparation follow-up — September 28, 2026
 
 From `9b7e1a1`, tested runtime `0f17cc9ff337ee1ce90cdb32875afd7de6d03e38`; immutable Linux AMD64 image `sha256:46facd36fc6bb15603960722bba10e015bc4189a73ef30a0208be051a6a52c8b`. [Deployment package](B5_DEPLOYMENT.md) includes the exact source/image manifest, Render configuration, synthetic-first migration, rollback boundary, remaining inputs and hosted checklist; [operations guide](B5_OPERATIONS.md) and [actual-phone walkthrough](B5_PHONE_CHECKS.md) are current.
 
@@ -289,3 +289,9 @@ From `9b7e1a1`, tested runtime `0f17cc9ff337ee1ce90cdb32875afd7de6d03e38`; immut
 - Actual hosted/restore/restart/device observations: **not obtained**. Real recognition: **0 calls / $0**, correct/wrong/unresolved, accuracy and latency unmeasured; key/images missing. Actual phones unavailable; desktop Chromium remains emulation.
 
 **B5 OPEN, B6 not started.** Next actor: operator for existing authorized isolated Render workspace/service/database IDs, hostname, private registry access and shared secret; owner provisions paid resources only if no existing target exists. Baseline about $21.50/month; temporary separate restore instance +$7.50/month while retained, before variable charges. Engineer then deploys and collects real hosted observations. Actual B1 owner provisioning remains independent. No purchases, external invitations, private-data upload, public signup or authoritative cutover occurred.
+
+## Current B5 host decision — Mac, home network
+
+Mike challenged the paid-hosting dependency; the selected operational target is now his Mac. [The current closeout checklist](B5_DEPLOYMENT.md) supersedes the historical Render next actions above. Reuse the pinned image and existing synthetic PG17 evidence. Remaining work: trusted HTTPS from actual phones; final deployment startup/restart and persistence; access/isolation/core-flow observations through that endpoint; recurring backup plus a protected independent copy; actual iOS Safari and Android Chrome walkthroughs. Render-specific provider observations are not applicable to this target. Do not silently waive unavailable phone coverage.
+
+B5 stays OPEN until these observations exist. Real recognition remains an explicit B3 gap when its key/images are unavailable; no operational closeout establishes recognition accuracy, full feature parity, owner acceptance or B6 readiness. Engineer proceeds with the Mac endpoint; Mike supplies the phones, available backup destination and a time for the disruptive Mac restart check. No routine stage approval or paid hosting purchase is needed.
