@@ -2,7 +2,7 @@
 
 Updated: September 27, 2026 (America/New_York).
 
-**Status: B0 TECHNICALLY COMPLETE; LOCAL APP PRESERVED; MULTIUSER BETA NOT IMPLEMENTED OR RELEASED.**
+**Status: B0 TECHNICALLY COMPLETE; B1 LOCAL IMPLEMENTATION VERIFIED, ACTUAL OWNER PROVISIONING PENDING; LOCAL APP PRESERVED; NOT RELEASED.**
 
 This is the authoritative next-steps tracker for `/Users/michaelfuscoletti/Desktop/dex`. It replaces the earlier daily-watcher beta plan. The product is now a personal card-collection app that can expand across games. Pokémon ships first. Vintage 251 becomes a built-in collecting goal, while the current local app remains usable during development.
 
@@ -57,12 +57,12 @@ Suggested navigation: Collection, Scan/Add, Goals, Requests and Settings; Catalo
 
 ## 4. Sequenced implementation and completion gates
 
-B0 has passed its technical exit on copied data. B1–B6 remain planned, not completed. Engineering proceeds in order where dependencies require it; UI work and catalog-source review can overlap. Finish coherent slices without another broad planning interview. The subsequent B0 execution authorized private repository creation, commits/pushes and copied-data rehearsal. No deployment, account creation, paid API use or live cutover was performed.
+B0 has passed its technical exit on copied data. B1 has a verified isolated local implementation with actual owner provisioning pending. B2–B6 remain planned, not completed. Engineering proceeds in order where dependencies require it; UI work and catalog-source review can overlap. Finish coherent slices without another broad planning interview. The subsequent B0 execution authorized private repository creation, commits/pushes and copied-data rehearsal. No deployment, account creation, paid API use or live cutover was performed.
 
 | Stage | Deliverable and dependencies | Completion evidence | Status |
 | --- | --- | --- | --- |
 | B0 — Preserve and design migration | Snapshot current owner files/history; implement catalog/copy schema and migration rehearsal on copies | Exact-record comparison, repeat-import check, rollback rehearsal; no owner source changes | TECHNICAL PASS — owner acceptance separate |
-| B1 — Accounts and private inventory | First `admin` owner account, invites, sessions/recovery; B0 schema | Two-user isolation including photos/jobs/exports/admin endpoints; owner import preserved; other user empty | OPEN — NEXT |
+| B1 — Accounts and private inventory | First `admin` owner account, invites, sessions/recovery; B0 schema | Two-user isolation including photos/jobs/exports/admin endpoints; owner import preserved; other user empty | LOCAL CHECKS PASS — actual owner provisioning pending |
 | B2 — Collection and goals | Mobile inventory, copies, binders, set/custom goals, imports/exports/undo; B1 | End-to-end manual collection use; existing Vintage 251 result preserved; no duplicate inventory from goals | OPEN |
 | B3 — Photo entry | Private upload, asynchronous OpenAI recognition, catalog candidates, confirm/cancel/undo; B1–B2 | Measured recognition quality and cost, exactly-once confirmation, useful uncertain/failure states | OPEN |
 | B4 — Catalog expansion | Game adapter contract, unknown scan queue, admin ingestion/review/publish/reconcile; B0/B3 | One additional Pokémon set through ordinary ingestion; one synthetic second-game adapter without core forks | OPEN |
@@ -159,7 +159,7 @@ The existing eBay hunt and legacy daily watcher remain preserved, optional modul
 
 ## 8. Immediate next action and continuation
 
-**Next: implement B0's shared catalog/copy schema and migration rehearsal against disposable copies, preserving Mike's exact collection and preparing the first `admin` account for B1.** Do not start with a generic signup screen attached to the shared ownership JSON.
+**Next: Mike securely provisions the actual owner in the prepared isolated B1 environment, then the engineer verifies the binding and records the final B1 gate.** B0 is complete. B1 authentication uses a separate copied database; the live collection remains authoritative and unchanged.
 
 Read this tracker, BETA_DESIGN and APP_SPEC before implementation. Use the current collection at execution time, not only these dated counts. Preserve credentials and data, continue the first incomplete stage, and update this file with evidence as stages finish. Routine implementation choices do not need another broad planning interview. Resolve concrete required secrets, provider costs or deployment details at the step that needs them.
 
@@ -175,4 +175,33 @@ Repository: https://github.com/dock108dev/dex (private). Baseline: `08aa5662088f
 
 All B0 technical exit requirements passed: 87-file verified backup, exact comparison of 859 records / 207 physical copies, one first-edition selection, Vintage 251 at 133 Kanto and 20 Johto, two owner-scoped saved hunts, identical repeat import, full restore and unchanged local owner data/UI. All 207 copies retain explicit unresolved finish/variant information; none was guessed. No current identity conflicts. Tests use sanitized synthetic ownership; private evidence remains outside Git.
 
-Local evidence: `/Users/michaelfuscoletti/dex-private/b0-20260927/`; final rehearsal: `rehearsal-final/report.json`; tested commit and checks: `handoff.json`. Owner acceptance and hosted-beta readiness remain unestablished. B1 next: select mature auth supporting admin login/recovery, bind the stable owner ID, and implement/prove two-user isolation before any live cutover.
+Local evidence: `/Users/michaelfuscoletti/dex-private/b0-20260927/`; final rehearsal: `rehearsal-final/report.json`; tested commit and checks: `handoff.json`. Owner acceptance and hosted-beta readiness remain unestablished. That B0 handoff is historical. See the B1 execution record below for the current next action.
+
+
+## B1 execution result — September 27–28, 2026
+
+**B1 full technical exit remains OPEN: actual owner provisioning is pending.** Local authentication and isolation are implemented and verified using isolated test identities. Owner acceptance and hosted-beta readiness are not established. [Implementation, auth decision, local launch and recovery](B1_IMPLEMENTATION.md).
+
+| Requirement | Actual status | Evidence / limitation / next actor |
+| --- | --- | --- |
+| Mature authentication | PASS locally | Django 5.2 LTS + django-axes; official auth/CSRF/ASGI/license documentation verified; no auth subscription; hosted infrastructure cost unselected |
+| Stable owner binding | Rehearsal PASS; actual owner PENDING | Transactional owner-first bootstrap binds existing B0 ID; repeat preserves credentials/identity; username changes do not transfer role. Mike must enter the actual credential locally |
+| Working account boundary | PASS for implemented surface | Sign-in/out, invite redemption, local operator recovery, collection view, notes mutation, inventory export, preserved hunts and archive downloads |
+| Later-resource boundary | PASS boundary only | Synthetic photo/job/goal/request-evidence and worker checks; unfinished routes unavailable; full workflows remain B2–B4 |
+| Copied owner preservation | PASS | Fresh B0 snapshot, exact attributes/identities/edition/hunts/Vintage comparison, repeat import and restore; second account starts empty |
+| Adversarial/lifecycle checks | PASS locally | Anonymous/forged/guessed/cross-account access, admin separation, file/worker scope, token expiry/reuse/replacement, session expiry/logout/revocation, login limits and CSRF/Origin checks |
+| Two real browser sessions | PASS locally | Independent Chromium contexts, preserved owner view, empty second account, synthetic reverse-isolation check, invite/recovery/logout |
+| Original app preservation | PASS | Owner/config/frontend hashes and complete logical SQLite comparisons; restored legacy app collection/export/hunt reads; no live cutover |
+| Candidate and clean checkout | Recorded in private handoff | Tested/pushed commit and clean-checkout checks are bound in `b1-20260927/handoff.json`; repository remains private |
+| External delivery / hosting | NOT VERIFIED | No outbound invitation/recovery message, deployment, service purchase or paid recognition; later-stage qualification required |
+
+Private evidence: `/Users/michaelfuscoletti/dex-private/b1-20260927/`. `before/` is the fresh snapshot; `rehearsal/report.json` is exact import/restore evidence; `browser-final-candidate/` holds the passing browser report and screenshots; `preservation.json` verifies live files; `handoff.json` records exact tested/pushed identity and checks. Earlier browser attempts are retained as failed attempts, not passing evidence.
+
+Secure owner entry, from the repository (prepared root already initialized; do not rerun init):
+
+```sh
+uv run python -m pokemon_hunter.beta.cli --root /Users/michaelfuscoletti/dex-private/b1-20260927/owner-local bootstrap
+uv run python -m pokemon_hunter.beta.cli --root /Users/michaelfuscoletti/dex-private/b1-20260927/owner-local serve
+```
+
+The password prompt does not echo or accept a password argument. Open `http://127.0.0.1:8011/login/`. This is a copied, visibly labeled rehearsal, not the authoritative collection. Next actor: Mike for credential entry, then engineer for the actual-account verification; B2 may build on the tested local boundary, while B1 actual-owner status remains explicit.

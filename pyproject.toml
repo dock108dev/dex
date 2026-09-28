@@ -8,6 +8,8 @@ version = "0.1.0"
 description = "A small, conservative daily eBay watcher for vintage Pokemon lots"
 requires-python = ">=3.12"
 dependencies = [
+    "django>=5.2,<5.3",
+    "django-axes>=8.3,<9",
     "fastapi>=0.115,<1",
     "httpx>=0.28,<1",
     "pydantic>=2.10,<3",

@@ -69,3 +69,7 @@ The Overview shows ungraded and Grade 7/8/9/10 estimates for one of each owned p
 `config/market_values.json` holds dated USD PriceCharting guide snapshots. Grade 10 uses its PSA 10 guide; other grades are general grade scenarios. Grade 7–8 values marked * interpolate geometrically between ungraded and Grade 9 when no direct guide snapshot exists: raw × (grade9/raw)^(1/3 or 2/3). This is a rough heuristic, not observed sales or a predicted card grade. No grading or selling fees included. Records older than 30 days are excluded; partial totals disclose coverage.
 
 Refresh public guide tables with `uv run python scripts/refresh_values.py`. It stops on HTTP failures, preserves prior records, and records its result in `data/value-refresh.json`. This collection estimate is separate from condition-qualified hunt bid calculations.
+
+## Isolated B1 accounts
+
+Django authentication, invite setup, local recovery and private inventory now run separately on loopback. Actual owner provisioning is pending; the original app remains authoritative. See [B1 local launch and verification](docs/B1_IMPLEMENTATION.md). Do not expose the legacy unauthenticated app.

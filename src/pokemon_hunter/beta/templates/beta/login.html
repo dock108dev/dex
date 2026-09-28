@@ -1,0 +1,1 @@
+{% extends 'beta/base.html' %}{% block content %}<h1>Sign in</h1><p>Use your invited account. The owner account is provisioned locally first.</p><form method="post">{% csrf_token %}{{ form.as_p }}<button>Sign in</button></form><p><a href="/recovery/">Recover access</a></p>{% endblock %}

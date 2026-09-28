@@ -8,7 +8,7 @@ Updated: September 27, 2026. **B0 schema and copied-data rehearsal implemented; 
 
 One shared collection platform, with Pokémon first and game-specific catalog adapters. Existing Vintage 251 rules become a named, versioned goal template. They must not become global rules that reject Yu-Gi-Oh!, Digimon, sports cards or Pokémon outside species 1–251. A user may own any supported printing even when it contributes to no active goal.
 
-The first owner account is Mike's `admin`. Preserve his existing inventory and Pokédex; create other users with empty private inventories. Account provisioning is future work. Credentials never belong in this document or seed data.
+The first owner account is Mike's `admin`. Preserve his existing inventory and Pokédex; create other users with empty private inventories. B1 implements isolated account provisioning and access checks; actual owner credential entry remains pending. See [B1 implementation](B1_IMPLEMENTATION.md). Credentials never belong in this document or seed data.
 
 ## Shared data model
 

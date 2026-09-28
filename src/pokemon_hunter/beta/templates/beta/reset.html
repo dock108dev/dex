@@ -1,0 +1,1 @@
+{% extends 'beta/base.html' %}{% block content %}<h1>Set your password</h1>{% if validlink %}<form method="post">{% csrf_token %}{{ form.as_p }}<button>Save password</button></form>{% else %}<p>This link is invalid, expired or already used. Request a new local setup or recovery link from the operator.</p><a href="/recovery/">Recovery instructions</a>{% endif %}{% endblock %}
