@@ -6,7 +6,7 @@ A local vintage Pokémon collection app with a spoiler-controlled hunt experienc
 
 The [roadmap](docs/ROADMAP.md) targets Mike alone on his Mac. The authenticated app at [Overview](http://127.0.0.1:8011/overview/) includes collection/Pokédex parity, copies, binders, goals, imports/exports/undo, photo entry and catalog requests. Preserve the existing login and data; do not initialize it again. [Local launch instructions](docs/B2_PARITY.md#launch-the-revised-review-app) apply if it is stopped.
 
-[Scan/Add](http://127.0.0.1:8011/scan/) currently has documented simulated/manual recognition; real API setup and a small evaluation are next. See [photo configuration](docs/B3_PHOTO_ENTRY.md). Hosting, LAN HTTPS and phone/operational qualification are deferred. [PM status](docs/PM_STATUS.md) records current priorities.
+[Scan/Add](http://127.0.0.1:8011/scan/) currently has documented simulated/manual recognition; Codex CLI recognition using the existing login is next, with API-key support retained for future deployment. See [photo configuration](docs/B3_PHOTO_ENTRY.md). Hosting, LAN HTTPS and phone/operational qualification are deferred. [PM status](docs/PM_STATUS.md) records current priorities.
 
 ## Original local app — preserved
 

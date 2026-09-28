@@ -1,5 +1,10 @@
 # B3 photo entry — local pre-alpha
 
+## Next phase — Codex CLI locally, API retained
+
+The selected next implementation is `codex_cli`, using the existing saved Codex ChatGPT login for Mike's localhost app. Keep the implemented `openai` API-key adapter for future deployment and retain manual/fixture modes. This is planned, not an implemented configuration option yet. The API-key requirement below applies only to `openai` mode. See the [current roadmap](ROADMAP.md#immediate-engineering-priority) for the shared-result, isolated-execution, usage and verification contracts. No automatic provider fallback or credential extraction. Existing API dollar ceilings/reservations remain intact; CLI usage is tracked separately and is not costed as API usage.
+
+
 September 28, 2026. B3 engineering is implemented in the authenticated Django app. Actual owner provisioning, hosted operation and real-device acceptance remain separate. No live collection cutover, deployment, purchase or marketplace search is included.
 
 ## Use

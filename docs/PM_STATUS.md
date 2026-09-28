@@ -4,13 +4,15 @@ Updated September 28, 2026. **Single-user localhost pre-alpha for Mike. Infrastr
 
 The existing authenticated local app is the delivery target: [Overview](http://127.0.0.1:8011/overview/) and [Scan/Add](http://127.0.0.1:8011/scan/). Preserve its working login, collection, photos and prior environments. Endpoint availability was not rechecked during this documentation-only update.
 
-B0 preservation, B1 account engineering, B2 collection/parity, B3 photo-entry workflow and B4 catalog expansion are implemented. Real recognition remains the next useful product task: the last handoff reports zero real API calls, no configured key and no measured accuracy or latency. Confirm current setup at execution time rather than assuming it is unchanged.
+B0 preservation, B1 account engineering, B2 collection/parity, B3 photo-entry workflow and B4 catalog expansion are implemented. Real recognition remains the next useful product task: the last handoff reports zero real API calls, no real recognition accuracy or latency measurements. Confirm current setup at execution time rather than assuming it is unchanged.
 
 ## Next action
 
-**Lead engineer:** make real recognition work in the existing app. Check intended secure API configuration; run a small labeled evaluation within existing ceilings if available, otherwise provide one short secure setup instruction. Fix concrete recognition or local parity regressions, retain manual entry and review-before-add, and preserve reservations. Do not build another infrastructure milestone.
+**Lead engineer:** implement and evaluate `codex_cli` recognition using the saved Codex ChatGPT login. Retain the existing `openai` API-key provider for future deployment, plus manual/fixture modes. Use one shared matcher and confirmation flow; no automatic cross-provider fallback. The CLI is installed and was verified logged in during PM review; actual card recognition via CLI remains untested.
 
-**Mike:** supply a key through secure local entry and suitable card photos only if needed. No Render account, phones, certificate installation, external backup destination or reboot appointment is required.
+Keep API spending records intact. CLI runs consume subscription capacity; record attempts/latency/available usage separately without fabricated dollar costs. The model still processes images remotely. Use restricted noninteractive execution, validate results and handle timeout/cancel/login/limit failures.
+
+**Mike:** provide suitable card photos if needed; no API key is required for the selected local CLI path. Preserve the existing login and collection. No infrastructure setup is required.
 
 ## Scope correction
 
