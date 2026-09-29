@@ -1,11 +1,11 @@
 from datetime import UTC, datetime
-from urllib.parse import urlparse
 
 from .classifier import detect_sets, lot_rejection
 from .models import Listing, Settings
 from .parser import extract_count
 from .pricing import apply_pricing, money, shipping
 from .scoring import score
+from .security import ebay_url
 
 
 def evaluate(
@@ -34,10 +34,7 @@ def evaluate(
     listing.detected_sets, listing.excluded_sets, listing.purity = detect_sets(text, catalog)
     if "FIXED_PRICE" not in options and not auction:
         listing.rejection_reasons.append("Unsupported buying option")
-    url = urlparse(listing.url)
-    if url.scheme != "https" or not (
-        url.hostname == "ebay.com" or (url.hostname or "").endswith(".ebay.com")
-    ):
+    if ebay_url(listing.url) is None:
         listing.rejection_reasons.append("Missing or invalid eBay listing link")
     end = raw.get("itemEndDate")
     if end:

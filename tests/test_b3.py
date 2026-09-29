@@ -1,4 +1,4 @@
-"""Synthetic B3 images and provider doubles: no live recognition claims."""
+"""Synthetic scan images and provider doubles: no live recognition claims."""
 
 import importlib
 import io
@@ -314,3 +314,99 @@ def test_manual_mode_and_deleted_copy_photos(b3):
     assert b3["a"].get("/scan-photos/" + j["photos"][0] + "/").status_code == 404
     scans.cleanup()
     assert not scans.job(b3["actor"], j["id"])["photos"]
+
+
+@pytest.mark.parametrize("value", ["NaN", "Infinity", -1, 2, None, True, [], {}])
+def test_invalid_local_spend_limit_fails_before_claim(b3, value):
+    j = upload(b3)
+    (b3["root"] / "scan-config.json").write_text(json.dumps({"mode": "fixture", "ceiling_usd": value}))
+    with pytest.raises(ValueError):
+        scans.process_one()
+    current = scans.job(b3["actor"], j["id"])
+    assert current["state"] == "queued" and current["attempts"] == 0
+    assert current["reserved_usd"] == 0
+
+
+def test_unexpected_recognition_failure_is_redacted_and_durable(b3, monkeypatch, caplog):
+    j = upload(b3)
+
+    def broken(*args):
+        raise RuntimeError("private-photo-or-provider-content")
+
+    monkeypatch.setattr(scans, "match", broken)
+    assert scans.process_one()
+    current = scans.job(b3["actor"], j["id"])
+    assert current["state"] == "failed" and current["attempts"] == 1
+    assert "recognition_failed" in caplog.text and "broken" in caplog.text
+    assert "private-photo-or-provider-content" not in caplog.text + current["error"]
+    assert not scans.process_one()  # No automatic provider retry.
+
+
+def test_failed_completion_write_keeps_claim_for_recovery(b3, monkeypatch):
+    j = upload(b3)
+    execute = inv.execute
+
+    def fail_result(sql, params=None):
+        if sql.startswith("UPDATE scan_jobs SET state=%s,result="):
+            raise OSError("synthetic storage failure")
+        return execute(sql, params)
+
+    monkeypatch.setattr(inv, "execute", fail_result)
+    with pytest.raises(OSError):
+        scans.process_one()
+    current = scans.job(b3["actor"], j["id"])
+    assert current["state"] == "processing" and current["attempts"] == 1
+    assert not scans.process_one()
+    monkeypatch.setattr(inv, "execute", execute)
+    execute("UPDATE scan_jobs SET started=%s WHERE id=%s", [time.time() - 130, j["id"]])
+    assert not scans.process_one()
+    assert scans.job(b3["actor"], j["id"])["state"] == "failed"
+
+
+def test_local_worker_failure_is_visible_and_stoppable(b3, monkeypatch, caplog):
+    import threading
+
+    from pokemon_hunter.beta import scan_worker
+
+    stop = threading.Event()
+
+    def broken():
+        stop.set()
+        raise OSError("private-database-path")
+
+    monkeypatch.setattr(scan_worker.scans, "cleanup", broken)
+    monkeypatch.setattr(scan_worker.signal, "signal", lambda *args: None)
+    scan_worker.run(stop)
+    assert "worker_iteration_failed" in caplog.text
+    assert "private-database-path" not in caplog.text
+
+
+def test_unexpected_request_failure_has_safe_diagnostics(b3, monkeypatch, caplog):
+    def broken(*args):
+        raise RuntimeError("private-request-content")
+
+    monkeypatch.setattr(scans, "job", broken)
+    b3["a"].raise_request_exception = False
+    response = b3["a"].get(f"/api/scans/{uuid.uuid4()}/")
+    assert response.status_code == 500
+    assert "request_failed" in caplog.text
+    # pytest also attaches capture handlers to intentionally muted Django loggers.
+    diagnostics = "\n".join(r.getMessage() for r in caplog.records if r.name == "dex.failures")
+    assert "private-request-content" not in diagnostics + response.content.decode()
+    from django.conf import settings
+
+    assert settings.LOGGING["loggers"]["django.request"] == {"handlers": ["null"], "propagate": False}
+
+
+def test_health_storage_failure_is_unavailable_and_redacted(b3, monkeypatch, caplog):
+    from pokemon_hunter.beta import support
+
+    def broken(*args):
+        raise OSError("private-database-location")
+
+    monkeypatch.setattr(support.store, "rows", broken)
+    response = support.health(None)
+    assert response.status_code == 503
+    assert json.loads(response.content) == {"ready": False}
+    assert "health_check_failed" in caplog.text
+    assert "private-database-location" not in caplog.text

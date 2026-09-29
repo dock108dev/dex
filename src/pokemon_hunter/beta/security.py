@@ -1,5 +1,17 @@
 from django.http import HttpResponseForbidden
 
+from pokemon_hunter.security import BROWSER_HEADERS
+
+
+def secure_response(response):
+    for key, value in BROWSER_HEADERS.items():
+        response[key] = value
+    return response
+
+
+def forbidden(message):
+    return secure_response(HttpResponseForbidden(message))
+
 
 class LocalOnlyMiddleware:
     def __init__(self, get_response):
@@ -19,17 +31,12 @@ class LocalOnlyMiddleware:
                 )
             )
         ):
-            return HttpResponseForbidden("B1 is loopback-only")
+            return forbidden("B1 is loopback-only")
         origin = request.headers.get("Origin")
         if origin and origin != "http://127.0.0.1:8011":
-            return HttpResponseForbidden("Foreign origin")
+            return forbidden("Foreign origin")
         response = self.get_response(request)
-        response["Cache-Control"] = "no-store"
-        response["Referrer-Policy"] = "same-origin"
-        response["Content-Security-Policy"] = (
-            "default-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; form-action 'self'"
-        )
-        return response
+        return secure_response(response)
 
 
 class StagingMiddleware:
@@ -51,17 +58,13 @@ class StagingMiddleware:
         render = getattr(settings, "INGRESS", "proxy") == "render"
         health = render and request.path == "/healthz/" and request.method in {"GET", "HEAD"}
         if not health and (not (trusted or render) or request.META.get("HTTP_X_FORWARDED_PROTO") != "https"):
-            return HttpResponseForbidden("Trusted HTTPS proxy required")
+            return forbidden("Trusted HTTPS proxy required")
         if request.get_host() != settings.PUBLIC_ORIGIN.removeprefix("https://"):
-            return HttpResponseForbidden("Unexpected host")
+            return forbidden("Unexpected host")
         if request.headers.get("Origin") not in (None, settings.PUBLIC_ORIGIN):
-            return HttpResponseForbidden("Foreign origin")
+            return forbidden("Foreign origin")
         response = self.get_response(request)
-        response["Cache-Control"] = "no-store"
-        response["Content-Security-Policy"] = (
-            "default-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; form-action 'self'"
-        )
-        return response
+        return secure_response(response)
 
 
 def profile_context(request):

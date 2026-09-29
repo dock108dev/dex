@@ -1,4 +1,4 @@
-"""New B5 catalog reconciliation, provider configuration and private recovery transport."""
+"""Staging catalog reconciliation, provider configuration and private recovery transport."""
 
 import copy
 import importlib

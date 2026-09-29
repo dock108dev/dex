@@ -25,28 +25,10 @@ SET_SLUGS = {
     "neo_revelation": "pokemon-neo-revelation",
     "neo_destiny": "pokemon-neo-destiny",
 }
-FIELDS = {
-    "raw": "used_price",
-    "7": "complete_price",
-    "8": "new_price",
-    "9": "graded_price",
-    "10": "manual_only_price",
-}
 
 
 def name_key(name):
     return re.sub(r"[^a-z0-9]", "", name.casefold().replace("♀", "").replace("♂", ""))
-
-
-def parse_prices(text):
-    values = {}
-    for grade, field in FIELDS.items():
-        match = re.search(
-            r'id="' + field + r'"[^>]*>\s*<span class="price js-price">\s*\$([\d,]+\.\d{2})', text
-        )
-        if match:
-            values[grade] = match[1].replace(",", "")
-    return values
 
 
 def main():

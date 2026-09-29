@@ -6,9 +6,12 @@ import os
 import shutil
 import signal
 import subprocess
+import sys
 import tempfile
 import time
 from pathlib import Path
+
+from .diagnostics import failure as log_failure
 
 MODEL = "gpt-5.6-sol"
 TIMEOUT = 75
@@ -271,9 +274,21 @@ def recognize(images, root, cancelled=lambda: False, job_id=None):
             "Codex could not start. Check the CLI installation or choose manually."
         ) from None
     finally:
-        record["latency"] = round(time.monotonic() - start, 3)
-        fd = os.open(Path(root) / "codex-usage.jsonl", os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600)
-        with os.fdopen(fd, "a") as log:
-            fcntl.flock(log, fcntl.LOCK_EX)
-            log.write(json.dumps(record) + "\n")
-        os.close(lock_fd)
+        original_error = sys.exc_info()[0] is not None
+        try:
+            record["latency"] = round(time.monotonic() - start, 3)
+            fd = os.open(Path(root) / "codex-usage.jsonl", os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600)
+            with os.fdopen(fd, "a") as log:
+                fcntl.flock(log, fcntl.LOCK_EX)
+                log.write(json.dumps(record) + "\n")
+                log.flush()
+                os.fsync(log.fileno())
+        except OSError as exc:
+            log_failure("codex_usage_write_failed", exc)
+            if not original_error:
+                raise RecognitionError(
+                    "Recognition usage could not be saved; submission may have completed. "
+                    "Choose manually and check local storage before retrying."
+                ) from None
+        finally:
+            os.close(lock_fd)

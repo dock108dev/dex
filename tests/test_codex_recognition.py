@@ -254,3 +254,23 @@ def test_unknown_provider_and_global_cli_concurrency(b3):
     (b3["root"] / "scan-config.json").write_text('{"mode":"typo"}')
     with pytest.raises(ValueError, match="Invalid scan configuration"):
         scans.create(b3["actor"], "12345678-1234-1234-1234-123456789012", [])
+
+
+@pytest.mark.parametrize("success", [False, True])
+def test_usage_write_failure_preserves_error_and_releases_lock(tmp_path, monkeypatch, caplog, success):
+    fake_cli(tmp_path, monkeypatch, successful() if success else "sys.exit(1)\n")
+    original = cli.os.open
+
+    def unavailable(path, *args, **kwargs):
+        if Path(path).name == "codex-usage.jsonl":
+            raise OSError("private-storage-detail")
+        return original(path, *args, **kwargs)
+
+    monkeypatch.setattr(cli.os, "open", unavailable)
+    expected = "usage could not be saved" if success else "recognition failed"
+    with pytest.raises(cli.RecognitionError, match=expected):
+        cli.recognize([b"image"], tmp_path)
+    with (tmp_path / "codex-recognition.lock").open("r+") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    assert "codex_usage_write_failed" in caplog.text
+    assert "private-storage-detail" not in caplog.text

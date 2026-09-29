@@ -1,4 +1,4 @@
-"""B5 privacy and configuration checks; PostgreSQL rehearsal is a separate script."""
+"""Staging privacy and configuration checks; PostgreSQL rehearsal is a separate script."""
 
 import json
 import time

@@ -265,3 +265,16 @@ def test_edition_ownership_and_invalid_selection(restored):
     op = apply(restored, "edition", request)
     assert post(restored["b"], f"/api/operations/{op['id']}/undo/", {}).status_code == 404
     assert post(restored["b"], f"/api/operations/{op['id']}/confirm/", {}).status_code == 404
+
+
+def test_authenticated_hunts_use_shared_projection_and_schema(restored):
+    from pokemon_hunter import hunt
+
+    client = restored["a"]
+    assert post(client, "/api/hunts/", {"unsupported": True}).status_code == 400
+    with patch.object(hunt, "project_results", wraps=hunt.project_results) as shared:
+        found = post(client, "/api/hunts/", {"demo": True, "budget": "100"}).json()
+        route = f"/api/hunts/{found['batch']}/{found['id']}/"
+        assert client.get(route).status_code == 200
+        assert post(client, route + "reveal/" + found["results"][0]["id"] + "/", {}).status_code == 200
+        assert shared.call_count == 3

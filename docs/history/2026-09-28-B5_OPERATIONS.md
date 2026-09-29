@@ -1,9 +1,9 @@
 # B5 operations — Mac-hosted private staging
 
-> **DEFERRED — optional future reference, not active next steps.** Mike’s September 28 direction makes the existing localhost app the sole current target. All setup/checklist requirements below are inactive for current local use, including hosting/LAN HTTPS, device tests, managed startup/reboot and external backup infrastructure. Preserve prior evidence; do not execute this runbook unless that scope is reopened. The [current roadmap](ROADMAP.md) takes precedence.
+> **DEFERRED — optional future reference, not active next steps.** Mike’s September 28 direction makes the existing localhost app the sole current target. All setup/checklist requirements below are inactive for current local use, including hosting/LAN HTTPS, device tests, managed startup/reboot and external backup infrastructure. Preserve prior evidence; do not execute this runbook unless that scope is reopened. The [current roadmap](2026-09-28-ROADMAP.md) takes precedence.
 
 
-**Current host: Mike's Mac, with test phones on the home network.** [The active closeout checklist](B5_DEPLOYMENT.md) replaces Render setup. B5 remains OPEN for final endpoint, restart/backup operation and actual-device observations. Existing results retain their original candidate identities; no cloud or phone result is inferred from local emulation.
+**Current host: Mike's Mac, with test phones on the home network.** [The active closeout checklist](2026-09-28-B5_DEPLOYMENT.md) replaces Render setup. B5 remains OPEN for final endpoint, restart/backup operation and actual-device observations. Existing results retain their original candidate identities; no cloud or phone result is inferred from local emulation.
 
 ## Selected architecture and cost
 
@@ -13,7 +13,7 @@ Private normalized JPEGs remain PostgreSQL BYTEA served through authorization ch
 
 ## Package and required configuration
 
-Reuse runtime `0f17cc9` and the retained image identified in [B5_DEPLOYMENT.md](B5_DEPLOYMENT.md). Any source change or rebuild requires its own exact identity and affected checks. The prepared Render blueprint is an inactive alternative; see [historical Render instructions](B5_RENDER_REFERENCE.md) only if cloud hosting is explicitly reopened.
+Reuse runtime `0f17cc9` and the retained image identified in [B5_DEPLOYMENT.md](2026-09-28-B5_DEPLOYMENT.md). Any source change or rebuild requires its own exact identity and affected checks. The prepared Render blueprint is an inactive alternative; see [historical Render instructions](2026-09-28-B5_RENDER_REFERENCE.md) only if cloud hosting is explicitly reopened.
 
 Both local staging services use securely supplied configuration:
 
@@ -105,7 +105,7 @@ Missing recognition, images or prices never blocks supported manual add/edit/rem
 
 ## Acceptance matrix and remaining gates
 
-The active [Mac closeout checklist](B5_DEPLOYMENT.md) is the source of truth. Existing exact-image PostgreSQL migration, backup/empty-target restore and post-backup write/reservation preservation were actually observed on this Mac under `/Users/michaelfuscoletti/dex-private/b5-followup-20260928/`; these need no repeat solely because Render was removed. Earlier foundation evidence remains under `/Users/michaelfuscoletti/dex-private/b5-20260928/` with its own candidate identity.
+The active [Mac closeout checklist](2026-09-28-B5_DEPLOYMENT.md) is the source of truth. Existing exact-image PostgreSQL migration, backup/empty-target restore and post-backup write/reservation preservation were actually observed on this Mac under `/Users/michaelfuscoletti/dex-private/b5-followup-20260928/`; these need no repeat solely because Render was removed. Earlier foundation evidence remains under `/Users/michaelfuscoletti/dex-private/b5-20260928/` with its own candidate identity.
 
 Still required: the final trusted home-network HTTPS endpoint and account/photo/core-flow checks through it; managed service startup, process/Mac restart persistence and sleep behavior; observed recurring backup plus an independent protected copy; actual iOS Safari and Android Chrome walkthroughs. Render ingress, provider billing, cloud restart and managed backup checks are not applicable to the selected target. Unavailable devices remain an open observation, not an emulation pass.
 

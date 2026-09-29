@@ -1,4 +1,4 @@
-"""Synthetic B1 qualification. No owner files, passwords or tokens are fixtures."""
+"""Synthetic authentication checks. No owner files, passwords or tokens are fixtures."""
 
 import json
 import secrets
@@ -159,32 +159,12 @@ def test_cross_user_reads_writes_downloads_and_admin(env):
 
 
 @pytest.mark.parametrize("kind", ["photos", "scan_jobs", "goals", "request_evidence"])
-def test_future_shared_boundary_worker_and_unavailable_routes(env, kind):
-    from django.core.exceptions import PermissionDenied
-    from django.db import connection
+def test_unimplemented_b1_resource_routes_remain_unavailable(env, kind):
+    # B1 has no generic photo/job/goal/evidence service. B2-B4 own those domains.
     from django.http import Http404
 
-    store = env["store"]
-    owner, member = store.principal(env["owner"].pk), store.principal(env["second"].pk)
-    with connection.cursor() as c:
-        c.executemany(
-            "INSERT INTO b1_private_resources VALUES(%s,%s,%s,%s)",
-            [
-                ("owner-item", owner.user_id, kind, "{}"),
-                ("member-item", member.user_id, kind, "{}"),
-                ("owner-job", owner.user_id, "scan_jobs", "{}"),
-                ("member-job", member.user_id, "scan_jobs", "{}"),
-            ],
-        )
-    for actor, own, other in [(owner, "owner-item", "member-item"), (member, "member-item", "owner-item")]:
-        assert store.resource(actor, kind, own)["id"] == own
-        with pytest.raises(Http404):
-            store.resource(actor, kind, other)
-    assert store.worker_resource("owner-job", kind, "owner-item")["id"] == "owner-item"
     with pytest.raises(Http404):
-        store.worker_resource("member-job", kind, "owner-item")
-    with pytest.raises(Http404):
-        store.worker_resource("owner-job", kind, "member-item")
+        env["store"].resource(env["store"].principal(env["owner"].pk), kind, "unused")
     for method in (env["a"].get, env["a"].post):
         assert (
             method(
@@ -192,9 +172,6 @@ def test_future_shared_boundary_worker_and_unavailable_routes(env, kind):
             ).status_code
             == 404
         )
-    env["accounts"].revoke(env["owner"])
-    with pytest.raises(PermissionDenied):
-        store.worker_resource("owner-job", kind, "owner-item")
 
 
 def test_csrf_origin_host_and_cookie_protections(env):

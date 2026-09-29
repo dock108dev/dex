@@ -4,10 +4,23 @@ import json
 import re
 from datetime import UTC, datetime
 from decimal import ROUND_DOWN, Decimal
-from urllib.parse import urlparse
+from typing import Literal
+
+from pydantic import BaseModel, Field
 
 from .parser import extract_count
 from .pricing import money, shipping
+from .security import ebay_url
+
+
+class SearchRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    pool: Literal["singles", "known_lots", "mystery"] = "known_lots"
+    focus: Literal["all", "kanto", "johto", "rares", "bulk"] = "all"
+    budget: Decimal = Field(default=Decimal("150"), ge=0, le=10000)
+    demo: bool = True
+    offset: int = Field(default=0, ge=0)
 
 
 def query_plan(data, config, pool, focus):
@@ -163,13 +176,7 @@ def analyze(raw, data, config, values, demo=False):
         x.get("estimatedAvailabilityStatus") == "OUT_OF_STOCK" for x in raw["estimatedAvailabilities"]
     ):
         active = False
-    url = raw.get("itemWebUrl", "")
-    host = urlparse(url).hostname or ""
-    safe_url = (
-        url
-        if urlparse(url).scheme == "https" and (host == "ebay.com" or host.endswith(".ebay.com"))
-        else None
-    )
+    safe_url = ebay_url(raw.get("itemWebUrl"))
     return {
         "id": raw["itemId"],
         "title": title,

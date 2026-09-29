@@ -1,4 +1,4 @@
-"""Called by B2 browser harness on a fresh B3-enabled fixture root only."""
+"""Called by the collection browser harness on a fresh scan-enabled fixture root only."""
 
 import json
 

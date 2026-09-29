@@ -1,4 +1,4 @@
-"""Session-authorized B2 routes; no client identity is used as authorization."""
+"""Session-authorized collection routes; no client identity is used as authorization."""
 
 import json
 from functools import wraps
@@ -9,9 +9,11 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_GET, require_POST
+from pydantic import ValidationError
 
 from . import collection as service
 from . import store
+from .diagnostics import failure
 from .views import actor
 
 
@@ -22,7 +24,13 @@ def endpoint(fn):
             return fn(request, *args, **kwargs)
         except service.Conflict as e:
             return JsonResponse({"error": str(e)}, status=409)
-        except (ValueError, TypeError) as e:
+        except ValidationError:
+            # Pydantic messages include input values; do not echo private payloads.
+            return JsonResponse({"error": "Invalid request fields; check the required format"}, status=400)
+        except TypeError as e:
+            failure("request_type_error", e)
+            return JsonResponse({"error": "Invalid request field types"}, status=400)
+        except ValueError as e:
             return JsonResponse({"error": str(e)}, status=400)
 
     return login_required(inner)

@@ -1,4 +1,4 @@
-"""Convert a saved TCGdex set response into the ordinary B4 importer format.
+"""Convert a saved TCGdex set response into the ordinary catalog importer format.
 
 Metadata only: no artwork, card rules text, prices or private information are copied.
 Usage: uv run python scripts/prepare_tcgdex_package.py --source SET.json --output PACKAGE.json --version DATE

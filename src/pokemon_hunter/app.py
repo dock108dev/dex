@@ -4,19 +4,19 @@ import json
 import os
 import sqlite3
 from datetime import UTC, datetime
-from decimal import Decimal
 from pathlib import Path
-from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field, StrictBool
+from pydantic import BaseModel, StrictBool
 
+from . import hunt
 from .collection import read, totals, update_card
 from .config import load_config, load_env
 from .ebay import EbayClient, discover
-from .hunt import analyze, load_json, public_listing, query_plan
+from .hunt import SearchRequest, load_json, public_listing, query_plan
+from .security import BROWSER_HEADERS
 from .valuation import valuation
 
 
@@ -24,14 +24,6 @@ class Ownership(BaseModel):
     model_config = {"extra": "forbid"}
     owned: StrictBool
     first_edition: StrictBool = False
-
-
-class SearchRequest(BaseModel):
-    pool: Literal["singles", "known_lots", "mystery"] = "known_lots"
-    focus: Literal["all", "kanto", "johto", "rares", "bulk"] = "all"
-    budget: Decimal = Field(default=Decimal("150"), ge=0, le=10000)
-    demo: bool = True
-    offset: int = Field(default=0, ge=0)
 
 
 def create_app(root: Path):
@@ -57,9 +49,11 @@ def create_app(root: Path):
         ):
             from fastapi.responses import JSONResponse
 
-            return JSONResponse({"detail": "This app accepts local requests only"}, status_code=403)
+            return JSONResponse(
+                {"detail": "This app accepts local requests only"}, status_code=403, headers=BROWSER_HEADERS
+            )
         response = await call_next(request)
-        response.headers["Cache-Control"] = "no-store"
+        response.headers.update(BROWSER_HEADERS)
         return response
 
     @app.get("/api/collection")
@@ -92,32 +86,14 @@ def create_app(root: Path):
         }
 
     def project_results(raws, body, demo):
-        data = collection()
-        config = load_json(root / "config/hunt.json")
-        values = load_json(root / "config/raw_values.json")
-        results = [analyze(r, data, config, values, demo=demo) for r in raws]
-        results = [
-            r
-            for r in results
-            if r["active"]
-            and r["delivered"] is not None
-            and Decimal(r["delivered"]) <= body.budget
-            and r["pool"] == body.pool
-        ]
-        if body.pool == "singles":
-            results = [r for r in results if r["dex_hits"]]
-        if body.focus in ("kanto", "johto"):
-            results = [r for r in results if r[f"{body.focus}_hits"] or not r["cards"]]
-        if body.focus == "rares":
-            results = [r for r in results if r["has_rare"] or not r["cards"]]
-        if body.focus == "bulk":
-            results = [r for r in results if r["count"] and r["count"] >= 25]
-        for row in results:
-            if row["max_bid"] is not None:
-                row["max_bid"] = str(
-                    max(Decimal(0), min(Decimal(row["max_bid"]), body.budget - Decimal(row["shipping"])))
-                )
-        return sorted(results, key=lambda r: (r["score"] is not None, r["score"] or 0), reverse=True)
+        return hunt.project_results(
+            raws,
+            body,
+            demo,
+            collection(),
+            load_json(root / "config/hunt.json"),
+            load_json(root / "config/raw_values.json"),
+        )
 
     @app.post("/api/hunts")
     def search(body: SearchRequest):

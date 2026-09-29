@@ -1,4 +1,4 @@
-"""Invoked by the existing two-account browser harness on fresh B4 fixture roots."""
+"""Invoked by the existing two-account browser harness on fresh catalog-enabled fixture roots."""
 
 import json
 

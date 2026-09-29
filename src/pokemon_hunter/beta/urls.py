@@ -4,28 +4,36 @@ from django.urls import path
 
 from . import views
 
+# Choose one authoritative handler per URL; retain account-only handlers for account-only roots.
+collection_routes = views
+hunt_routes = views
+hunt_detail = views.hunt_detail
+if settings.B2_ENABLED:
+    from . import collection_views as collection_routes
+if settings.PARITY_ENABLED:
+    from . import parity_views as hunt_routes
+
+    hunt_detail = hunt_routes.saved
+
 urlpatterns = [
-    path("", views.home),
+    path("", collection_routes.home),
     path("login/", LoginView.as_view(template_name="beta/login.html")),
     path("logout/", LogoutView.as_view()),
     path("recovery/", views.recovery_help),
     path("api/inventory/", views.inventory),
-    path("api/inventory/<str:key>/", views.copy_detail),
-    path("api/hunts/", views.hunts),
-    path("api/hunts/<uuid:batch>/<int:key>/", views.hunt_detail),
+    path("api/inventory/<str:key>/", collection_routes.copy_detail),
+    path("api/hunts/", hunt_routes.hunts),
+    path("api/hunts/<uuid:batch>/<int:key>/", hunt_detail),
     path("api/archives/", views.archives),
     path("files/<uuid:batch>/<path:path>", views.archive_file),
-    path("api/export/", views.export),
+    path("api/export/", collection_routes.export),
     path("api/admin/catalog/", views.admin_catalog),
 ]
-
-# B2 is enabled only by new-root initialization. Prepared B1 roots retain B1 routes.
 
 if settings.B2_ENABLED:
     from . import collection_views as b2
 
     urlpatterns = [
-        path("", b2.home),
         path("goals/", b2.home),
         path("settings/", b2.home),
         path("collection-assets/<str:filename>", b2.asset),
@@ -39,8 +47,6 @@ if settings.B2_ENABLED:
         path("api/operations/<str:key>/", b2.operation),
         path("api/operations/<str:key>/confirm/", b2.confirm),
         path("api/operations/<str:key>/undo/", b2.undo),
-        path("api/inventory/<str:key>/", b2.copy_detail),
-        path("api/export/", b2.export),
     ] + urlpatterns
 
 if settings.PARITY_ENABLED:
@@ -52,8 +58,6 @@ if settings.PARITY_ENABLED:
             for route in ("overview", "pokedex", "cards", "hunt", "missing", "finds")
         ],
         path("api/parity/", parity.projection),
-        path("api/hunts/", parity.hunts),
-        path("api/hunts/<uuid:batch>/<int:key>/", parity.saved),
         path("api/hunts/<uuid:batch>/<int:key>/reveal/<uuid:result>/", parity.reveal),
     ] + urlpatterns
 

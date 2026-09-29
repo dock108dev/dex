@@ -58,7 +58,7 @@ Browser automation performs complete manual flows in both accounts: binder creat
 
 ## Historical B2 launch (superseded by the parity review)
 
-For the current review use [B2 parity launch](B2_PARITY.md#launch-the-revised-review-app). These older instructions are retained for the preserved original B2 environment.
+For the current review use [B2 parity launch](2026-09-28-B2_PARITY.md#launch-the-revised-review-app). These older instructions are retained for the preserved original B2 environment.
 
 From the checkout, initialize no further environment. `review-local` already contains a fresh copied database and no credentials. Choose a disposable rehearsal password in the private terminal prompt, then launch:
 
@@ -87,19 +87,19 @@ node --check web/app.js
 
 ## Remaining gates and next actor
 
-**Mike:** review the [revised parity experience](B2_PARITY.md) in its new private root using a disposable rehearsal credential. Separately, B1 still requires actual owner provisioning and actual-account preservation verification in its prepared environment. No test substitutes for either owner feedback or actual owner provisioning.
+**Mike:** review the [revised parity experience](2026-09-28-B2_PARITY.md) in its new private root using a disposable rehearsal credential. Separately, B1 still requires actual owner provisioning and actual-account preservation verification in its prepared environment. No test substitutes for either owner feedback or actual owner provisioning.
 
-**Current next step:** the B2 parity revision supersedes this historical handoff. Review [restored flows, evidence and launch](B2_PARITY.md), then stop for Mike's focused feedback before B3. Photo storage/recognition is B3; catalog onboarding and unresolved variant qualification are B4; hosting, production database, HTTPS, privacy/rights/cost qualification and real-device observations are B5; owner acceptance/pilot is B6. No deployment, live cutover, paid service, external message or change to Mike's credentials occurred.
+**Current next step:** the B2 parity revision supersedes this historical handoff. Review [restored flows, evidence and launch](2026-09-28-B2_PARITY.md), then stop for Mike's focused feedback before B3. Photo storage/recognition is B3; catalog onboarding and unresolved variant qualification are B4; hosting, production database, HTTPS, privacy/rights/cost qualification and real-device observations are B5; owner acceptance/pilot is B6. No deployment, live cutover, paid service, external message or change to Mike's credentials occurred.
 
 
 ## Subsequent owner feedback: feature parity needs revision
 
-After opening B2, Mike reported that it was missing many features from the local app. The implemented slice's technical checks remain valid, but it is not a feature-complete successor to the original interface and has not received owner acceptance. The [roadmap parity revision](ROADMAP.md#b2-owner-feedback--local-feature-parity-revision-required) records the missing overview/Pokédex, set/type/rarity views, first-edition controls, value scenarios, hunt/missing-singles and saved-find experiences. These gaps were subsequently addressed by the parity revision below; current next steps are in [PM status](PM_STATUS.md).
+After opening B2, Mike reported that it was missing many features from the local app. The implemented slice's technical checks remain valid, but it is not a feature-complete successor to the original interface and has not received owner acceptance. The [roadmap parity revision](2026-09-28-ROADMAP.md#b2-owner-feedback--local-feature-parity-revision-required) records the missing overview/Pokédex, set/type/rarity views, first-edition controls, value scenarios, hunt/missing-singles and saved-find experiences. These gaps were subsequently addressed by the parity revision below; current next steps are in [PM status](2026-09-28-PM_STATUS.md).
 
 
 ## Feature parity revision outcome — September 28, 2026
 
-The reported coverage gaps have been implemented inside the authenticated app: Overview, Pokédex, My Cards, per-copy edition controls, conditional guide scenarios, sample hunts/missing singles and private saved-find replay/reveal. Existing B2 flows remain. See the [completed parity matrix, verification and new launch instructions](B2_PARITY.md). Historical evidence above still belongs to its original candidate and environment. The fresh revision evidence is in `b2-parity-20260928/`; the prepared prior review data and credentials are preserved. **Next actor: Mike for focused restored-experience review. Stop before B3; owner acceptance remains unestablished.**
+The reported coverage gaps have been implemented inside the authenticated app: Overview, Pokédex, My Cards, per-copy edition controls, conditional guide scenarios, sample hunts/missing singles and private saved-find replay/reveal. Existing B2 flows remain. See the [completed parity matrix, verification and new launch instructions](2026-09-28-B2_PARITY.md). Historical evidence above still belongs to its original candidate and environment. The fresh revision evidence is in `b2-parity-20260928/`; the prepared prior review data and credentials are preserved. **Next actor: Mike for focused restored-experience review. Stop before B3; owner acceptance remains unestablished.**
 
 
-Current review update: the revised app is running with an isolated disposable account and Mike's initial feedback was “great”. [PM status](PM_STATUS.md) records the remaining review closeout, separate B1 gate and B3 hold.
+Current review update: the revised app is running with an isolated disposable account and Mike's initial feedback was “great”. [PM status](2026-09-28-PM_STATUS.md) records the remaining review closeout, separate B1 gate and B3 hold.

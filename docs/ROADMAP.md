@@ -1,52 +1,23 @@
-# Dex — local pre-alpha roadmap
+# Product roadmap
 
-Updated September 28, 2026. **Current target: Mike alone, using the existing app on localhost on his Mac.**
+The current scope is a single-user localhost collection app. Accounts, physical
+copies, goals, imports/exports, photo review, catalog requests and spoiler-safe
+sample/saved hunts are implemented. The original app and existing stores remain
+supported; there is no automatic data cutover.
 
-This is the authoritative scope and next-step record. It replaces the earlier Render and home-network B5 plans. Preserve the existing login, collection, photos, saved hunts and original app. No hosting, LAN access or phone qualification is needed now.
+The next product question is real-card recognition quality. CLI and API adapters
+exist, with explicit provider selection and shared matching/confirmation behavior.
+Evaluate a small consented, independently labeled photo set before claiming
+accuracy. Synthetic transport checks do not answer that question.
 
-## Delivered and remaining
+Hosting, LAN access, managed startup, real-device qualification and invited-user
+rollout are deferred. Retain the optional staging implementation without treating
+its unfinished deployment requirements as blockers for local use.
 
-| Area | Current status | Next action |
-| --- | --- | --- |
-| B0 preservation | Exact copied-data migration and restoration verified | Preserve source records and ordinary local backups |
-| B1 accounts | Authentication and isolation implemented; existing local login works | Keep that login; separate historical owner provisioning is not a prerequisite for local use |
-| B2 collection/parity | Pokédex, progress, browsing, edition controls, local value scenarios, spoiler-safe sample hunts/history plus copies, binders, goals, imports, exports and undo delivered | Fix concrete local regressions only; no extra review-closeout gate |
-| B3 photo entry | Private uploads, durable jobs, manual matching, provisional copies, confirmation/cancellation and undo delivered | CLI integration and live transport checks delivered; evaluate labeled real card photos next |
-| B4 catalogs | Requests, consent, reviewed ingestion/publication/rollback and same-copy resolution delivered; Gym Heroes added | Maintain existing behavior; further coverage follows actual need |
-| B5 infrastructure | Local staging engineering and restore evidence retained | DEFERRED: not a current completion requirement |
-| B6 invited pilot | Not started | DEFERRED: Mike is the only current user |
+Preserve uncertainty, confirmation before ownership changes, intentional duplicates,
+spending reservations, source provenance and safe undo. The next engineering work
+should address demonstrated local defects or evidence from recognition evaluation.
+Navigation overlap remains a product-design follow-up.
 
-## Immediate engineering priority
-
-`codex_cli` is implemented and selected for the local app using Mike's existing saved Codex ChatGPT login. `openai`, manual and fixture modes remain deliberate alternatives with no automatic provider fallback. The installed CLI 0.144.6 accepted noninteractive image attachments and schema-constrained output using `gpt-5.6-sol`; two retained synthetic negative controls completed without inventing identity. These are transport/safety checks, not card accuracy evidence.
-
-Requests run in owner-only temporary directories, ignore user configuration/rules and repository instructions, disable hooks/plugins/connectors and execution features, and deny model filesystem access outside the temporary directory with no model writes or network access. Codex manages authentication; Dex does not read/copy tokens. Requests have one concurrent CLI slot per app root, a 75-second deadline, zero configured transport retries and at most two explicit attempts per job. Cancellation terminates the process group and removes temporary images. Images still go to OpenAI; this is not offline inference.
-
-Both providers use one provider-neutral recognition result and the existing catalog matcher, confirmation and mutation paths. Preserve API spending reservations and ceilings. Track CLI attempts, latency and reported usage separately; do not report API dollar estimates or unlimited/free usage for subscription-backed calls. Do not silently switch to the API on CLI failure.
-
-Evaluate a small suitable labeled photo set through the real CLI and record correct, wrong and unresolved results before manual corrections. Retain tests for the API adapter without requiring a live API key. Real-card recognition accuracy remains unmeasured: no suitable labeled photos were supplied and the local scan store contains zero photos. Provide one to six consented front photos with independently verified card name, collector number and set; include a clear supported card and difficult/unsupported examples. A bounded evaluator is provided in [photo configuration](B3_PHOTO_ENTRY.md). [Official noninteractive documentation](https://learn.chatgpt.com/docs/non-interactive-mode) and [authentication](https://learn.chatgpt.com/docs/auth) document saved-auth reuse and subscription sign-in. Recheck installed capabilities during implementation.
-
-Preserve confirmation before ownership changes, exactly-once additions, intentional duplicates, uncertain identity fields and safe undo. Do not infer grade, authenticity, condition or value from a photo. Manual entry remains available on provider failure. Preserve existing spending reservations; do not reset counters to extend evaluation.
-
-## Local product and data rules
-
-- Use the existing authenticated app at `http://127.0.0.1:8011/overview/`; Scan/Add is `/scan/`. These are documented endpoints, not a claim that this documentation edit checked server health.
-- Preserve the working account and its data. The historical B1 owner bootstrap remains unperformed unless separately observed; it is not a blocker and must not trigger account reset, environment recreation or data migration.
-- Original source data and prior environments remain intact. This scope correction does not perform a cutover or make two stores authoritative. If data divergence becomes a concrete user problem, reconcile it explicitly rather than overwriting either copy.
-- Keep localhost restrictions, authentication, authorization, privacy controls, input validation, secrets handling, sensible regression checks and ordinary local backups. Git preserves source history, not excluded private data or credentials.
-- The restored local experience is the baseline. Staging-only restrictions on prices, artwork and hunt projections are not automatically local restrictions. Verify any actual local gap before claiming it; retain dated sources, uncertainty, sample/live labels and spoiler boundaries. Local use does not invent source permissions or enable a new provider.
-- Continue on local `main`, synced to private remote `main`. Preserve concurrent changes and inspect staged content for private data. No routine stage-approval loops.
-
-## Deferred work
-
-Render, registry publication, paid hosting, LAN HTTPS, device certificate installation, cross-device qualification, managed startup, Mac reboot checks, external backup infrastructure and invited-user rollout are deferred. Keep their implemented code and runbooks as optional future work; do not extend or remove them merely for this correction. No device, backup-destination or restart appointment is needed to continue the local product.
-
-The broader 100-photo recognition benchmark and hosted/pilot acceptance matrix are future release criteria, not requirements for this small local evaluation. Defer those gates rather than falsely marking them passed. Actual measured recognition results and useful local behavior are the current outcome.
-
-## Evidence and references
-
-Prior results remain attached to their original candidates: B2 parity `f2c876b` (158 tests), B3 `a456ab7` (173), B4 `9dc074d` (188), B5 operational package `9b7e1a1` (193), and deployment preparation `0f17cc9` (198). These are recorded prior checks, not rerun by this PM update. `06eb032` changed documentation only. None establishes real recognition quality.
-
-[PM status](PM_STATUS.md) · [Photo entry and secure configuration](B3_PHOTO_ENTRY.md) · [Local parity](B2_PARITY.md) · [Catalog expansion](B4_CATALOG_EXPANSION.md) · [Data/workflow contracts](BETA_DESIGN.md).
-
-[Superseded roadmap and historical delivery records](history/2026-09-28-pre-local-scope-roadmap.md) are retained for evidence only. This page controls current priorities.
+[Current setup](local-development.md) · [Photo entry](photo-entry.md) ·
+[Historical decisions and candidate evidence](history/README.md).

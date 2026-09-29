@@ -2,19 +2,70 @@
 
 Updated: September 27, 2026. **B0 migration, B1 local authentication and B2 collection workflows are implemented; B3 local photo entry is implemented; B4 local catalog onboarding is implemented; hosted workflows remain target design. Actual owner provisioning remains pending.**
 
-[B2 implementation and verification](B2_IMPLEMENTATION.md) records the shipped local slice and its limitations.
+[B2 implementation and verification](2026-09-28-B2_IMPLEMENTATION.md) records the shipped local slice and its limitations.
 
-[Authoritative roadmap and stage status](ROADMAP.md) · [Current implementation](../APP_SPEC.md)
+[Authoritative roadmap and stage status](2026-09-28-ROADMAP.md) · [Current implementation](2026-09-28-APP_SPEC.md)
 
 ## Current scope
 
-The [roadmap](ROADMAP.md) now targets Mike alone on the existing localhost app. Shared data/workflow contracts below remain useful; hosted, cross-device, separate owner-bootstrap and pilot provisions are deferred, not prerequisites for local use. Preserve the working login and collection.
+The [roadmap](2026-09-28-ROADMAP.md) now targets Mike alone on the existing localhost app. Shared data/workflow contracts below remain useful; hosted, cross-device, separate owner-bootstrap and pilot provisions are deferred, not prerequisites for local use. Preserve the working login and collection.
+
+## Local presentation cleanup — September 28, 2026
+
+The active authenticated Overview, Collection and Scan/Add screens retain the
+existing colors, navigation and data contracts. The header now identifies the
+local collection instead of a B2 rehearsal. Collection places Add beside the
+heading, omits empty notes and groups purchase/grading details in a disclosure.
+Overview keeps progress, confirmed coverage, guide dates and uncertainty visible;
+assumed-grade estimates and the rarity table are secondary disclosures.
+
+Scan/Add puts an existing review before the upload form, places Cancel beside the
+review heading, and explains why confirmation is disabled. Provider photo transfer,
+subscription limits, identity uncertainty and explicit confirmation remain visible.
+Usage details, another upload, retention details and history are separately
+available. The initial upload form is expanded; existing review/confirmation steps
+are unchanged. No calculations, stored values or account permissions changed.
+
+No shared Starter requirements or adoption version were found in this repository;
+the existing components and local workflow guidance were used. Historical screenshots
+were not used as the current baseline. Baseline UI files came from `a18baf6` (the
+same UI source present at the start of this pass); prior uncommitted hardening
+changes did not modify these UI files.
+
+Validation: `scripts/verify_ui_cleanup.py` renders actual templates and JavaScript
+with intercepted synthetic API responses. It never connects to the owner app or a
+provider. Matched before/after captures cover Overview, populated/empty Collection,
+new upload and ready/failed review at 1280×900 and 390×844. Additional after checks
+cover processing/cancel, saved/undo and collection-load failure. Checks cover no
+horizontal overflow, 44px buttons, keyboard disclosure toggles, confirmation
+checkbox gating, focusable Cancel and doubled root text size. This is Chromium
+layout evidence, not real-phone, camera, end-to-end storage or owner acceptance.
+
+Retained captures and metrics: `evidence/ui-cleanup-20260928/` (ignored synthetic
+evidence). At desktop size the Collection Add button moved from y=484 to y=151;
+at narrow size from y=574 to y=366. Narrow ready-review confirmation moved from
+about y=1953 to y=1404, with the same synthetic photo and fields. It still requires
+scrolling; review and Cancel are now visible much earlier. The comparisons measure
+layout, not user task speed. JavaScript syntax, repository lint/format checks and
+43 focused parity/scan tests passed; no server was restarted.
+
+Separate follow-ups, not implemented here:
+
+1. Scan/Add's upload handler selects `#upload button:last-child`, which matches the
+   camera button nested in its paragraph before the submit button. Confirmed in
+   source: the intended submit control may remain enabled during upload. This is
+   an interaction-state bug beyond the chosen presentation changes. Next: target
+   the actual submit button and test an in-flight upload plus a failed response.
+2. My Cards and Collection are separate destinations, and Scan/Add has a shorter
+   navigation list. The inconsistency is confirmed; whether it confuses the owner
+   needs verification. Changing navigation is outside this cleanup. Next: review
+   the two destinations with the owner before combining or renaming them.
 
 ## Product boundary
 
 One shared collection platform, with Pokémon first and game-specific catalog adapters. Existing Vintage 251 rules become a named, versioned goal template. They must not become global rules that reject Yu-Gi-Oh!, Digimon, sports cards or Pokémon outside species 1–251. A user may own any supported printing even when it contributes to no active goal.
 
-The first owner account is Mike's `admin`. Preserve his existing inventory and Pokédex; create other users with empty private inventories. B1 implements isolated account provisioning and access checks; actual owner credential entry remains pending. See [B1 implementation](B1_IMPLEMENTATION.md). Credentials never belong in this document or seed data.
+The first owner account is Mike's `admin`. Preserve his existing inventory and Pokédex; create other users with empty private inventories. B1 implements isolated account provisioning and access checks; actual owner credential entry remains pending. See [B1 implementation](2026-09-28-B1_IMPLEMENTATION.md). Credentials never belong in this document or seed data.
 
 ## Shared data model
 
@@ -137,6 +188,6 @@ Record accuracy by supported set/variant and image quality, unresolved frequency
 
 The first beta must remain useful when scan identification fails: manual search/add and private provisional copies are permanent paths, not temporary development workarounds.
 
-Local B3 implementation, retention and provider configuration: [B3 photo entry](B3_PHOTO_ENTRY.md). Target beta recognition thresholds remain unqualified until real evaluation.
+Local B3 implementation, retention and provider configuration: [B3 photo entry](2026-09-28-B3_PHOTO_ENTRY.md). Target beta recognition thresholds remain unqualified until real evaluation.
 
-Local B4 request, consent, publication and resolution contracts: [B4 catalog expansion](B4_CATALOG_EXPANSION.md). Synthetic adapter evidence does not establish real second-game coverage.
+Local B4 request, consent, publication and resolution contracts: [B4 catalog expansion](2026-09-28-B4_CATALOG_EXPANSION.md). Synthetic adapter evidence does not establish real second-game coverage.

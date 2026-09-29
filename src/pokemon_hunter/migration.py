@@ -1,4 +1,4 @@
-"""Read-only legacy import into an explicitly supplied disposable B0 target."""
+"""Read-only legacy import into an explicitly supplied disposable inventory target."""
 
 import hashlib
 import json

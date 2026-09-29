@@ -1,4 +1,4 @@
-"""B2 collection operations in the existing inventory, with durable reviewed transactions.
+"""Physical-copy collection operations in the existing inventory, with durable reviewed transactions.
 
 All entry points re-resolve the session principal. SQLite IMMEDIATE transactions serialize
 confirmation/undo; revisioned before/after images prevent stale edits and destructive undo.
@@ -32,7 +32,7 @@ class Conflict(ValueError):
 
 
 def initialize(db):
-    """Called only while creating a NEW isolated B2 root, never on owner-local."""
+    """Initialize collection tables only in a new isolated root."""
     db.executescript("""
       ALTER TABLE owned_copies ADD COLUMN revision INTEGER NOT NULL DEFAULT 0;
       ALTER TABLE owned_copies ADD COLUMN source_copy_id TEXT;

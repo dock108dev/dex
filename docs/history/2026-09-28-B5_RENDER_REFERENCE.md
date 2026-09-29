@@ -1,17 +1,17 @@
 # B5 Render reference — inactive alternative
 
-> **DEFERRED — optional future reference, not active next steps.** Mike’s September 28 direction makes the existing localhost app the sole current target. All setup/checklist requirements below are inactive for current local use, including hosting/LAN HTTPS, device tests, managed startup/reboot and external backup infrastructure. Preserve prior evidence; do not execute this runbook unless that scope is reopened. The [current roadmap](ROADMAP.md) takes precedence.
+> **DEFERRED — optional future reference, not active next steps.** Mike’s September 28 direction makes the existing localhost app the sole current target. All setup/checklist requirements below are inactive for current local use, including hosting/LAN HTTPS, device tests, managed startup/reboot and external backup infrastructure. Preserve prior evidence; do not execute this runbook unless that scope is reopened. The [current roadmap](2026-09-28-ROADMAP.md) takes precedence.
 
 
-**Historical preparation only. Render is no longer the selected B5 host or a closure dependency.** Use [the Mac staging closeout](B5_DEPLOYMENT.md). This reference preserves the prior image/configuration and evidence; do not provision these resources as part of the current plan.
+**Historical preparation only. Render is no longer the selected B5 host or a closure dependency.** Use [the Mac staging closeout](2026-09-28-B5_DEPLOYMENT.md). This reference preserves the prior image/configuration and evidence; do not provision these resources as part of the current plan.
 
-**Prepared, not deployed.** Runtime `0f17cc9ff337ee1ce90cdb32875afd7de6d03e38`, from `9b7e1a1`, is committed on main. The [release manifest](../deploy/release.json) binds the exact source tree, source-content manifest, OCI archive and Linux AMD64 image. Later handoff-only commits do not change this runtime.
+**Prepared, not deployed.** Runtime `0f17cc9ff337ee1ce90cdb32875afd7de6d03e38`, from `9b7e1a1`, is committed on main. The [release manifest](../../deploy/release.json) binds the exact source tree, source-content manifest, OCI archive and Linux AMD64 image. Later handoff-only commits do not change this runtime.
 
 - Image: `sha256:46facd36fc6bb15603960722bba10e015bc4189a73ef30a0208be051a6a52c8b`.
 - Intended **private**, not-yet-published reference: `ghcr.io/dock108dev/dex-staging@sha256:46facd36fc6bb15603960722bba10e015bc4189a73ef30a0208be051a6a52c8b`.
 - Retained OCI archive: `/Users/michaelfuscoletti/dex-private/b5-followup-20260928/dex-b5-0f17cc9-amd64.oci.tar`.
 - Archive SHA-256: `fb253b1b7c27640f2066189ed23d384e2de02d665c890f165529fd574a3c6e0b`.
-- Configuration: [render.yaml](../deploy/render.yaml), one web, one worker, PG17, Virginia, external database ingress denied, storage autoscaling off, 60-second shutdown allowance. Runtime auto-deployment is off; disable Blueprint auto-sync and do not enable deploy hooks during qualification.
+- Configuration: [render.yaml](../../deploy/render.yaml), one web, one worker, PG17, Virginia, external database ingress denied, storage autoscaling off, 60-second shutdown allowance. Runtime auto-deployment is off; disable Blueprint auto-sync and do not enable deploy hooks during qualification.
 
 ## Minimal missing setup
 
@@ -57,7 +57,7 @@ These are **all pending**, not local pass labels. Use the two synthetic accounts
 - Base/Neo manual search/match, duplicate add, preview/cancel/confirm/retry, exact purchase amount, frozen goal and export. Catalog preview/verify/publish/rollback/republish and request resolution must retain the same physical copy.
 - Fixture scan queue/worker/confirmation, cancelled upload deletion, refresh and restart recovery. Mark simulation explicitly. Restart web and worker separately; verify copies, jobs and the retained $0.05 seed reservation persist. Disable scanning with `deployment disable-scanning`; verify new uploads stop while manual entry still works. Never clear spending rows to make a test pass.
 - `deployment backup --path PRIVATE_NEW_BUNDLE`; restore with `deployment restore --path SAME_BUNDLE` against a **different empty target**. Compare the returned content manifest, then read back accounts, private photos/consent, catalogs, goals and reservations. Make a new source-side write after backup and prove it remains in the original database. Do not switch the application to the restore target or overwrite the current database.
-- Run [the actual phone walkthrough](B5_PHONE_CHECKS.md). Record device observations separately from browser emulation.
+- Run [the actual phone walkthrough](2026-09-28-B5_PHONE_CHECKS.md). Record device observations separately from browser emulation.
 
 For real recognition, first record existing global/account reservations and remaining budget. Use at most six consented labeled images covering clear matches, ambiguous/poor images and unsupported cards, only if the remaining existing $1 global / $0.50 account ceilings allow their $0.05 reservations. Keep expected printing IDs/variants and images private. Compare proposed matches **before manual corrections**; record correct, wrong and unresolved counts separately, each job's latency, returned usage cost (unknown stays unknown), model/version and total reservations. Never refund failed/interrupted calls for evaluation. Set `scan_config.mode=openai` only once the secure key and suitable images exist; missing key leaves fixture/manual labels. Current results: **0 real calls, $0 real spend; correct/wrong/unresolved, real latency and accuracy unmeasured**.
 

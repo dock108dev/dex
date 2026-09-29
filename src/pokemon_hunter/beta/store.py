@@ -77,32 +77,11 @@ def resource(actor, kind, key):
             "SELECT * FROM private_archives WHERE batch_id=%s AND path=%s AND user_id=%s",
             [key[0], key[1], actor.user_id],
         )
-    elif kind in {"photos", "scan_jobs", "goals", "request_evidence"}:
-        found = rows(
-            "SELECT * FROM b1_private_resources WHERE id=%s AND kind=%s AND user_id=%s",
-            [key, kind, actor.user_id],
-        )
     else:
         raise Http404
     if not found:
         raise Http404
     return found[0]
-
-
-def worker_resource(job_id, kind, resource_id):
-    """Trusted worker gets its actor from a persisted job, never an HTTP user-id field.
-
-    Only the authorization contract exists in B1. No scan/goal/photo worker is scheduled.
-    """
-    jobs = rows(
-        """SELECT j.*,u.auth_subject FROM b1_private_resources j JOIN users u ON j.user_id=u.id
-                   WHERE j.id=%s AND j.kind='scan_jobs'""",
-        [job_id],
-    )
-    if not jobs:
-        raise Http404
-    actor = principal(jobs[0]["auth_subject"])
-    return resource(actor, kind, resource_id)
 
 
 def catalog_admin(actor):

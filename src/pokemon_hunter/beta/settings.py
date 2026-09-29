@@ -26,6 +26,7 @@ ALLOWED_HOSTS = ["127.0.0.1"]
 INSTALLED_APPS = ["django.contrib.auth", "django.contrib.contenttypes", "django.contrib.sessions", "axes"]
 MIDDLEWARE = [
     "pokemon_hunter.beta.security.LocalOnlyMiddleware",
+    "pokemon_hunter.beta.diagnostics.FailureMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -94,7 +95,9 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "handlers": {"null": {"class": "logging.NullHandler"}},
-    "loggers": {name: {"handlers": ["null"], "propagate": False} for name in ("django", "axes")},
+    "loggers": {
+        name: {"handlers": ["null"], "propagate": False} for name in ("django", "django.request", "axes")
+    },
 }
 
 B3_ENABLED = (ROOT / "B3_ISOLATED").is_file()

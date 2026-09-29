@@ -296,3 +296,30 @@ def test_rough_estimate_is_labeled_and_counted(local):
     assert result["scenarios"]["7"]["estimated"] == 1
     assert result["scenarios"]["7"]["subtotal"] == "20.00"
     assert result["scenarios"]["7"]["total"] is None
+
+
+def test_legacy_browser_headers(local):
+    from pokemon_hunter.security import BROWSER_HEADERS
+
+    client = TestClient(create_app(local))
+    for response in (client.get("/"), client.get("/", headers={"Host": "evil.example"})):
+        for key, value in BROWSER_HEADERS.items():
+            assert response.headers[key] == value
+
+
+def test_hunt_routes_use_shared_projection_and_schema(local):
+    from unittest.mock import patch
+
+    from pokemon_hunter import hunt
+
+    client = TestClient(create_app(local))
+    assert client.post("/api/hunts", json={"unsupported": True}).status_code == 422
+    with patch.object(hunt, "project_results", wraps=hunt.project_results) as shared:
+        response = client.post("/api/hunts", json={"demo": True, "budget": "10000"})
+        assert response.status_code == 200
+        saved = response.json()
+        assert saved["results"]
+        route = f"/api/hunts/{saved['hunt_id']}"
+        assert client.get(route).status_code == 200
+        assert client.post(route + "/reveal/" + saved["results"][0]["id"]).status_code == 200
+        assert shared.call_count == 3

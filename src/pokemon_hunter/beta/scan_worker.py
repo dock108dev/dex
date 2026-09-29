@@ -8,6 +8,7 @@ from django.conf import settings
 from django.db import close_old_connections
 
 from . import scans
+from .diagnostics import failure
 
 
 def run(stop=None):
@@ -16,8 +17,8 @@ def run(stop=None):
         for sig in (signal.SIGTERM, signal.SIGINT):
             signal.signal(sig, lambda *_: stop.set())
     while not stop.is_set():
-        close_old_connections()
         try:
+            close_old_connections()
             if getattr(settings, "STAGING", False):
                 from .collection import execute
                 from .support import cleanup
@@ -30,10 +31,9 @@ def run(stop=None):
             else:
                 scans.cleanup()
             worked = scans.process_one(stop)
-        except Exception:
-            # Fixed event name only; never log exception text or request content.
-            if getattr(settings, "STAGING", False):
-                print("worker_iteration_failed", flush=True)
+        except Exception as exc:
+            # Retry the iteration, never a claimed provider call. Log in both profiles.
+            failure("worker_iteration_failed", exc)
             worked = False
         stop.wait(0.2 if worked else 2)
     close_old_connections()

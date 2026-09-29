@@ -1,4 +1,4 @@
-"""Synthetic B2 workflow, isolation, transaction, retry and preservation checks."""
+"""Synthetic collection workflow, isolation, transaction, retry and preservation checks."""
 
 import importlib
 import json

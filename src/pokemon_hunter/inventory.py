@@ -1,4 +1,4 @@
-"""Game-neutral B0 storage. No authentication or live-app cutover."""
+"""Game-neutral inventory storage; authentication is supplied by the web application."""
 
 import sqlite3
 import uuid

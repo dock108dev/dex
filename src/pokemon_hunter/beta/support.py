@@ -13,6 +13,7 @@ from . import store
 from . import transactions as transaction
 from .collection import execute
 from .collection_views import endpoint
+from .diagnostics import failure
 from .views import actor
 
 
@@ -145,5 +146,6 @@ def health(request):
         )
         scans.config()
         return JsonResponse({"ready": ready}, status=200 if ready else 503)
-    except Exception:
+    except Exception as exc:
+        failure("health_check_failed", exc)
         return JsonResponse({"ready": False}, status=503)

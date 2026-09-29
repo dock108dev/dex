@@ -8,9 +8,9 @@ from decimal import Decimal
 from django.conf import settings
 from django.http import Http404
 
-from pokemon_hunter.app import SearchRequest
+from pokemon_hunter import hunt
 from pokemon_hunter.collection import derive, totals
-from pokemon_hunter.hunt import project_results, public_listing, query_plan
+from pokemon_hunter.hunt import SearchRequest, public_listing, query_plan
 from pokemon_hunter.inventory import stable_id
 from pokemon_hunter.migration import encode
 from pokemon_hunter.valuation import valuation_records
@@ -156,8 +156,6 @@ def estimates(active, catalog):
 
 
 def hunt_settings(raw):
-    if set(raw) - {"pool", "focus", "budget", "demo", "offset"}:
-        raise ValueError("Unsupported search settings")
     return SearchRequest.model_validate(raw)
 
 
@@ -192,7 +190,9 @@ def projected_hunt(actor, batch, key, reveal=None):
     # Opaque stable handles, never seller-controlled IDs or URLs in hidden responses.
     for index, raw in enumerate(raws):
         raw["itemId"] = stable_id("private-result", f"{actor.user_id}:{batch}:{key}:{index}")
-    rows = project_results(raws, body, bool(saved["demo"]), data, config, evidence("raw_values.json", {}))
+    rows = hunt.project_results(
+        raws, body, bool(saved["demo"]), data, config, evidence("raw_values.json", {})
+    )
 
     def safe(row, revealed=False):
         public = public_listing(row, reveal=revealed)

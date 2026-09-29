@@ -8,6 +8,8 @@ import re
 import sqlite3
 from pathlib import Path
 
+from . import scan_config as scan_policy
+
 
 def setup():
     os.environ["DEX_PROFILE"] = "staging"
@@ -37,14 +39,10 @@ def migrate_copy(source):
         raise ValueError(
             "Copied database requires its .scan-config.json sidecar; never reset spending configuration"
         )
-    scan_config = json.loads(scan_config_path.read_text())
-    if scan_config.get("mode") not in {"manual", "fixture", "openai"} or not isinstance(
-        scan_config.get("enabled"), bool
-    ):
-        raise ValueError("Invalid copied scan configuration")
-    for key, limit in (("ceiling_usd", 1.0), ("user_ceiling_usd", 0.5)):
-        if not 0 <= float(scan_config[key]) <= limit:
-            raise ValueError("Copied configuration exceeds current spending ceilings")
+    scan_config = scan_policy.validate(json.loads(scan_config_path.read_text()), require_complete=True)
+    # Copy import never provisions a local subscription login in staging.
+    if scan_config["mode"] == "codex_cli":
+        raise ValueError("Copied staging configuration does not support codex_cli")
     with sqlite3.connect(f"{source.resolve().as_uri()}?mode=ro", uri=True) as old:
         schema = old.execute(
             "SELECT name,sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY rowid"
@@ -139,7 +137,7 @@ def initialize():
         c.execute("CREATE TABLE IF NOT EXISTS beta_operations(key TEXT PRIMARY KEY,value TEXT NOT NULL)")
         c.execute(
             "INSERT INTO beta_operations VALUES('scan_config',%s) ON CONFLICT DO NOTHING",
-            [json.dumps({"enabled": True, "mode": "manual", "ceiling_usd": 1.0, "user_ceiling_usd": 0.5})],
+            [json.dumps(scan_policy.validate({}))],
         )
         c.execute("INSERT INTO beta_operations VALUES('schema','5') ON CONFLICT DO NOTHING")
 

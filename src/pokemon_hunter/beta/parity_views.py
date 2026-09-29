@@ -1,4 +1,4 @@
-"""Private parity routes, including spoiler-safe replacements for B1 hunt reads."""
+"""Private collection projections and spoiler-safe hunt reads."""
 
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET, require_http_methods, require_POST

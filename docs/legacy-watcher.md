@@ -1,23 +1,24 @@
 # Pokémon Hunter
 
-A small daily eBay watcher for inexpensive English Kanto/Johto-era bulk lots. It searches eBay's official Browse API, includes shipping to **08803**, ranks against your supplied **153/251 Pokédex**, and saves up to five qualifying listings in one digest. It never buys or bids.
+A small daily eBay watcher for inexpensive English Kanto/Johto-era bulk lots. It searches eBay's official Browse API, uses the configured shipping destination and collection gaps, and saves up to five qualifying listings in one digest. It never buys or bids.
 
 ## Ready now
 
 - 15 overlapping searches, each run separately for auctions and fixed-price listings.
-- All 251 supplied ownership entries in `config/pokedex.json`: **Kanto 133/151, Johto 20/100, 98 missing**.
+- Ownership is derived from exact-card records in `config/pokedex_251.json`.
 - Exact decimal money, conservative card counts, set aliases, mixed-era warnings, bulk-product filtering, and optional description enrichment.
-- SQLite observations, persistent deduplication, auction ending reminders, retryable notifications, and daily scheduling for this Mac.
+- SQLite observations, persistent deduplication, auction ending reminders, retryable notifications, and optional macOS daily scheduling.
 - Offline demo and automated tests; no credentials required for either.
 
-**Live setup is incomplete until you add eBay application credentials.** No live listings have been fetched and the daily LaunchAgent is not installed. The default delivery destination is local report files; optional macOS notifications and an HTTPS webhook are supported.
+**Live setup is incomplete until you add eBay application credentials.** The default delivery destination is local report files; optional macOS notifications and an HTTPS webhook are supported.
 
 ## Try the offline demo
 
 From this project folder:
 
 ```sh
-uv sync --frozen --extra dev
+uv sync --locked --extra dev
+uv run python scripts/init_local.py
 uv run pokemon-hunter run --fixture tests/fixtures/demo.json
 open reports/demo/latest.txt
 ```
@@ -78,7 +79,8 @@ To deliver elsewhere, set `POKEMON_HUNTER_WEBHOOK_URL` in `.env` to an HTTPS end
 
 ## Rules and configuration
 
-The [September 25 preference record](reports/shortlist-2026-09-25.md) now prioritizes opening/sorting enjoyment and unrevealed rare identities; missing-species efficiency is secondary. The price/spend settings below are updated, but the automated classifier, ranking and digest have not yet been aligned with that preference. Current repack/mystery exclusions and Pokédex scoring below describe existing code, not the final desired behavior. The dated manual shortlist is separate from API qualification and is not proof of current availability.
+The watcher retains a bulk-alert contract with mystery/repack exclusions. For
+spoiler-controlled hunts, use the collection app. Watcher digests reveal titles.
 
 | Setting | Default |
 | --- | --- |
@@ -97,21 +99,16 @@ The parser handles `100+`, `90–100`, comma-separated counts, `lot of 72`, and 
 
 `config/sets.yaml` contains the 15 eligible English sets and a configurable later-era exclusion dictionary. `pure` means **only eligible set names detected in seller text**, not verified purity. The later-set dictionary is deliberately finite: absence of a match cannot prove absence of modern cards. Vague WOTC/Neo text is `probably_pure`. Mixed lots use the total stated-card denominator, label that uncertainty, and need to be especially cheap and Neo-related to reach MEDIUM. Unknown vintage composition remains lower confidence. Keyword negations and unusual seller phrasing can cause conservative false negatives.
 
-Price thresholds gate alerts independently of ranking. Neo receives more weight because 80% of Johto is missing versus about 12% of Kanto. Rocket/Gym is penalized for Dark/owner-named variants. Played/damaged, no duplicates, and certain composition claims get small ranking bonuses; “unsearched” is neutral. At the price threshold a pure listing can still qualify even with a zero price-efficiency score.
+Price thresholds gate alerts independently of ranking. Generation gaps influence the collection heuristic. Rocket/Gym is penalized for Dark/owner-named variants. Played/damaged, no duplicates, and certain composition claims get small ranking bonuses; “unsearched” is neutral. At the price threshold a pure listing can still qualify even with a zero price-efficiency score.
 
-This is a **generation/set heuristic**, not an estimate of how many missing species a lot contains. Per-set species catalogs, photograph recognition, expected-new-species probabilities, and purchase-learning models are intentionally deferred as specified in the brief.
+This is a **generation/set heuristic**, not an estimate of how many missing species a lot contains. The watcher does not perform photo recognition or estimate expected new species from unknown lot contents.
 
 ## Collection updates
 
-The JSON file is the source of truth and syncs into SQLite on each run. Record newly acquired species by number:
-
-```sh
-uv run pokemon-hunter pokedex --owned 3 154
-uv run pokemon-hunter pokedex --missing 3
-uv run pokemon-hunter pokedex
-```
-
-The two historical `pokedex` baseline totals in settings document the initial brief; ranking always uses the current 251-entry JSON, not those totals.
+Edit exact-card ownership through the original app. The watcher derives species
+ownership from those records; it does not write species-only ownership. Inspect
+the current summary with `uv run pokemon-hunter pokedex`. Historical baseline
+counts in settings do not override the current collection.
 
 ## Search coverage and troubleshooting
 

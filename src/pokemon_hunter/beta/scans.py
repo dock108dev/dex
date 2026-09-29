@@ -1,4 +1,4 @@
-"""Private, durable B3 jobs. Workers extract evidence; only confirmation adds inventory."""
+"""Private, durable photo jobs. Workers extract evidence; only confirmation adds inventory."""
 
 import base64
 import io
@@ -16,9 +16,10 @@ from django.http import Http404
 from PIL import Image, ImageOps
 from pydantic import BaseModel, ConfigDict, Field
 
-from . import codex_recognition, store
+from . import codex_recognition, scan_config, store
 from . import collection as inventory
 from . import transactions as transaction
+from .diagnostics import failure
 
 MODEL = "gpt-4.1-mini-2025-04-14"
 VERSION = "dex-photo-v1"
@@ -61,17 +62,10 @@ def config():
         value = json.loads(
             store.rows("SELECT value FROM beta_operations WHERE key='scan_config'")[0]["value"]
         )
-        if value.get("mode") not in {"manual", "fixture", "openai", "codex_cli"} or not isinstance(
-            value.get("enabled"), bool
-        ):
-            raise ValueError("Invalid persistent scan configuration")
-        for key, limit in (("ceiling_usd", 1.0), ("user_ceiling_usd", 0.5)):
-            if not 0 <= float(value[key]) <= limit:
-                raise ValueError("Staging ceilings cannot exceed existing limits")
-        return value
-    path = settings.ROOT / "scan-config.json"
-    value = json.loads(path.read_text()) if path.exists() else {}
-    return {"enabled": True, "mode": "manual", "ceiling_usd": 1.0, "user_ceiling_usd": 0.5, **value}
+    else:
+        path = settings.ROOT / "scan-config.json"
+        value = json.loads(path.read_text()) if path.exists() else {}
+    return scan_config.validate(value, require_complete=getattr(settings, "STAGING", False))
 
 
 def normalized(upload):
@@ -362,7 +356,8 @@ def process_one(stop=None):
         error = ""
     except codex_recognition.RecognitionError as exc:
         state, result, error = "failed", {}, str(exc)
-    except Exception:
+    except Exception as exc:
+        failure("recognition_failed", exc)
         state, result, error = (
             "failed",
             {},

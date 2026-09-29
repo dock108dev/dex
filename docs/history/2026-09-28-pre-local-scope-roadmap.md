@@ -41,7 +41,7 @@ A password was supplied directly for this account. Do not reproduce it in docume
 
 Ten initial sets: Base Set, Jungle, Fossil, Base Set 2, Team Rocket, Wizards Black Star Promos, Neo Genesis, Neo Discovery, Neo Revelation and Neo Destiny. The legacy watcher's broader search configuration is not the app's catalog coverage.
 
-Current implementation: [README](../../README.md), [APP_SPEC](../../APP_SPEC.md). Detailed target contracts: [Beta design](../../docs/BETA_DESIGN.md). This tracker owns sequence, scope, status and release gates; the design owns data and workflow contracts. Keep them consistent.
+Current implementation: [README](../../README.md), [APP_SPEC](2026-09-28-APP_SPEC.md). Detailed target contracts: [Beta design](2026-09-28-BETA_DESIGN.md). This tracker owns sequence, scope, status and release gates; the design owns data and workflow contracts. Keep them consistent.
 
 ## 3. Required beta experience
 
@@ -70,7 +70,7 @@ B0 has passed its technical exit on copied data. B1 has a verified isolated loca
 | B2 — Collection and goals | Mobile inventory, copies, binders, set/custom goals, imports/exports/undo; B1 | End-to-end manual collection use; existing Vintage 251 result preserved; no duplicate inventory from goals | LOCAL ENGINEERING PASS — owner review separate |
 | B3 — Photo entry | Private upload, asynchronous OpenAI recognition, catalog candidates, confirm/cancel/undo; B1–B2 | Exactly-once confirmation and uncertain/failure states verified locally; live recognition quality/cost unmeasured | LOCAL ENGINEERING IMPLEMENTED — API setup/evaluation pending |
 | B4 — Catalog expansion | Game adapter contract, unknown scan queue, admin ingestion/review/publish/reconcile; B0/B3 | English Gym Heroes through ordinary ingestion/rollback; synthetic Orbits through shared request/matching/inventory paths | LOCAL ENGINEERING IMPLEMENTED — hosted qualification separate |
-| B5 — Mac-hosted private staging | Existing web/worker/PostgreSQL, trusted home-network HTTPS, recovery and real phones | [Current closeout checklist](../B5_DEPLOYMENT.md); final endpoint, startup/recovery, backup operation and actual phones | OPEN — MAC/PHONE OBSERVATIONS REQUIRED |
+| B5 — Mac-hosted private staging | Existing web/worker/PostgreSQL, trusted home-network HTTPS, recovery and real phones | [Current closeout checklist](2026-09-28-B5_DEPLOYMENT.md); final endpoint, startup/recovery, backup operation and actual phones | OPEN — MAC/PHONE OBSERVATIONS REQUIRED |
 | B6 — Invite pilot | Owner review, then small invited cohort; B5 | Owner verdict and pilot outcomes recorded separately; known issues and rollback instructions delivered | OPEN |
 
 ### B0 — Preserve the existing collection first
@@ -114,7 +114,7 @@ Onboard one additional Pokémon set through the same importer and validate a syn
 
 ### B5 — Make the beta operable
 
-Selected architecture: Django 5.2 with the existing frontend, an independent worker and PostgreSQL 17 on Mike's Mac. A dedicated trusted HTTPS endpoint serves test phones on the home network; database and backend access remain private. One consistent database backup includes photo bytes and consent. Preserve the existing review app and legacy FastAPI collection. [Current B5 closeout](../B5_DEPLOYMENT.md) replaces Render provisioning: no Render account, registry publication, cloud subscription or away-from-home access is required for this scope. Final network/device and operational observations remain required; prior passing component checks are retained.
+Selected architecture: Django 5.2 with the existing frontend, an independent worker and PostgreSQL 17 on Mike's Mac. A dedicated trusted HTTPS endpoint serves test phones on the home network; database and backend access remain private. One consistent database backup includes photo bytes and consent. Preserve the existing review app and legacy FastAPI collection. [Current B5 closeout](2026-09-28-B5_DEPLOYMENT.md) replaces Render provisioning: no Render account, registry publication, cloud subscription or away-from-home access is required for this scope. Final network/device and operational observations remain required; prior passing component checks are retained.
 
 Before pilot: configure staging/production separation, secrets, migrations, health/error monitoring, redacted logs, backups and an observed restore. Support account/photo deletion and a stated retention policy. Confirm rights/terms for each hosted catalog, image and pricing source; existing local snapshots do not establish hosted redistribution rights. Omit unavailable images or pricing features rather than guessing permission. Keep pending catalog/image rights visible as a coverage blocker, not a reason to stop unrelated engineering.
 
@@ -175,7 +175,7 @@ September 27: replaced the obsolete watcher-first roadmap with the collection-be
 
 ## B0 execution result — September 27, 2026
 
-Repository: https://github.com/dock108dev/dex (private). Baseline: `08aa5662088f326f86483b0fa4b2e026845316de`. [Implementation and reproducible checks](../../docs/B0_IMPLEMENTATION.md).
+Repository: https://github.com/dock108dev/dex (private). Baseline: `08aa5662088f326f86483b0fa4b2e026845316de`. [Implementation and reproducible checks](2026-09-28-B0_IMPLEMENTATION.md).
 
 All B0 technical exit requirements passed: 87-file verified backup, exact comparison of 859 records / 207 physical copies, one first-edition selection, Vintage 251 at 133 Kanto and 20 Johto, two owner-scoped saved hunts, identical repeat import, full restore and unchanged local owner data/UI. All 207 copies retain explicit unresolved finish/variant information; none was guessed. No current identity conflicts. Tests use sanitized synthetic ownership; private evidence remains outside Git.
 
@@ -184,7 +184,7 @@ Local evidence: `/Users/michaelfuscoletti/dex-private/b0-20260927/`; final rehea
 
 ## B1 execution result — September 27–28, 2026
 
-**B1 full technical exit remains OPEN: actual owner provisioning is pending.** Local authentication and isolation are implemented and verified using isolated test identities. Owner acceptance and hosted-beta readiness are not established. [Implementation, auth decision, local launch and recovery](../B1_IMPLEMENTATION.md).
+**B1 full technical exit remains OPEN: actual owner provisioning is pending.** Local authentication and isolation are implemented and verified using isolated test identities. Owner acceptance and hosted-beta readiness are not established. [Implementation, auth decision, local launch and recovery](2026-09-28-B1_IMPLEMENTATION.md).
 
 | Requirement | Actual status | Evidence / limitation / next actor |
 | --- | --- | --- |
@@ -213,7 +213,7 @@ The password prompt does not echo or accept a password argument. Open `http://12
 
 ## B2 execution result — September 27–28, 2026
 
-**B2 local engineering is verified; B1 actual owner provisioning remains PENDING. Owner acceptance and hosted-beta readiness are NOT established.** See [B2 implementation, evidence and launch](../B2_IMPLEMENTATION.md). Starting candidate: B1 `224eb32`; the exact tested/pushed B2 commit, tree and source manifest are recorded in the private `b2-20260928/handoff.json` and Git history.
+**B2 local engineering is verified; B1 actual owner provisioning remains PENDING. Owner acceptance and hosted-beta readiness are NOT established.** See [B2 implementation, evidence and launch](2026-09-28-B2_IMPLEMENTATION.md). Starting candidate: B1 `224eb32`; the exact tested/pushed B2 commit, tree and source manifest are recorded in the private `b2-20260928/handoff.json` and Git history.
 
 - Extended the same authenticated Django application and B0 inventory: manual catalog search/add, intentional duplicates, exact copy attributes, edit/remove/undo, private binders, set/custom/Vintage goals and frozen checklists. Legacy app and prepared B1 owner-local are preserved.
 - Track-set adds no copies. Add-owned-set reviews catalog/variant coverage, existing ownership and duplicate policy, then confirms atomically under one durable operation ID.
@@ -223,7 +223,7 @@ The password prompt does not echo or accept a password argument. Open `http://12
 - Fresh copied preservation reconciles 859 source records, 207 owned copies, one first-edition selection, two hunts and 153/251 Vintage species. All owner/config/frontend hashes and original databases remain unchanged; restored legacy app reads pass.
 - Evidence remains private under `/Users/michaelfuscoletti/dex-private/b2-20260928/`; exact committed-candidate regression, clean-checkout and browser results are in the handoff. No cutover, deployment, external message, paid recognition or credential change occurred.
 
-**Superseded review environment:** use the new [B2 parity review launch](../B2_PARITY.md#launch-the-revised-review-app) for the restored experience. The prior `b2-20260928/review-local` data and credentials remain preserved. Separately, Mike still owns actual B1 credential entry, followed by engineer actual-account verification. B3 and B4 are implemented as documented below; do not mark hosted release or owner acceptance from these checks.
+**Superseded review environment:** use the new [B2 parity review launch](2026-09-28-B2_PARITY.md#launch-the-revised-review-app) for the restored experience. The prior `b2-20260928/review-local` data and credentials remain preserved. Separately, Mike still owns actual B1 credential entry, followed by engineer actual-account verification. B3 and B4 are implemented as documented below; do not mark hosted release or owner acceptance from these checks.
 
 
 ## B2 owner feedback — local feature parity revision required
@@ -246,7 +246,7 @@ Next actor: engineer for bounded real recognition evaluation when credentials ar
 
 ## B2 parity revision — September 28, 2026
 
-[Completed parity matrix, behavior differences, evidence and exact launch](../B2_PARITY.md). The same authenticated inventory now supplies Overview, Pokédex, My Cards, per-copy edition selection, local guide scenarios, sample hunts/missing singles and spoiler-safe saved-find replay. B2 collection/binder/goal/import/export/undo flows remain. The fresh copied baseline agrees on 859 entries, 251 species, 207 copies, 153 species owned and two saved hunts. Unresolved variants have no confirmed value; old guide totals remain explicitly conditional.
+[Completed parity matrix, behavior differences, evidence and exact launch](2026-09-28-B2_PARITY.md). The same authenticated inventory now supplies Overview, Pokédex, My Cards, per-copy edition selection, local guide scenarios, sample hunts/missing singles and spoiler-safe saved-find replay. B2 collection/binder/goal/import/export/undo flows remain. The fresh copied baseline agrees on 859 entries, 251 species, 207 copies, 153 species owned and two saved hunts. Unresolved variants have no confirmed value; old guide totals remain explicitly conditional.
 
 Private candidate evidence: `/Users/michaelfuscoletti/dex-private/b2-parity-20260928/`; exact tested/pushed identity and final check results are in `handoff.json`. The original application and all owner sources remain authoritative until separately authorized cutover. **B2 is sufficient to proceed with B3 under Mike’s latest direction; no additional review stop applies.** B1 actual-owner provisioning, provider/source-rights qualification, hosting and real-device acceptance remain separate pending gates.
 
@@ -265,18 +265,18 @@ Mike initially responded “great” to the restored app and subsequently direct
 
 ## B3 delivery
 
-[Photo-entry implementation and configuration](../B3_PHOTO_ENTRY.md) records the operable local flow, conservative limits, privacy/deletion behavior and verification boundaries. Fixtures are explicitly simulated. Actual owner provisioning remains independent. The later B4 delivery is recorded below; B5 hosted/real-device qualification remains open.
+[Photo-entry implementation and configuration](2026-09-28-B3_PHOTO_ENTRY.md) records the operable local flow, conservative limits, privacy/deletion behavior and verification boundaries. Fixtures are explicitly simulated. Actual owner provisioning remains independent. The later B4 delivery is recorded below; B5 hosted/real-device qualification remains open.
 
 ## B4 delivery
 
-[Catalog expansion implementation](../B4_CATALOG_EXPANSION.md): private requests and optional evidence sharing; reviewed aliases and distinct-requester merging; admin ingestion and atomic publication/rollback; English Gym Heroes (132 metadata entries); retry-safe resolution of an existing physical copy; synthetic second-game adapter. Frozen goal membership and existing inventory remain intact. B3 recognition remains simulated with zero real API calls; actual owner provisioning and B5 hosted/source/real-device qualification remain separate.
+[Catalog expansion implementation](2026-09-28-B4_CATALOG_EXPANSION.md): private requests and optional evidence sharing; reviewed aliases and distinct-requester merging; admin ingestion and atomic publication/rollback; English Gym Heroes (132 metadata entries); retry-safe resolution of an existing physical copy; synthetic second-game adapter. Frozen goal membership and existing inventory remain intact. B3 recognition remains simulated with zero real API calls; actual owner provisioning and B5 hosted/source/real-device qualification remain separate.
 
 B4 runtime `9dc074d8d05ed94f88a6c278502b30d5ae9dc424`: 188 tests passed in working and clean checkouts; lint/format, B2/B3/B4 desktop/narrow browser flows and source/review preservation passed. See the B4 implementation record for exact evidence and remaining gates.
 
 
 ## Historical B5 operational foundation — September 28, 2026
 
-[Implementation, source review, acceptance matrix and exact operator instructions](../B5_OPERATIONS.md). PostgreSQL 17 copied migration preserves and compares source rows, account identities, private bytes, consent, catalog/journal history and spending reservations. Web and worker are packaged independently with fail-closed HTTPS configuration, readiness, graceful shutdown, recovery, consistent backup/empty-target restore, account erasure, retention and private feedback. The original SQLite collection and review environment remain preserved.
+[Implementation, source review, acceptance matrix and exact operator instructions](2026-09-28-B5_OPERATIONS.md). PostgreSQL 17 copied migration preserves and compares source rows, account identities, private bytes, consent, catalog/journal history and spending reservations. Web and worker are packaged independently with fail-closed HTTPS configuration, readiness, graceful shutdown, recovery, consistent backup/empty-target restore, account erasure, retention and private feedback. The original SQLite collection and review environment remain preserved.
 
 Render web + worker + managed PostgreSQL is selected (about $21.50/month before variable charges; not purchased). For this small beta, private photos remain transactional PostgreSQL bytes. Staged shared catalog browsing permits reviewed TCGdex metadata and synthetic fixtures; unqualified legacy metadata, artwork, guide pricing and marketplace projections are disabled in staging, while the original local experience remains intact. Manual supported collection use does not require prices, artwork or recognition.
 
@@ -285,7 +285,7 @@ B5 is **not fully qualified**: actual Render ingress/TLS/restart/backup observat
 
 ## Historical B5 deployment preparation follow-up — September 28, 2026
 
-From `9b7e1a1`, tested runtime `0f17cc9ff337ee1ce90cdb32875afd7de6d03e38`; immutable Linux AMD64 image `sha256:46facd36fc6bb15603960722bba10e015bc4189a73ef30a0208be051a6a52c8b`. [Deployment package](../B5_DEPLOYMENT.md) includes the exact source/image manifest, Render configuration, synthetic-first migration, rollback boundary, remaining inputs and hosted checklist; [operations guide](../B5_OPERATIONS.md) and [actual-phone walkthrough](../B5_PHONE_CHECKS.md) are current.
+From `9b7e1a1`, tested runtime `0f17cc9ff337ee1ce90cdb32875afd7de6d03e38`; immutable Linux AMD64 image `sha256:46facd36fc6bb15603960722bba10e015bc4189a73ef30a0208be051a6a52c8b`. [Deployment package](2026-09-28-B5_DEPLOYMENT.md) includes the exact source/image manifest, Render configuration, synthetic-first migration, rollback boundary, remaining inputs and hosted checklist; [operations guide](2026-09-28-B5_OPERATIONS.md) and [actual-phone walkthrough](2026-09-28-B5_PHONE_CHECKS.md) are current.
 
 - Catalog preparation delivered: original 859 entries reconciled from pinned MIT TCGdex source without changing printing IDs, copies, frozen goals, original provenance or spending rows. Combined supported staging coverage is 991 Pokémon entries + 2 synthetic variants; 251 named species. Guide prices, artwork and guide/hunt projections remain unavailable; TCGdex rarity classification may differ. No full feature-parity claim.
 - Render preparation delivered: Virginia, current compute-plan identifiers, PG17, private database ingress, explicit provider-network trust, fixed-path recovery transport and pinned AMD64 image; auto-deployment remains disabled. No access-configured Render target exists; the package has not been provider-applied or registry-published.
@@ -296,6 +296,6 @@ From `9b7e1a1`, tested runtime `0f17cc9ff337ee1ce90cdb32875afd7de6d03e38`; immut
 
 ## Current B5 host decision — Mac, home network
 
-Mike challenged the paid-hosting dependency; the selected operational target is now his Mac. [The current closeout checklist](../B5_DEPLOYMENT.md) supersedes the historical Render next actions above. Reuse the pinned image and existing synthetic PG17 evidence. Remaining work: trusted HTTPS from actual phones; final deployment startup/restart and persistence; access/isolation/core-flow observations through that endpoint; recurring backup plus a protected independent copy; actual iOS Safari and Android Chrome walkthroughs. Render-specific provider observations are not applicable to this target. Do not silently waive unavailable phone coverage.
+Mike challenged the paid-hosting dependency; the selected operational target is now his Mac. [The current closeout checklist](2026-09-28-B5_DEPLOYMENT.md) supersedes the historical Render next actions above. Reuse the pinned image and existing synthetic PG17 evidence. Remaining work: trusted HTTPS from actual phones; final deployment startup/restart and persistence; access/isolation/core-flow observations through that endpoint; recurring backup plus a protected independent copy; actual iOS Safari and Android Chrome walkthroughs. Render-specific provider observations are not applicable to this target. Do not silently waive unavailable phone coverage.
 
 B5 stays OPEN until these observations exist. Real recognition remains an explicit B3 gap when its key/images are unavailable; no operational closeout establishes recognition accuracy, full feature parity, owner acceptance or B6 readiness. Engineer proceeds with the Mac endpoint; Mike supplies the phones, available backup destination and a time for the disruptive Mac restart check. No routine stage approval or paid hosting purchase is needed.

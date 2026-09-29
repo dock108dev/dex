@@ -34,3 +34,12 @@ uploads/
 *.pem
 *.key
 .DS_Store
+
+# Retained historical UI snapshot; never used by runtime or tests.
+/docs/ui-before/
+# Disposable Python build/test output.
+/build/
+/dist/
+/htmlcov/
+.coverage
+.coverage.*
