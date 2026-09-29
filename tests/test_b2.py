@@ -457,7 +457,7 @@ def test_stale_import_can_be_reviewed_again_and_goal_rules_are_validated(b2):
         b2, "import", {"format": "json", "text": json.dumps(document), "duplicate_policy": "allow"}, b2["b"]
     )
     assert response.status_code == 400
-    assert "Vintage" in response.json()["error"]
+    assert response.json()["error"] == "Invalid request. Check the fields and import format."
     assert service.copies(b2["member"]) == []
 
 

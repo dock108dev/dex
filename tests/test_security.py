@@ -103,3 +103,26 @@ def test_validation_errors_do_not_echo_values_or_typeerror_details(env, caplog):
         assert b"private-" not in response.content
     assert "request_type_error" in caplog.text
     assert "private-internal-detail" not in caplog.text
+
+
+@pytest.mark.parametrize(
+    "kind,status,event", [("value", 400, "request_value_error"), ("conflict", 409, "request_conflict")]
+)
+def test_collection_exceptions_do_not_expose_details(env, caplog, kind, status, event):
+    from django.test import RequestFactory
+
+    from pokemon_hunter.beta.collection import Conflict
+    from pokemon_hunter.beta.collection_views import endpoint
+
+    @endpoint
+    def broken(request):
+        raise (Conflict if kind == "conflict" else ValueError)("private-content /private/database.db")
+
+    request = RequestFactory().get("/")
+    request.user = env["owner"]
+    response = broken(request)
+    assert response.status_code == status
+    assert json.loads(response.content)["error"]
+    assert event in caplog.text
+    assert "private-content" not in caplog.text + response.content.decode()
+    assert "/private/database.db" not in caplog.text + response.content.decode()
