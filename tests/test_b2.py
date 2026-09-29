@@ -431,7 +431,9 @@ def test_new_route_auth_csrf_and_no_legacy_write_bypass(b2):
     copy = service.copies(b2["actor"])[0]
     assert post(b2["a"], f"/api/inventory/{copy['id']}/", {"notes": "bypass"}).status_code == 405
     assert preview(b2, "binder", {"name": "bad", "user_id": "forged"}).status_code == 400
-    assert b"B2 ISOLATED REHEARSAL" in b2["a"].get("/").content
+    home = b2["a"].get("/")
+    assert home.status_code == 200
+    assert b'<script src="/collection-assets/collection.js" defer></script>' in home.content
 
 
 def test_stale_import_can_be_reviewed_again_and_goal_rules_are_validated(b2):
