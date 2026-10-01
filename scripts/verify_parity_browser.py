@@ -61,6 +61,8 @@ def parity_flow(page, context, root, label, records):
     page.get_by_role("button", name="Close review", exact=True).click()
     # Sample results and API/browser spoiler boundary, explicit reveal, then re-hide.
     page.goto(base + "/hunt/")
+    page.get_by_label("Search source", exact=True).select_option("sample")
+    page.get_by_label("Search pool", exact=True).select_option("known_lots")
     with page.expect_response(
         lambda r: r.url == base + "/api/hunts/" and r.request.method == "POST"
     ) as response:
@@ -76,7 +78,7 @@ def parity_flow(page, context, root, label, records):
     page.screenshot(path=str(root / f"{label}-parity-hidden.png"), full_page=True)
     page.get_by_role("button", name="Reveal contents").first.click()
     page.get_by_role("heading", name="Revealed contents", exact=True).wait_for()
-    title = page.locator("#editor-body h3").inner_text()
+    title = page.locator("#editor-body h3").first.inner_text()
     assert title
     page.screenshot(path=str(root / f"{label}-parity-revealed.png"))
     page.get_by_role("button", name="Close copy details", exact=True).click()

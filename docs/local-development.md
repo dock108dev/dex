@@ -46,10 +46,16 @@ stores are never automatically synchronized.
 | `scan-config.json` in the root | Provider, enablement and lifetime API reservation ceilings; see [photo entry](photo-entry.md) |
 | `OPENAI_API_KEY` | Server/worker environment only, for explicitly selected API recognition |
 | `PATH` / `HOME` / optional `CODEX_HOME` | Locates the CLI and its own saved authentication for CLI recognition |
-| `.env` and `config/settings.yaml` | Original watcher/app configuration only; `.env.example` documents eBay and optional webhook keys |
+| `EBAY_CLIENT_ID` / `EBAY_CLIENT_SECRET` | Server-only eBay application credentials for explicit local live hunts; environment values override the local `.env` |
+| `EBAY_DELIVERY_POSTAL_CODE` | Optional eBay destination override from the server environment or local `.env` |
+| `config/settings.yaml` | Shared eBay environment, marketplace, destination and bounded search settings; also used by the original watcher/app |
 
-The authenticated server does not load the original app's `.env` file. Never put
-API credentials in `scan-config.json`. Marker names such as `B1_ISOLATED`,
+Local authenticated eBay search reads only the three eBay keys listed above from
+the checkout's `.env`; it does not load recognition or webhook credentials from
+that file. Use `.env.example` for names and keep real secrets private. Live hunts
+are disabled in the optional staging profile. See [eBay hunts](hunts.md) for the
+explicit search workflow and result limits. Never put API credentials in
+`scan-config.json`. Marker names such as `B1_ISOLATED`,
 `B2_PARITY_ISOLATED`, `B3_ISOLATED` and `B4_ISOLATED` are persisted capability
 contracts, not steps a new reader must perform. Do not rename or manually fabricate
 them. Older account-only roots remain supported.

@@ -1,7 +1,8 @@
 # Vintage 251
 
-A local Pokémon collection app for tracking physical copies, completing collecting
-goals, reviewing card photos and exploring spoiler-controlled sample hunts.
+A local collection app for searching eBay bargains, comparing card and lot prices
+with dated guides, tracking physical copies and building filtered collecting
+goals. The Pokémon Pokédex covers species #001–251.
 The current supported use is a single user on localhost; public hosting and an
 invited-user rollout are not qualified.
 
@@ -30,15 +31,22 @@ remains available with its separate JSON ownership and history.
 
 ## Capabilities and limits
 
-- Physical copies, intentional duplicates, binders, goals, import/export and undo.
+- Physical copies, intentional duplicates, binders, import/export and undo.
+- Goal filters for available game, selected sets, card type, rarity and Pokémon
+  Pokédex range, with species or printing completion and frozen checklists.
 - Private photo uploads, manual matching, provisional entries and explicit confirmation.
 - Reviewed catalog publication and rollback; uncertain identity stays visible.
-- Sample and saved hunts with explicit spoiler reveal; no live authenticated search.
+- Explicit live eBay searches, sample hunts and private saved results with spoiler
+  reveal; search bargains across cards or narrow to a goal's missing targets.
+- Delivered-price comparisons, identified lot subtotals and clearly labeled
+  catalog-average lot benchmarks with date and coverage limits.
 - Conditional price-guide estimates when suitable dated evidence exists, not appraisals.
 
 Photo recognition can explicitly use an OpenAI API key or a compatible authenticated
 Codex CLI. Both send images to OpenAI; neither mode is enabled by this quickstart.
-Real-card accuracy is unmeasured. See [photo entry](docs/photo-entry.md).
+Real-card accuracy is unmeasured. Further photo integration and evaluation are
+deferred. See [photo entry](docs/photo-entry.md), [eBay hunts](docs/hunts.md) and the
+[current roadmap](docs/ROADMAP.md).
 
 ## Development
 

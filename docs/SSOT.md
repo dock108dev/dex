@@ -12,8 +12,12 @@ points with different storage contracts.
 | Accounts and authorization | Django auth plus `beta/accounts.py`, `beta/store.py`; client identifiers never confer ownership |
 | Schema and legacy import | `inventory.py`, `migration.py`; feature initialization extends the schema without renaming stored identities |
 | Copies, binders, goals and mutations | `beta/collection.py`, `beta/transactions.py`; preview, explicit confirmation and conflict-aware undo |
+| Filtered goal membership | `beta/goal_filters.py`; game/set/type/rarity/dex filters freeze a versioned species or printing checklist |
 | Overview, Pokédex and saved hunts | `beta/parity.py`; session-owned copies plus private local evidence |
 | Shared hunt validation/scoring | `hunt.SearchRequest`, `hunt.project_results`, `hunt.analyze`; used by both web apps |
+| Authenticated live hunts | `beta/ebay_hunts.py`; explicit local-only Browse calls, eBay-only configuration and sanitized provider errors |
+| Goal-scoped hunt ownership | `beta/goal_hunts.py`; frozen goal membership with current account-owned copies |
+| Hunt price comparisons | `beta/hunt_values.py`; dated USD guide matching, conditional editions, identified subtotals and labeled catalog-average benchmarks |
 | Photo lifecycle | `beta/scans.py`, `scan_worker.py`; durable claims around provider I/O; only confirmation adds inventory |
 | Provider configuration | `beta/scan_config.py`; shared defaults/validation for local and persistent adapters |
 | CLI transport | `beta/codex_recognition.py`; provider-neutral clues returned to the ordinary matcher |
@@ -39,5 +43,5 @@ Removing them or retiring the original app requires a migration design. Staging
 copy import explicitly rejects CLI recognition configuration. Staging metadata
 packages do not grant redistribution rights for artwork or price guides.
 
-See [local setup](local-development.md), [photo entry](photo-entry.md),
+See [local setup](local-development.md), [eBay hunts](hunts.md), [photo entry](photo-entry.md),
 [catalogs](catalogs.md), and [historical records](history/README.md).

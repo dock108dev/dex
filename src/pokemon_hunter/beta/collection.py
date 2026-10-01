@@ -19,7 +19,7 @@ from django.http import Http404
 from pokemon_hunter.inventory import stable_id
 from pokemon_hunter.migration import COPY_FIELDS, digest, encode
 
-from . import store
+from . import goal_filters, store
 from . import transactions as transaction
 
 SCHEMA = "dex-collection-v2"
@@ -78,7 +78,7 @@ def bump(actor):
 def catalog(actor, query="", set_id="", include_archived=False):
     store.verified(actor)
     result = store.rows(
-        "SELECT p.*,s.name AS set_name,s.catalog_version,s.coverage_status FROM printings p JOIN catalog_sets s ON s.id=p.set_id "
+        "SELECT p.*,s.game_id,s.name AS set_name,s.catalog_version,s.coverage_status FROM printings p JOIN catalog_sets s ON s.id=p.set_id "
         + (
             "WHERE p.publication_state='published' AND s.publication_state='published' "
             if settings.B4_ENABLED and not include_archived
@@ -124,7 +124,8 @@ def goals(actor):
     store.verified(actor)
     active = copies(actor)
     owned = {c["printing_id"] for c in active}
-    published_ids = {p["id"] for p in catalog(actor)} if settings.B4_ENABLED else None
+    available_ids = {p["id"] for p in catalog(actor)}
+    published_ids = available_ids if settings.B4_ENABLED else None
     exact_owned = {
         c["printing_id"]
         for c in active
@@ -146,7 +147,26 @@ def goals(actor):
                 or (not i["unresolved"] and exact_owned.intersection(i["printing_ids"]))
             )
         ]
-        g.update(definition=definition, satisfied=len(matched), total=len(items))
+        progress = [
+            {
+                **item,
+                "status": "owned"
+                if item in matched
+                else "unavailable"
+                if not available_ids.intersection(item["printing_ids"])
+                else "missing",
+            }
+            for item in items
+        ]
+        unavailable = sum(i["status"] == "unavailable" for i in progress)
+        g.update(
+            definition=definition,
+            satisfied=len(matched),
+            total=len(items),
+            progress=progress,
+            unavailable=unavailable,
+            missing=len(items) - len(matched) - unavailable,
+        )
     return result
 
 
@@ -216,6 +236,13 @@ def goal_definition(actor, request):
     if policy not in {"catalog", "exact"}:
         raise ValueError("Choose catalog-entry or exact-variant completion")
     entries = catalog(actor)
+    if kind == "filtered":
+        return goal_filters.definition(
+            request.get("filters"),
+            entries,
+            store.rows("SELECT id,game_key,name FROM games ORDER BY name"),
+            policy,
+        )
     if kind == "vintage":
         templates = store.rows("SELECT * FROM goal_templates WHERE id='vintage-251'")
         if not templates:
@@ -514,20 +541,35 @@ def plan(actor, kind, request, operation_id):
                 "revision": 0,
             },
         )
-    elif kind == "goal":
+    elif kind in {"goal", "goal_edit"}:
         definition = goal_definition(actor, request)
-        create(
-            "goal",
-            {
-                "id": stable_id("b2-goal", actor.user_id + operation_id),
-                "user_id": actor.user_id,
-                "name": name(request.get("name")),
-                "kind": request["goal_kind"],
-                "version": digest(encode(definition).encode()),
-                "definition": encode(definition),
-                "revision": 0,
-            },
-        )
+        fields = {
+            "name": name(request.get("name")),
+            "kind": request["goal_kind"],
+            "version": digest(encode(definition).encode()),
+            "definition": encode(definition),
+        }
+        if kind == "goal_edit":
+            before = one(actor, "goal", request.get("id"))
+            if before["revision"] != request.get("revision"):
+                raise Conflict("This goal changed. Reload before editing its filters.")
+            result["updates"].append(
+                {
+                    "kind": "goal",
+                    "before": before,
+                    "after": {**before, **fields, "revision": before["revision"] + 1},
+                }
+            )
+        else:
+            create(
+                "goal",
+                {
+                    "id": stable_id("b2-goal", actor.user_id + operation_id),
+                    "user_id": actor.user_id,
+                    **fields,
+                    "revision": 0,
+                },
+            )
         result["warnings"].append(
             "Tracking adds no copies. Membership and denominator are frozen at this version."
         )
@@ -632,7 +674,7 @@ def plan(actor, kind, request, operation_id):
             if not isinstance(g, dict) or not isinstance(g.get("id"), str) or g["id"] in seen_goals:
                 raise ValueError("Invalid or duplicate goal identity")
             seen_goals.add(g["id"])
-            if g.get("kind") not in {"set", "custom", "vintage"}:
+            if g.get("kind") not in {"set", "custom", "vintage", "filtered"}:
                 raise ValueError("Unsupported goal kind")
             definition = g.get("definition")
             if not isinstance(definition, dict) or definition.get("policy") not in {
@@ -645,8 +687,40 @@ def plan(actor, kind, request, operation_id):
                 raise ValueError("Goal membership version does not match")
             if not isinstance(definition.get("items"), list) or not 0 < len(definition["items"]) <= 2000:
                 raise ValueError("Invalid goal checklist")
-            if (definition["policy"] == "species") != (g["kind"] == "vintage"):
+            if g["kind"] != "filtered" and (definition["policy"] == "species") != (g["kind"] == "vintage"):
                 raise ValueError("Species policy requires the versioned Vintage 251 template")
+            if g["kind"] == "filtered":
+                scope = goal_filters.filters(
+                    definition.get("filters"), catalog_rows, store.rows("SELECT id,game_key,name FROM games")
+                )
+                permitted = {p["id"] for p in catalog_rows if goal_filters.matches(p, scope)}
+                if definition["filters"] != scope or (definition["policy"] == "species") != (
+                    scope["completion"] == "species"
+                ):
+                    raise ValueError("Goal filters and completion policy differ")
+                if definition["policy"] == "species":
+                    expected = list(range(scope["pokemon_dex_min"], scope["pokemon_dex_max"] + 1))
+                    if [i.get("pokemon_dex") for i in definition["items"] if isinstance(i, dict)] != expected:
+                        raise ValueError("Goal species membership differs from its filters")
+                seen_printings = set()
+                for item in definition["items"]:
+                    ids = item.get("printing_ids", []) if isinstance(item, dict) else []
+                    if (
+                        not isinstance(ids, list)
+                        or any(not isinstance(i, str) for i in ids)
+                        or len(ids) != len(set(ids))
+                        or not set(ids) <= permitted
+                    ):
+                        raise ValueError("Goal membership is outside its filters")
+                    if definition["policy"] == "species" and any(
+                        resolve(pid)["attributes"].get("pokemon_dex") != item["pokemon_dex"] for pid in ids
+                    ):
+                        raise ValueError("Printing belongs to a different species")
+                    if definition["policy"] != "species" and (
+                        len(ids) != 1 or seen_printings.intersection(ids)
+                    ):
+                        raise ValueError("Printing checklist repeats an identity")
+                    seen_printings.update(ids)
             if g["kind"] == "vintage":
                 template = goal_definition(actor, {"goal_kind": "vintage"})
                 if (
@@ -715,7 +789,8 @@ def preview(actor, kind, request, operation_id):
         "binder": {"name"},
         "binder_edit": {"id", "revision", "name"},
         "binder_remove": {"id", "revision"},
-        "goal": {"name", "goal_kind", "set_id", "policy", "printing_ids"},
+        "goal": {"name", "goal_kind", "set_id", "policy", "printing_ids", "filters"},
+        "goal_edit": {"id", "revision", "name", "goal_kind", "set_id", "policy", "printing_ids", "filters"},
         "goal_remove": {"id", "revision"},
         "import": {"format", "text", "duplicate_policy"},
     }

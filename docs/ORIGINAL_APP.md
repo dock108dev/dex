@@ -35,7 +35,7 @@ Preserve the collection JSON and history database when backing up. Updating owne
 
 ## Live eBay
 
-Add your eBay application credentials locally using `.env.example`, then restart the app and choose **Live eBay**. The existing official Browse client is reused. Credentials stay on the server. Never paste secrets into chat. Configuring credentials enables explicit live searches in this original app; it does not enable live hunts in the authenticated app.
+Add your eBay application credentials locally using `.env.example`, then restart the app and choose **Live eBay**. The existing official Browse client is reused. Credentials stay on the server. Never paste secrets into chat. The authenticated local app also uses these eBay settings for its own explicit searches and private saved hunts; see [eBay hunts](hunts.md). The two apps retain separate ownership and hunt history.
 
 Live searches are bounded and report coverage; next-batch search is available for longer query plans. Prices include known shipping and exclude tax. Check the revealed seller page for current availability. The app never buys or bids.
 

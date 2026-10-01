@@ -28,13 +28,27 @@ def query_plan(data, config, pool, focus):
         cards = [
             c
             for c in data["cards"].values()
-            if c["dex_eligible"] and not data["pokedex"][str(c["pokemon_dex"])]["dex_owned"]
+            if (
+                True
+                if data.get("value_intent")
+                else not c["owned"]
+                if data.get("completion") == "printings"
+                else c["dex_eligible"] and not data["pokedex"][str(c["pokemon_dex"])]["dex_owned"]
+            )
         ]
         if focus in ("kanto", "johto"):
-            cards = [c for c in cards if (c["pokemon_dex"] <= 151) == (focus == "kanto")]
+            cards = [
+                c
+                for c in cards
+                if isinstance(c.get("pokemon_dex"), int) and (c["pokemon_dex"] <= 151) == (focus == "kanto")
+            ]
         if focus == "rares":
             cards = [c for c in cards if "Rare" in c["rarity"]]
-        return [f"Pokemon {c['set']} {c['name']} {c['number']}" for c in cards]
+        return list(
+            dict.fromkeys(
+                f"{c.get('game_name', 'Pokemon')} {c['set']} {c['name']} {c['number']}" for c in cards
+            )
+        )
     queries = config["pools"][pool]
     if focus == "johto":
         return (
@@ -73,7 +87,7 @@ def exact_text_matches(text, data):
     """
     matches = set()
     for c in data["cards"].values():
-        if not c["dex_eligible"]:
+        if not c["dex_eligible"] and not data.get("goal_scope") and not data.get("value_intent"):
             continue
         set_pattern = re.escape(c["set"]).replace(r"\ ", r"\s+")
         if c["set_id"] == "base_set":
@@ -107,6 +121,16 @@ def analyze(raw, data, config, values, demo=False):
     eligible = [c for c in cards if c["dex_eligible"]]
     dex_hits = {c["pokemon_dex"] for c in eligible if not data["pokedex"][str(c["pokemon_dex"])]["dex_owned"]}
     exact_hits = {c["card_id"] for c in cards if not c["owned"]}
+    region_hits = (
+        [
+            c["pokemon_dex"]
+            for c in cards
+            if (data.get("value_intent") or c["card_id"] in exact_hits)
+            and isinstance(c.get("pokemon_dex"), int)
+        ]
+        if data.get("completion") == "printings" or data.get("value_intent")
+        else dex_hits
+    )
     auction = "AUCTION" in raw.get("buyingOptions", [])
     price = money(raw.get("currentBidPrice") if auction else raw.get("price"), "USD")
     ship = shipping(raw, "USD")
@@ -133,7 +157,7 @@ def analyze(raw, data, config, values, demo=False):
         "value_ratio": min(1, float(raw_value / delivered) / 2)
         if raw_value is not None and delivered and delivered > 0
         else None,
-        "set_fit": len(eligible) / len(cards) if cards else None,
+        "set_fit": (1 if data.get("goal_scope") else len(eligible) / len(cards)) if cards else None,
         "mystery_quality": None,
     }
     coverage = sum(config["weights"][k] for k, v in components.items() if v is not None)
@@ -180,6 +204,7 @@ def analyze(raw, data, config, values, demo=False):
     return {
         "id": raw["itemId"],
         "title": title,
+        "shortDescription": raw.get("shortDescription") or "",
         "url": safe_url,
         "cards": keys,
         "pool": "mystery"
@@ -196,8 +221,8 @@ def analyze(raw, data, config, values, demo=False):
         "active": active,
         "dex_hits": len(dex_hits),
         "exact_hits": len(exact_hits),
-        "kanto_hits": sum(n <= 151 for n in dex_hits),
-        "johto_hits": sum(n > 151 for n in dex_hits),
+        "kanto_hits": sum(n <= 151 for n in region_hits),
+        "johto_hits": sum(n > 151 for n in region_hits),
         "has_rare": any("Rare" in c["rarity"] for c in cards),
         "raw_value": str(raw_value) if raw_value is not None else None,
         "max_bid": str(max_bid) if max_bid is not None else None,
@@ -217,7 +242,11 @@ def analyze(raw, data, config, values, demo=False):
 
 
 def public_listing(row, reveal=False):
-    safe = {k: v for k, v in row.items() if k not in ("title", "url", "cards", "components", "has_rare")}
+    safe = {
+        k: v
+        for k, v in row.items()
+        if k not in ("title", "shortDescription", "url", "cards", "components", "has_rare")
+    }
     safe["label"] = (
         "Mystery pack"
         if row["pool"] == "mystery"
@@ -244,8 +273,9 @@ def project_results(raws, body, demo, data, config, values):
         and Decimal(r["delivered"]) <= body.budget
         and r["pool"] == body.pool
     ]
-    if body.pool == "singles":
-        results = [r for r in results if r["dex_hits"]]
+    if body.pool == "singles" and not data.get("value_intent"):
+        hit_key = "exact_hits" if data.get("completion") == "printings" else "dex_hits"
+        results = [r for r in results if r[hit_key]]
     if body.focus in ("kanto", "johto"):
         results = [r for r in results if r[f"{body.focus}_hits"] or not r["cards"]]
     if body.focus == "rares":

@@ -18,13 +18,19 @@ from pokemon_hunter.collection import derive, totals
 
 
 @pytest.fixture
-def restored(b2):
+def restored(b2, monkeypatch):
     from django.conf import settings
     from django.urls import clear_url_caches
 
-    from pokemon_hunter.beta import urls
+    from pokemon_hunter.beta import ebay_hunts, urls
 
     original_root = settings.ROOT
+    # Hunt configuration tests must never read personal .env or inherited credentials.
+    ebay_root = b2["root"] / "ebay-config"
+    ebay_root.mkdir()
+    monkeypatch.setattr(ebay_hunts, "configuration_root", lambda: ebay_root)
+    for key in ebay_hunts.ENV_KEYS:
+        monkeypatch.delenv(key, raising=False)
     settings.ROOT = b2["root"]
     settings.PARITY_ENABLED = True
     importlib.reload(urls)

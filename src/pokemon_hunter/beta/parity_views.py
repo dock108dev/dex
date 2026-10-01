@@ -3,7 +3,7 @@
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
-from . import parity
+from . import ebay_hunts, parity
 from .collection_views import body, endpoint
 from .views import actor
 
@@ -18,9 +18,12 @@ def projection(request):
 @require_http_methods(["GET", "POST"])
 def hunts(request):
     who = actor(request)
-    return JsonResponse(
-        {"hunts": parity.history(who)} if request.method == "GET" else parity.sample(who, body(request))
-    )
+    if request.method == "GET":
+        return JsonResponse({"hunts": parity.history(who), "search_status": ebay_hunts.status()})
+    try:
+        return JsonResponse(parity.search(who, body(request)))
+    except ebay_hunts.LiveHuntError as exc:
+        return JsonResponse({"error": exc.public_message}, status=exc.status)
 
 
 @endpoint

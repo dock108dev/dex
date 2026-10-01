@@ -91,7 +91,7 @@ def dashboard(request):
         if p["id"] in owned_ids
     }
     data["sets"] = store.rows(
-        "SELECT id,name,coverage_status,catalog_version FROM catalog_sets "
+        "SELECT id,game_id,name,coverage_status,catalog_version FROM catalog_sets "
         + ("WHERE publication_state='published' " if settings.B4_ENABLED else "")
         + "ORDER BY name"
     )
@@ -99,6 +99,16 @@ def dashboard(request):
         "SELECT id,kind,state,created FROM collection_operations WHERE user_id=%s ORDER BY created DESC,id DESC LIMIT 40",
         [who.user_id],
     )
+    entries = service.catalog(who)
+    game_ids = {p["game_id"] for p in entries}
+    data["goal_options"] = {
+        "games": [
+            g for g in store.rows("SELECT id,game_key,name FROM games ORDER BY name") if g["id"] in game_ids
+        ],
+        "card_types": sorted({p["attributes"].get("supertype") or "Unknown" for p in entries}),
+        "rarities": sorted({p["attributes"].get("rarity") or "Unknown" for p in entries}),
+        "pokemon_dex_max": 251,
+    }
     return JsonResponse(data)
 
 

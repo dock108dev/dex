@@ -12,7 +12,14 @@ class EbayError(RuntimeError):
 
 
 class EbayClient:
-    def __init__(self, settings: Settings, client: httpx.Client | None = None, sleep=time.sleep):
+    def __init__(
+        self,
+        settings: Settings,
+        client: httpx.Client | None = None,
+        sleep=time.sleep,
+        credentials=None,
+        extended=False,
+    ):
         self.settings = settings
         self.base = (
             "https://api.ebay.com" if settings.environment == "production" else "https://api.sandbox.ebay.com"
@@ -22,6 +29,8 @@ class EbayClient:
         self.token = None
         self.expires = 0
         self.warnings: list[str] = []
+        self.credentials = credentials
+        self.extended = extended
 
     def close(self):
         self.client.close()
@@ -49,8 +58,11 @@ class EbayClient:
     def access_token(self):
         if self.token and time.monotonic() < self.expires:
             return self.token
-        key = os.getenv("EBAY_CLIENT_ID")
-        secret = os.getenv("EBAY_CLIENT_SECRET")
+        key, secret = (
+            self.credentials
+            if self.credentials is not None
+            else (os.getenv("EBAY_CLIENT_ID"), os.getenv("EBAY_CLIENT_SECRET"))
+        )
         if not key or not secret:
             raise EbayError("Set EBAY_CLIENT_ID and EBAY_CLIENT_SECRET in the local .env file")
         response = self._request(
@@ -115,6 +127,7 @@ class EbayClient:
                     "limit": limit,
                     "offset": page * limit,
                     "sort": "newlyListed",
+                    **({"fieldgroups": "EXTENDED"} if self.extended else {}),
                 },
             )
             for item in data.get("itemSummaries", []):

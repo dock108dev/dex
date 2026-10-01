@@ -23,7 +23,20 @@ confirmation. Operation IDs prevent duplicate confirmation; undo refuses to
 clobber later edits. Imports report invalid rows before confirmation. Exports
 retain copy identity, goals, binders and unresolved attributes.
 
-Vintage completion counts distinct eligible species. Set and custom goals retain
-their own scope; acquiring duplicates does not inflate unique completion. Guide
-scenarios are conditional, dated estimates with visible source and coverage;
+The goal builder filters published entries by available game, selected sets,
+card type and rarity. Pokémon goals can also select a Pokédex range within
+#001–251. Species completion counts one eligible printing per species from those
+filters; printing completion counts the selected catalog entries. Original 151,
+Vintage 251 and Johto are presets in the same builder. Set and custom checklists
+remain available.
+
+Saving a goal freezes its membership and catalog version; create a new version
+to change its scope. Species without matching printings stay in the denominator
+and are shown as unavailable. A duplicate does not inflate unique completion,
+and a copy outside the selected sets does not satisfy that goal. Exact-variant
+policy requires resolved identity. Goal-scoped [eBay hunts](hunts.md) search the
+missing members using current account-owned copies. Bargain searches can include
+owned cards and use goals as optional catalog filters; searches never add inventory.
+
+Guide scenarios are conditional, dated estimates with visible source and coverage;
 unknown and stale values remain unavailable.
