@@ -1,4 +1,4 @@
-"""Copy an isolated B4 database and scan settings for a disposable B5 migration."""
+"""Copy a catalog-enabled database and scan settings for a disposable staging migration."""
 
 import argparse
 import json
@@ -13,7 +13,7 @@ args = parser.parse_args()
 os.umask(0o077)
 source = args.source_root.resolve(strict=True)
 if not (source / "B4_ISOLATED").is_file():
-    raise SystemExit("Only a prepared isolated B4 source is supported")
+    raise SystemExit("Only a prepared catalog-enabled source is supported")
 if args.output.resolve().is_relative_to(Path(__file__).resolve().parents[1]):
     raise SystemExit("Copied private evidence must stay outside the checkout")
 args.output.mkdir(mode=0o700, parents=True, exist_ok=False)

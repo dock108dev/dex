@@ -19,11 +19,25 @@ if not 0 <= args.hour <= 23 or not 0 <= args.minute <= 59:
 root = Path(__file__).resolve().parents[1]
 label = "local.pokemon-hunter.daily"
 agent = Path.home() / "Library/LaunchAgents" / f"{label}.plist"
+
+
+def stop_agent():
+    # An unloaded agent is non-fatal, but a nonzero exit cannot prove it stopped.
+    result = subprocess.run(
+        ["launchctl", "bootout", f"gui/{os.getuid()}", str(agent)], check=False, capture_output=True
+    )
+    if result.returncode:
+        print(
+            f"LaunchAgent stop was not confirmed (exit {result.returncode}). Check its state before assuming the watcher stopped.",
+            file=sys.stderr,
+        )
+
+
 if args.remove:
     if agent.exists():
-        subprocess.run(["launchctl", "bootout", f"gui/{os.getuid()}", str(agent)], check=False)
+        stop_agent()
         agent.unlink()
-    print("Daily watcher removed.")
+    print("Daily schedule file removed. This does not confirm an in-flight watcher stopped.")
     raise SystemExit(0)
 python = root / ".venv/bin/python"
 plist = {
@@ -46,9 +60,7 @@ if args.install:
         raise SystemExit("Daily schedule not installed: finish the missing local setup first.")
     agent.parent.mkdir(parents=True, exist_ok=True)
     if agent.exists():
-        subprocess.run(
-            ["launchctl", "bootout", f"gui/{os.getuid()}", str(agent)], check=False, capture_output=True
-        )
+        stop_agent()
     agent.write_bytes(output.read_bytes())
     subprocess.run(["launchctl", "bootstrap", f"gui/{os.getuid()}", str(agent)], check=True)
     print(f"Daily watcher installed for {args.hour:02}:{args.minute:02} local time.")

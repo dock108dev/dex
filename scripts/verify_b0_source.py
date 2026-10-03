@@ -30,7 +30,9 @@ for row in json.loads(args.manifest.read_text()):
     elif row["path"].startswith(("config/", "sources/", "data/", "web/")) or p.name.startswith(".env"):
         assert digest(p.read_bytes()) == row["sha256"], row["path"]
         verified.append(row["path"])
-with TestClient(create_app(args.restored)) as client:
+with TestClient(
+    create_app(args.restored), base_url="http://127.0.0.1:8765", client=("127.0.0.1", 50000)
+) as client:
     assert client.get("/").status_code == 200
     assert client.get("/api/collection").json()["totals"] == totals(
         read(args.source / "config/pokedex_251.json")

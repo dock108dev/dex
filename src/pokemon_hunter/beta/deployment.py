@@ -48,7 +48,7 @@ def migrate_copy(source):
             "SELECT name,sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY rowid"
         ).fetchall()
         if not {"scan_jobs", "catalog_imports", "auth_user"} <= {t[0] for t in schema}:
-            raise ValueError("A complete B4 copied database is required")
+            raise ValueError("A complete catalog-enabled copied database is required")
         call_command("migrate", verbosity=0)
         existing = set(tables())
         with transaction.atomic(), connection.cursor() as c:
@@ -361,6 +361,9 @@ if __name__ == "__main__":
         main()
     except Exception as exc:
         # No DSNs, SQL, bearer links or provider response bodies in ordinary logs.
+        from .diagnostics import failure
+
+        failure("staging_operation_failed", exc)
         raise SystemExit(
             "Staging operation failed: " + type(exc).__name__ + "; inspect private operator context"
         ) from None

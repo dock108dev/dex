@@ -44,8 +44,7 @@ remains available with its separate JSON ownership and history.
 
 Photo recognition can explicitly use an OpenAI API key or a compatible authenticated
 Codex CLI. Both send images to OpenAI; neither mode is enabled by this quickstart.
-Real-card accuracy is unmeasured. Further photo integration and evaluation are
-deferred. See [photo entry](docs/photo-entry.md), [eBay hunts](docs/hunts.md) and the
+Real-card accuracy is unmeasured. See [photo entry](docs/photo-entry.md), [eBay hunts](docs/hunts.md) and the
 [current roadmap](docs/ROADMAP.md).
 
 ## Development
@@ -60,3 +59,12 @@ For focused changes, select the relevant test files. Tests use temporary synthet
 state. See [CI](docs/CI.md), [architecture and data ownership](docs/SSOT.md),
 [security](docs/SECURITY.md), [failure recovery](docs/ERROR_HANDLING.md), and
 [optional staging operations](docs/operations.md).
+
+Failures use redacted diagnostics on standard error. Before retrying a failed
+mutation or watcher delivery, inspect saved state: writes or external delivery may
+have completed before the response or bookkeeping failed. The failure-recovery
+guide documents incomplete run states, cleanup errors and retained retry rules.
+
+Security policy covers exact local ingress, JSON mutation formats, explicit search
+controls and private file creation. See [security boundaries](docs/SECURITY.md)
+for the implemented controls and separate checks needed for older files or hosting.

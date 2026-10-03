@@ -99,10 +99,15 @@ class EbayClient:
             raise EbayHTTPError("OAuth", response.status_code, response)
         try:
             data = response.json()
-            self.token = data["access_token"]
-            self.expires = time.monotonic() + max(0, int(data["expires_in"]) - 60)
-        except (ValueError, KeyError, TypeError):
+            token = data["access_token"]
+            lifetime = data["expires_in"]
+            if not isinstance(token, str) or not token.strip() or type(lifetime) is not int or lifetime <= 0:
+                raise ValueError("Invalid OAuth fields")
+            expires = time.monotonic() + max(0, lifetime - 60)
+        except (ValueError, KeyError, TypeError, OverflowError):
             raise EbayError("Malformed eBay OAuth response") from None
+        # Do not cache any part of an invalid response, including after a 401 refresh.
+        self.token, self.expires = token, expires
         return self.token
 
     def get(self, path, params=None):

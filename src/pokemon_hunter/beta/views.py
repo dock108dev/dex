@@ -137,7 +137,10 @@ def export(request):
 @require_GET
 def admin_catalog(request):
     return JsonResponse(
-        {"catalog": store.catalog_admin(actor(request)), "publication": "unavailable until B4"}
+        {
+            "catalog": store.catalog_admin(actor(request)),
+            "publication": "Catalog publication is not enabled for this root",
+        }
     )
 
 

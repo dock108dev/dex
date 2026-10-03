@@ -10,3 +10,5 @@ source counts, test counts, personal collection totals and prior deployment resu
 do not qualify the current working tree or a new deployment. Prepared artifacts,
 persisted capability names and retained evidence remain unchanged by documentation
 reorganization.
+
+[October 3 provider, hosted-baseline and presentation observations](2026-10-03-VERIFICATION.md).

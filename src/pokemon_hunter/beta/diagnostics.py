@@ -1,9 +1,26 @@
 """Content-free failure diagnostics; never format exception messages or locals."""
 
 import logging
+import sys
+from contextlib import contextmanager
 from pathlib import Path
 
 logger = logging.getLogger("dex.failures")
+
+
+@contextmanager
+def closing(resource, event):
+    """Always close owned resources; preserve an active failure over cleanup errors."""
+    try:
+        yield resource
+    finally:
+        failed = sys.exc_info()[0] is not None
+        try:
+            resource.close()
+        except Exception as exc:
+            failure(event, exc)
+            if not failed:
+                raise
 
 
 def failure(event, error):

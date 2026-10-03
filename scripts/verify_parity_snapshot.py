@@ -51,7 +51,9 @@ from fastapi.testclient import TestClient  # noqa: E402
 from pokemon_hunter.app import create_app  # noqa: E402
 
 # Only GETs; use a restored disposable app directory, never the live app.
-with TestClient(create_app(args.snapshot)) as client:
+with TestClient(
+    create_app(args.snapshot), base_url="http://127.0.0.1:8765", client=("127.0.0.1", 50000)
+) as client:
     for saved in parity.history(actor):
         old = client.get(f"/api/hunts/{saved['id']}").json()
         new = parity.projected_hunt(actor, saved["batch"], saved["id"])

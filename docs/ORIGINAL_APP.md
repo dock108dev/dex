@@ -1,6 +1,8 @@
 # Original local app — preserved
 
-These commands run the preserved original app, not the authenticated app on port 8011. Run them from the repository root. The initializer only creates missing files; it does not overwrite existing state. Existing installations need only the final launch command.
+These commands run the preserved original app, not the authenticated app on port 8011. Run them from the repository root. The initializer only creates missing files; it does not overwrite existing state. It
+reads each example before creating its destination, so a missing example leaves
+no empty state placeholder. Existing installations need only the final launch command.
 
 ```sh
 uv sync --locked --extra dev
@@ -21,6 +23,18 @@ Existing local collections are preserved. Fresh checkouts start empty; examples 
 **All 251 species now have eligible printings**, with Neo Revelation and Neo Destiny included.
 
 ## Original-app data and local files
+
+The app accepts only real loopback clients using `127.0.0.1` or `localhost` and a
+matching Origin when present; test hostnames and forwarded headers are rejected.
+It has no login boundary against other local processes. Keep it off LAN/public
+listeners and use the authenticated app for account isolation.
+
+New initialized state and hunt databases are owner-readable/writable only (0600).
+Saving collection changes replaces the collection using a unique private temporary
+file. A failed replacement leaves the original and a private `.tmp` file for
+inspection. Symlinked collection-write and hunt-database destinations are refused.
+Existing databases, exports and backups still need their own permission review;
+these source changes do not alter the current private installation.
 
 | File | Purpose |
 |---|---|

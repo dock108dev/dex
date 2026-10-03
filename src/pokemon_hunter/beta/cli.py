@@ -87,8 +87,12 @@ def main():
     sub = parser.add_subparsers(dest="action", required=True)
     init = sub.add_parser("init")
     init.add_argument("--copied-inventory", type=Path)
-    init.add_argument("--b2", action="store_true", help="Enable B2 only in this new isolated root")
-    init.add_argument("--parity", action="store_true", help="Fresh B2 parity root with copied local evidence")
+    init.add_argument(
+        "--b2", action="store_true", help="Enable collection transactions in this new isolated root"
+    )
+    init.add_argument(
+        "--parity", action="store_true", help="Enable projections and hunts with copied local evidence"
+    )
     for command in ("bootstrap", "serve", "check", "enable-scans", "scan-worker", "enable-catalog"):
         sub.add_parser(command)
     for command in ("invite", "recovery", "revoke"):
@@ -117,7 +121,7 @@ def main():
 
     if args.action == "init":
         call_command("migrate", verbosity=0)
-        stage = "B2 parity" if args.parity else "B2" if args.b2 else "B1"
+        stage = "collection and hunts" if args.parity else "collection" if args.b2 else "accounts"
         print(f"Isolated {stage} database initialized. Provision an isolated account before inviting anyone.")
     elif args.action == "bootstrap":
         from pokemon_hunter.inventory import OWNER_ID
@@ -135,12 +139,12 @@ def main():
             if password != getpass.getpass("Repeat password: "):
                 raise ValueError("Passwords differ")
             accounts.bootstrap(password)
-            print("Owner bound to stable B0 identity in this isolated environment.")
+            print("Owner bound to stable imported identity in this isolated environment.")
     elif args.action in {"invite", "recovery"}:
         # Create output before mutation, refusing overwrite and keeping links out of logs.
         dest = args.link_file.expanduser().absolute()
         if not dest.parent.resolve().is_relative_to(args.root.resolve()):
-            raise ValueError("Link file must be inside the private B1 directory")
+            raise ValueError("Link file must be inside the private app directory")
         with dest.open("x", encoding="utf-8") as output:
             user = (
                 accounts.invite(args.username)
@@ -160,22 +164,22 @@ def main():
         call_command("check")
     elif args.action == "enable-catalog":
         if not (args.root / "B3_ISOLATED").is_file():
-            raise ValueError("Catalog expansion requires B3")
+            raise ValueError("Catalog expansion requires photo entry to be enabled")
         from .catalog_imports import initialize as initialize_catalog
 
         with sqlite3.connect(args.root / "inventory.db") as db:
             initialize_catalog(db)
         (args.root / "B4_ISOLATED").write_text("B4 catalog expansion enabled; identities preserved\n")
-        print("B4 enabled. Restart the server.")
+        print("Catalog expansion enabled. Restart the server.")
     elif args.action == "enable-scans":
         if not (args.root / "B2_ISOLATED").is_file():
-            raise ValueError("Scans require the B2 inventory")
+            raise ValueError("Scans require collection transactions to be enabled")
         from .scans import initialize as initialize_scans
 
         with sqlite3.connect(args.root / "inventory.db") as db:
             initialize_scans(db)
         (args.root / "B3_ISOLATED").write_text("B3 photo entry enabled; original accounts preserved\n")
-        print("B3 enabled. Restart serve; default is manual photo entry.")
+        print("Photo entry enabled. Restart serve; default is manual photo entry.")
     elif args.action == "scan-worker":
         from .scan_worker import run
 
@@ -207,7 +211,23 @@ def main():
             if worker is not None:
                 stop.set()
                 worker.join(timeout=5)
+                if worker.is_alive():
+                    from .diagnostics import failure
+
+                    failure("worker_shutdown_incomplete", TimeoutError())
+
+
+def entrypoint():
+    try:
+        main()
+    except Exception as exc:
+        from .diagnostics import failure
+
+        failure("local_operation_failed", exc)
+        raise SystemExit(
+            "Local operation failed. Check saved state and configuration; inspect the redacted diagnostics."
+        ) from None
 
 
 if __name__ == "__main__":
-    main()
+    entrypoint()

@@ -1,4 +1,4 @@
-/* Glass Starter 02 components, adapted to the requested Poké Ball palette. */
+/* Collection components use a Poké Ball palette. */
 :root{--ink:#17191d;--muted:#575b63;--accent:#bd1528;--accent-soft:#ffebed;--surface:#fffffff2;--line:#c7c9cf;--success:#25282e;--danger:#b20f24;--radius:14px;--shadow:0 4px 18px #17191d08,inset 0 1px 0 #fff}
 body{background:linear-gradient(#d32236 0 8px,#202126 8px 13px,#f4f4f6 13px);color:var(--ink)}
 .shell{max-width:1440px;padding-top:32px}.topbar{padding-bottom:18px;border-bottom:2px solid var(--ink);gap:16px}.brand{display:flex;align-items:center;gap:12px;font-size:23px;color:var(--ink)}.ball{width:36px;height:36px;border:3px solid #202126;border-radius:50%;background:linear-gradient(#d32236 0 44%,#202126 44% 56%,#fff 56%);position:relative;flex-shrink:0}.ball:after{content:'';position:absolute;left:9px;top:9px;width:12px;height:12px;border:3px solid #202126;border-radius:50%;background:#fff}

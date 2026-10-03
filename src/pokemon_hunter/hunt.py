@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 from decimal import ROUND_DOWN, Decimal
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StrictBool, StrictInt
 
 from .parser import extract_count
 from .pricing import money, shipping
@@ -19,8 +19,8 @@ class SearchRequest(BaseModel):
     pool: Literal["singles", "known_lots", "mystery"] = "known_lots"
     focus: Literal["all", "kanto", "johto", "rares", "bulk"] = "all"
     budget: Decimal = Field(default=Decimal("150"), ge=0, le=10000)
-    demo: bool = True
-    offset: int = Field(default=0, ge=0)
+    demo: StrictBool = True
+    offset: StrictInt = Field(default=0, ge=0)
 
 
 def query_plan(data, config, pool, focus):

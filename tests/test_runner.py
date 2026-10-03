@@ -188,3 +188,59 @@ def test_money_stored_exactly(tmp_path, settings, catalog, raw, now):
     assert row["landed_price"] == "44.99"
     assert json.loads(row["payload"])["item_price"] == "39.99"
     db.close()
+
+
+def test_failure_bookkeeping_and_cleanup_preserve_original(
+    tmp_path, settings, catalog, pokedex, raw, now, monkeypatch, caplog
+):
+    path = tmp_path / "demo.db"
+    real_close = Database.close
+
+    def failed_status(*args, **kwargs):
+        raise OSError("SECRET status storage failure")
+
+    def failed_close(db):
+        real_close(db)
+        raise OSError("SECRET cleanup failure")
+
+    monkeypatch.setattr(Database, "finish_run", failed_status)
+    monkeypatch.setattr(Database, "close", failed_close)
+    with pytest.raises(RuntimeError, match="Synthetic delivery failure"):
+        run(path, settings, catalog, [], pokedex, FailingNotifier(), fixtures=[raw], now=now)
+    assert "watcher_failure_status_write_failed" in caplog.text
+    assert "watcher_database_close_failed" in caplog.text
+    assert "SECRET" not in caplog.text
+    with sqlite3.connect(path) as conn:
+        assert conn.execute("SELECT status FROM runs").fetchone()[0] == "RUNNING"
+        assert conn.execute("SELECT delivered_at FROM digests").fetchone()[0] is None
+
+
+def test_start_failure_closes_database(tmp_path, settings, catalog, pokedex, now, monkeypatch):
+    closed = []
+    real_close = Database.close
+
+    def failed_start(*args):
+        raise OSError("Synthetic start failure")
+
+    def close(db):
+        real_close(db)
+        closed.append(True)
+
+    monkeypatch.setattr(Database, "start_run", failed_start)
+    monkeypatch.setattr(Database, "close", close)
+    with pytest.raises(OSError, match="start failure"):
+        run(tmp_path / "demo.db", settings, catalog, [], pokedex, Notifier(tmp_path), fixtures=[], now=now)
+    assert closed == [True]
+
+
+def test_interruption_propagates_and_preserves_pending_digest(tmp_path, settings, catalog, pokedex, raw, now):
+    class Interrupted:
+        def send(self, *args):
+            raise KeyboardInterrupt
+
+    path = tmp_path / "demo.db"
+    with pytest.raises(KeyboardInterrupt):
+        run(path, settings, catalog, [], pokedex, Interrupted(), fixtures=[raw], now=now)
+    with sqlite3.connect(path) as conn:
+        assert conn.execute("SELECT status FROM runs").fetchone()[0] == "INTERRUPTED"
+        assert conn.execute("SELECT delivered_at FROM digests").fetchone()[0] is None

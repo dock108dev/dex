@@ -382,3 +382,73 @@ def test_value_results_rank_discount_and_reveal_price_evidence_only_on_request(l
     route = f"/api/hunts/{found['batch']}/1/reveal/{best['id']}/"
     shown = post(live["a"], route, {}).json()
     assert shown["pricing"]["evidence"][0]["card_id"] == "a"
+
+
+@pytest.mark.parametrize("provider_failed", [False, True])
+def test_client_cleanup_failure_never_saves_or_masks_provider_failure(
+    live, monkeypatch, caplog, provider_failed
+):
+    import httpx
+
+    def failed_close(client):
+        client.closed = True
+        raise OSError("SECRET cleanup content")
+
+    monkeypatch.setattr(ebay_hunts.ebay.EbayClient, "close", failed_close)
+    if provider_failed:
+
+        def failed(*args):
+            raise ebay_hunts.ebay.EbayHTTPError("OAuth", 401, httpx.Response(401))
+
+        monkeypatch.setattr(ebay_hunts.ebay, "discover", failed)
+    before = len(parity.hunt_rows(live["actor"]))
+    response = post(live["a"], "/api/hunts/", {"demo": False})
+    assert response.status_code == 502
+    if provider_failed:
+        assert "OAuth returned HTTP 401" in response.content.decode()
+    assert len(parity.hunt_rows(live["actor"])) == before
+    assert "ebay_client_close_failed" in caplog.text
+    assert "SECRET" not in response.content.decode() + caplog.text
+
+
+@pytest.mark.parametrize(
+    "fields",
+    [
+        {"demo": 0},
+        {"demo": 1},
+        {"demo": "false"},
+        {"demo": "true"},
+        {"demo": None},
+        {"offset": "0"},
+        {"offset": 0.0},
+        {"offset": True},
+    ],
+)
+def test_search_controls_are_not_coerced_before_provider_access(live, monkeypatch, fields):
+    def forbidden(*args, **kwargs):
+        pytest.fail("Invalid search controls must not construct a provider client")
+
+    monkeypatch.setattr(ebay_hunts.ebay, "EbayClient", forbidden)
+    before = len(parity.hunt_rows(live["actor"]))
+    response = post(live["a"], "/api/hunts/", fields)
+    assert response.status_code == 400
+    assert len(parity.hunt_rows(live["actor"])) == before
+    assert not live["calls"]
+
+
+@pytest.mark.parametrize("content_type", ["text/plain", "application/x-www-form-urlencoded"])
+def test_authenticated_search_rejects_non_json_before_provider_access(live, monkeypatch, content_type):
+    def forbidden(*args, **kwargs):
+        pytest.fail("Non-JSON search must not construct a provider client")
+
+    monkeypatch.setattr(ebay_hunts.ebay, "EbayClient", forbidden)
+    before = len(parity.hunt_rows(live["actor"]))
+    response = live["a"].post(
+        "/api/hunts/",
+        '{"demo":false}',
+        content_type=content_type,
+        HTTP_X_CSRFTOKEN=live["a"].cookies["dex_b1_csrf"].value,
+    )
+    assert response.status_code == 400
+    assert len(parity.hunt_rows(live["actor"])) == before
+    assert not live["calls"]

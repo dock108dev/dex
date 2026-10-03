@@ -16,7 +16,10 @@
   purposes; reissue invalidates previous tokens/sessions. Local operator commands
   are privileged and are not exposed as anonymous HTTP routes.
 - The preserved FastAPI collection app is unauthenticated and loopback-only.
-  Host/Origin checks restrict browser requests; this is not isolation from another
+  It accepts only `localhost` or `127.0.0.1` with a valid optional port, a loopback
+  client address, no forwarded headers and a matching Origin when present.
+  Duplicate Host headers and the test hostname `testserver` are rejected.
+  These checks restrict browser requests; this is not isolation from another
   local process. Do not expose that app to a LAN or proxy it publicly.
 - Uploads are private database bytes. Image validation bounds size, dimensions and
   formats, rejects animation, and re-encodes images without metadata. Downloads
@@ -43,43 +46,45 @@ backslashes, whitespace/control characters, credentials and malformed/nonstandar
 ports. Invalid links cannot qualify for watcher alerts and become unavailable in
 hunt responses. This prevents URL-parser disagreement from creating unsafe links.
 
-Authenticated schema/type errors return fixed HTTP 400 messages rather than echoing
-submitted data or internal errors. Deliberate domain validation messages and
-conflict responses remain visible. Both apps share no-store, nosniff, DENY framing,
+Authenticated schema/type/domain errors return fixed HTTP 400 messages rather than
+echoing submitted data or internal errors; conflicts return 409. The original app
+returns fixed 422 schema errors and exposes only its dedicated ownership-validation
+messages as 400. JSON mutation parsers require `application/json` (charset
+parameters are permitted); other media types fail before mutations or provider
+construction. Body-free original-app reveal operations remain supported.
+Search `demo` controls require actual JSON booleans and continuation offsets require
+integers, excluding booleans, strings and fractional values. Saved requests already
+use normalized booleans/integers; this does not reinterpret stored hunt state.
+Both apps share no-store, nosniff, DENY framing,
 CSP base/object restrictions and same-origin camera permissions. Inline scripts are
 disallowed; existing inline styles are allowed. Denials receive these headers too.
 HSTS and Secure cookies are staging-only because local serving uses HTTP.
 `X-Robots-Tag` discourages indexing but is not an access-control mechanism.
 
-## Intentional acceptable patterns
+## Private files and operational limits
 
-| Pattern | Classification / status | Rationale and evidence |
-| --- | --- | --- |
-| Local HTTP cookies without Secure | Informational, high confidence, accepted for loopback | Strict SameSite, HttpOnly session cookies, CSRF and exact local ingress checks remain; staging enables Secure. |
-| Same-origin inline styles | Low, high confidence, accepted | Current templates and rendering use inline styles. CSP continues to prohibit inline scripts; removing styles would require a UI refactor. |
-| Request/access logs suppressed | Informational, high confidence, accepted | Local recovery URLs can contain bearer tokens. The separate redacted failure channel records code locations without request URLs or exception payloads. |
-| Account-scoped IDs and SQL | Informational, high confidence, retained | Server-side ownership and owner-role checks remain authoritative, including photo evidence and workers; existing isolation tests are retained. |
-| Local operator environment/PATH and private roots | Informational, high confidence, accepted trust boundary | A process already running as the same OS user can read that user's files or replace executables. These controls are not a sandbox against a compromised Mac account. |
+Collection replacements use unique mode-0600 temporary files independent of umask.
+The initializer creates new local state exclusively at 0600; new original hunt
+databases also use 0600. Symlinked collection-write and hunt-database destinations
+are rejected. Failed replacements retain the original and a private temporary
+file; inspect that file after resolving the failure. Existing databases, exports
+and backups are not retroactively made private. Parent directories also need
+restricted access.
 
-## Prioritized follow-up and manual verification
+Local HTTP uses HttpOnly/SameSite cookies without Secure; staging enables Secure.
+Request/access logs are suppressed because recovery URLs can contain bearer tokens.
+Redacted diagnostics retain code locations without request URLs or exception data.
+A process running as the same OS user can read files or replace executables; these
+controls are not an OS-user sandbox.
 
-1. **Before any external exposure:** staging ingress, TLS, proxy header stripping,
-   backup access and invite-only operation need deployment-specific verification.
-   Severity high if misconfigured; confidence high in the need for verification;
-   status deferred by current local-only scope. Test the actual deployment when
-   that scope is authorized; source-only middleware tests are not qualification.
-2. **Dependency maintenance:** lockfile and locked installation are retained, without
-   a claim that locked packages are vulnerability-free. Severity unassessed; confidence
-   high in the verification gap; status deferred. Run a lockfile advisory check
-   and assess fixes before a future release rather than updating dependencies blindly.
-3. **Broader validation error contract:** remaining domain `ValueError` messages
-   intentionally reach clients. Severity low, confidence medium, status deferred
-   hardening. Introduce explicit public validation exception types if new adapters
-   or externally supplied error messages enter those paths; preserve useful field
-   feedback and never expose provider exceptions.
-4. **Local operational recovery:** existing worker shutdown timing and legacy
-   file-write limitations are documented in [error handling](ERROR_HANDLING.md).
-   Severity medium for interrupted operations, confidence high, status deferred
-   reliability work. Keep claims/reservations and reconcile persisted operation
-   state rather than automatically retrying uncertain provider calls.
+Synthetic tests cover ingress, account isolation, roles, token expiry/revocation,
+CSRF, private files and mocked providers. Actual staging TLS, proxy header
+stripping, backup access and PostgreSQL operation require deployment-specific
+verification. Locked dependencies are reproducible, not guaranteed vulnerability-free.
+Older private files require a permission review independently of source changes.
 
+Endpoint validation uses fixed responses for domain `ValueError`/`TypeError`;
+dedicated validation types could better distinguish programming errors. Shutdown
+and uncertain writes retain the recovery limits described in
+[error handling](ERROR_HANDLING.md). Do not reset claims or spending reservations
+merely to retry uncertain provider work.

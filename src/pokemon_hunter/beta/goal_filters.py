@@ -76,6 +76,21 @@ def matches(p, scope):
     )
 
 
+def printing_items(entries):
+    """One frozen item shape for filtered, set and custom printing checklists."""
+    return [
+        {
+            "label": f"{p['name']} · {p['set_name']} #{p['collector_number']}",
+            "printing_ids": [p["id"]],
+            "unresolved": bool(p["unresolved_fields"]),
+            "edition": p["edition"],
+            "finish": p["finish"],
+            "variant": p["variant"],
+        }
+        for p in entries
+    ]
+
+
 def definition(raw, entries, games, policy="catalog"):
     scope = filters(raw, entries, games)
     selected = [p for p in entries if matches(p, scope)]
@@ -97,17 +112,7 @@ def definition(raw, entries, games, policy="catalog"):
     else:
         if policy not in {"catalog", "exact"} or not selected:
             raise ValueError("Choose filters with available printings and a supported completion policy")
-        items = [
-            {
-                "label": f"{p['name']} · {p['set_name']} #{p['collector_number']}",
-                "printing_ids": [p["id"]],
-                "unresolved": bool(p["unresolved_fields"]),
-                "edition": p["edition"],
-                "finish": p["finish"],
-                "variant": p["variant"],
-            }
-            for p in selected
-        ]
+        items = printing_items(selected)
         coverage = "Selected published printings only. Unresolved variants do not establish exact-variant completion."
     if len(items) > 2000:
         raise ValueError("Narrow this goal to at most 2000 members")

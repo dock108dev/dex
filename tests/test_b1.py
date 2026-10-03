@@ -101,7 +101,7 @@ def test_two_sessions_preservation_empty_member_and_forged_ids(env):
     assert b.get(f"/api/export/?user_id={OWNER_ID}").json()["copies"] == []
     assert len(a.get("/api/hunts/").json()["hunts"]) == 2
     assert b"Your collection is empty" in b.get("/").content
-    assert b"B1 ISOLATED REHEARSAL" in a.get("/").content
+    assert b"LOCAL COLLECTION" in a.get("/").content
 
 
 @pytest.mark.parametrize(
@@ -160,7 +160,7 @@ def test_cross_user_reads_writes_downloads_and_admin(env):
 
 @pytest.mark.parametrize("kind", ["photos", "scan_jobs", "goals", "request_evidence"])
 def test_unimplemented_b1_resource_routes_remain_unavailable(env, kind):
-    # B1 has no generic photo/job/goal/evidence service. B2-B4 own those domains.
+    # Account-only roots do not enable photo, job, goal or evidence services.
     from django.http import Http404
 
     with pytest.raises(Http404):

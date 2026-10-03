@@ -1,6 +1,6 @@
-"""Exercise B2 in independent desktop/narrow Chromium contexts, using a fresh copied root.
+"""Exercise collection transactions in independent desktop/narrow Chromium contexts, using a fresh copied root.
 
-Run: uv run --with playwright python scripts/verify_b2_browser.py --root PRIVATE_B2_ROOT
+Run: uv run --with playwright python scripts/verify_b2_browser.py --root DISPOSABLE_APP_ROOT
 The server must be running on loopback:8011 against that same root. No owner passwords.
 Screenshots and reports are private. Narrow viewport is emulation, not real-device evidence.
 """
@@ -24,7 +24,9 @@ from playwright.sync_api import sync_playwright  # noqa: E402
 
 from pokemon_hunter.beta import accounts  # noqa: E402
 
-assert not get_user_model().objects.exists(), "Use a fresh B2 test root; never reset existing accounts"
+assert not get_user_model().objects.exists(), (
+    "Use a fresh collection test root; never reset existing accounts"
+)
 password_a, password_b = secrets.token_urlsafe(24), secrets.token_urlsafe(24)
 accounts.bootstrap(password_a)
 member = accounts.invite("b2-collector")
@@ -301,4 +303,4 @@ with sync_playwright() as p:
         + "\n"
     )
     browser.close()
-print("B2 browser flows passed; report and screenshots retained in the private root.")
+print("Collection browser flows passed; report and screenshots retained in the private root.")

@@ -14,12 +14,12 @@ if STAGING:
 else:
     ROOT = Path(os.environ["DEX_B1_ROOT"]).resolve(strict=True)
     if ROOT.is_relative_to(PROJECT) or not (ROOT / "B1_ISOLATED").is_file():
-        raise RuntimeError("B1 requires an initialized isolated directory outside the checkout")
+        raise RuntimeError("Local app requires an initialized isolated directory outside the checkout")
     if ROOT.stat().st_mode & 0o077:
-        raise RuntimeError("B1 directory must be owner-only (chmod 700)")
+        raise RuntimeError("Local app directory must be owner-only (chmod 700)")
     for name in ("inventory.db", "secret.key"):
         if (ROOT / name).is_symlink() or (ROOT / name).stat().st_mode & 0o077:
-            raise RuntimeError("B1 files must be private regular files")
+            raise RuntimeError("Local app files must be private regular files")
     SECRET_KEY = (ROOT / "secret.key").read_text().strip()
 DEBUG = False
 ALLOWED_HOSTS = ["127.0.0.1"]

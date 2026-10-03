@@ -126,3 +126,9 @@ def test_collection_exceptions_do_not_expose_details(env, caplog, kind, status, 
     assert event in caplog.text
     assert "private-content" not in caplog.text + response.content.decode()
     assert "/private/database.db" not in caplog.text + response.content.decode()
+
+
+def test_authenticated_local_ingress_rejects_additional_forwarded_headers(env):
+    response = env["a"].get("/api/export/", HTTP_X_FORWARDED_PORT="8011")
+    assert response.status_code == 403
+    assert response["Cache-Control"] == "no-store"

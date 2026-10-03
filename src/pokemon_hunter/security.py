@@ -1,5 +1,6 @@
 """Shared browser-boundary rules for local and authenticated applications."""
 
+import re
 from urllib.parse import urlsplit
 
 BROWSER_HEADERS = {
@@ -14,6 +15,14 @@ BROWSER_HEADERS = {
         "object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
     ),
 }
+
+
+def loopback_authority(value):
+    """Only the original app's two supported local hosts and valid optional ports."""
+    if not isinstance(value, str):
+        return False
+    match = re.fullmatch(r"(?:127\.0\.0\.1|localhost)(?::([0-9]{1,5}))?", value)
+    return bool(match and (match[1] is None or 1 <= int(match[1]) <= 65535))
 
 
 def ebay_url(value):

@@ -1,3 +1,5 @@
+import json
+
 import httpx
 import pytest
 
@@ -87,3 +89,54 @@ def test_page_cap_recorded(settings):
     assert list(client.search("test", "FIXED_PRICE")) == []
     assert "page cap" in client.warnings[0]
     client.close()
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        [],
+        {},
+        {"access_token": {"private": "SECRET"}, "expires_in": 3600},
+        {"access_token": "", "expires_in": 3600},
+        {"access_token": "SECRET", "expires_in": True},
+        {"access_token": "SECRET", "expires_in": 0},
+        {"access_token": "SECRET", "expires_in": float("inf")},
+        {"access_token": "SECRET", "expires_in": 10**400},
+    ],
+)
+def test_malformed_oauth_is_not_cached(settings, payload):
+    calls = []
+
+    def handler(request):
+        calls.append(request.url.path)
+        return httpx.Response(200, text=json.dumps(payload))
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as http:
+        client = EbayClient(settings, http)
+        for _ in range(2):
+            with pytest.raises(EbayError, match="Malformed eBay OAuth") as error:
+                client.access_token()
+            assert "SECRET" not in str(error.value)
+            assert client.token is None and client.expires == 0
+    assert len(calls) == 2
+
+
+def test_invalid_refresh_does_not_reuse_partial_token(settings):
+    counts = {"token": 0, "browse": 0}
+
+    def handler(request):
+        if request.url.path.endswith("/token"):
+            counts["token"] += 1
+            if counts["token"] == 1:
+                return httpx.Response(200, json={"access_token": "valid", "expires_in": 3600})
+            return httpx.Response(200, json={"access_token": "SECRET", "expires_in": "bad"})
+        counts["browse"] += 1
+        return httpx.Response(401)
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as http:
+        client = EbayClient(settings, http)
+        for _ in range(2):
+            with pytest.raises(EbayError, match="Malformed eBay OAuth"):
+                client.get("/test")
+            assert client.token is None
+    assert counts == {"token": 3, "browse": 1}

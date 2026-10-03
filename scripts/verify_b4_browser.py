@@ -9,7 +9,7 @@ def catalog_flow(admin_page, admin_context, member_page, member_context, root):
     base = "http://127.0.0.1:8011"
     fixture = root / "synthetic-card.jpg"
     before = member_context.request.get(base + "/api/export/").json()["copies"]
-    # Start through the actual B3 upload -> unsupported -> provisional confirmation UI.
+    # Start through the actual photo upload -> unsupported -> provisional confirmation UI.
     member_page.goto(base + "/scan/")
     member_page.locator("input[name=front]").set_input_files(fixture)
     member_page.locator("select[name=fixture]").select_option("unsupported")

@@ -1,7 +1,7 @@
 """Verify a migrated disposable staging database; writes only synthetic test accounts.
 
 Load staging environment securely first. --evidence must be private and outside Git.
-Requires a copied B4 migration with an owner binding and Gym Heroes already published.
+Requires a copied catalog-enabled database with an owner binding and Gym Heroes already published.
 """
 
 import argparse

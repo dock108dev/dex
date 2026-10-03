@@ -120,13 +120,9 @@ def binders(actor):
     return store.rows("SELECT * FROM binders WHERE user_id=%s ORDER BY name,id", [actor.user_id])
 
 
-def goals(actor):
-    store.verified(actor)
-    active = copies(actor)
-    owned = {c["printing_id"] for c in active}
-    available_ids = {p["id"] for p in catalog(actor)}
-    published_ids = available_ids if settings.B4_ENABLED else None
-    exact_owned = {
+def exact_owned_printings(active, published_ids=None):
+    """Resolved active copies only; callers may restrict to the published catalog."""
+    return {
         c["printing_id"]
         for c in active
         if c["printing_id"]
@@ -134,6 +130,15 @@ def goals(actor):
         and not json.loads(c["unresolved_fields"] or "[]")
         and not json.loads(c["provisional_identity"] or "{}").get("unresolved_fields")
     }
+
+
+def goals(actor):
+    store.verified(actor)
+    active = copies(actor)
+    owned = {c["printing_id"] for c in active}
+    available_ids = {p["id"] for p in catalog(actor)}
+    published_ids = available_ids if settings.B4_ENABLED else None
+    exact_owned = exact_owned_printings(active, published_ids)
     result = store.rows("SELECT * FROM collection_goals WHERE user_id=%s ORDER BY name,id", [actor.user_id])
     for g in result:
         definition = json.loads(g["definition"])
@@ -281,17 +286,7 @@ def goal_definition(actor, request):
         raise ValueError("No catalog entries available for this checklist")
     return {
         "policy": policy,
-        "items": [
-            {
-                "label": f"{p['name']} · {p['set_name']} #{p['collector_number']}",
-                "printing_ids": [p["id"]],
-                "unresolved": bool(p["unresolved_fields"]),
-                "edition": p["edition"],
-                "finish": p["finish"],
-                "variant": p["variant"],
-            }
-            for p in entries
-        ],
+        "items": goal_filters.printing_items(entries),
         "catalog_versions": sorted({p["catalog_version"] for p in entries}),
         "coverage": "Pinned catalog entries only; edition/variant coverage is not established. This is not a master-set completeness claim.",
     }

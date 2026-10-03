@@ -49,3 +49,24 @@ def test_species_updates_redirect_to_exact_cards(project, capsys):
     assert "exact card quantities" in capsys.readouterr().err
     assert (project / "config/pokedex_251.json").read_text() == before
     assert main(["--root", str(project), "pokedex", "--owned", "252"]) == 1
+
+
+@pytest.mark.parametrize("kind", [ValueError, RuntimeError, FileNotFoundError])
+def test_cli_redacts_arbitrary_error_messages(project, monkeypatch, capsys, caplog, kind):
+    def broken(*args):
+        raise kind("SECRET /private/owner.db https://example.invalid/token")
+
+    monkeypatch.setattr("pokemon_hunter.main.load_config", broken)
+    assert main(["--root", str(project), "doctor"]) == 1
+    output = capsys.readouterr()
+    assert "Watcher failed" in output.err
+    assert "watcher_command_failed" in caplog.text
+    assert "SECRET" not in output.err + caplog.text
+    assert "/private/owner.db" not in output.err + caplog.text
+
+
+def test_cli_redacts_pydantic_configuration_values(project, capsys, caplog):
+    (project / "config/settings.yaml").write_text("environment: SECRET\n")
+    assert main(["--root", str(project), "doctor"]) == 1
+    assert "ValidationError" in caplog.text
+    assert "SECRET" not in capsys.readouterr().err + caplog.text

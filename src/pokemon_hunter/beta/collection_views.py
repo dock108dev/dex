@@ -44,6 +44,8 @@ def endpoint(fn):
 
 
 def body(request):
+    if request.content_type != "application/json":
+        raise ValueError("Send an application/json request")
     try:
         data = json.loads(request.body)
     except (ValueError, UnicodeDecodeError):

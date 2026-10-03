@@ -1,4 +1,7 @@
-# Pokémon Hunter
+# Original lot watcher
+
+This is the preserved watcher, with separate storage from the authenticated beta.
+For the current product and setup, start at the [repository README](../README.md).
 
 A small daily eBay watcher for inexpensive English Kanto/Johto-era bulk lots. It searches eBay's official Browse API, uses the configured shipping destination and collection gaps, and saves up to five qualifying listings in one digest. It never buys or bids.
 
@@ -84,7 +87,7 @@ spoiler-controlled hunts, use the collection app. Watcher digests reveal titles.
 
 | Setting | Default |
 | --- | --- |
-| Delivery / currency | US 08803 / USD only |
+| Delivery / currency | US / no ZIP configured / USD only |
 | Buy It Now delivered per card | ≤ $2.00 |
 | Auction current delivered per card | ≤ $1.00 |
 | Minimum count | 25 cards |
@@ -93,7 +96,10 @@ spoiler-controlled hunts, use the collection app. Watcher digests reveal titles.
 | Minimum alert priority / digest limit | MEDIUM / 5 hits |
 | Auction repeat | Ending within 24h once, or ≥20% delivered-price change; at least 20h since prior alert |
 
-All are in `config/settings.yaml`. Purchase caps may be `null`. Sales tax is excluded. Auction maximum bid is `min(count × threshold, purchase cap) − shipping`, floored at zero and rounded down to cents. Unknown prices/shipping, unsupported currencies, and unknown auction end times cannot qualify. A dual auction/BIN listing uses auction economics and gets only one canonical item record.
+Defaults come from `config/settings.example.yaml` and `models.Settings`; your local
+`config/settings.yaml` may override them. Set the delivery ZIP there or through
+`EBAY_DELIVERY_POSTAL_CODE` before comparing destination-dependent shipping.
+Purchase caps may be `null`. Sales tax is excluded. Auction maximum bid is `min(count × threshold, purchase cap) − shipping`, floored at zero and rounded down to cents. Unknown prices/shipping, unsupported currencies, and unknown auction end times cannot qualify. A dual auction/BIN listing uses auction economics and gets only one canonical item record.
 
 The parser handles `100+`, `90–100`, comma-separated counts, `lot of 72`, and common/uncommon wording. It never sums unrelated quantities or multiplies pack counts. Explicitly separated Pokémon quantities take precedence; stated trainers/energy are conservatively excluded when included in the total. Unknown species composition stays labeled as unknown. Conflicting counts, selectable quantities, accessories, sealed packs, complete sets, mystery/curated products, and tiny lots are withheld.
 
@@ -121,9 +127,10 @@ Not seeing an expected hit? Inspect `listings.payload` and `listing_observations
 ## Verification
 
 ```sh
-uv run pytest -q
-uv run ruff check .
-uv run ruff format --check .
+uv run pytest tests/test_runner.py tests/test_ebay.py tests/test_cli.py -q
 ```
+
+The [CI guide](CI.md) owns full-suite, compilation, syntax, lint and formatting
+commands. Select the relevant test files for maintenance.
 
 Tests use constructed seller titles and mocked eBay responses, explicitly **not harvested real-listing fixtures**. They cover counts and ranges, composition, sets, purity, exact landed prices, max bids, hard thresholds, currency/shipping unknowns, OAuth and pagination, retries, SQLite persistence, alert suppression, ending reminders, failed delivery, stale-price rejection, description reclassification, and collection totals. Real-market false-positive quality still needs observation after credentials are configured.

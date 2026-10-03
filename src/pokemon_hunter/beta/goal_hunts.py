@@ -22,12 +22,7 @@ def project(actor, data, scope):
     definition = scope["definition"]
     policy = definition["policy"]
     allowed = {key for item in definition["items"] for key in item["printing_ids"]}
-    exact_owned = {
-        copy["printing_id"]
-        for copy in service.copies(actor)
-        if not json.loads(copy["unresolved_fields"] or "[]")
-        and not json.loads(copy["provisional_identity"] or "{}").get("unresolved_fields")
-    }
+    exact_owned = service.exact_owned_printings(service.copies(actor))
     game_names = {game["id"]: game["name"] for game in store.rows("SELECT id,name FROM games")}
     catalog = {printing["id"]: printing for printing in data["catalog"]}
     cards = {}
@@ -37,7 +32,10 @@ def project(actor, data, scope):
         card = dict(card)
         card.setdefault("dex_eligible", False)
         card.setdefault("pokemon_dex", None)
-        game_name = game_names.get(catalog[card["printing_id"]]["game_id"], "Pokemon")
+        game_id = catalog[card["printing_id"]]["game_id"]
+        if game_id not in game_names:
+            raise ValueError("Goal catalog references an unavailable game")
+        game_name = game_names[game_id]
         card["game_name"] = "Pokemon" if game_name == "Pokémon" else game_name
         if policy == "exact":
             card["owned"] = (

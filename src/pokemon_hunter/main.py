@@ -1,15 +1,21 @@
 import argparse
 import json
 import sys
+from contextlib import nullcontext
 from datetime import datetime
 from pathlib import Path
 
+from .beta.diagnostics import closing, failure
 from .config import load_config, load_env
 from .database import Database
 from .ebay import EbayClient
 from .notifier import Notifier, from_settings
 from .pokedex import read_pokedex, summary
 from .runner import run
+
+
+class WatcherInputError(ValueError):
+    """Only fixed CLI validation messages belong in this public error type."""
 
 
 def main(argv=None):
@@ -33,12 +39,12 @@ def main(argv=None):
     app_parser.add_argument("--port", type=int, default=8765)
     args = parser.parse_args(argv)
     root = args.root.expanduser().resolve()
-    if args.command == "app":
-        from .app import serve
-
-        serve(root, args.port)
-        return 0
     try:
+        if args.command == "app":
+            from .app import serve
+
+            serve(root, args.port)
+            return 0
         load_env(root / ".env")
         settings, catalog, queries = load_config(root)
         pokedex_path = root / "config/pokedex.json"
@@ -46,9 +52,9 @@ def main(argv=None):
         if args.command == "pokedex":
             owned, missing = set(args.owned or []), set(args.missing or [])
             if (owned | missing) - set(range(1, 252)) or owned & missing:
-                raise ValueError("Use numbers 1–251; a number cannot be both owned and missing")
+                raise WatcherInputError("Use numbers 1–251; a number cannot be both owned and missing")
             if owned or missing:
-                raise ValueError(
+                raise WatcherInputError(
                     "Update exact card quantities in pokemon-hunter app; species ownership is derived"
                 )
             print(summary(rows))
@@ -78,19 +84,16 @@ def main(argv=None):
             print(summary(rows))
             path = root / "data/pokemon.db"
             if path.exists():
-                db = Database(path)
-                try:
+                with closing(Database(path), "watcher_database_close_failed") as db:
                     row = db.conn.execute("SELECT * FROM runs ORDER BY id DESC LIMIT 1").fetchone()
                     print(json.dumps(dict(row), indent=2) if row else "No live runs yet.")
-                finally:
-                    db.close()
             else:
                 print("No live runs yet.")
             return 0
         fixture = args.fixture is not None
         db_path = args.db or root / ("data/demo.db" if fixture else "data/pokemon.db")
         if fixture and "demo" not in db_path.stem:
-            raise ValueError("Offline fixtures require a database filename containing demo")
+            raise WatcherInputError("Offline fixtures require a database filename containing demo")
         reports = args.reports or root / ("reports/demo" if fixture else "reports/live")
         raw = json.loads(args.fixture.read_text()) if fixture else None
         fixture_time = None
@@ -98,11 +101,11 @@ def main(argv=None):
             if raw.get("observedAt"):
                 fixture_time = datetime.fromisoformat(raw["observedAt"].replace("Z", "+00:00"))
                 if fixture_time.tzinfo is None:
-                    raise ValueError("Fixture observedAt requires a timezone")
+                    raise WatcherInputError("Fixture observedAt requires a timezone")
             raw = raw["itemSummaries"]
         notifier = Notifier(reports) if fixture else from_settings(reports, settings)
         client = None if fixture else EbayClient(settings)
-        try:
+        with closing(client, "watcher_client_close_failed") if client is not None else nullcontext():
             result = run(
                 db_path,
                 settings,
@@ -114,9 +117,6 @@ def main(argv=None):
                 fixtures=raw,
                 now=fixture_time,
             )
-        finally:
-            if client:
-                client.close()
         # Silence on no hits. Run health and coverage remain inspectable in SQLite.
         if result["alerted"]:
             if fixture:
@@ -127,8 +127,13 @@ def main(argv=None):
         return 0
     except Exception as exc:
         # Do not print httpx URLs, tokens, response bodies, or arbitrary API data.
-        safe = isinstance(exc, (ValueError, RuntimeError, FileNotFoundError))
-        print(f"Watcher failed: {str(exc) if safe else type(exc).__name__}", file=sys.stderr)
+        failure("watcher_command_failed", exc)
+        message = (
+            str(exc)
+            if isinstance(exc, WatcherInputError)
+            else "Check local configuration, storage and provider access; inspect the redacted diagnostics."
+        )
+        print(f"Watcher failed: {message}", file=sys.stderr)
         return 1
 
 

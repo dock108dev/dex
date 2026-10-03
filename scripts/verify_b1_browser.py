@@ -1,4 +1,4 @@
-"""Two isolated Chromium contexts against the copied B1 app. Private output only.
+"""Two isolated Chromium contexts against the copied account-only app. Private output only.
 
 Run with: uv run --with playwright python scripts/verify_b1_browser.py --root PRIVATE_ROOT
 Requires Chrome installed locally. Never uses the owner's normal browser profile.
@@ -24,7 +24,7 @@ from playwright.sync_api import sync_playwright  # noqa: E402
 
 from pokemon_hunter.beta import accounts, store  # noqa: E402
 
-assert not get_user_model().objects.exists(), "Use a fresh isolated B1 environment"
+assert not get_user_model().objects.exists(), "Use a fresh isolated account-only environment"
 owner_password, member_password = secrets.token_urlsafe(24), secrets.token_urlsafe(24)
 owner = accounts.bootstrap(owner_password)
 assert accounts.bootstrap(secrets.token_urlsafe(24)).pk == owner.pk

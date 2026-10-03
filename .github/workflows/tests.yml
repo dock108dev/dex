@@ -26,8 +26,19 @@ jobs:
           python-version: ${{ matrix.python-version }}
           enable-cache: true
           cache-dependency-glob: uv.lock
-      - run: uv sync --locked --extra dev
-      - run: uv run --no-sync python -m compileall -q src
-      - run: uv run --no-sync ruff check .
-      - run: uv run --no-sync ruff format --check .
-      - run: uv run --no-sync pytest -q
+      - name: Install locked dependencies
+        run: uv sync --locked --extra dev
+      - name: Compile Python
+        run: uv run --no-sync python -m compileall -q src
+      - name: Check JavaScript syntax
+        shell: bash
+        run: |
+          for script in src/pokemon_hunter/beta/static/*.js web/*.js; do
+            node --check "$script"
+          done
+      - name: Lint
+        run: uv run --no-sync ruff check .
+      - name: Check formatting
+        run: uv run --no-sync ruff format --check .
+      - name: Unit tests
+        run: uv run --no-sync pytest -q

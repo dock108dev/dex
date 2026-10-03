@@ -4,7 +4,8 @@ Run commands from the repository root with Python >=3.12 and uv. CI tests Python
 3.12 and 3.14 on Ubuntu; the current local product target is macOS.
 `uv sync --locked --extra dev` installs the committed dependencies and rejects a
 stale lockfile. There is no Node build or separate type-check command: the frontend
-is ordinary JavaScript/CSS and Django templates.
+is ordinary JavaScript/CSS and Django templates. CI checks browser-script syntax
+with Node; the [CI guide](CI.md) owns the exact validation commands.
 
 ## New demo versus existing installation
 
@@ -52,14 +53,14 @@ stores are never automatically synchronized.
 
 Local authenticated eBay search reads only the three eBay keys listed above from
 the checkout's `.env`; it does not load recognition or webhook credentials from
-that file. Map App ID (Client ID) to `EBAY_CLIENT_ID` and Cert ID (Client Secret)
-to `EBAY_CLIENT_SECRET`; Dev ID is not required. Current October 3 configuration
-is Sandbox and the private App ID is Sandbox-marked; both values are present,
-with no eBay credential overrides in the running server. Sandbox access succeeded
-with an empty batch. The developer portal shows the dex Production keyset disabled
-pending notification compliance; see the
-[Production setup gate](hunts.md#production-setup-gate-october-3-2026). Keep the
-working Sandbox pair and settings intact until an active Production pair is ready.
+that file. Both consumers use `config.read_env` / `config.load_settings`; the original
+CLI requires its settings file, while beta can use model defaults if it is absent.
+Malformed existing settings fail rather than selecting a fallback environment.
+Map App ID (Client ID) to `EBAY_CLIENT_ID` and Cert ID (Client Secret)
+to `EBAY_CLIENT_SECRET`; Dev ID is not required. Credentials must match the
+`environment` selected in `config/settings.yaml`. The committed example selects
+Production; Sandbox requires a separate Sandbox credential pair. Access depends
+on the application keyset and provider permissions, not merely nonempty keys.
 Use `.env.example` for names and keep real secrets private. Live hunts
 are disabled in the optional staging profile. See [eBay hunts](hunts.md) for the
 explicit search workflow and result limits. Never put API credentials in
@@ -70,7 +71,8 @@ them. Older account-only roots remain supported.
 
 ## Tests and navigation
 
-Use `uv run --no-sync python -m compileall -q src`, Ruff and focused pytest files.
+Use the [CI guide](CI.md) for compilation, browser syntax and Ruff commands,
+and select focused pytest files for the component you change.
 `tests/test_b1.py` covers accounts, `test_b2.py` collection transactions,
 `test_b2_parity.py` projections/hunts, `test_b3.py` photo jobs,
 `test_codex_recognition.py` fake CLI processes, and `test_ssot.py` shared policy/routes.
@@ -86,7 +88,21 @@ Local backup: stop the app and preserve the entire private root with its permiss
 including database, secret, provider settings and local evidence. Git excludes
 private state and is not its backup. Staging has separate backup/restore commands.
 
-Current local environment after Mike's October 3 follow-up is Sandbox. Credentials
-were updated privately; the explicit narrow Pikachu search authenticated and
-completed Browse successfully with zero listings. Saved/reopened Sandbox results
-are test evidence. Production setup and populated-result review remain pending.
+## Frontend and repository conventions
+
+Django templates and `beta/static` own the authenticated UI; `web` owns the
+original app. Keep results and primary actions ahead of optional breakdowns.
+Show guide dates, incomplete coverage, unresolved variants and auction uncertainty
+alongside comparisons. Browser harnesses use synthetic data and cannot establish
+provider access, real-device behavior or recognition accuracy.
+
+`verify_search_clarity.py` intercepts all requests in the actual beta shell for
+configured/disabled, failed/empty/populated searches and long saved history.
+It records source hashes with captures. Both presentation harnesses support desktop
+and narrow viewports; consult their help before creating disposable output.
+
+`scripts/init_local.py` provides an import-safe `initialize(root)` entry point.
+Missing examples fail before creating destinations. Existing files are never
+replaced; new local files use mode 0600. Git excludes private state, evidence and
+media. Public catalog inputs, examples, synthetic fixtures and runtime assets are
+tracked. Add public authored media through a path-specific ignore exception.

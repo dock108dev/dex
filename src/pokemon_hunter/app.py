@@ -6,17 +6,19 @@ import sqlite3
 from datetime import UTC, datetime
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, StrictBool
 
 from . import hunt
-from .collection import read, totals, update_card
+from .beta.diagnostics import closing, failure
+from .collection import CollectionInputError, read, totals, update_card
 from .config import load_config, load_env
-from .ebay import EbayClient, discover
+from .ebay import EbayClient, EbayError, discover
 from .hunt import SearchRequest, load_json, public_listing, query_plan
-from .security import BROWSER_HEADERS
+from .security import BROWSER_HEADERS, loopback_authority
 from .valuation import valuation
 
 
@@ -26,11 +28,28 @@ class Ownership(BaseModel):
     first_edition: StrictBool = False
 
 
+def require_json(request: Request):
+    if request.headers.get("content-type", "").split(";", 1)[0].strip().lower() != "application/json":
+        raise HTTPException(415, "Send an application/json request")
+
+
 def create_app(root: Path):
     app = FastAPI(title="Vintage 251", docs_url=None, redoc_url=None)
+
+    @app.exception_handler(RequestValidationError)
+    async def invalid_request(request, exc):
+        # FastAPI's default validation response includes submitted field values.
+        return JSONResponse({"detail": "Invalid request fields"}, status_code=422, headers=BROWSER_HEADERS)
+
     collection_path = root / "config/pokedex_251.json"
     (root / "data").mkdir(exist_ok=True)
     db_path = root / "data/collection_hunts.db"
+    if db_path.is_symlink():
+        raise OSError("Hunt storage requires a regular destination, not a symlink")
+    if not db_path.exists():
+        # SQLite otherwise creates new files using the caller's umask (often 022).
+        fd = os.open(db_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        os.close(fd)
     with sqlite3.connect(db_path) as conn:
         conn.execute(
             "CREATE TABLE IF NOT EXISTS hunts (id INTEGER PRIMARY KEY, created TEXT, demo INTEGER, request TEXT, raw TEXT, coverage TEXT)"
@@ -42,17 +61,30 @@ def create_app(root: Path):
     @app.middleware("http")
     async def local_requests(request: Request, call_next):
         # Local file mutations cannot be initiated by a different web origin.
-        host = request.headers.get("host", "").split(":")[0]
+        hosts = request.headers.getlist("host")
+        host = hosts[0] if len(hosts) == 1 else ""
         origin = request.headers.get("origin")
-        if host not in ("127.0.0.1", "localhost", "testserver") or (
-            origin and origin != f"http://{request.headers.get('host')}"
+        if (
+            not loopback_authority(host)
+            or request.client is None
+            or request.client.host not in {"127.0.0.1", "::1"}
+            or any(k == "forwarded" or k.startswith("x-forwarded-") for k in request.headers)
+            or (origin and origin != f"http://{host}")
         ):
-            from fastapi.responses import JSONResponse
-
             return JSONResponse(
                 {"detail": "This app accepts local requests only"}, status_code=403, headers=BROWSER_HEADERS
             )
-        response = await call_next(request)
+        try:
+            response = await call_next(request)
+        except Exception as exc:
+            # Handle here so the ASGI server does not log a raw traceback after a 500.
+            failure("legacy_request_failed", exc)
+            response = JSONResponse(
+                {
+                    "detail": "Request failed. Check saved state before retrying; inspect the server diagnostics."
+                },
+                status_code=500,
+            )
         response.headers.update(BROWSER_HEADERS)
         return response
 
@@ -65,11 +97,11 @@ def create_app(root: Path):
             "valuation": valuation(data, root / "config/market_values.json"),
         }
 
-    @app.put("/api/cards/{card_id}")
+    @app.put("/api/cards/{card_id}", dependencies=[Depends(require_json)])
     def put_card(card_id: str, body: Ownership):
         try:
             data = update_card(collection_path, card_id, body.owned, body.first_edition)
-        except ValueError as exc:
+        except CollectionInputError as exc:
             raise HTTPException(400, str(exc)) from None
         return {"totals": totals(data)}
 
@@ -95,7 +127,7 @@ def create_app(root: Path):
             load_json(root / "config/raw_values.json"),
         )
 
-    @app.post("/api/hunts")
+    @app.post("/api/hunts", dependencies=[Depends(require_json)])
     def search(body: SearchRequest):
         data = collection()
         config = load_json(root / "config/hunt.json")
@@ -114,7 +146,8 @@ def create_app(root: Path):
             settings, _, _ = load_config(root)
             client = EbayClient(settings)
             try:
-                raw = discover(client, queries)
+                with closing(client, "legacy_ebay_client_close_failed"):
+                    raw = discover(client, queries)
                 coverage = {
                     "note": "Bounded eBay search; seller text only. Photos have not been analyzed. Check availability on eBay.",
                     "queries_run": len(queries),
@@ -126,10 +159,11 @@ def create_app(root: Path):
                     if client.warnings
                     else [],
                 }
-            except RuntimeError as exc:
-                raise HTTPException(502, str(exc)) from None
-            finally:
-                client.close()
+            except EbayError as exc:
+                failure("legacy_ebay_search_failed", exc)
+                raise HTTPException(
+                    502, "eBay search failed. Check credentials, access and connection before retrying."
+                ) from None
         rows = project_results(raw, body, body.demo)
         with sqlite3.connect(db_path) as conn:
             cursor = conn.execute(

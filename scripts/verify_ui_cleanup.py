@@ -61,8 +61,26 @@ collection = dict(
 scenario = dict(priced=0, owned=3, subtotal=None, total=None, estimated=0)
 parity = dict(
     totals=dict(kanto=1, johto=0, total=1, physical_copies=3, exact_cards=1, unavailable_species=0),
-    cards={"p1": dict(printing_id="p1", owned=True, supertype="Pokémon", rarity="Common")},
-    catalog=[printing],
+    cards={
+        f"p{i}": dict(
+            printing_id=f"p{i}",
+            card_id=f"p{i}",
+            owned=i == 1,
+            supertype="Pokémon",
+            rarity=rarity,
+            name=name,
+            number=str(i),
+            set="Base Set",
+            copy_ids=["c0", "c1", "c2"] if i == 1 else [],
+            dex_eligible=True,
+        )
+        for i, name, rarity in [
+            (1, "Pikachu", "Common"),
+            (2, "Bulbasaur", "Uncommon"),
+            (3, "Charizard", "Rare"),
+        ]
+    },
+    catalog=[dict(printing, id=f"p{i}") for i in range(1, 4)],
     valuation=dict(
         confirmed={"raw": scenario},
         conditional={g: scenario for g in ["raw", "7", "8", "9", "10"]},
@@ -114,6 +132,8 @@ with sync_playwright() as pw:
     for viewport in [dict(width=1280, height=900), dict(width=390, height=844)]:
         for state in [
             "overview",
+            "cards",
+            "cards-empty",
             "collection",
             "empty",
             "scan",
@@ -189,6 +209,8 @@ with sync_playwright() as pw:
             path = (
                 "/overview/"
                 if state == "overview"
+                else "/cards/"
+                if state in {"cards", "cards-empty"}
                 else "/scan/"
                 if state in {"scan", "ready", "failed", "saved", "processing"}
                 else "/"
@@ -207,12 +229,19 @@ with sync_playwright() as pw:
                 page.locator('[data-action="cancel"]').wait_for()
             elif state in {"collection", "empty"}:
                 page.locator("#copies").wait_for()
+            elif state in {"cards", "cards-empty"}:
+                page.locator("#parity-cards").wait_for()
+                if state == "cards-empty":
+                    page.locator("#cards-query").fill("No synthetic match")
+                    assert "No matching printings" in page.locator("#parity-cards").inner_text()
+                assert page.locator("#cards-prev").is_disabled()
+                assert page.locator("#cards-next").is_disabled()
             elif state == "overview":
                 page.get_by_role("heading", name="Overview", exact=True).wait_for()
             assert not errors, errors
             assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), state
             measures = page.evaluate(
-                """() => ({height:document.documentElement.scrollHeight, mainTop:document.querySelector('main').getBoundingClientRect().top, actionTop:(document.querySelector('#add-copy')||document.querySelector('#upload button:last-child')||document.querySelector('#show-add'))?.getBoundingClientRect().top ?? null})"""
+                """() => ({height:document.documentElement.scrollHeight, mainTop:document.querySelector('main').getBoundingClientRect().top, cardTop:document.querySelector('#parity-cards .card')?.getBoundingClientRect().top ?? null, huntLinkTop:document.querySelector('main a[href="/hunt/"]')?.getBoundingClientRect().top ?? null, actionTop:(document.querySelector('#add-copy')||document.querySelector('#upload button:last-child')||document.querySelector('#show-add'))?.getBoundingClientRect().top ?? null})"""
             )
             metrics.append(dict(phase=args.phase, width=viewport["width"], state=state, **measures))
             page.screenshot(
@@ -233,12 +262,18 @@ with sync_playwright() as pw:
                     summary.focus()
                     summary.press("Enter")
                     assert summary.evaluate("e => e.parentElement.open") != was_open
+                    summary.press("Enter")
                 buttons = page.locator("button:visible").all()
                 assert all(b.bounding_box()["height"] >= 44 for b in buttons)
                 page.evaluate("document.documentElement.style.fontSize='32px'")
                 assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), (
                     f"200% text: {state}"
                 )
+                if state in {"overview", "cards"}:
+                    page.screenshot(
+                        path=str(args.output / f"{args.phase}-{viewport['width']}-{state}-text200.png"),
+                        full_page=True,
+                    )
             context.close()
     browser.close()
 (args.output / f"{args.phase}-metrics.json").write_text(json.dumps(metrics, indent=2))

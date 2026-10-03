@@ -6,10 +6,9 @@ from pathlib import Path
 import yaml
 from django.conf import settings
 
-from pokemon_hunter import ebay
-from pokemon_hunter.models import Settings
+from pokemon_hunter import config, ebay
 
-from .diagnostics import failure
+from .diagnostics import closing, failure
 
 MAX_QUERIES = 8
 MAX_PAGES = 2
@@ -32,18 +31,11 @@ def configuration():
     if getattr(settings, "STAGING", False):
         raise LiveHuntError("Live eBay search is available only in the local app.")
     values = {key: os.environ[key] for key in ENV_KEYS if os.environ.get(key)}
-    path = configuration_root() / ".env"
+    root = configuration_root()
     try:
-        if path.is_file():
-            for line in path.read_text().splitlines():
-                key, sep, value = line.strip().partition("=")
-                if sep and key.strip() in ENV_KEYS:
-                    values.setdefault(key.strip(), value.strip().strip("\"'"))
-        path = configuration_root() / "config/settings.yaml"
-        raw = yaml.safe_load(path.read_text()) if path.is_file() else {}
-        if "EBAY_DELIVERY_POSTAL_CODE" in values:
-            raw = {**raw, "delivery_postal_code": values["EBAY_DELIVERY_POSTAL_CODE"]}
-        provider = Settings.model_validate(raw)
+        for key, value in config.read_env(root / ".env", keys=ENV_KEYS).items():
+            values.setdefault(key, value)
+        provider = config.load_settings(root, environ=values, required=False)
         provider.search.max_pages = min(provider.search.max_pages, MAX_PAGES)
     except (OSError, UnicodeError, ValueError, TypeError, yaml.YAMLError) as exc:
         failure("ebay_configuration_failed", exc)
@@ -80,18 +72,18 @@ def search(queries):
         raise LiveHuntError("Add your eBay application credentials to the local .env or server environment.")
     if not queries:
         return [], {"limited": False, "environment": provider.environment}
-    client = None
     try:
         client = ebay.EbayClient(
             provider, credentials=(values["EBAY_CLIENT_ID"], values["EBAY_CLIENT_SECRET"]), extended=True
         )
-        raw = ebay.discover(client, queries)
-        if not isinstance(raw, list) or any(not isinstance(row, dict) for row in raw):
-            raise ValueError("Invalid provider result")
-        return raw, {
-            "limited": bool(client.warnings),
-            "environment": provider.environment,
-        }
+        with closing(client, "ebay_client_close_failed"):
+            raw = ebay.discover(client, queries)
+            if not isinstance(raw, list) or any(not isinstance(row, dict) for row in raw):
+                raise ValueError("Invalid provider result")
+            return raw, {
+                "limited": bool(client.warnings),
+                "environment": provider.environment,
+            }
     except Exception as exc:
         failure("ebay_search_failed", exc)
         if isinstance(exc, ebay.EbayHTTPError):
@@ -109,9 +101,3 @@ def search(queries):
             "eBay search could not complete. Check credentials, API access and connection, then retry explicitly.",
             status=502,
         ) from None
-    finally:
-        if client is not None:
-            try:
-                client.close()
-            except Exception as exc:
-                failure("ebay_client_close_failed", exc)

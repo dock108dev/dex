@@ -21,17 +21,9 @@ class LocalOnlyMiddleware:
         if (
             request.META.get("HTTP_HOST") != "127.0.0.1:8011"
             or request.META.get("REMOTE_ADDR") not in {"127.0.0.1", "::1"}
-            or any(
-                k in request.META
-                for k in (
-                    "HTTP_FORWARDED",
-                    "HTTP_X_FORWARDED_HOST",
-                    "HTTP_X_FORWARDED_FOR",
-                    "HTTP_X_FORWARDED_PROTO",
-                )
-            )
+            or any(k == "HTTP_FORWARDED" or k.startswith("HTTP_X_FORWARDED_") for k in request.META)
         ):
-            return forbidden("B1 is loopback-only")
+            return forbidden("Local app is loopback-only")
         origin = request.headers.get("Origin")
         if origin and origin != "http://127.0.0.1:8011":
             return forbidden("Foreign origin")

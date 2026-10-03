@@ -40,5 +40,5 @@ real-device TLS trust. Hosting, ingress, startup/restart behavior, independent
 backup storage and real-device operation remain unverified for a new deployment.
 
 Detailed historical procedures and exact candidate records are retained in
-[the operations record](history/2026-09-28-B5_OPERATIONS.md). They are evidence and
-reference procedures, not instructions to reuse a maintainer's private environment.
+[the operations record](history/2026-09-28-B5_OPERATIONS.md). They describe historical
+procedures and candidates; use the current configuration requirements above.

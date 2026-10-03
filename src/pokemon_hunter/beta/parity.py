@@ -412,10 +412,3 @@ def save_hunt(actor, batch, saved):
             saved["coverage"],
         ],
     )
-
-
-def sample(actor, raw):
-    """Compatibility entry point for callers that explicitly require sample mode."""
-    if not hunt_settings(raw).demo:
-        raise ValueError("Use an explicit live search request")
-    return search(actor, raw)

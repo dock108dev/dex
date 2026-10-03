@@ -1,11 +1,17 @@
 """Card ownership is truth; all species and set counts are projections."""
 
 import json
+import os
 import re
+import tempfile
 import threading
 from pathlib import Path
 
 LOCK = threading.RLock()
+
+
+class CollectionInputError(ValueError):
+    """Fixed ownership-validation messages safe for the original app's response."""
 
 
 def canonical_name(name):
@@ -104,23 +110,30 @@ def read(path):
 
 def save(path, data):
     derive(data)
-    temp = path.with_suffix(".tmp")
-    temp.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n")
-    temp.replace(path)
+    if path.is_symlink():
+        raise OSError("Collection writes require a regular destination, not a symlink")
+    # Unique 0600 files keep replacement private even under a permissive umask.
+    # Retain a failed private temporary write rather than overwriting the source.
+    with tempfile.NamedTemporaryFile(
+        mode="w", encoding="utf-8", dir=path.parent, prefix=f".{path.name}.", suffix=".tmp", delete=False
+    ) as output:
+        json.dump(data, output, ensure_ascii=False, indent=2)
+        output.write("\n")
+    os.replace(output.name, path)
 
 
 def update_card(path, card_id, owned, first_edition=False):
     if type(owned) is not bool or type(first_edition) is not bool:
-        raise ValueError("Owned and first edition must be checkboxes")
+        raise CollectionInputError("Owned and first edition must be checkboxes")
     if first_edition and not owned:
-        raise ValueError("Mark the card owned before marking first edition")
+        raise CollectionInputError("Mark the card owned before marking first edition")
     with LOCK:
         data = read(path)
         if card_id not in data["cards"]:
-            raise ValueError("Unknown card")
+            raise CollectionInputError("Unknown card")
         card = data["cards"][card_id]
         if first_edition and card["set_id"] in ("base_set_2", "wizards_black_star_promos"):
-            raise ValueError("This set has no standard first-edition printing")
+            raise CollectionInputError("This set has no standard first-edition printing")
         card.update(owned=owned, first_edition=first_edition, ownership_recorded=True)
         save(path, data)
         return data
