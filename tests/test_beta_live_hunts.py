@@ -137,6 +137,23 @@ def test_failed_provider_is_sanitized_and_does_not_save(live, monkeypatch, caplo
     assert live["clients"][0].closed
 
 
+def test_provider_http_failure_is_actionable_and_does_not_save(live, monkeypatch, caplog):
+    import httpx
+
+    def failed(*args):
+        response = httpx.Response(401, json={"error": "invalid_client", "error_description": "SECRET"})
+        raise ebay_hunts.ebay.EbayHTTPError("OAuth", 401, response)
+
+    monkeypatch.setattr(ebay_hunts.ebay, "discover", failed)
+    before = len(parity.hunt_rows(live["actor"]))
+    response = post(live["a"], "/api/hunts/", {"demo": False})
+    assert response.status_code == 502
+    assert "OAuth returned HTTP 401 (invalid_client)" in response.content.decode()
+    assert "SECRET" not in response.content.decode() + caplog.text
+    assert len(parity.hunt_rows(live["actor"])) == before
+    assert live["clients"][0].closed
+
+
 def test_missing_credentials_staging_and_samples_make_no_provider_call(restored, monkeypatch):
     monkeypatch.setattr(ebay_hunts.ebay, "EbayClient", lambda *a: pytest.fail("Unexpected provider call"))
     assert post(restored["a"], "/api/hunts/", {"demo": False}).status_code == 400

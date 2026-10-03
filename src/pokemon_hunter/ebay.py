@@ -11,6 +11,27 @@ class EbayError(RuntimeError):
     pass
 
 
+class EbayHTTPError(EbayError):
+    """Retain only bounded, non-sensitive provider failure fields."""
+
+    def __init__(self, stage, status, response):
+        self.stage = stage if stage in {"OAuth", "Browse"} else "Provider"
+        self.status = status if type(status) is int and 100 <= status <= 599 else None
+        self.code = None
+        if self.stage == "OAuth":
+            try:
+                payload = response.json()
+                code = payload.get("error") if isinstance(payload, dict) else None
+                if code in (
+                    "invalid_client", "invalid_request", "invalid_scope",
+                    "unauthorized_client", "unsupported_grant_type",
+                ):
+                    self.code = code
+            except ValueError:
+                pass
+        super().__init__(f"eBay {self.stage} returned HTTP {self.status}")
+
+
 class EbayClient:
     def __init__(
         self,
@@ -72,9 +93,7 @@ class EbayClient:
             data={"grant_type": "client_credentials", "scope": "https://api.ebay.com/oauth/api_scope"},
         )
         if response.status_code != 200:
-            raise EbayError(
-                f"eBay OAuth returned HTTP {response.status_code}; verify environment and credentials"
-            )
+            raise EbayHTTPError("OAuth", response.status_code, response)
         try:
             data = response.json()
             self.token = data["access_token"]
@@ -99,9 +118,7 @@ class EbayClient:
                 self.token = None
                 continue
             if response.status_code != 200:
-                raise EbayError(
-                    f"eBay Browse returned HTTP {response.status_code}; check API access and configuration"
-                )
+                raise EbayHTTPError("Browse", response.status_code, response)
             try:
                 data = response.json()
             except ValueError:

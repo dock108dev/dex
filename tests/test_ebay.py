@@ -1,7 +1,7 @@
 import httpx
 import pytest
 
-from pokemon_hunter.ebay import EbayClient, EbayError, discover
+from pokemon_hunter.ebay import EbayClient, EbayError, EbayHTTPError, discover
 
 
 @pytest.fixture(autouse=True)
@@ -66,6 +66,16 @@ def test_error_does_not_leak_response(settings):
     with pytest.raises(EbayError, match="HTTP 403") as error:
         client.access_token()
     assert "never-print-me" not in str(error.value)
+
+
+@pytest.mark.parametrize("code, expected", [("invalid_client", "invalid_client"), ("SECRET", None), ([], None)])
+def test_http_error_retains_only_safe_oauth_fields(code, expected):
+    response = httpx.Response(401, json={"error": code, "error_description": "SECRET", "token": "SECRET"})
+    error = EbayHTTPError("OAuth", 401, response)
+    assert (error.stage, error.status, error.code) == ("OAuth", 401, expected)
+    assert "SECRET" not in str(error) + repr(vars(error))
+    browse = EbayHTTPError("Browse", 403, response)
+    assert browse.code is None
 
 
 def test_page_cap_recorded(settings):

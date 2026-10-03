@@ -94,6 +94,17 @@ def search(queries):
         }
     except Exception as exc:
         failure("ebay_search_failed", exc)
+        if isinstance(exc, ebay.EbayHTTPError):
+            code = f" ({exc.code})" if exc.code else ""
+            action = (
+                "Verify the active application keyset and credentials for the selected environment."
+                if exc.stage == "OAuth"
+                else "Verify Browse API access for the application and selected environment."
+            )
+            raise LiveHuntError(
+                f"eBay {exc.stage} returned HTTP {exc.status}{code}. {action} Retry explicitly after resolving it.",
+                status=502,
+            ) from None
         raise LiveHuntError(
             "eBay search could not complete. Check credentials, API access and connection, then retry explicitly.",
             status=502,
