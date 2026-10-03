@@ -64,6 +64,11 @@ it is not a settled purchase price. Tax, fees and resale proceeds are not modele
 
 ## Local provider settings
 
+Local setup status, October 3, 2026: App ID and Cert ID have been added to the
+private, Git-ignored checkout `.env`; both required values are present and the
+configured environment is production. Live authentication and Browse API access
+are pending the first explicit live search. Dev ID is not used by this app.
+
 Set `EBAY_CLIENT_ID` and `EBAY_CLIENT_SECRET` in the server environment or private
 checkout `.env`, using `.env.example` for key names. Never paste credentials into
 chat or commit them. Server environment values take precedence. The authenticated

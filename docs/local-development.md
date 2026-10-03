@@ -52,7 +52,12 @@ stores are never automatically synchronized.
 
 Local authenticated eBay search reads only the three eBay keys listed above from
 the checkout's `.env`; it does not load recognition or webhook credentials from
-that file. Use `.env.example` for names and keep real secrets private. Live hunts
+that file. Map App ID (Client ID) to `EBAY_CLIENT_ID` and Cert ID (Client Secret)
+to `EBAY_CLIENT_SECRET`; Dev ID is not required. As of October 3, 2026, both
+required values are present in the local checkout `.env`, with production selected
+in `config/settings.yaml`. This confirms configuration only; live authentication
+and Browse API access still need an explicit live search.
+Use `.env.example` for names and keep real secrets private. Live hunts
 are disabled in the optional staging profile. See [eBay hunts](hunts.md) for the
 explicit search workflow and result limits. Never put API credentials in
 `scan-config.json`. Marker names such as `B1_ISOLATED`,
