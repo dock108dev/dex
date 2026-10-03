@@ -28,19 +28,20 @@ Pokédex remains #001–251.
 The current build adds authenticated live eBay search, price comparisons and the
 expanded goal builder. Local checks cover price/edition/grade matching, unknown
 contents, filtering, account-scoped saved hunts, missing-target searches and
-provider failures. As of October 3, 2026, both required eBay application credentials
-are present in the private, Git-ignored checkout `.env`, and the configured
-environment is production. Actual provider access and Mike's personal-use review
-remain open. Simulated
-provider tests do not establish current listing availability or bargain quality.
+provider failures. As of October 3, 2026, the current private credential pair
+and configured environment are Sandbox. Sandbox OAuth/Browse succeeded with an empty result.
+The developer portal confirms the dex Production keyset is disabled pending
+account-deletion notification compliance. Production results and Mike's
+personal-use review remain open. Simulated provider tests do not establish
+current listing availability or bargain quality.
 
 ## Next steps
 
 Sandbox authentication and Browse access succeeded on October 3; the narrow
-Pokémon query returned an empty saved snapshot. Review the Sandbox save/reopen
-workflow, then resolve production notification/keyset setup before a fresh
-explicit production pass. Nonempty comparison/reveal/seller-review verification
-and Mike's personal-use acceptance remain open. See the outcome below.
+Pokémon query returned an empty saved snapshot. Resolve the disabled Production
+keyset through the [exact setup steps](hunts.md#production-setup-gate-october-3-2026)
+before one explicit populated-result pass. Nonempty comparison/reveal/seller-review
+verification and Mike's personal-use acceptance remain open. See the outcome below.
 
 Photo upload and recognition code remains available. Further photo integration
 and accuracy evaluation are deferred until there are other users or collection
@@ -135,3 +136,23 @@ regression tests remain applicable to unchanged application code. Preservation:
 38 unaffected database tables and all 13 root files unchanged; only expected
 new saved-hunt/import-batch records were written. Private sanitized evidence is
 retained in `dex-private/ebay-sandbox-20261003`, outside Git. Credentials untouched.
+
+## October 3 Production setup audit
+
+The authenticated portal confirms the dex Production keyset is disabled for
+account-deletion compliance. Its endpoint/token are empty, exemption is off,
+alert email is present and Send Test Notification is disabled. Current local
+credentials/configuration remain Sandbox. No new Production call was made;
+populated workflow and Mike's acceptance remain pending. No credentials, provider
+settings, app source or external settings were changed. The supported private-root
+check passed; all 40 tables and 13 root files, plus `.env` and provider settings,
+were unchanged. Audit base is `ca4dde5baa18fa05f7c0a48bd9e175886ba628ac`;
+application source is still `17306fee355091bed082527bee02a01e26cf4f01`.
+
+[Exact setup, owner action and single queued search](hunts.md#production-setup-gate-october-3-2026).
+The current saved-snapshot flow persists eBay data and cannot use the documented
+non-persistence exemption. No public callback exists; hosting remains deferred.
+Mike should ask Developer Technical Support for the applicable activation/access
+path before changing credentials. Sanitized evidence is retained outside Git in
+`dex-private/ebay-production-setup-20261003`. Engineering checks do not supply
+personal-use acceptance.

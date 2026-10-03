@@ -14,12 +14,15 @@ Pokédex range, with species or printing completion and direct missing searches.
 The current Pokémon species catalog ends at #251; Original 151 is one preset
 within the general goal builder.
 
-At the start of October 3, 2026, the production path had application
-credentials configured: both required values are present in the checkout's
-private, Git-ignored `.env`. Credential presence was checked without exposing
-values. The explicit live pass failed production OAuth with HTTP 401 (`invalid_client`);
-Browse API access remains unverified;
-real provider results and Mike's personal-use review remain open.
+Current environment is Sandbox, with a privately checked Sandbox-marked App ID
+and both required credentials present. The running server has no eBay credential
+overrides. Sandbox OAuth and Browse succeeded, but the narrow $25 query was empty.
+The dex Production keyset is visibly **disabled** in the authenticated developer
+portal; its account-deletion endpoint and verification token are empty, exemption
+is off and Send Test Notification is disabled. The alert email is present.
+Earlier Production OAuth returned HTTP 401 (`invalid_client`); that response alone
+does not establish its historical cause. Production Browse access remains unverified.
+See the [Production setup gate](hunts.md#production-setup-gate-october-3-2026).
 Local simulated-provider checks do not establish current listing availability,
 provider access or actual bargain quality. Guide comparisons use retained evidence
 and explicitly refreshed project snapshots, selecting the newest valid record
@@ -113,3 +116,23 @@ regression tests remain applicable to unchanged application code. Preservation:
 38 unaffected database tables and all 13 root files unchanged; only expected
 new saved-hunt/import-batch records were written. Private sanitized evidence is
 retained in `dex-private/ebay-sandbox-20261003`, outside Git. Credentials untouched.
+
+## October 3 Production setup audit
+
+The authenticated portal confirms the dex Production keyset is disabled for
+account-deletion compliance. Its endpoint/token are empty, exemption is off,
+alert email is present and Send Test Notification is disabled. Current local
+credentials/configuration remain Sandbox. No new Production call was made;
+populated workflow and Mike's acceptance remain pending. No credentials, provider
+settings, app source or external settings were changed. The supported private-root
+check passed; all 40 tables and 13 root files, plus `.env` and provider settings,
+were unchanged. Audit base is `ca4dde5baa18fa05f7c0a48bd9e175886ba628ac`;
+application source is still `17306fee355091bed082527bee02a01e26cf4f01`.
+
+[Exact setup, owner action and single queued search](hunts.md#production-setup-gate-october-3-2026).
+The current saved-snapshot flow persists eBay data and cannot use the documented
+non-persistence exemption. No public callback exists; hosting remains deferred.
+Mike should ask Developer Technical Support for the applicable activation/access
+path before changing credentials. Sanitized evidence is retained outside Git in
+`dex-private/ebay-production-setup-20261003`. Engineering checks do not supply
+personal-use acceptance.

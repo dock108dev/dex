@@ -53,11 +53,13 @@ stores are never automatically synchronized.
 Local authenticated eBay search reads only the three eBay keys listed above from
 the checkout's `.env`; it does not load recognition or webhook credentials from
 that file. Map App ID (Client ID) to `EBAY_CLIENT_ID` and Cert ID (Client Secret)
-to `EBAY_CLIENT_SECRET`; Dev ID is not required. As of October 3, 2026, both
-required values are present in the local checkout `.env`, with production selected
-in `config/settings.yaml`. The October 3 explicit initial/retry pass
-failed OAuth HTTP 401 (`invalid_client`); Browse was not reached. Verify the active
-matching Production keyset privately before any further live attempt.
+to `EBAY_CLIENT_SECRET`; Dev ID is not required. Current October 3 configuration
+is Sandbox and the private App ID is Sandbox-marked; both values are present,
+with no eBay credential overrides in the running server. Sandbox access succeeded
+with an empty batch. The developer portal shows the dex Production keyset disabled
+pending notification compliance; see the
+[Production setup gate](hunts.md#production-setup-gate-october-3-2026). Keep the
+working Sandbox pair and settings intact until an active Production pair is ready.
 Use `.env.example` for names and keep real secrets private. Live hunts
 are disabled in the optional staging profile. See [eBay hunts](hunts.md) for the
 explicit search workflow and result limits. Never put API credentials in
