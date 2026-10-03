@@ -83,3 +83,8 @@ presentation checks; its `before` mode reads HEAD, so record HEAD with captures.
 Local backup: stop the app and preserve the entire private root with its permissions,
 including database, secret, provider settings and local evidence. Git excludes
 private state and is not its backup. Staging has separate backup/restore commands.
+
+Current local environment after Mike's October 3 follow-up is Sandbox. Credentials
+were updated privately; the explicit narrow Pikachu search authenticated and
+completed Browse successfully with zero listings. Saved/reopened Sandbox results
+are test evidence. Production setup and populated-result review remain pending.

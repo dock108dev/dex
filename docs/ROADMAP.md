@@ -36,15 +36,11 @@ provider tests do not establish current listing availability or bargain quality.
 
 ## Next steps
 
-1. Resolve the production OAuth HTTP 401 (`invalid_client`) by verifying the
-   active matching Production application keyset privately. No further live
-   attempt is authorized by the completed October 3 initial/retry allowance.
-2. Review real results for delivered-price comparisons, guide coverage and seller
-   evidence, then save/reopen the hunt and check spoiler reveal. Mike's personal-use
-   review remains pending until this real-result workflow is exercised.
-
-Credential entry is complete; a successful live search is still pending. The app
-uses App ID (Client ID) and Cert ID (Client Secret); Dev ID is not required.
+Sandbox authentication and Browse access succeeded on October 3; the narrow
+Pokémon query returned an empty saved snapshot. Review the Sandbox save/reopen
+workflow, then resolve production notification/keyset setup before a fresh
+explicit production pass. Nonempty comparison/reveal/seller-review verification
+and Mike's personal-use acceptance remain open. See the outcome below.
 
 Photo upload and recognition code remains available. Further photo integration
 and accuracy evaluation are deferred until there are other users or collection
@@ -63,7 +59,7 @@ goal → hunt loop without overlapping destinations.
 [Current setup](local-development.md) · [Catalogs and goals](catalogs.md) ·
 [Historical decisions and candidate evidence](history/README.md).
 
-## October 3 live verification outcome
+## October 3 production verification outcome
 
 First application candidate: `dbaafee7283c9fb81de664738084c69061b16254`.
 Repaired/restarted application candidate: `17306fee355091bed082527bee02a01e26cf4f01`
@@ -110,3 +106,32 @@ remain unverified because authentication produced no results. Isolated tests are
 engineering evidence only. Mike's personal-use acceptance remains pending his
 feedback. Hosting, phone access, managed startup, invited users and further
 recognition remain deferred.
+
+## October 3 Sandbox follow-up
+
+Mike updated credentials privately to Sandbox. Selected `environment: sandbox`
+in `config/settings.yaml`; application code is unchanged from tested candidate
+`17306fee355091bed082527bee02a01e26cf4f01` (documentation base `4360ac1`).
+The same running private-root app/session was used, without restart or seeding.
+One explicit Sandbox batch searched `pokemon base set pikachu 58/102`, individual
+cards, Find bargains, All focus, Vintage 251 scope, delivered budget $25.
+**Sandbox OAuth and Browse succeeded**, returning zero raw listings and zero
+filtered results. One of one planned queries ran, within the existing eight-query
+and two-page caps; no coverage warning or further query batch was reported.
+No retry or additional query was made.
+
+The empty snapshot was saved, opened from Saved finds with the `eBay sandbox
+snapshot` label, and switched to Below guide reference. The original query,
+purpose, pool, focus and $25 budget stayed visible. Reopening uses the saved
+projection; comparison filtering is browser-only. Neither path invokes provider
+search, as verified by source inspection and the previously passed isolated replay
+tests. This empty-result pass cannot exercise actual comparison, reveal, seller
+review or spoiler reset on populated results. It does not qualify production
+availability or bargain quality. Production OAuth and notification setup remain
+unresolved; personal-use acceptance remains pending Mike's feedback.
+
+Supported private-root check and diff whitespace check passed. The earlier 328
+regression tests remain applicable to unchanged application code. Preservation:
+38 unaffected database tables and all 13 root files unchanged; only expected
+new saved-hunt/import-batch records were written. Private sanitized evidence is
+retained in `dex-private/ebay-sandbox-20261003`, outside Git. Credentials untouched.

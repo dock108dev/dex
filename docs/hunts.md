@@ -99,3 +99,8 @@ Provider failures show a safe error and require an explicit retry. They do not
 silently substitute sample results. Local simulated-provider tests qualify the
 application behavior; actual eBay access and Mike's personal-use review remain
 separate checks.
+
+Current local environment after Mike's October 3 follow-up is Sandbox. Credentials
+were updated privately; the explicit narrow Pikachu search authenticated and
+completed Browse successfully with zero listings. Saved/reopened Sandbox results
+are test evidence. Production setup and populated-result review remain pending.
