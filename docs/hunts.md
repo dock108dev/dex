@@ -66,8 +66,9 @@ it is not a settled purchase price. Tax, fees and resale proceeds are not modele
 
 Local setup status, October 3, 2026: App ID and Cert ID have been added to the
 private, Git-ignored checkout `.env`; both required values are present and the
-configured environment is production. Live authentication and Browse API access
-are pending the first explicit live search. Dev ID is not used by this app.
+configured environment is production. The October 3 initial search and single retry
+failed before Browse; the repaired retry showed OAuth HTTP 401 (`invalid_client`).
+Verify the active matching Production keyset privately before another live pass. Dev ID is not used by this app.
 
 Set `EBAY_CLIENT_ID` and `EBAY_CLIENT_SECRET` in the server environment or private
 checkout `.env`, using `.env.example` for key names. Never paste credentials into
