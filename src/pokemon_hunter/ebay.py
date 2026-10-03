@@ -23,8 +23,11 @@ class EbayHTTPError(EbayError):
                 payload = response.json()
                 code = payload.get("error") if isinstance(payload, dict) else None
                 if code in (
-                    "invalid_client", "invalid_request", "invalid_scope",
-                    "unauthorized_client", "unsupported_grant_type",
+                    "invalid_client",
+                    "invalid_request",
+                    "invalid_scope",
+                    "unauthorized_client",
+                    "unsupported_grant_type",
                 ):
                     self.code = code
             except ValueError:

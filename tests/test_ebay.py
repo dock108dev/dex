@@ -68,7 +68,9 @@ def test_error_does_not_leak_response(settings):
     assert "never-print-me" not in str(error.value)
 
 
-@pytest.mark.parametrize("code, expected", [("invalid_client", "invalid_client"), ("SECRET", None), ([], None)])
+@pytest.mark.parametrize(
+    "code, expected", [("invalid_client", "invalid_client"), ("SECRET", None), ([], None)]
+)
 def test_http_error_retains_only_safe_oauth_fields(code, expected):
     response = httpx.Response(401, json={"error": code, "error_description": "SECRET", "token": "SECRET"})
     error = EbayHTTPError("OAuth", 401, response)
