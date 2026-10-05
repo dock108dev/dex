@@ -1,5 +1,9 @@
 # eBay hunts
 
+Classic eBay hunting remains required in the broadened beta. A separate
+[sealed-pack index](BETA_REQUIREMENTS.md) is required for missing-species shopping;
+its data and UI are outstanding. The instructions below describe current eBay behavior.
+
 The authenticated localhost app supports explicit eBay searches with the same
 Browse client as the original app. Search results are private account-scoped
 snapshots. The app never buys or bids, and a listing never adds an owned card.
@@ -87,3 +91,60 @@ for the selected application. The app does not activate keysets automatically.
 older candidates and one installation. They do not establish access for a new
 clone. Populated Production comparison, reveal and seller-review behavior still
 needs live evidence. Local mocked-provider checks cover engineering behavior only.
+
+## Required beta pack-discovery flow
+
+From a missing species or goal, open Packs to open, inspect compatible booster
+expansions and exact sealed products, compare distinct missing-species coverage
+and documented pack quantities, then review seller/price/stock/checked time and
+follow the purchase link. Guaranteed included promos are separate from possible
+pulls. Unknown/mixed contents and stale offers remain visible. Coverage and rarity
+cannot establish pull odds or expected completion cost.
+
+Save/reopen research without provider calls; refresh offers explicitly with finite
+budgets. Distinguish direct retailers from marketplace sellers. Keep existing eBay
+spoiler controls and classic preferences. This is required engineering, not current
+user instructions. Catalog/retailer work proceeds while eBay access is blocked;
+beta acceptance still requires populated classic eBay and real purchasable offers.
+
+
+## E2a — October 4 explicit Original 151 versions
+
+Goal-scoped preparation now captures the explicitly selected goal ID, content digest,
+kind and frozen definition. Broad goal choices show retained version numbers; older
+saved hunts keep their captured membership and query plan after successors are
+created. Archived metadata remains recognizable inside retained broad scopes.
+Current account resolved ownership is a separately labeled projection, including
+on reopening. Reopening/filtering and synthetic sample searches make no provider
+calls; classic defaults, mystery reveal and Production activation remain unchanged.
+No populated live evidence follows from this slice. See [E2a closeout](E2A.md)
+for the frozen-scope/import tests and pending ordinary-browser walkthrough.
+
+
+## E2a runtime qualification — October 4
+
+E2a runtime qualification now passes: locked synchronization, all three process
+cleanup cases and the full suite (458 passed, one existing warning), plus compilation,
+JavaScript syntax, lint and formatting. Fresh copied-state preservation and zero-call
+frozen-hunt service assertions pass. E2a remains partial: renewed explicit browser
+permission was requested and is pending; no server, navigation, UI captures or owner
+acceptance occurred. [Qualification record](history/2026-10-04-E2A-QUALIFICATION.md)
+retains commands, runtime, exact hashes and preservation evidence. Full E2 and beta
+remain open.
+
+
+## E3a — October 4 retained-data view
+
+The authenticated Packs to open view is implemented from a selected Original 151
+goal version or missing species. Frozen review references and stable publication
+bridges bound account-derived missing-species coverage. Confirmed booster species
+are deduplicated; unknown variants and guaranteed inclusions are separate. Exact
+product contents and dated seller/stock/shipping gaps remain visible. No acquisition,
+refresh jobs, inventory change or saved pack research was added.
+
+Qualification is partial: focused/framework checks and copied-state preservation
+pass, but browser access and loopback bind were denied; locked sync crashes and
+three process-cleanup suite cases are blocked by sandbox denial of ps.
+[E3a closeout](E3A.md) and [dated validation](history/2026-10-04-E3A-VALIDATION.md)
+record actual evidence and the separate finite D3/D4a data handoff. E2a was already
+locally browser-qualified per its browser record; full E2/E3 and beta stay open.

@@ -19,7 +19,7 @@ from django.http import Http404
 from pokemon_hunter.inventory import stable_id
 from pokemon_hunter.migration import COPY_FIELDS, digest, encode
 
-from . import goal_filters, store
+from . import broad_goals, goal_filters, store
 from . import transactions as transaction
 
 SCHEMA = "dex-collection-v2"
@@ -140,8 +140,23 @@ def goals(actor):
     published_ids = available_ids if settings.B4_ENABLED else None
     exact_owned = exact_owned_printings(active, published_ids)
     result = store.rows("SELECT * FROM collection_goals WHERE user_id=%s ORDER BY name,id", [actor.user_id])
+    successor_ids = {}
+    for row in result:
+        predecessor = json.loads(row["definition"]).get("lineage", {}).get("predecessor_id")
+        successor_ids.setdefault(predecessor, []).append(row["id"])
+    current_broad = (
+        broad_goals.definition(catalog(actor)) if any(g["kind"] == "original151" for g in result) else None
+    )
     for g in result:
+        g["successor_ids"] = successor_ids.get(g["id"], [])
         definition = json.loads(g["definition"])
+        if g["kind"] == "original151":
+            g.update(definition=definition, **broad_goals.progress(definition, active, available_ids))
+            g["coverage_update_available"] = any(
+                current_broad[k] != definition[k]
+                for k in ("items", "catalog_references", "eligibility_policy")
+            )
+            continue
         items = definition["items"]
         matched = [
             i
@@ -237,6 +252,8 @@ def name(raw):
 
 def goal_definition(actor, request):
     kind = request.get("goal_kind")
+    if kind == "original151":
+        return broad_goals.definition(catalog(actor))
     policy = request.get("policy", "catalog")
     if policy not in {"catalog", "exact"}:
         raise ValueError("Choose catalog-entry or exact-variant completion")
@@ -477,6 +494,13 @@ def plan(actor, kind, request, operation_id):
         before = one(actor, entity, request.get("id"))
         if request.get("revision") != before["revision"]:
             raise Conflict("This record changed. Reload it before making a new preview.")
+        if entity == "goal" and (
+            before["kind"] == "original151"
+            or any(
+                g["definition"].get("lineage", {}).get("predecessor_id") == before["id"] for g in goals(actor)
+            )
+        ):
+            raise Conflict("Retained goal versions cannot be removed")
         if entity == "copy" and before["state"] != "active":
             raise Conflict("This copy has already been removed")
         if kind == "edit":
@@ -544,8 +568,45 @@ def plan(actor, kind, request, operation_id):
             "version": digest(encode(definition).encode()),
             "definition": encode(definition),
         }
-        if kind == "goal_edit":
+        if request["goal_kind"] == "original151":
+            gid = stable_id("b2-goal", actor.user_id + operation_id)
+            lineage = dict(root_id=gid, predecessor_id=None, predecessor_version=None, number=1)
+            available = {p["id"] for p in catalog_rows}
+            if kind == "goal_edit":
+                before = one(actor, "goal", request.get("id"))
+                if before["revision"] != request.get("revision"):
+                    raise Conflict("Goal changed; preview again")
+                old = json.loads(before["definition"])
+                if len(old["items"]) != 151 or old["policy"] != "species":
+                    raise ValueError("Only an Original 151 species goal can be versioned here")
+                old_lineage = old.get("lineage", dict(root_id=before["id"], number=1))
+                # A concurrent successor invalidates the preview even though its predecessor is immutable.
+                if any(
+                    g["definition"].get("lineage", {}).get("predecessor_id") == before["id"]
+                    for g in goals(actor)
+                ):
+                    raise Conflict("This version already has a successor; choose that version")
+                lineage = dict(
+                    root_id=old_lineage["root_id"],
+                    predecessor_id=before["id"],
+                    predecessor_version=before["version"],
+                    number=old_lineage["number"] + 1,
+                )
+                result["goal_difference"] = broad_goals.difference(old, definition, owned, available)
+                result["goal_difference"]["progress_before"] = next(
+                    g["satisfied"] for g in goals(actor) if g["id"] == before["id"]
+                )
+                result["goal_predecessor"] = before
+            definition["lineage"] = lineage
+            fields.update(version=digest(encode(definition).encode()), definition=encode(definition))
+            result["goal_progress"] = broad_goals.progress(definition, owned, available)
+            create("goal", dict(id=gid, user_id=actor.user_id, **fields, revision=0))
+        elif kind == "goal_edit":
             before = one(actor, "goal", request.get("id"))
+            if before["kind"] == "original151" or any(
+                g["definition"].get("lineage", {}).get("predecessor_id") == before["id"] for g in goals(actor)
+            ):
+                raise ValueError("Broad versions cannot be overwritten; create an explicit successor")
             if before["revision"] != request.get("revision"):
                 raise Conflict("This goal changed. Reload before editing its filters.")
             result["updates"].append(
@@ -664,12 +725,13 @@ def plan(actor, kind, request, operation_id):
                 result["errors"].append(
                     f"Row {index}: {str(error) or 'Binder is not available to this account'}"
                 )
+        imported_broad = broad_goals.remap_imports(data.get("goals", []), actor.user_id, operation_id)
         seen_goals = set()
         for g in data.get("goals", []):
             if not isinstance(g, dict) or not isinstance(g.get("id"), str) or g["id"] in seen_goals:
                 raise ValueError("Invalid or duplicate goal identity")
             seen_goals.add(g["id"])
-            if g.get("kind") not in {"set", "custom", "vintage", "filtered"}:
+            if g.get("kind") not in {"set", "custom", "vintage", "filtered", "original151"}:
                 raise ValueError("Unsupported goal kind")
             definition = g.get("definition")
             if not isinstance(definition, dict) or definition.get("policy") not in {
@@ -682,7 +744,9 @@ def plan(actor, kind, request, operation_id):
                 raise ValueError("Goal membership version does not match")
             if not isinstance(definition.get("items"), list) or not 0 < len(definition["items"]) <= 2000:
                 raise ValueError("Invalid goal checklist")
-            if g["kind"] != "filtered" and (definition["policy"] == "species") != (g["kind"] == "vintage"):
+            if g["kind"] not in {"filtered", "original151"} and (definition["policy"] == "species") != (
+                g["kind"] == "vintage"
+            ):
                 raise ValueError("Species policy requires the versioned Vintage 251 template")
             if g["kind"] == "filtered":
                 scope = goal_filters.filters(
@@ -755,8 +819,10 @@ def plan(actor, kind, request, operation_id):
                     "user_id": actor.user_id,
                     "name": name(g.get("name")),
                     "kind": g.get("kind", "custom"),
-                    "version": g["version"],
-                    "definition": encode(definition),
+                    "version": digest(encode(imported_broad[g["id"]]).encode())
+                    if g["id"] in imported_broad
+                    else g["version"],
+                    "definition": encode(imported_broad.get(g["id"], definition)),
                     "revision": 0,
                 },
             )
@@ -896,6 +962,11 @@ def undo(actor, key):
         return op
     if op["state"] != "confirmed":
         raise Conflict("Only a confirmed operation can be undone")
+    if any(c["kind"] == "goal" and c["after"] and c["after"]["kind"] == "original151" for c in op["changes"]):
+        raise Conflict("Retained goal versions cannot be erased; preview an explicit successor")
+    predecessors = {g["definition"].get("lineage", {}).get("predecessor_id") for g in goals(actor)}
+    if any(c["kind"] == "goal" and (c["after"] or c["before"])["id"] in predecessors for c in op["changes"]):
+        raise Conflict("A retained successor depends on this version; undo would alter its predecessor")
     # Check ALL after-images before writing anything. Revisions detect even edited-back values.
     created_copies = {c["after"]["id"] for c in op["changes"] if c["kind"] == "copy" and c["before"] is None}
     for change in op["changes"]:

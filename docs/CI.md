@@ -37,3 +37,13 @@ success. Hosted results qualify their submitted commit, not later working-tree
 changes. GitHub-managed CodeQL configuration and repository protection settings
 are external to this workflow; dated observations belong in
 [verification history](history/2026-10-03-VERIFICATION.md).
+
+## Additional beta acceptance
+
+[Beta requirements](BETA_REQUIREMENTS.md) require real catalog/product records and
+dated purchasable offers. Add meaningful checks for import idempotency/conflicts,
+migration preservation, canonical species policy, goal updates, missing-species
+unions, promo separation, mixed products, stale/unknown offers, partial provider
+failure, account privacy and no-call reopening. Preserve vintage/eBay regression
+coverage. CI qualifies engineering behavior only; D1–D5 data review, live retailer
+and eBay evidence, and owner acceptance remain separate required gates.

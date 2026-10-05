@@ -1,0 +1,2921 @@
+{
+  "version": "2026-10-04-v1",
+  "language": "en",
+  "market": "US",
+  "species_registry_count": 1025,
+  "provider_set_count": 220,
+  "physical_set_count": 205,
+  "digital_sets": [
+    "tcgdex:en:P-A",
+    "tcgdex:en:A1",
+    "tcgdex:en:A1a",
+    "tcgdex:en:A2",
+    "tcgdex:en:A2a",
+    "tcgdex:en:A2b",
+    "tcgdex:en:A3",
+    "tcgdex:en:A3a",
+    "tcgdex:en:A3b",
+    "tcgdex:en:A4",
+    "tcgdex:en:A4a",
+    "tcgdex:en:B1",
+    "tcgdex:en:B1a",
+    "tcgdex:en:B2",
+    "tcgdex:en:B2a"
+  ],
+  "unknown_medium": [],
+  "series_conflicts": [],
+  "existing_shipped_packages": {
+    "gym1": {
+      "package": "config/catalog-imports/gym-heroes.json",
+      "count": 132
+    },
+    "neo1": {
+      "package": "config/catalog-imports/staging-ten/neo_genesis.json",
+      "count": 111
+    },
+    "neo2": {
+      "package": "config/catalog-imports/staging-ten/neo_discovery.json",
+      "count": 75
+    },
+    "base2": {
+      "package": "config/catalog-imports/staging-ten/jungle.json",
+      "count": 64
+    },
+    "neo3": {
+      "package": "config/catalog-imports/staging-ten/neo_revelation.json",
+      "count": 66
+    },
+    "basep": {
+      "package": "config/catalog-imports/staging-ten/wizards_black_star_promos.json",
+      "count": 53
+    },
+    "base5": {
+      "package": "config/catalog-imports/staging-ten/team_rocket.json",
+      "count": 83
+    },
+    "base3": {
+      "package": "config/catalog-imports/staging-ten/fossil.json",
+      "count": 62
+    },
+    "base4": {
+      "package": "config/catalog-imports/staging-ten/base_set_2.json",
+      "count": 130
+    },
+    "neo4": {
+      "package": "config/catalog-imports/staging-ten/neo_destiny.json",
+      "count": 113
+    },
+    "base1": {
+      "package": "config/catalog-imports/staging-ten/base_set.json",
+      "count": 102
+    }
+  },
+  "existing_shipped_printings": 991,
+  "sets_without_shipped_packages": [
+    "miscp",
+    "wp",
+    "jumbo",
+    "gym2",
+    "si1",
+    "lc",
+    "sp",
+    "ecard1",
+    "bog",
+    "ecard2",
+    "ecard3",
+    "ex1",
+    "ex2",
+    "np",
+    "ex3",
+    "ex4",
+    "ex5",
+    "tk-ex-latia",
+    "tk-ex-latio",
+    "ex5.5",
+    "ex6",
+    "pop1",
+    "ex7",
+    "ex8",
+    "ex9",
+    "pop2",
+    "ex10",
+    "exu",
+    "ex11",
+    "ex12",
+    "tk-ex-m",
+    "tk-ex-p",
+    "pop3",
+    "ex13",
+    "pop4",
+    "ex14",
+    "ex15",
+    "ex16",
+    "pop5",
+    "dpp",
+    "dp1",
+    "dp2",
+    "tk-dp-l",
+    "tk-dp-m",
+    "pop6",
+    "dp3",
+    "dp4",
+    "pop7",
+    "dp5",
+    "dp6",
+    "pop8",
+    "dp7",
+    "pl1",
+    "pop9",
+    "pl2",
+    "pl3",
+    "pl4",
+    "ru1",
+    "hgss1",
+    "hgssp",
+    "tk-hs-r",
+    "tk-hs-g",
+    "hgss2",
+    "hgss3",
+    "hgss4",
+    "col1",
+    "bw1",
+    "bwp",
+    "2011bw",
+    "bw2",
+    "tk-bw-e",
+    "tk-bw-z",
+    "bw3",
+    "bw4",
+    "bw5",
+    "2012bw",
+    "bw6",
+    "dv1",
+    "bw7",
+    "bw8",
+    "bw9",
+    "bw10",
+    "xyp",
+    "rc",
+    "bw11",
+    "xy0",
+    "xy1",
+    "xya",
+    "tk-xy-n",
+    "tk-xy-sy",
+    "xy2",
+    "2014xy",
+    "xy3",
+    "tk-xy-b",
+    "tk-xy-w",
+    "xy4",
+    "xy5",
+    "dc1",
+    "tk-xy-latio",
+    "tk-xy-latia",
+    "xy6",
+    "xy7",
+    "xy8",
+    "2015xy",
+    "xy9",
+    "g1",
+    "tk-xy-p",
+    "tk-xy-su",
+    "xy10",
+    "xy11",
+    "2016xy",
+    "xy12",
+    "sm1",
+    "smp",
+    "tk-sm-r",
+    "tk-sm-l",
+    "sm2",
+    "2017sm",
+    "sm3",
+    "sm3.5",
+    "sm4",
+    "sm5",
+    "sm6",
+    "sm7",
+    "sm7.5",
+    "2018sm",
+    "sm8",
+    "sm9",
+    "det1",
+    "sm10",
+    "sm11",
+    "sma",
+    "sm115",
+    "2019sm",
+    "sm12",
+    "swshp",
+    "swsh1",
+    "swsh2",
+    "swsh3",
+    "fut2020",
+    "swsh3.5",
+    "swsh4",
+    "2021swsh",
+    "swsh4.5",
+    "swsh4.5sv",
+    "swsh5",
+    "swsh6",
+    "swsh7",
+    "cel25cc",
+    "cel25",
+    "swsh8",
+    "swsh9tg",
+    "swsh9",
+    "swsh10",
+    "swsh10tg",
+    "swsh10.5",
+    "2022swsh",
+    "swsh11",
+    "swsh11tg",
+    "swsh12",
+    "swsh12tg",
+    "swsh12.5",
+    "swsh12.5gg",
+    "sv01",
+    "sve",
+    "svp",
+    "sv02",
+    "2023sv",
+    "sv03",
+    "sv03.5",
+    "mfb",
+    "sv04",
+    "sv04.5",
+    "sv05",
+    "sv06",
+    "sv06.5",
+    "sv07",
+    "sv08",
+    "2024sv",
+    "sv08.5",
+    "sv09",
+    "sv10",
+    "sv10.5b",
+    "sv10.5w",
+    "mee",
+    "me01",
+    "mep",
+    "me02",
+    "me02.5",
+    "me03",
+    "me04",
+    "me05",
+    "30th",
+    "30th-c"
+  ],
+  "new_e1_printings": 1,
+  "sets": [
+    {
+      "id": "tcgdex:en:miscp",
+      "sources": [
+        "sets",
+        "series-misc"
+      ],
+      "name": "Miscellaneous Promos",
+      "language": "en",
+      "series": "misc",
+      "medium": "physical",
+      "expected_printings": 1
+    },
+    {
+      "id": "tcgdex:en:base1",
+      "sources": [
+        "sets",
+        "series-base"
+      ],
+      "name": "Base Set",
+      "language": "en",
+      "series": "base",
+      "medium": "physical",
+      "expected_printings": 102
+    },
+    {
+      "id": "tcgdex:en:base2",
+      "sources": [
+        "sets",
+        "series-base"
+      ],
+      "name": "Jungle",
+      "language": "en",
+      "series": "base",
+      "medium": "physical",
+      "expected_printings": 64
+    },
+    {
+      "id": "tcgdex:en:basep",
+      "sources": [
+        "sets",
+        "series-base"
+      ],
+      "name": "Wizards Black Star Promos",
+      "language": "en",
+      "series": "base",
+      "medium": "physical",
+      "expected_printings": 53
+    },
+    {
+      "id": "tcgdex:en:wp",
+      "sources": [
+        "sets",
+        "series-base"
+      ],
+      "name": "W Promotional",
+      "language": "en",
+      "series": "base",
+      "medium": "physical",
+      "expected_printings": 7
+    },
+    {
+      "id": "tcgdex:en:base3",
+      "sources": [
+        "sets",
+        "series-base"
+      ],
+      "name": "Fossil",
+      "language": "en",
+      "series": "base",
+      "medium": "physical",
+      "expected_printings": 62
+    },
+    {
+      "id": "tcgdex:en:jumbo",
+      "sources": [
+        "sets",
+        "series-misc"
+      ],
+      "name": "Jumbo cards",
+      "language": "en",
+      "series": "misc",
+      "medium": "physical",
+      "expected_printings": 160
+    },
+    {
+      "id": "tcgdex:en:base4",
+      "sources": [
+        "sets",
+        "series-base"
+      ],
+      "name": "Base Set 2",
+      "language": "en",
+      "series": "base",
+      "medium": "physical",
+      "expected_printings": 130
+    },
+    {
+      "id": "tcgdex:en:base5",
+      "sources": [
+        "sets",
+        "series-base"
+      ],
+      "name": "Team Rocket",
+      "language": "en",
+      "series": "base",
+      "medium": "physical",
+      "expected_printings": 83
+    },
+    {
+      "id": "tcgdex:en:gym1",
+      "sources": [
+        "sets",
+        "series-gym"
+      ],
+      "name": "Gym Heroes",
+      "language": "en",
+      "series": "gym",
+      "medium": "physical",
+      "expected_printings": 132
+    },
+    {
+      "id": "tcgdex:en:gym2",
+      "sources": [
+        "sets",
+        "series-gym"
+      ],
+      "name": "Gym Challenge",
+      "language": "en",
+      "series": "gym",
+      "medium": "physical",
+      "expected_printings": 132
+    },
+    {
+      "id": "tcgdex:en:neo1",
+      "sources": [
+        "sets",
+        "series-neo"
+      ],
+      "name": "Neo Genesis",
+      "language": "en",
+      "series": "neo",
+      "medium": "physical",
+      "expected_printings": 111
+    },
+    {
+      "id": "tcgdex:en:neo2",
+      "sources": [
+        "sets",
+        "series-neo"
+      ],
+      "name": "Neo Discovery",
+      "language": "en",
+      "series": "neo",
+      "medium": "physical",
+      "expected_printings": 75
+    },
+    {
+      "id": "tcgdex:en:si1",
+      "sources": [
+        "sets",
+        "series-neo"
+      ],
+      "name": "Southern Islands",
+      "language": "en",
+      "series": "neo",
+      "medium": "physical",
+      "expected_printings": 18
+    },
+    {
+      "id": "tcgdex:en:neo3",
+      "sources": [
+        "sets",
+        "series-neo"
+      ],
+      "name": "Neo Revelation",
+      "language": "en",
+      "series": "neo",
+      "medium": "physical",
+      "expected_printings": 66
+    },
+    {
+      "id": "tcgdex:en:neo4",
+      "sources": [
+        "sets",
+        "series-neo"
+      ],
+      "name": "Neo Destiny",
+      "language": "en",
+      "series": "neo",
+      "medium": "physical",
+      "expected_printings": 113
+    },
+    {
+      "id": "tcgdex:en:lc",
+      "sources": [
+        "sets",
+        "series-lc"
+      ],
+      "name": "Legendary Collection",
+      "language": "en",
+      "series": "lc",
+      "medium": "physical",
+      "expected_printings": 110
+    },
+    {
+      "id": "tcgdex:en:sp",
+      "sources": [
+        "sets",
+        "series-ecard"
+      ],
+      "name": "Sample",
+      "language": "en",
+      "series": "ecard",
+      "medium": "physical",
+      "expected_printings": 10
+    },
+    {
+      "id": "tcgdex:en:ecard1",
+      "sources": [
+        "sets",
+        "series-ecard"
+      ],
+      "name": "Expedition Base Set",
+      "language": "en",
+      "series": "ecard",
+      "medium": "physical",
+      "expected_printings": 165
+    },
+    {
+      "id": "tcgdex:en:bog",
+      "sources": [
+        "sets",
+        "series-ecard"
+      ],
+      "name": "Best of game",
+      "language": "en",
+      "series": "ecard",
+      "medium": "physical",
+      "expected_printings": 9
+    },
+    {
+      "id": "tcgdex:en:ecard2",
+      "sources": [
+        "sets",
+        "series-ecard"
+      ],
+      "name": "Aquapolis",
+      "language": "en",
+      "series": "ecard",
+      "medium": "physical",
+      "expected_printings": 186
+    },
+    {
+      "id": "tcgdex:en:ecard3",
+      "sources": [
+        "sets",
+        "series-ecard"
+      ],
+      "name": "Skyridge",
+      "language": "en",
+      "series": "ecard",
+      "medium": "physical",
+      "expected_printings": 182
+    },
+    {
+      "id": "tcgdex:en:ex1",
+      "sources": [
+        "sets",
+        "series-ex"
+      ],
+      "name": "Ruby & Sapphire",
+      "language": "en",
+      "series": "ex",
+      "medium": "physical",
+      "expected_printings": 109
+    },
+    {
+      "id": "tcgdex:en:ex2",
+      "sources": [
+        "sets",
+        "series-ex"
+      ],
+      "name": "Sandstorm",
+      "language": "en",
+      "series": "ex",
+      "medium": "physical",
+      "expected_printings": 100
+    },
+    {
+      "id": "tcgdex:en:np",
+      "sources": [
+        "sets",
+        "series-pop"
+      ],
+      "name": "Nintendo Black Star Promos",
+      "language": "en",
+      "series": "pop",
+      "medium": "physical",
+      "expected_printings": 40
+    },
+    {
+      "id": "tcgdex:en:ex3",
+      "sources": [
+        "sets",
+        "series-ex"
+      ],
+      "name": "Dragon",
+      "language": "en",
+      "series": "ex",
+      "medium": "physical",
+      "expected_printings": 100
+    },
+    {
+      "id": "tcgdex:en:ex4",
+      "sources": [
+        "sets",
+        "series-ex"
+      ],
+      "name": "Team Magma vs Team Aqua",
+      "language": "en",
+      "series": "ex",
+      "medium": "physical",
+      "expected_printings": 97
+    },
+    {
+      "id": "tcgdex:en:ex5",
+      "sources": [
+        "sets",
+        "series-ex"
+      ],
+      "name": "Hidden Legends",
+      "language": "en",
+      "series": "ex",
+      "medium": "physical",
+      "expected_printings": 102
+    },
+    {
+      "id": "tcgdex:en:tk-ex-latia",
+      "sources": [
+        "sets",
+        "series-tk"
+      ],
+      "name": "EX trainer Kit (Latias)",
+      "language": "en",
+      "series": "tk",
+      "medium": "physical",
+      "expected_printings": 10
+    },
+    {
+      "id": "tcgdex:en:tk-ex-latio",
+      "sources": [
+        "sets",
+        "series-tk"
+      ],
+      "name": "EX trainer Kit (Latios)",
+      "language": "en",
+      "series": "tk",
+      "medium": "physical",
+      "expected_printings": 10
+    },
+    {
+      "id": "tcgdex:en:ex5.5",
+      "sources": [
+        "sets",
+        "series-ex"
+      ],
+      "name": "Poké Card Creator Pack",
+      "language": "en",
+      "series": "ex",
+      "medium": "physical",
+      "expected_printings": 5
+    },
+    {
+      "id": "tcgdex:en:ex6",
+      "sources": [
+        "sets",
+        "series-ex"
+      ],
+      "name": "FireRed & LeafGreen",
+      "language": "en",
+      "series": "ex",
+      "medium": "physical",
+      "expected_printings": 116
+    },
+    {
+      "id": "tcgdex:en:pop1",
+      "sources": [
+        "sets",
+        "series-pop"
+      ],
+      "name": "POP Series 1",
+      "language": "en",
+      "series": "pop",
+      "medium": "physical",
+      "expected_printings": 17
+    },
+    {
+      "id": "tcgdex:en:ex7",
+      "sources": [
+        "sets",
+        "series-ex"
+      ],
+      "name": "Team Rocket Returns",
+      "language": "en",
+      "series": "ex",
+      "medium": "physical",
+      "expected_printings": 111
+    },
+    {
+      "id": "tcgdex:en:ex8",
+      "sources": [
+        "sets",
+        "series-ex"
+      ],
+      "name": "Deoxys",
+      "language": "en",
+      "series": "ex",
+      "medium": "physical",
+      "expected_printings": 108
+    },
+    {
+      "id": "tcgdex:en:ex9",
+      "sources": [
+        "sets",
+        "series-ex"
+      ],
+      "name": "Emerald",
+      "language": "en",
+      "series": "ex",
+      "medium": "physical",
+      "expected_printings": 107
+    },
+    {
+      "id": "tcgdex:en:pop2",
+      "sources": [
+        "sets",
+        "series-pop"
+      ],
+      "name": "POP Series 2",
+      "language": "en",
+      "series": "pop",
+      "medium": "physical",
+      "expected_printings": 17
+    },
+    {
+      "id": "tcgdex:en:ex10",
+      "sources": [
+        "sets",
+        "series-ex"
+      ],
+      "name": "Unseen Forces",
+      "language": "en",
+      "series": "ex",
+      "medium": "physical",
+      "expected_printings": 117
+    },
+    {
+      "id": "tcgdex:en:exu",
+      "sources": [
+        "sets",
+        "series-ex"
+      ],
+      "name": "Unseen Forces Unown Collection",
+      "language": "en",
+      "series": "ex",
+      "medium": "physical",
+      "expected_printings": 28
+    },
+    {
+      "id": "tcgdex:en:ex11",
+      "sources": [
+        "sets",
+        "series-ex"
+      ],
+      "name": "Delta Species",
+      "language": "en",
+      "series": "ex",
+      "medium": "physical",
+      "expected_printings": 114
+    },
+    {
+      "id": "tcgdex:en:ex12",
+      "sources": [
+        "sets",
+        "series-ex"
+      ],
+      "name": "Legend Maker",
+      "language": "en",
+      "series": "ex",
+      "medium": "physical",
+      "expected_printings": 93
+    },
+    {
+      "id": "tcgdex:en:tk-ex-m",
+      "sources": [
+        "sets",
+        "series-tk"
+      ],
+      "name": "EX trainer Kit 2 (Minun)",
+      "language": "en",
+      "series": "tk",
+      "medium": "physical",
+      "expected_printings": 12
+    },
+    {
+      "id": "tcgdex:en:tk-ex-p",
+      "sources": [
+        "sets",
+        "series-tk"
+      ],
+      "name": "EX trainer Kit 2 (Plusle)",
+      "language": "en",
+      "series": "tk",
+      "medium": "physical",
+      "expected_printings": 12
+    },
+    {
+      "id": "tcgdex:en:pop3",
+      "sources": [
+        "sets",
+        "series-pop"
+      ],
+      "name": "POP Series 3",
+      "language": "en",
+      "series": "pop",
+      "medium": "physical",
+      "expected_printings": 17
+    },
+    {
+      "id": "tcgdex:en:ex13",
+      "sources": [
+        "sets",
+        "series-ex"
+      ],
+      "name": "Holon Phantoms",
+      "language": "en",
+      "series": "ex",
+      "medium": "physical",
+      "expected_printings": 111
+    },
+    {
+      "id": "tcgdex:en:pop4",
+      "sources": [
+        "sets",
+        "series-pop"
+      ],
+      "name": "POP Series 4",
+      "language": "en",
+      "series": "pop",
+      "medium": "physical",
+      "expected_printings": 17
+    },
+    {
+      "id": "tcgdex:en:ex14",
+      "sources": [
+        "sets",
+        "series-ex"
+      ],
+      "name": "Crystal Guardians",
+      "language": "en",
+      "series": "ex",
+      "medium": "physical",
+      "expected_printings": 100
+    },
+    {
+      "id": "tcgdex:en:ex15",
+      "sources": [
+        "sets",
+        "series-ex"
+      ],
+      "name": "Dragon Frontiers",
+      "language": "en",
+      "series": "ex",
+      "medium": "physical",
+      "expected_printings": 101
+    },
+    {
+      "id": "tcgdex:en:ex16",
+      "sources": [
+        "sets",
+        "series-ex"
+      ],
+      "name": "Power Keepers",
+      "language": "en",
+      "series": "ex",
+      "medium": "physical",
+      "expected_printings": 108
+    },
+    {
+      "id": "tcgdex:en:pop5",
+      "sources": [
+        "sets",
+        "series-pop"
+      ],
+      "name": "POP Series 5",
+      "language": "en",
+      "series": "pop",
+      "medium": "physical",
+      "expected_printings": 17
+    },
+    {
+      "id": "tcgdex:en:dpp",
+      "sources": [
+        "sets",
+        "series-dp"
+      ],
+      "name": "DP Black Star Promos",
+      "language": "en",
+      "series": "dp",
+      "medium": "physical",
+      "expected_printings": 56
+    },
+    {
+      "id": "tcgdex:en:dp1",
+      "sources": [
+        "sets",
+        "series-dp"
+      ],
+      "name": "Diamond & Pearl",
+      "language": "en",
+      "series": "dp",
+      "medium": "physical",
+      "expected_printings": 130
+    },
+    {
+      "id": "tcgdex:en:dp2",
+      "sources": [
+        "sets",
+        "series-dp"
+      ],
+      "name": "Mysterious Treasures",
+      "language": "en",
+      "series": "dp",
+      "medium": "physical",
+      "expected_printings": 124
+    },
+    {
+      "id": "tcgdex:en:tk-dp-l",
+      "sources": [
+        "sets",
+        "series-tk"
+      ],
+      "name": "DP trainer Kit (Lucario)",
+      "language": "en",
+      "series": "tk",
+      "medium": "physical",
+      "expected_printings": 11
+    },
+    {
+      "id": "tcgdex:en:tk-dp-m",
+      "sources": [
+        "sets",
+        "series-tk"
+      ],
+      "name": "DP trainer Kit (Manaphy)",
+      "language": "en",
+      "series": "tk",
+      "medium": "physical",
+      "expected_printings": 12
+    },
+    {
+      "id": "tcgdex:en:pop6",
+      "sources": [
+        "sets",
+        "series-pop"
+      ],
+      "name": "POP Series 6",
+      "language": "en",
+      "series": "pop",
+      "medium": "physical",
+      "expected_printings": 17
+    },
+    {
+      "id": "tcgdex:en:dp3",
+      "sources": [
+        "sets",
+        "series-dp"
+      ],
+      "name": "Secret Wonders",
+      "language": "en",
+      "series": "dp",
+      "medium": "physical",
+      "expected_printings": 132
+    },
+    {
+      "id": "tcgdex:en:dp4",
+      "sources": [
+        "sets",
+        "series-dp"
+      ],
+      "name": "Great Encounters",
+      "language": "en",
+      "series": "dp",
+      "medium": "physical",
+      "expected_printings": 106
+    },
+    {
+      "id": "tcgdex:en:pop7",
+      "sources": [
+        "sets",
+        "series-pop"
+      ],
+      "name": "POP Series 7",
+      "language": "en",
+      "series": "pop",
+      "medium": "physical",
+      "expected_printings": 17
+    },
+    {
+      "id": "tcgdex:en:dp5",
+      "sources": [
+        "sets",
+        "series-dp"
+      ],
+      "name": "Majestic Dawn",
+      "language": "en",
+      "series": "dp",
+      "medium": "physical",
+      "expected_printings": 100
+    },
+    {
+      "id": "tcgdex:en:dp6",
+      "sources": [
+        "sets",
+        "series-dp"
+      ],
+      "name": "Legends Awakened",
+      "language": "en",
+      "series": "dp",
+      "medium": "physical",
+      "expected_printings": 146
+    },
+    {
+      "id": "tcgdex:en:pop8",
+      "sources": [
+        "sets",
+        "series-pop"
+      ],
+      "name": "POP Series 8",
+      "language": "en",
+      "series": "pop",
+      "medium": "physical",
+      "expected_printings": 17
+    },
+    {
+      "id": "tcgdex:en:dp7",
+      "sources": [
+        "sets",
+        "series-dp"
+      ],
+      "name": "Stormfront",
+      "language": "en",
+      "series": "dp",
+      "medium": "physical",
+      "expected_printings": 106
+    },
+    {
+      "id": "tcgdex:en:pl1",
+      "sources": [
+        "sets",
+        "series-pl"
+      ],
+      "name": "Platinum",
+      "language": "en",
+      "series": "pl",
+      "medium": "physical",
+      "expected_printings": 133
+    },
+    {
+      "id": "tcgdex:en:pop9",
+      "sources": [
+        "sets",
+        "series-pop"
+      ],
+      "name": "POP Series 9",
+      "language": "en",
+      "series": "pop",
+      "medium": "physical",
+      "expected_printings": 17
+    },
+    {
+      "id": "tcgdex:en:pl2",
+      "sources": [
+        "sets",
+        "series-pl"
+      ],
+      "name": "Rising Rivals",
+      "language": "en",
+      "series": "pl",
+      "medium": "physical",
+      "expected_printings": 120
+    },
+    {
+      "id": "tcgdex:en:pl3",
+      "sources": [
+        "sets",
+        "series-pl"
+      ],
+      "name": "Supreme Victors",
+      "language": "en",
+      "series": "pl",
+      "medium": "physical",
+      "expected_printings": 153
+    },
+    {
+      "id": "tcgdex:en:pl4",
+      "sources": [
+        "sets",
+        "series-pl"
+      ],
+      "name": "Arceus",
+      "language": "en",
+      "series": "pl",
+      "medium": "physical",
+      "expected_printings": 111
+    },
+    {
+      "id": "tcgdex:en:ru1",
+      "sources": [
+        "sets",
+        "series-pl"
+      ],
+      "name": "Pokémon Rumble",
+      "language": "en",
+      "series": "pl",
+      "medium": "physical",
+      "expected_printings": 16
+    },
+    {
+      "id": "tcgdex:en:hgss1",
+      "sources": [
+        "sets",
+        "series-hgss"
+      ],
+      "name": "HeartGold SoulSilver",
+      "language": "en",
+      "series": "hgss",
+      "medium": "physical",
+      "expected_printings": 124
+    },
+    {
+      "id": "tcgdex:en:hgssp",
+      "sources": [
+        "sets",
+        "series-hgss"
+      ],
+      "name": "HGSS Black Star Promos",
+      "language": "en",
+      "series": "hgss",
+      "medium": "physical",
+      "expected_printings": 25
+    },
+    {
+      "id": "tcgdex:en:tk-hs-r",
+      "sources": [
+        "sets",
+        "series-tk"
+      ],
+      "name": "HS trainer Kit (Raichu)",
+      "language": "en",
+      "series": "tk",
+      "medium": "physical",
+      "expected_printings": 30
+    },
+    {
+      "id": "tcgdex:en:tk-hs-g",
+      "sources": [
+        "sets",
+        "series-tk"
+      ],
+      "name": "HS trainer Kit (Gyarados)",
+      "language": "en",
+      "series": "tk",
+      "medium": "physical",
+      "expected_printings": 30
+    },
+    {
+      "id": "tcgdex:en:hgss2",
+      "sources": [
+        "sets",
+        "series-hgss"
+      ],
+      "name": "Unleashed",
+      "language": "en",
+      "series": "hgss",
+      "medium": "physical",
+      "expected_printings": 96
+    },
+    {
+      "id": "tcgdex:en:hgss3",
+      "sources": [
+        "sets",
+        "series-hgss"
+      ],
+      "name": "Undaunted",
+      "language": "en",
+      "series": "hgss",
+      "medium": "physical",
+      "expected_printings": 91
+    },
+    {
+      "id": "tcgdex:en:hgss4",
+      "sources": [
+        "sets",
+        "series-hgss"
+      ],
+      "name": "Triumphant",
+      "language": "en",
+      "series": "hgss",
+      "medium": "physical",
+      "expected_printings": 103
+    },
+    {
+      "id": "tcgdex:en:col1",
+      "sources": [
+        "sets",
+        "series-col"
+      ],
+      "name": "Call of Legends",
+      "language": "en",
+      "series": "col",
+      "medium": "physical",
+      "expected_printings": 106
+    },
+    {
+      "id": "tcgdex:en:bw1",
+      "sources": [
+        "sets",
+        "series-bw"
+      ],
+      "name": "Black & White",
+      "language": "en",
+      "series": "bw",
+      "medium": "physical",
+      "expected_printings": 115
+    },
+    {
+      "id": "tcgdex:en:bwp",
+      "sources": [
+        "sets",
+        "series-bw"
+      ],
+      "name": "BW Black Star Promos",
+      "language": "en",
+      "series": "bw",
+      "medium": "physical",
+      "expected_printings": 101
+    },
+    {
+      "id": "tcgdex:en:2011bw",
+      "sources": [
+        "sets",
+        "series-mc"
+      ],
+      "name": "McDonald's Collection 2011",
+      "language": "en",
+      "series": "mc",
+      "medium": "physical",
+      "expected_printings": 12
+    },
+    {
+      "id": "tcgdex:en:bw2",
+      "sources": [
+        "sets",
+        "series-bw"
+      ],
+      "name": "Emerging Powers",
+      "language": "en",
+      "series": "bw",
+      "medium": "physical",
+      "expected_printings": 98
+    },
+    {
+      "id": "tcgdex:en:tk-bw-e",
+      "sources": [
+        "sets",
+        "series-tk"
+      ],
+      "name": "BW trainer Kit (Excadrill)",
+      "language": "en",
+      "series": "tk",
+      "medium": "physical",
+      "expected_printings": 30
+    },
+    {
+      "id": "tcgdex:en:tk-bw-z",
+      "sources": [
+        "sets",
+        "series-tk"
+      ],
+      "name": "BW trainer Kit (Zoroark)",
+      "language": "en",
+      "series": "tk",
+      "medium": "physical",
+      "expected_printings": 30
+    },
+    {
+      "id": "tcgdex:en:bw3",
+      "sources": [
+        "sets",
+        "series-bw"
+      ],
+      "name": "Noble Victories",
+      "language": "en",
+      "series": "bw",
+      "medium": "physical",
+      "expected_printings": 102
+    },
+    {
+      "id": "tcgdex:en:bw4",
+      "sources": [
+        "sets",
+        "series-bw"
+      ],
+      "name": "Next Destinies",
+      "language": "en",
+      "series": "bw",
+      "medium": "physical",
+      "expected_printings": 103
+    },
+    {
+      "id": "tcgdex:en:bw5",
+      "sources": [
+        "sets",
+        "series-bw"
+      ],
+      "name": "Dark Explorers",
+      "language": "en",
+      "series": "bw",
+      "medium": "physical",
+      "expected_printings": 111
+    },
+    {
+      "id": "tcgdex:en:2012bw",
+      "sources": [
+        "sets",
+        "series-mc"
+      ],
+      "name": "McDonald's Collection 2012",
+      "language": "en",
+      "series": "mc",
+      "medium": "physical",
+      "expected_printings": 12
+    },
+    {
+      "id": "tcgdex:en:bw6",
+      "sources": [
+        "sets",
+        "series-bw"
+      ],
+      "name": "Dragons Exalted",
+      "language": "en",
+      "series": "bw",
+      "medium": "physical",
+      "expected_printings": 128
+    },
+    {
+      "id": "tcgdex:en:dv1",
+      "sources": [
+        "sets",
+        "series-bw"
+      ],
+      "name": "Dragon Vault",
+      "language": "en",
+      "series": "bw",
+      "medium": "physical",
+      "expected_printings": 21
+    },
+    {
+      "id": "tcgdex:en:bw7",
+      "sources": [
+        "sets",
+        "series-bw"
+      ],
+      "name": "Boundaries Crossed",
+      "language": "en",
+      "series": "bw",
+      "medium": "physical",
+      "expected_printings": 153
+    },
+    {
+      "id": "tcgdex:en:bw8",
+      "sources": [
+        "sets",
+        "series-bw"
+      ],
+      "name": "Plasma Storm",
+      "language": "en",
+      "series": "bw",
+      "medium": "physical",
+      "expected_printings": 138
+    },
+    {
+      "id": "tcgdex:en:bw9",
+      "sources": [
+        "sets",
+        "series-bw"
+      ],
+      "name": "Plasma Freeze",
+      "language": "en",
+      "series": "bw",
+      "medium": "physical",
+      "expected_printings": 122
+    },
+    {
+      "id": "tcgdex:en:bw10",
+      "sources": [
+        "sets",
+        "series-bw"
+      ],
+      "name": "Plasma Blast",
+      "language": "en",
+      "series": "bw",
+      "medium": "physical",
+      "expected_printings": 105
+    },
+    {
+      "id": "tcgdex:en:xyp",
+      "sources": [
+        "sets",
+        "series-xy"
+      ],
+      "name": "XY Black Star Promos",
+      "language": "en",
+      "series": "xy",
+      "medium": "physical",
+      "expected_printings": 216
+    },
+    {
+      "id": "tcgdex:en:rc",
+      "sources": [
+        "sets",
+        "series-bw"
+      ],
+      "name": "Radiant Collection",
+      "language": "en",
+      "series": "bw",
+      "medium": "physical",
+      "expected_printings": 25
+    },
+    {
+      "id": "tcgdex:en:bw11",
+      "sources": [
+        "sets",
+        "series-bw"
+      ],
+      "name": "Legendary Treasures",
+      "language": "en",
+      "series": "bw",
+      "medium": "physical",
+      "expected_printings": 140
+    },
+    {
+      "id": "tcgdex:en:xy0",
+      "sources": [
+        "sets",
+        "series-xy"
+      ],
+      "name": "Kalos Starter Set",
+      "language": "en",
+      "series": "xy",
+      "medium": "physical",
+      "expected_printings": 39
+    },
+    {
+      "id": "tcgdex:en:xy1",
+      "sources": [
+        "sets",
+        "series-xy"
+      ],
+      "name": "XY",
+      "language": "en",
+      "series": "xy",
+      "medium": "physical",
+      "expected_printings": 146
+    },
+    {
+      "id": "tcgdex:en:xya",
+      "sources": [
+        "sets",
+        "series-xy"
+      ],
+      "name": "Yellow A Alternate",
+      "language": "en",
+      "series": "xy",
+      "medium": "physical",
+      "expected_printings": 6
+    },
+    {
+      "id": "tcgdex:en:tk-xy-n",
+      "sources": [
+        "sets",
+        "series-tk"
+      ],
+      "name": "XY trainer Kit (Noivern)",
+      "language": "en",
+      "series": "tk",
+      "medium": "physical",
+      "expected_printings": 30
+    },
+    {
+      "id": "tcgdex:en:tk-xy-sy",
+      "sources": [
+        "sets",
+        "series-tk"
+      ],
+      "name": "XY trainer Kit (Sylveon)",
+      "language": "en",
+      "series": "tk",
+      "medium": "physical",
+      "expected_printings": 30
+    },
+    {
+      "id": "tcgdex:en:xy2",
+      "sources": [
+        "sets",
+        "series-xy"
+      ],
+      "name": "Flashfire",
+      "language": "en",
+      "series": "xy",
+      "medium": "physical",
+      "expected_printings": 110
+    },
+    {
+      "id": "tcgdex:en:2014xy",
+      "sources": [
+        "sets",
+        "series-mc"
+      ],
+      "name": "McDonald's Collection 2014",
+      "language": "en",
+      "series": "mc",
+      "medium": "physical",
+      "expected_printings": 12
+    },
+    {
+      "id": "tcgdex:en:xy3",
+      "sources": [
+        "sets",
+        "series-xy"
+      ],
+      "name": "Furious Fists",
+      "language": "en",
+      "series": "xy",
+      "medium": "physical",
+      "expected_printings": 114
+    },
+    {
+      "id": "tcgdex:en:tk-xy-b",
+      "sources": [
+        "sets",
+        "series-tk"
+      ],
+      "name": "XY trainer Kit (Bisharp)",
+      "language": "en",
+      "series": "tk",
+      "medium": "physical",
+      "expected_printings": 30
+    },
+    {
+      "id": "tcgdex:en:tk-xy-w",
+      "sources": [
+        "sets",
+        "series-tk"
+      ],
+      "name": "XY trainer Kit (Wigglytuff)",
+      "language": "en",
+      "series": "tk",
+      "medium": "physical",
+      "expected_printings": 30
+    },
+    {
+      "id": "tcgdex:en:xy4",
+      "sources": [
+        "sets",
+        "series-xy"
+      ],
+      "name": "Phantom Forces",
+      "language": "en",
+      "series": "xy",
+      "medium": "physical",
+      "expected_printings": 124
+    },
+    {
+      "id": "tcgdex:en:xy5",
+      "sources": [
+        "sets",
+        "series-xy"
+      ],
+      "name": "Primal Clash",
+      "language": "en",
+      "series": "xy",
+      "medium": "physical",
+      "expected_printings": 164
+    },
+    {
+      "id": "tcgdex:en:dc1",
+      "sources": [
+        "sets",
+        "series-xy"
+      ],
+      "name": "Double Crisis",
+      "language": "en",
+      "series": "xy",
+      "medium": "physical",
+      "expected_printings": 34
+    },
+    {
+      "id": "tcgdex:en:tk-xy-latio",
+      "sources": [
+        "sets",
+        "series-tk"
+      ],
+      "name": "XY trainer Kit (Latios)",
+      "language": "en",
+      "series": "tk",
+      "medium": "physical",
+      "expected_printings": 30
+    },
+    {
+      "id": "tcgdex:en:tk-xy-latia",
+      "sources": [
+        "sets",
+        "series-tk"
+      ],
+      "name": "XY trainer Kit (Latias)",
+      "language": "en",
+      "series": "tk",
+      "medium": "physical",
+      "expected_printings": 30
+    },
+    {
+      "id": "tcgdex:en:xy6",
+      "sources": [
+        "sets",
+        "series-xy"
+      ],
+      "name": "Roaring Skies",
+      "language": "en",
+      "series": "xy",
+      "medium": "physical",
+      "expected_printings": 112
+    },
+    {
+      "id": "tcgdex:en:xy7",
+      "sources": [
+        "sets",
+        "series-xy"
+      ],
+      "name": "Ancient Origins",
+      "language": "en",
+      "series": "xy",
+      "medium": "physical",
+      "expected_printings": 101
+    },
+    {
+      "id": "tcgdex:en:xy8",
+      "sources": [
+        "sets",
+        "series-xy"
+      ],
+      "name": "BREAKthrough",
+      "language": "en",
+      "series": "xy",
+      "medium": "physical",
+      "expected_printings": 165
+    },
+    {
+      "id": "tcgdex:en:2015xy",
+      "sources": [
+        "sets",
+        "series-mc"
+      ],
+      "name": "McDonald's Collection 2015",
+      "language": "en",
+      "series": "mc",
+      "medium": "physical",
+      "expected_printings": 12
+    },
+    {
+      "id": "tcgdex:en:xy9",
+      "sources": [
+        "sets",
+        "series-xy"
+      ],
+      "name": "BREAKpoint",
+      "language": "en",
+      "series": "xy",
+      "medium": "physical",
+      "expected_printings": 126
+    },
+    {
+      "id": "tcgdex:en:g1",
+      "sources": [
+        "sets",
+        "series-xy"
+      ],
+      "name": "Generations",
+      "language": "en",
+      "series": "xy",
+      "medium": "physical",
+      "expected_printings": 117
+    },
+    {
+      "id": "tcgdex:en:tk-xy-p",
+      "sources": [
+        "sets",
+        "series-tk"
+      ],
+      "name": "XY trainer Kit (Pikachu Libre)",
+      "language": "en",
+      "series": "tk",
+      "medium": "physical",
+      "expected_printings": 30
+    },
+    {
+      "id": "tcgdex:en:tk-xy-su",
+      "sources": [
+        "sets",
+        "series-tk"
+      ],
+      "name": "XY trainer Kit (Suicune)",
+      "language": "en",
+      "series": "tk",
+      "medium": "physical",
+      "expected_printings": 30
+    },
+    {
+      "id": "tcgdex:en:xy10",
+      "sources": [
+        "sets",
+        "series-xy"
+      ],
+      "name": "Fates Collide",
+      "language": "en",
+      "series": "xy",
+      "medium": "physical",
+      "expected_printings": 129
+    },
+    {
+      "id": "tcgdex:en:xy11",
+      "sources": [
+        "sets",
+        "series-xy"
+      ],
+      "name": "Steam Siege",
+      "language": "en",
+      "series": "xy",
+      "medium": "physical",
+      "expected_printings": 116
+    },
+    {
+      "id": "tcgdex:en:2016xy",
+      "sources": [
+        "sets",
+        "series-mc"
+      ],
+      "name": "McDonald's Collection 2016",
+      "language": "en",
+      "series": "mc",
+      "medium": "physical",
+      "expected_printings": 12
+    },
+    {
+      "id": "tcgdex:en:xy12",
+      "sources": [
+        "sets",
+        "series-xy"
+      ],
+      "name": "Evolutions",
+      "language": "en",
+      "series": "xy",
+      "medium": "physical",
+      "expected_printings": 113
+    },
+    {
+      "id": "tcgdex:en:sm1",
+      "sources": [
+        "sets",
+        "series-sm"
+      ],
+      "name": "Sun & Moon",
+      "language": "en",
+      "series": "sm",
+      "medium": "physical",
+      "expected_printings": 172
+    },
+    {
+      "id": "tcgdex:en:smp",
+      "sources": [
+        "sets",
+        "series-sm"
+      ],
+      "name": "SM Black Star Promos",
+      "language": "en",
+      "series": "sm",
+      "medium": "physical",
+      "expected_printings": 248
+    },
+    {
+      "id": "tcgdex:en:tk-sm-r",
+      "sources": [
+        "sets",
+        "series-tk"
+      ],
+      "name": "SM trainer Kit (Alolan Raichu)",
+      "language": "en",
+      "series": "tk",
+      "medium": "physical",
+      "expected_printings": 30
+    },
+    {
+      "id": "tcgdex:en:tk-sm-l",
+      "sources": [
+        "sets",
+        "series-tk"
+      ],
+      "name": "SM trainer Kit (Lycanroc)",
+      "language": "en",
+      "series": "tk",
+      "medium": "physical",
+      "expected_printings": 30
+    },
+    {
+      "id": "tcgdex:en:sm2",
+      "sources": [
+        "sets",
+        "series-sm"
+      ],
+      "name": "Guardians Rising",
+      "language": "en",
+      "series": "sm",
+      "medium": "physical",
+      "expected_printings": 169
+    },
+    {
+      "id": "tcgdex:en:2017sm",
+      "sources": [
+        "sets",
+        "series-mc"
+      ],
+      "name": "McDonald's Collection 2017",
+      "language": "en",
+      "series": "mc",
+      "medium": "physical",
+      "expected_printings": 12
+    },
+    {
+      "id": "tcgdex:en:sm3",
+      "sources": [
+        "sets",
+        "series-sm"
+      ],
+      "name": "Burning Shadows",
+      "language": "en",
+      "series": "sm",
+      "medium": "physical",
+      "expected_printings": 169
+    },
+    {
+      "id": "tcgdex:en:sm3.5",
+      "sources": [
+        "sets",
+        "series-sm"
+      ],
+      "name": "Shining Legends",
+      "language": "en",
+      "series": "sm",
+      "medium": "physical",
+      "expected_printings": 78
+    },
+    {
+      "id": "tcgdex:en:sm4",
+      "sources": [
+        "sets",
+        "series-sm"
+      ],
+      "name": "Crimson Invasion",
+      "language": "en",
+      "series": "sm",
+      "medium": "physical",
+      "expected_printings": 125
+    },
+    {
+      "id": "tcgdex:en:sm5",
+      "sources": [
+        "sets",
+        "series-sm"
+      ],
+      "name": "Ultra Prism",
+      "language": "en",
+      "series": "sm",
+      "medium": "physical",
+      "expected_printings": 173
+    },
+    {
+      "id": "tcgdex:en:sm6",
+      "sources": [
+        "sets",
+        "series-sm"
+      ],
+      "name": "Forbidden Light",
+      "language": "en",
+      "series": "sm",
+      "medium": "physical",
+      "expected_printings": 146
+    },
+    {
+      "id": "tcgdex:en:sm7",
+      "sources": [
+        "sets",
+        "series-sm"
+      ],
+      "name": "Celestial Storm",
+      "language": "en",
+      "series": "sm",
+      "medium": "physical",
+      "expected_printings": 183
+    },
+    {
+      "id": "tcgdex:en:sm7.5",
+      "sources": [
+        "sets",
+        "series-sm"
+      ],
+      "name": "Dragon Majesty",
+      "language": "en",
+      "series": "sm",
+      "medium": "physical",
+      "expected_printings": 78
+    },
+    {
+      "id": "tcgdex:en:2018sm",
+      "sources": [
+        "sets",
+        "series-mc"
+      ],
+      "name": "McDonald's Collection 2018",
+      "language": "en",
+      "series": "mc",
+      "medium": "physical",
+      "expected_printings": 12
+    },
+    {
+      "id": "tcgdex:en:sm8",
+      "sources": [
+        "sets",
+        "series-sm"
+      ],
+      "name": "Lost Thunder",
+      "language": "en",
+      "series": "sm",
+      "medium": "physical",
+      "expected_printings": 236
+    },
+    {
+      "id": "tcgdex:en:sm9",
+      "sources": [
+        "sets",
+        "series-sm"
+      ],
+      "name": "Team Up",
+      "language": "en",
+      "series": "sm",
+      "medium": "physical",
+      "expected_printings": 196
+    },
+    {
+      "id": "tcgdex:en:det1",
+      "sources": [
+        "sets",
+        "series-sm"
+      ],
+      "name": "Detective Pikachu",
+      "language": "en",
+      "series": "sm",
+      "medium": "physical",
+      "expected_printings": 18
+    },
+    {
+      "id": "tcgdex:en:sm10",
+      "sources": [
+        "sets",
+        "series-sm"
+      ],
+      "name": "Unbroken Bonds",
+      "language": "en",
+      "series": "sm",
+      "medium": "physical",
+      "expected_printings": 234
+    },
+    {
+      "id": "tcgdex:en:sm11",
+      "sources": [
+        "sets",
+        "series-sm"
+      ],
+      "name": "Unified Minds",
+      "language": "en",
+      "series": "sm",
+      "medium": "physical",
+      "expected_printings": 258
+    },
+    {
+      "id": "tcgdex:en:sma",
+      "sources": [
+        "sets",
+        "series-sm"
+      ],
+      "name": "Hidden Fates Shiny Vault",
+      "language": "en",
+      "series": "sm",
+      "medium": "physical",
+      "expected_printings": 94
+    },
+    {
+      "id": "tcgdex:en:sm115",
+      "sources": [
+        "sets",
+        "series-sm"
+      ],
+      "name": "Hidden Fates",
+      "language": "en",
+      "series": "sm",
+      "medium": "physical",
+      "expected_printings": 69
+    },
+    {
+      "id": "tcgdex:en:2019sm",
+      "sources": [
+        "sets",
+        "series-mc"
+      ],
+      "name": "McDonald's Collection 2019",
+      "language": "en",
+      "series": "mc",
+      "medium": "physical",
+      "expected_printings": 12
+    },
+    {
+      "id": "tcgdex:en:sm12",
+      "sources": [
+        "sets",
+        "series-sm"
+      ],
+      "name": "Cosmic Eclipse",
+      "language": "en",
+      "series": "sm",
+      "medium": "physical",
+      "expected_printings": 271
+    },
+    {
+      "id": "tcgdex:en:swshp",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "SWSH Black Star Promos",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 307
+    },
+    {
+      "id": "tcgdex:en:swsh1",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Sword & Shield",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 216
+    },
+    {
+      "id": "tcgdex:en:swsh2",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Rebel Clash",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 209
+    },
+    {
+      "id": "tcgdex:en:swsh3",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Darkness Ablaze",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 201
+    },
+    {
+      "id": "tcgdex:en:fut2020",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Pokémon Futsal 2020",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 5
+    },
+    {
+      "id": "tcgdex:en:swsh3.5",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Champion's Path",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 80
+    },
+    {
+      "id": "tcgdex:en:swsh4",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Vivid Voltage",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 203
+    },
+    {
+      "id": "tcgdex:en:2021swsh",
+      "sources": [
+        "sets",
+        "series-mc"
+      ],
+      "name": "McDonald's Collection 2021",
+      "language": "en",
+      "series": "mc",
+      "medium": "physical",
+      "expected_printings": 25
+    },
+    {
+      "id": "tcgdex:en:swsh4.5",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Shining Fates",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 73
+    },
+    {
+      "id": "tcgdex:en:swsh4.5sv",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Shining Fates Shiny Vault",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 122
+    },
+    {
+      "id": "tcgdex:en:swsh5",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Battle Styles",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 183
+    },
+    {
+      "id": "tcgdex:en:swsh6",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Chilling Reign",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 233
+    },
+    {
+      "id": "tcgdex:en:swsh7",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Evolving Skies",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 237
+    },
+    {
+      "id": "tcgdex:en:cel25cc",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Celebrations Classic Collection",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 25
+    },
+    {
+      "id": "tcgdex:en:cel25",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Celebrations",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 25
+    },
+    {
+      "id": "tcgdex:en:swsh8",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Fusion Strike",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 284
+    },
+    {
+      "id": "tcgdex:en:swsh9tg",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Brilliant Stars Trainer Gallery",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 30
+    },
+    {
+      "id": "tcgdex:en:swsh9",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Brilliant Stars",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 186
+    },
+    {
+      "id": "tcgdex:en:swsh10",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Astral Radiance",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 216
+    },
+    {
+      "id": "tcgdex:en:swsh10tg",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Astral Radiance Trainer Gallery",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 30
+    },
+    {
+      "id": "tcgdex:en:swsh10.5",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Pokémon GO",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 88
+    },
+    {
+      "id": "tcgdex:en:2022swsh",
+      "sources": [
+        "sets",
+        "series-mc"
+      ],
+      "name": "McDonald's Collection 2022",
+      "language": "en",
+      "series": "mc",
+      "medium": "physical",
+      "expected_printings": 15
+    },
+    {
+      "id": "tcgdex:en:swsh11",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Lost Origin",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 217
+    },
+    {
+      "id": "tcgdex:en:swsh11tg",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Lost Origin Trainer Gallery",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 30
+    },
+    {
+      "id": "tcgdex:en:swsh12",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Silver Tempest",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 215
+    },
+    {
+      "id": "tcgdex:en:swsh12tg",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Silver Tempest Trainer Gallery",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 30
+    },
+    {
+      "id": "tcgdex:en:swsh12.5",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Crown Zenith",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 160
+    },
+    {
+      "id": "tcgdex:en:swsh12.5gg",
+      "sources": [
+        "sets",
+        "series-swsh"
+      ],
+      "name": "Crown Zenith Galarian Gallery",
+      "language": "en",
+      "series": "swsh",
+      "medium": "physical",
+      "expected_printings": 70
+    },
+    {
+      "id": "tcgdex:en:sv01",
+      "sources": [
+        "sets",
+        "series-sv"
+      ],
+      "name": "Scarlet & Violet",
+      "language": "en",
+      "series": "sv",
+      "medium": "physical",
+      "expected_printings": 258
+    },
+    {
+      "id": "tcgdex:en:sve",
+      "sources": [
+        "sets",
+        "series-sv"
+      ],
+      "name": "Scarlet & Violet Energy",
+      "language": "en",
+      "series": "sv",
+      "medium": "physical",
+      "expected_printings": 24
+    },
+    {
+      "id": "tcgdex:en:svp",
+      "sources": [
+        "sets",
+        "series-sv"
+      ],
+      "name": "SVP Black Star Promos",
+      "language": "en",
+      "series": "sv",
+      "medium": "physical",
+      "expected_printings": 226
+    },
+    {
+      "id": "tcgdex:en:sv02",
+      "sources": [
+        "sets",
+        "series-sv"
+      ],
+      "name": "Paldea Evolved",
+      "language": "en",
+      "series": "sv",
+      "medium": "physical",
+      "expected_printings": 279
+    },
+    {
+      "id": "tcgdex:en:2023sv",
+      "sources": [
+        "sets",
+        "series-mc"
+      ],
+      "name": "McDonald's Collection 2023",
+      "language": "en",
+      "series": "mc",
+      "medium": "physical",
+      "expected_printings": 15
+    },
+    {
+      "id": "tcgdex:en:sv03",
+      "sources": [
+        "sets",
+        "series-sv"
+      ],
+      "name": "Obsidian Flames",
+      "language": "en",
+      "series": "sv",
+      "medium": "physical",
+      "expected_printings": 230
+    },
+    {
+      "id": "tcgdex:en:sv03.5",
+      "sources": [
+        "sets",
+        "series-sv"
+      ],
+      "name": "151",
+      "language": "en",
+      "series": "sv",
+      "medium": "physical",
+      "expected_printings": 207
+    },
+    {
+      "id": "tcgdex:en:mfb",
+      "sources": [
+        "sets",
+        "series-sv"
+      ],
+      "name": "My First Battle",
+      "language": "en",
+      "series": "sv",
+      "medium": "physical",
+      "expected_printings": 48
+    },
+    {
+      "id": "tcgdex:en:sv04",
+      "sources": [
+        "sets",
+        "series-sv"
+      ],
+      "name": "Paradox Rift",
+      "language": "en",
+      "series": "sv",
+      "medium": "physical",
+      "expected_printings": 266
+    },
+    {
+      "id": "tcgdex:en:sv04.5",
+      "sources": [
+        "sets",
+        "series-sv"
+      ],
+      "name": "Paldean Fates",
+      "language": "en",
+      "series": "sv",
+      "medium": "physical",
+      "expected_printings": 245
+    },
+    {
+      "id": "tcgdex:en:sv05",
+      "sources": [
+        "sets",
+        "series-sv"
+      ],
+      "name": "Temporal Forces",
+      "language": "en",
+      "series": "sv",
+      "medium": "physical",
+      "expected_printings": 218
+    },
+    {
+      "id": "tcgdex:en:sv06",
+      "sources": [
+        "sets",
+        "series-sv"
+      ],
+      "name": "Twilight Masquerade",
+      "language": "en",
+      "series": "sv",
+      "medium": "physical",
+      "expected_printings": 226
+    },
+    {
+      "id": "tcgdex:en:sv06.5",
+      "sources": [
+        "sets",
+        "series-sv"
+      ],
+      "name": "Shrouded Fable",
+      "language": "en",
+      "series": "sv",
+      "medium": "physical",
+      "expected_printings": 99
+    },
+    {
+      "id": "tcgdex:en:sv07",
+      "sources": [
+        "sets",
+        "series-sv"
+      ],
+      "name": "Stellar Crown",
+      "language": "en",
+      "series": "sv",
+      "medium": "physical",
+      "expected_printings": 175
+    },
+    {
+      "id": "tcgdex:en:P-A",
+      "sources": [
+        "sets",
+        "series-tcgp"
+      ],
+      "name": "Promos-A",
+      "language": "en",
+      "series": "tcgp",
+      "medium": "digital",
+      "expected_printings": 100
+    },
+    {
+      "id": "tcgdex:en:A1",
+      "sources": [
+        "sets",
+        "series-tcgp"
+      ],
+      "name": "Genetic Apex",
+      "language": "en",
+      "series": "tcgp",
+      "medium": "digital",
+      "expected_printings": 286
+    },
+    {
+      "id": "tcgdex:en:sv08",
+      "sources": [
+        "sets",
+        "series-sv"
+      ],
+      "name": "Surging Sparks",
+      "language": "en",
+      "series": "sv",
+      "medium": "physical",
+      "expected_printings": 252
+    },
+    {
+      "id": "tcgdex:en:2024sv",
+      "sources": [
+        "sets",
+        "series-mc"
+      ],
+      "name": "McDonald's Collection 2024",
+      "language": "en",
+      "series": "mc",
+      "medium": "physical",
+      "expected_printings": 15
+    },
+    {
+      "id": "tcgdex:en:A1a",
+      "sources": [
+        "sets",
+        "series-tcgp"
+      ],
+      "name": "Mythical Island",
+      "language": "en",
+      "series": "tcgp",
+      "medium": "digital",
+      "expected_printings": 86
+    },
+    {
+      "id": "tcgdex:en:sv08.5",
+      "sources": [
+        "sets",
+        "series-sv"
+      ],
+      "name": "Prismatic Evolutions",
+      "language": "en",
+      "series": "sv",
+      "medium": "physical",
+      "expected_printings": 180
+    },
+    {
+      "id": "tcgdex:en:A2",
+      "sources": [
+        "sets",
+        "series-tcgp"
+      ],
+      "name": "Space-Time Smackdown",
+      "language": "en",
+      "series": "tcgp",
+      "medium": "digital",
+      "expected_printings": 207
+    },
+    {
+      "id": "tcgdex:en:A2a",
+      "sources": [
+        "sets",
+        "series-tcgp"
+      ],
+      "name": "Triumphant Light",
+      "language": "en",
+      "series": "tcgp",
+      "medium": "digital",
+      "expected_printings": 96
+    },
+    {
+      "id": "tcgdex:en:A2b",
+      "sources": [
+        "sets",
+        "series-tcgp"
+      ],
+      "name": "Shining Revelry",
+      "language": "en",
+      "series": "tcgp",
+      "medium": "digital",
+      "expected_printings": 111
+    },
+    {
+      "id": "tcgdex:en:sv09",
+      "sources": [
+        "sets",
+        "series-sv"
+      ],
+      "name": "Journey Together",
+      "language": "en",
+      "series": "sv",
+      "medium": "physical",
+      "expected_printings": 190
+    },
+    {
+      "id": "tcgdex:en:A3",
+      "sources": [
+        "sets",
+        "series-tcgp"
+      ],
+      "name": "Celestial Guardians",
+      "language": "en",
+      "series": "tcgp",
+      "medium": "digital",
+      "expected_printings": 239
+    },
+    {
+      "id": "tcgdex:en:A3a",
+      "sources": [
+        "sets",
+        "series-tcgp"
+      ],
+      "name": "Extradimensional Crisis",
+      "language": "en",
+      "series": "tcgp",
+      "medium": "digital",
+      "expected_printings": 103
+    },
+    {
+      "id": "tcgdex:en:sv10",
+      "sources": [
+        "sets",
+        "series-sv"
+      ],
+      "name": "Destined Rivals",
+      "language": "en",
+      "series": "sv",
+      "medium": "physical",
+      "expected_printings": 244
+    },
+    {
+      "id": "tcgdex:en:A3b",
+      "sources": [
+        "sets",
+        "series-tcgp"
+      ],
+      "name": "Eevee Grove",
+      "language": "en",
+      "series": "tcgp",
+      "medium": "digital",
+      "expected_printings": 107
+    },
+    {
+      "id": "tcgdex:en:sv10.5b",
+      "sources": [
+        "sets",
+        "series-sv"
+      ],
+      "name": "Black Bolt",
+      "language": "en",
+      "series": "sv",
+      "medium": "physical",
+      "expected_printings": 172
+    },
+    {
+      "id": "tcgdex:en:sv10.5w",
+      "sources": [
+        "sets",
+        "series-sv"
+      ],
+      "name": "White Flare",
+      "language": "en",
+      "series": "sv",
+      "medium": "physical",
+      "expected_printings": 173
+    },
+    {
+      "id": "tcgdex:en:A4",
+      "sources": [
+        "sets",
+        "series-tcgp"
+      ],
+      "name": "Wisdom of Sea and Sky",
+      "language": "en",
+      "series": "tcgp",
+      "medium": "digital",
+      "expected_printings": 241
+    },
+    {
+      "id": "tcgdex:en:A4a",
+      "sources": [
+        "sets",
+        "series-tcgp"
+      ],
+      "name": "Secluded Springs",
+      "language": "en",
+      "series": "tcgp",
+      "medium": "digital",
+      "expected_printings": 105
+    },
+    {
+      "id": "tcgdex:en:mee",
+      "sources": [
+        "sets",
+        "series-me"
+      ],
+      "name": "Mega Evolution Energy",
+      "language": "en",
+      "series": "me",
+      "medium": "physical",
+      "expected_printings": 8
+    },
+    {
+      "id": "tcgdex:en:me01",
+      "sources": [
+        "sets",
+        "series-me"
+      ],
+      "name": "Mega Evolution",
+      "language": "en",
+      "series": "me",
+      "medium": "physical",
+      "expected_printings": 188
+    },
+    {
+      "id": "tcgdex:en:mep",
+      "sources": [
+        "sets",
+        "series-me"
+      ],
+      "name": "MEP Black Star Promos",
+      "language": "en",
+      "series": "me",
+      "medium": "physical",
+      "expected_printings": 89
+    },
+    {
+      "id": "tcgdex:en:B1",
+      "sources": [
+        "sets",
+        "series-tcgp"
+      ],
+      "name": "Mega Rising",
+      "language": "en",
+      "series": "tcgp",
+      "medium": "digital",
+      "expected_printings": 331
+    },
+    {
+      "id": "tcgdex:en:me02",
+      "sources": [
+        "sets",
+        "series-me"
+      ],
+      "name": "Phantasmal Flames",
+      "language": "en",
+      "series": "me",
+      "medium": "physical",
+      "expected_printings": 130
+    },
+    {
+      "id": "tcgdex:en:B1a",
+      "sources": [
+        "sets",
+        "series-tcgp"
+      ],
+      "name": "Crimson Blaze",
+      "language": "en",
+      "series": "tcgp",
+      "medium": "digital",
+      "expected_printings": 103
+    },
+    {
+      "id": "tcgdex:en:B2",
+      "sources": [
+        "sets",
+        "series-tcgp"
+      ],
+      "name": "Fantastical Parade",
+      "language": "en",
+      "series": "tcgp",
+      "medium": "digital",
+      "expected_printings": 234
+    },
+    {
+      "id": "tcgdex:en:me02.5",
+      "sources": [
+        "sets",
+        "series-me"
+      ],
+      "name": "Ascended Heroes",
+      "language": "en",
+      "series": "me",
+      "medium": "physical",
+      "expected_printings": 295
+    },
+    {
+      "id": "tcgdex:en:B2a",
+      "sources": [
+        "sets",
+        "series-tcgp"
+      ],
+      "name": "Paldean Wonders",
+      "language": "en",
+      "series": "tcgp",
+      "medium": "digital",
+      "expected_printings": 131
+    },
+    {
+      "id": "tcgdex:en:me03",
+      "sources": [
+        "sets",
+        "series-me"
+      ],
+      "name": "Perfect Order",
+      "language": "en",
+      "series": "me",
+      "medium": "physical",
+      "expected_printings": 124
+    },
+    {
+      "id": "tcgdex:en:me04",
+      "sources": [
+        "sets",
+        "series-me"
+      ],
+      "name": "Chaos Rising",
+      "language": "en",
+      "series": "me",
+      "medium": "physical",
+      "expected_printings": 122
+    },
+    {
+      "id": "tcgdex:en:me05",
+      "sources": [
+        "sets",
+        "series-me"
+      ],
+      "name": "Pitch Black",
+      "language": "en",
+      "series": "me",
+      "medium": "physical",
+      "expected_printings": 120
+    },
+    {
+      "id": "tcgdex:en:30th",
+      "sources": [
+        "sets",
+        "series-me"
+      ],
+      "name": "30th Celebration",
+      "language": "en",
+      "series": "me",
+      "medium": "physical",
+      "expected_printings": 158
+    },
+    {
+      "id": "tcgdex:en:30th-c",
+      "sources": [
+        "sets",
+        "series-me"
+      ],
+      "name": "30th Classic Collection",
+      "language": "en",
+      "series": "me",
+      "medium": "physical",
+      "expected_printings": 30
+    }
+  ],
+  "gaps": [
+    "Official US expansion registry returned an access challenge; provider physical universe not officially reconciled.",
+    "Release status unreviewed except Scyther 151 (2023-09-22 provider date); intended universe may include planned sets.",
+    "All-era printing import incomplete: only one Scyther normal printing in this E1 package.",
+    "Other languages are expansion scope, not imported.",
+    "Official product quantities and guaranteed inclusions inaccessible; retailer claim of six packs is unqualified.",
+    "Target seller/stock/price/shipping unknown; no current purchasable offer established."
+  ]
+}

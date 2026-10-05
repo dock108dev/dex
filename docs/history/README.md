@@ -12,3 +12,13 @@ persisted capability names and retained evidence remain unchanged by documentati
 reorganization.
 
 [October 3 provider, hosted-baseline and presentation observations](2026-10-03-VERIFICATION.md).
+
+[October 4 E2a goal-version implementation, copied-state evidence and qualification blockers](2026-10-04-E2A-VALIDATION.md).
+
+[October 4 E2a runtime qualification; renewed browser permission pending](2026-10-04-E2A-QUALIFICATION.md).
+
+[E2a browser qualification](2026-10-04-E2A-BROWSER-QUALIFICATION.md).
+
+[E3a retained-data implementation and partial validation](2026-10-04-E3A-VALIDATION.md).
+
+[E3a local synthetic qualification](2026-10-04-E3A-QUALIFICATION.md).

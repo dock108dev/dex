@@ -1,0 +1,360 @@
+{
+  "version": "2026-10-04-151-v2",
+  "seed": "Original-app ledger as specified by owner; not authenticated inventory",
+  "rows": [
+    {
+      "species_id": "ndex:0003",
+      "name": "Venusaur",
+      "state": "printing-and-standard-booster-researched",
+      "sources": [
+        "detail:sv03.5-003",
+        "detail:sv03.5-182",
+        "detail:sv03.5-198",
+        "official-checklist:151-review-v2"
+      ],
+      "printing_candidate": "151 #003 ex",
+      "imported_printing": null,
+      "gaps": [
+        "Official product contents unknown; no current purchasable offer; independent Scyther chain review and owner acceptance open"
+      ],
+      "normalized_printings": [
+        "tcgdex:en:sv03.5-003:holo",
+        "tcgdex:en:sv03.5-182:holo",
+        "tcgdex:en:sv03.5-198:holo"
+      ],
+      "account_ownership": "unchanged; research seed only"
+    },
+    {
+      "species_id": "ndex:0017",
+      "name": "Pidgeotto",
+      "state": "printing-and-standard-booster-researched",
+      "sources": [
+        "detail:sv03.5-017",
+        "official-checklist:151-review-v2"
+      ],
+      "printing_candidate": "151 #017",
+      "imported_printing": null,
+      "gaps": [
+        "Official product contents unknown; no current purchasable offer; independent Scyther chain review and owner acceptance open"
+      ],
+      "normalized_printings": [
+        "tcgdex:en:sv03.5-017:normal",
+        "tcgdex:en:sv03.5-017:reverse"
+      ],
+      "account_ownership": "unchanged; research seed only"
+    },
+    {
+      "species_id": "ndex:0018",
+      "name": "Pidgeot",
+      "state": "printing-and-standard-booster-researched",
+      "sources": [
+        "detail:sv03.5-018",
+        "official-checklist:151-review-v2"
+      ],
+      "printing_candidate": "151 #018",
+      "imported_printing": null,
+      "gaps": [
+        "Official product contents unknown; no current purchasable offer; independent Scyther chain review and owner acceptance open"
+      ],
+      "normalized_printings": [
+        "tcgdex:en:sv03.5-018:normal",
+        "tcgdex:en:sv03.5-018:reverse"
+      ],
+      "account_ownership": "unchanged; research seed only"
+    },
+    {
+      "species_id": "ndex:0036",
+      "name": "Clefable",
+      "state": "printing-and-standard-booster-researched",
+      "sources": [
+        "detail:sv03.5-036",
+        "official-checklist:151-review-v2"
+      ],
+      "printing_candidate": "151 #036",
+      "imported_printing": null,
+      "gaps": [
+        "Official product contents unknown; no current purchasable offer; independent Scyther chain review and owner acceptance open"
+      ],
+      "normalized_printings": [
+        "tcgdex:en:sv03.5-036:normal",
+        "tcgdex:en:sv03.5-036:reverse"
+      ],
+      "account_ownership": "unchanged; research seed only"
+    },
+    {
+      "species_id": "ndex:0065",
+      "name": "Alakazam",
+      "state": "printing-and-standard-booster-researched",
+      "sources": [
+        "detail:sv03.5-065",
+        "detail:sv03.5-188",
+        "detail:sv03.5-201",
+        "official-checklist:151-review-v2"
+      ],
+      "printing_candidate": "151 #065 ex",
+      "imported_printing": null,
+      "gaps": [
+        "Official product contents unknown; no current purchasable offer; independent Scyther chain review and owner acceptance open"
+      ],
+      "normalized_printings": [
+        "tcgdex:en:sv03.5-065:holo",
+        "tcgdex:en:sv03.5-188:holo",
+        "tcgdex:en:sv03.5-201:holo"
+      ],
+      "account_ownership": "unchanged; research seed only"
+    },
+    {
+      "species_id": "ndex:0094",
+      "name": "Gengar",
+      "state": "printing-and-standard-booster-researched",
+      "sources": [
+        "detail:sv03.5-094",
+        "official-checklist:151-review-v2"
+      ],
+      "printing_candidate": "151 #094",
+      "imported_printing": null,
+      "gaps": [
+        "Official product contents unknown; no current purchasable offer; independent Scyther chain review and owner acceptance open"
+      ],
+      "normalized_printings": [
+        "tcgdex:en:sv03.5-094:holo",
+        "tcgdex:en:sv03.5-094:reverse",
+        "tcgdex:en:sv03.5-094:holo:677yasikk9iggi3g0o8t"
+      ],
+      "account_ownership": "unchanged; research seed only"
+    },
+    {
+      "species_id": "ndex:0097",
+      "name": "Hypno",
+      "state": "printing-and-standard-booster-researched",
+      "sources": [
+        "detail:sv03.5-097",
+        "official-checklist:151-review-v2"
+      ],
+      "printing_candidate": "151 #097",
+      "imported_printing": null,
+      "gaps": [
+        "Official product contents unknown; no current purchasable offer; independent Scyther chain review and owner acceptance open"
+      ],
+      "normalized_printings": [
+        "tcgdex:en:sv03.5-097:normal",
+        "tcgdex:en:sv03.5-097:reverse"
+      ],
+      "account_ownership": "unchanged; research seed only"
+    },
+    {
+      "species_id": "ndex:0113",
+      "name": "Chansey",
+      "state": "printing-and-standard-booster-researched",
+      "sources": [
+        "detail:sv03.5-113",
+        "official-checklist:151-review-v2"
+      ],
+      "printing_candidate": "151 #113",
+      "imported_printing": null,
+      "gaps": [
+        "Official product contents unknown; no current purchasable offer; independent Scyther chain review and owner acceptance open"
+      ],
+      "normalized_printings": [
+        "tcgdex:en:sv03.5-113:holo",
+        "tcgdex:en:sv03.5-113:reverse"
+      ],
+      "account_ownership": "unchanged; research seed only"
+    },
+    {
+      "species_id": "ndex:0115",
+      "name": "Kangaskhan",
+      "state": "printing-and-standard-booster-researched",
+      "sources": [
+        "detail:sv03.5-115",
+        "detail:sv03.5-190",
+        "official-checklist:151-review-v2"
+      ],
+      "printing_candidate": "151 #115 ex",
+      "imported_printing": null,
+      "gaps": [
+        "Official product contents unknown; no current purchasable offer; independent Scyther chain review and owner acceptance open"
+      ],
+      "normalized_printings": [
+        "tcgdex:en:sv03.5-115:holo",
+        "tcgdex:en:sv03.5-190:holo"
+      ],
+      "account_ownership": "unchanged; research seed only"
+    },
+    {
+      "species_id": "ndex:0122",
+      "name": "Mr. Mime",
+      "state": "printing-and-standard-booster-researched",
+      "sources": [
+        "detail:sv03.5-122",
+        "detail:sv03.5-179",
+        "official-checklist:151-review-v2"
+      ],
+      "printing_candidate": "151 #122",
+      "imported_printing": null,
+      "gaps": [
+        "Official product contents unknown; no current purchasable offer; independent Scyther chain review and owner acceptance open"
+      ],
+      "normalized_printings": [
+        "tcgdex:en:sv03.5-122:holo",
+        "tcgdex:en:sv03.5-122:reverse",
+        "tcgdex:en:sv03.5-179:holo"
+      ],
+      "account_ownership": "unchanged; research seed only"
+    },
+    {
+      "species_id": "ndex:0123",
+      "name": "Scyther",
+      "state": "printing-and-standard-booster-researched",
+      "sources": [
+        "detail:sv03.5-123",
+        "official-checklist",
+        "official-checklist:151-review-v2",
+        "scyther"
+      ],
+      "printing_candidate": "151 #123",
+      "imported_printing": "tcgdex:en:sv03.5-123:normal",
+      "gaps": [
+        "Official product contents unknown; no current purchasable offer; independent Scyther chain review and owner acceptance open"
+      ],
+      "normalized_printings": [
+        "tcgdex:en:sv03.5-123:normal",
+        "tcgdex:en:sv03.5-123:reverse"
+      ],
+      "account_ownership": "unchanged; research seed only"
+    },
+    {
+      "species_id": "ndex:0130",
+      "name": "Gyarados",
+      "state": "printing-and-standard-booster-researched",
+      "sources": [
+        "detail:sv03.5-130",
+        "official-checklist:151-review-v2"
+      ],
+      "printing_candidate": "151 #130",
+      "imported_printing": null,
+      "gaps": [
+        "Official product contents unknown; no current purchasable offer; independent Scyther chain review and owner acceptance open"
+      ],
+      "normalized_printings": [
+        "tcgdex:en:sv03.5-130:holo",
+        "tcgdex:en:sv03.5-130:reverse"
+      ],
+      "account_ownership": "unchanged; research seed only"
+    },
+    {
+      "species_id": "ndex:0131",
+      "name": "Lapras",
+      "state": "printing-and-standard-booster-researched",
+      "sources": [
+        "detail:sv03.5-131",
+        "official-checklist:151-review-v2"
+      ],
+      "printing_candidate": "151 #131",
+      "imported_printing": null,
+      "gaps": [
+        "Official product contents unknown; no current purchasable offer; independent Scyther chain review and owner acceptance open"
+      ],
+      "normalized_printings": [
+        "tcgdex:en:sv03.5-131:normal",
+        "tcgdex:en:sv03.5-131:reverse"
+      ],
+      "account_ownership": "unchanged; research seed only"
+    },
+    {
+      "species_id": "ndex:0134",
+      "name": "Vaporeon",
+      "state": "printing-and-standard-booster-researched",
+      "sources": [
+        "detail:sv03.5-134",
+        "official-checklist:151-review-v2"
+      ],
+      "printing_candidate": "151 #134",
+      "imported_printing": null,
+      "gaps": [
+        "Official product contents unknown; no current purchasable offer; independent Scyther chain review and owner acceptance open"
+      ],
+      "normalized_printings": [
+        "tcgdex:en:sv03.5-134:holo",
+        "tcgdex:en:sv03.5-134:reverse"
+      ],
+      "account_ownership": "unchanged; research seed only"
+    },
+    {
+      "species_id": "ndex:0135",
+      "name": "Jolteon",
+      "state": "printing-and-standard-booster-researched",
+      "sources": [
+        "detail:sv03.5-135",
+        "official-checklist:151-review-v2"
+      ],
+      "printing_candidate": "151 #135",
+      "imported_printing": null,
+      "gaps": [
+        "Official product contents unknown; no current purchasable offer; independent Scyther chain review and owner acceptance open"
+      ],
+      "normalized_printings": [
+        "tcgdex:en:sv03.5-135:holo",
+        "tcgdex:en:sv03.5-135:reverse"
+      ],
+      "account_ownership": "unchanged; research seed only"
+    },
+    {
+      "species_id": "ndex:0136",
+      "name": "Flareon",
+      "state": "printing-and-standard-booster-researched",
+      "sources": [
+        "detail:sv03.5-136",
+        "official-checklist:151-review-v2"
+      ],
+      "printing_candidate": "151 #136",
+      "imported_printing": null,
+      "gaps": [
+        "Official product contents unknown; no current purchasable offer; independent Scyther chain review and owner acceptance open"
+      ],
+      "normalized_printings": [
+        "tcgdex:en:sv03.5-136:holo",
+        "tcgdex:en:sv03.5-136:reverse"
+      ],
+      "account_ownership": "unchanged; research seed only"
+    },
+    {
+      "species_id": "ndex:0144",
+      "name": "Articuno",
+      "state": "printing-and-standard-booster-researched",
+      "sources": [
+        "detail:sv03.5-144",
+        "official-checklist:151-review-v2"
+      ],
+      "printing_candidate": "151 #144",
+      "imported_printing": null,
+      "gaps": [
+        "Official product contents unknown; no current purchasable offer; independent Scyther chain review and owner acceptance open"
+      ],
+      "normalized_printings": [
+        "tcgdex:en:sv03.5-144:holo",
+        "tcgdex:en:sv03.5-144:reverse"
+      ],
+      "account_ownership": "unchanged; research seed only"
+    },
+    {
+      "species_id": "ndex:0146",
+      "name": "Moltres",
+      "state": "printing-and-standard-booster-researched",
+      "sources": [
+        "detail:sv03.5-146",
+        "official-checklist:151-review-v2"
+      ],
+      "printing_candidate": "151 #146",
+      "imported_printing": null,
+      "gaps": [
+        "Official product contents unknown; no current purchasable offer; independent Scyther chain review and owner acceptance open"
+      ],
+      "normalized_printings": [
+        "tcgdex:en:sv03.5-146:holo",
+        "tcgdex:en:sv03.5-146:reverse"
+      ],
+      "account_ownership": "unchanged; research seed only"
+    }
+  ]
+}

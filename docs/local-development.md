@@ -1,5 +1,11 @@
 # Local development
 
+The expanded beta requires [data collection and engineering](BETA_REQUIREMENTS.md).
+Start the D1 source/universe assessment and E1 schema/import slice in the Desktop
+`dex_next_steps.md` handoff. Use disposable roots and copied state; do not seed or
+rehearse migrations on the owner installation. Retain real data provenance even
+when functional checks use synthetic fixtures.
+
 Run commands from the repository root with Python >=3.12 and uv. CI tests Python
 3.12 and 3.14 on Ubuntu; the current local product target is macOS.
 `uv sync --locked --extra dev` installs the committed dependencies and rejects a
@@ -106,3 +112,20 @@ Missing examples fail before creating destinations. Existing files are never
 replaced; new local files use mode 0600. Git excludes private state, evidence and
 media. Public catalog inputs, examples, synthetic fixtures and runtime assets are
 tracked. Add public authored media through a path-specific ignore exception.
+
+
+## E2a runtime qualification — October 4
+
+E2a runtime qualification now passes: locked synchronization, all three process
+cleanup cases and the full suite (458 passed, one existing warning), plus compilation,
+JavaScript syntax, lint and formatting. Fresh copied-state preservation and zero-call
+frozen-hunt service assertions pass. E2a remains partial: renewed explicit browser
+permission was requested and is pending; no server, navigation, UI captures or owner
+acceptance occurred. [Qualification record](history/2026-10-04-E2A-QUALIFICATION.md)
+retains commands, runtime, exact hashes and preservation evidence. Full E2 and beta
+remain open.
+
+
+E3a retained-data pack discovery: see [setup and remaining browser qualification](E3A.md).
+Only use fresh synthetic/copy roots. The current execution sandbox denies loopback
+bind and process inspection; do not substitute an owner root or weaken security.

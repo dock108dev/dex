@@ -32,9 +32,11 @@ urlpatterns = [
 
 if settings.B2_ENABLED:
     from . import collection_views as b2
+    from . import packs_views
 
     urlpatterns = [
         path("goals/", b2.home),
+        path("packs/", packs_views.home),
         path("settings/", b2.home),
         path("collection-assets/<str:filename>", b2.asset),
         path("api/collection/", b2.dashboard),

@@ -6,6 +6,14 @@ goals. The Pokémon Pokédex covers species #001–251.
 The current supported use is a single user on localhost; public hosting and an
 invited-user rollout are not qualified.
 
+The next beta requires an all-era Pokémon TCG catalog and collecting goals,
+retaining classic eBay hunting and adding a sealed-pack shopping index for missing
+species. The owner's first goal is all original 151 using qualifying cards from
+any era. Sourced data collection and engineering are both outstanding requirements.
+See [beta requirements](docs/BETA_REQUIREMENTS.md), [roadmap](docs/ROADMAP.md) and
+[work status](docs/PM_STATUS.md). The capabilities below describe today's app,
+not the completed expanded beta.
+
 ## Try it locally
 
 Requires Python 3.12 or later and uv. From a checkout, create a **new synthetic demo**

@@ -1,0 +1,5110 @@
+{
+  "checklist_identities": 207,
+  "reconciled": 207,
+  "physical_provider_variants": 384,
+  "booster_memberships": 207,
+  "rows": [
+    {
+      "number": "001",
+      "provider_id": "sv03.5-001",
+      "official_name": "Bulbasaur",
+      "provider_name": "Bulbasaur",
+      "category": "pokemon",
+      "species_id": "ndex:0001",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-001:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        },
+        {
+          "printing_id": "tcgdex:en:sv03.5-001:normal:3takscxpcqodqyjzqnsbuwq6",
+          "detail_variant": {
+            "type": "normal",
+            "size": "standard",
+            "stamp": [
+              "set-logo"
+            ],
+            "variantId": "3takscxpcqodqyjzqnsbuwq6"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        },
+        {
+          "printing_id": "tcgdex:en:sv03.5-001:reverse:3ts5hd5swdcuwzv63t639rp",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "foil": "cosmos",
+            "variantId": "3ts5hd5swdcuwzv63t639rp"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-001",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 4
+    },
+    {
+      "number": "002",
+      "provider_id": "sv03.5-002",
+      "official_name": "Ivysaur",
+      "provider_name": "Ivysaur",
+      "category": "pokemon",
+      "species_id": "ndex:0002",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-002:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-002",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "003",
+      "provider_id": "sv03.5-003",
+      "official_name": "Venusaur ex",
+      "provider_name": "Venusaur ex",
+      "category": "pokemon",
+      "species_id": "ndex:0003",
+      "rarity": "Double rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-003",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "004",
+      "provider_id": "sv03.5-004",
+      "official_name": "Charmander",
+      "provider_name": "Charmander",
+      "category": "pokemon",
+      "species_id": "ndex:0004",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-004:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        },
+        {
+          "printing_id": "tcgdex:en:sv03.5-004:normal:3takscxpcp6jb0dtae8nhh2o",
+          "detail_variant": {
+            "type": "normal",
+            "size": "standard",
+            "stamp": [
+              "gamestop"
+            ],
+            "variantId": "3takscxpcp6jb0dtae8nhh2o"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        },
+        {
+          "printing_id": "tcgdex:en:sv03.5-004:holo:5zs5af49g93yryvw1ftj",
+          "detail_variant": {
+            "type": "holo",
+            "size": "standard",
+            "foil": "cosmos",
+            "variantId": "5zs5af49g93yryvw1ftj"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        },
+        {
+          "printing_id": "tcgdex:en:sv03.5-004:reverse:3a83wf50txgusbq74vsoel3h2",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "stamp": [
+              "eb-games"
+            ],
+            "variantId": "3a83wf50txgusbq74vsoel3h2"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        },
+        {
+          "printing_id": "tcgdex:en:sv03.5-004:reverse:3ts5hd5swdcuwzv63t639rp",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "foil": "cosmos",
+            "variantId": "3ts5hd5swdcuwzv63t639rp"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-004",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 6
+    },
+    {
+      "number": "005",
+      "provider_id": "sv03.5-005",
+      "official_name": "Charmeleon",
+      "provider_name": "Charmeleon",
+      "category": "pokemon",
+      "species_id": "ndex:0005",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-005:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        },
+        {
+          "printing_id": "tcgdex:en:sv03.5-005:holo:5zs5af49g93yryvw1ftj",
+          "detail_variant": {
+            "type": "holo",
+            "size": "standard",
+            "foil": "cosmos",
+            "variantId": "5zs5af49g93yryvw1ftj"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-005",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 3
+    },
+    {
+      "number": "006",
+      "provider_id": "sv03.5-006",
+      "official_name": "Charizard ex",
+      "provider_name": "Charizard ex",
+      "category": "pokemon",
+      "species_id": "ndex:0006",
+      "rarity": "Double rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-006",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "007",
+      "provider_id": "sv03.5-007",
+      "official_name": "Squirtle",
+      "provider_name": "Squirtle",
+      "category": "pokemon",
+      "species_id": "ndex:0007",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-007:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        },
+        {
+          "printing_id": "tcgdex:en:sv03.5-007:normal:1jz5lzkp5fm97q3tz91gh48n0swved",
+          "detail_variant": {
+            "type": "normal",
+            "size": "standard",
+            "stamp": [
+              "pokemon-center"
+            ],
+            "variantId": "1jz5lzkp5fm97q3tz91gh48n0swved"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        },
+        {
+          "printing_id": "tcgdex:en:sv03.5-007:reverse:3ts5hd5swdcuwzv63t639rp",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "foil": "cosmos",
+            "variantId": "3ts5hd5swdcuwzv63t639rp"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-007",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 4
+    },
+    {
+      "number": "008",
+      "provider_id": "sv03.5-008",
+      "official_name": "Wartortle",
+      "provider_name": "Wartortle",
+      "category": "pokemon",
+      "species_id": "ndex:0008",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-008:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-008",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "009",
+      "provider_id": "sv03.5-009",
+      "official_name": "Blastoise ex",
+      "provider_name": "Blastoise ex",
+      "category": "pokemon",
+      "species_id": "ndex:0009",
+      "rarity": "Double rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-009:holo:slwlv6rn87",
+          "detail_variant": {
+            "type": "holo",
+            "size": "jumbo",
+            "variantId": "slwlv6rn87"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-009",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "010",
+      "provider_id": "sv03.5-010",
+      "official_name": "Caterpie",
+      "provider_name": "Caterpie",
+      "category": "pokemon",
+      "species_id": "ndex:0010",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-010:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-010",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "011",
+      "provider_id": "sv03.5-011",
+      "official_name": "Metapod",
+      "provider_name": "Metapod",
+      "category": "pokemon",
+      "species_id": "ndex:0011",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-011:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-011",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "012",
+      "provider_id": "sv03.5-012",
+      "official_name": "Butterfree",
+      "provider_name": "Butterfree",
+      "category": "pokemon",
+      "species_id": "ndex:0012",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-012:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-012",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "013",
+      "provider_id": "sv03.5-013",
+      "official_name": "Weedle",
+      "provider_name": "Weedle",
+      "category": "pokemon",
+      "species_id": "ndex:0013",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-013:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-013",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "014",
+      "provider_id": "sv03.5-014",
+      "official_name": "Kakuna",
+      "provider_name": "Kakuna",
+      "category": "pokemon",
+      "species_id": "ndex:0014",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-014:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-014",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "015",
+      "provider_id": "sv03.5-015",
+      "official_name": "Beedrill",
+      "provider_name": "Beedrill",
+      "category": "pokemon",
+      "species_id": "ndex:0015",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-015:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-015",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "016",
+      "provider_id": "sv03.5-016",
+      "official_name": "Pidgey",
+      "provider_name": "Pidgey",
+      "category": "pokemon",
+      "species_id": "ndex:0016",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-016:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-016",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "017",
+      "provider_id": "sv03.5-017",
+      "official_name": "Pidgeotto",
+      "provider_name": "Pidgeotto",
+      "category": "pokemon",
+      "species_id": "ndex:0017",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-017:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-017",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "018",
+      "provider_id": "sv03.5-018",
+      "official_name": "Pidgeot",
+      "provider_name": "Pidgeot",
+      "category": "pokemon",
+      "species_id": "ndex:0018",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-018:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-018",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "019",
+      "provider_id": "sv03.5-019",
+      "official_name": "Rattata",
+      "provider_name": "Rattata",
+      "category": "pokemon",
+      "species_id": "ndex:0019",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-019:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-019",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "020",
+      "provider_id": "sv03.5-020",
+      "official_name": "Raticate",
+      "provider_name": "Raticate",
+      "category": "pokemon",
+      "species_id": "ndex:0020",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-020:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-020",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "021",
+      "provider_id": "sv03.5-021",
+      "official_name": "Spearow",
+      "provider_name": "Spearow",
+      "category": "pokemon",
+      "species_id": "ndex:0021",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-021:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-021",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "022",
+      "provider_id": "sv03.5-022",
+      "official_name": "Fearow",
+      "provider_name": "Fearow",
+      "category": "pokemon",
+      "species_id": "ndex:0022",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-022:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-022",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "023",
+      "provider_id": "sv03.5-023",
+      "official_name": "Ekans",
+      "provider_name": "Ekans",
+      "category": "pokemon",
+      "species_id": "ndex:0023",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-023:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-023",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "024",
+      "provider_id": "sv03.5-024",
+      "official_name": "Arbok ex",
+      "provider_name": "Arbok ex",
+      "category": "pokemon",
+      "species_id": "ndex:0024",
+      "rarity": "Double rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-024",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "025",
+      "provider_id": "sv03.5-025",
+      "official_name": "Pikachu",
+      "provider_name": "Pikachu",
+      "category": "pokemon",
+      "species_id": "ndex:0025",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-025:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        },
+        {
+          "printing_id": "tcgdex:en:sv03.5-025:normal:15i9grynje1x3z7wbc55wmlzcvxpeawg",
+          "detail_variant": {
+            "type": "normal",
+            "size": "standard",
+            "stamp": [
+              "pokemon-together"
+            ],
+            "variantId": "15i9grynje1x3z7wbc55wmlzcvxpeawg"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        },
+        {
+          "printing_id": "tcgdex:en:sv03.5-025:normal:3a83wf50tz03efzvidn9umu5s",
+          "detail_variant": {
+            "type": "normal",
+            "size": "standard",
+            "stamp": [
+              "snowflake"
+            ],
+            "variantId": "3a83wf50tz03efzvidn9umu5s"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        },
+        {
+          "printing_id": "tcgdex:en:sv03.5-025:reverse:3ts5hd5swdcuwzv63t639rp",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "foil": "cosmos",
+            "variantId": "3ts5hd5swdcuwzv63t639rp"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-025",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 5
+    },
+    {
+      "number": "026",
+      "provider_id": "sv03.5-026",
+      "official_name": "Raichu",
+      "provider_name": "Raichu",
+      "category": "pokemon",
+      "species_id": "ndex:0026",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-026:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        },
+        {
+          "printing_id": "tcgdex:en:sv03.5-026:holo:5zs5af49g93yryvw1ftj",
+          "detail_variant": {
+            "type": "holo",
+            "size": "standard",
+            "foil": "cosmos",
+            "variantId": "5zs5af49g93yryvw1ftj"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-026",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 3
+    },
+    {
+      "number": "027",
+      "provider_id": "sv03.5-027",
+      "official_name": "Sandshrew",
+      "provider_name": "Sandshrew",
+      "category": "pokemon",
+      "species_id": "ndex:0027",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-027:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-027",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "028",
+      "provider_id": "sv03.5-028",
+      "official_name": "Sandslash",
+      "provider_name": "Sandslash",
+      "category": "pokemon",
+      "species_id": "ndex:0028",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-028:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-028",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "029",
+      "provider_id": "sv03.5-029",
+      "official_name": "Nidoran♀",
+      "provider_name": "Nidoran♀",
+      "category": "pokemon",
+      "species_id": "ndex:0029",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-029:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-029",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "030",
+      "provider_id": "sv03.5-030",
+      "official_name": "Nidorina",
+      "provider_name": "Nidorina",
+      "category": "pokemon",
+      "species_id": "ndex:0030",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-030:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-030",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "031",
+      "provider_id": "sv03.5-031",
+      "official_name": "Nidoqueen",
+      "provider_name": "Nidoqueen",
+      "category": "pokemon",
+      "species_id": "ndex:0031",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-031:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-031",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "032",
+      "provider_id": "sv03.5-032",
+      "official_name": "Nidoran♂",
+      "provider_name": "Nidoran♂",
+      "category": "pokemon",
+      "species_id": "ndex:0032",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-032:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-032",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "033",
+      "provider_id": "sv03.5-033",
+      "official_name": "Nidorino",
+      "provider_name": "Nidorino",
+      "category": "pokemon",
+      "species_id": "ndex:0033",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-033:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-033",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "034",
+      "provider_id": "sv03.5-034",
+      "official_name": "Nidoking",
+      "provider_name": "Nidoking",
+      "category": "pokemon",
+      "species_id": "ndex:0034",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-034:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-034",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "035",
+      "provider_id": "sv03.5-035",
+      "official_name": "Clefairy",
+      "provider_name": "Clefairy",
+      "category": "pokemon",
+      "species_id": "ndex:0035",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-035:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-035",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "036",
+      "provider_id": "sv03.5-036",
+      "official_name": "Clefable",
+      "provider_name": "Clefable",
+      "category": "pokemon",
+      "species_id": "ndex:0036",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-036:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-036",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "037",
+      "provider_id": "sv03.5-037",
+      "official_name": "Vulpix",
+      "provider_name": "Vulpix",
+      "category": "pokemon",
+      "species_id": "ndex:0037",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-037:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-037",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "038",
+      "provider_id": "sv03.5-038",
+      "official_name": "Ninetales ex",
+      "provider_name": "Ninetales ex",
+      "category": "pokemon",
+      "species_id": "ndex:0038",
+      "rarity": "Double rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-038",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "039",
+      "provider_id": "sv03.5-039",
+      "official_name": "Jigglypuff",
+      "provider_name": "Jigglypuff",
+      "category": "pokemon",
+      "species_id": "ndex:0039",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-039:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-039",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "040",
+      "provider_id": "sv03.5-040",
+      "official_name": "Wigglytuff ex",
+      "provider_name": "Wigglytuff ex",
+      "category": "pokemon",
+      "species_id": "ndex:0040",
+      "rarity": "Double rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-040",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "041",
+      "provider_id": "sv03.5-041",
+      "official_name": "Zubat",
+      "provider_name": "Zubat",
+      "category": "pokemon",
+      "species_id": "ndex:0041",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-041:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-041",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "042",
+      "provider_id": "sv03.5-042",
+      "official_name": "Golbat",
+      "provider_name": "Golbat",
+      "category": "pokemon",
+      "species_id": "ndex:0042",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-042:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-042",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "043",
+      "provider_id": "sv03.5-043",
+      "official_name": "Oddish",
+      "provider_name": "Oddish",
+      "category": "pokemon",
+      "species_id": "ndex:0043",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-043:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-043",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "044",
+      "provider_id": "sv03.5-044",
+      "official_name": "Gloom",
+      "provider_name": "Gloom",
+      "category": "pokemon",
+      "species_id": "ndex:0044",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-044:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-044",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "045",
+      "provider_id": "sv03.5-045",
+      "official_name": "Vileplume",
+      "provider_name": "Vileplume",
+      "category": "pokemon",
+      "species_id": "ndex:0045",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-045:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-045",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "046",
+      "provider_id": "sv03.5-046",
+      "official_name": "Paras",
+      "provider_name": "Paras",
+      "category": "pokemon",
+      "species_id": "ndex:0046",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-046:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-046",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "047",
+      "provider_id": "sv03.5-047",
+      "official_name": "Parasect",
+      "provider_name": "Parasect",
+      "category": "pokemon",
+      "species_id": "ndex:0047",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-047:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-047",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "048",
+      "provider_id": "sv03.5-048",
+      "official_name": "Venonat",
+      "provider_name": "Venonat",
+      "category": "pokemon",
+      "species_id": "ndex:0048",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-048:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-048",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "049",
+      "provider_id": "sv03.5-049",
+      "official_name": "Venomoth",
+      "provider_name": "Venomoth",
+      "category": "pokemon",
+      "species_id": "ndex:0049",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-049:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-049",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "050",
+      "provider_id": "sv03.5-050",
+      "official_name": "Diglett",
+      "provider_name": "Diglett",
+      "category": "pokemon",
+      "species_id": "ndex:0050",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-050:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-050",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "051",
+      "provider_id": "sv03.5-051",
+      "official_name": "Dugtrio",
+      "provider_name": "Dugtrio",
+      "category": "pokemon",
+      "species_id": "ndex:0051",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-051:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-051",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "052",
+      "provider_id": "sv03.5-052",
+      "official_name": "Meowth",
+      "provider_name": "Meowth",
+      "category": "pokemon",
+      "species_id": "ndex:0052",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-052:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-052",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "053",
+      "provider_id": "sv03.5-053",
+      "official_name": "Persian",
+      "provider_name": "Persian",
+      "category": "pokemon",
+      "species_id": "ndex:0053",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-053:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-053",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "054",
+      "provider_id": "sv03.5-054",
+      "official_name": "Psyduck",
+      "provider_name": "Psyduck",
+      "category": "pokemon",
+      "species_id": "ndex:0054",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-054:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-054",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "055",
+      "provider_id": "sv03.5-055",
+      "official_name": "Golduck",
+      "provider_name": "Golduck",
+      "category": "pokemon",
+      "species_id": "ndex:0055",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-055:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-055",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "056",
+      "provider_id": "sv03.5-056",
+      "official_name": "Mankey",
+      "provider_name": "Mankey",
+      "category": "pokemon",
+      "species_id": "ndex:0056",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-056:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-056",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "057",
+      "provider_id": "sv03.5-057",
+      "official_name": "Primeape",
+      "provider_name": "Primeape",
+      "category": "pokemon",
+      "species_id": "ndex:0057",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-057:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-057",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "058",
+      "provider_id": "sv03.5-058",
+      "official_name": "Growlithe",
+      "provider_name": "Growlithe",
+      "category": "pokemon",
+      "species_id": "ndex:0058",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-058:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-058",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "059",
+      "provider_id": "sv03.5-059",
+      "official_name": "Arcanine",
+      "provider_name": "Arcanine",
+      "category": "pokemon",
+      "species_id": "ndex:0059",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-059:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-059",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "060",
+      "provider_id": "sv03.5-060",
+      "official_name": "Poliwag",
+      "provider_name": "Poliwag",
+      "category": "pokemon",
+      "species_id": "ndex:0060",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-060:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-060",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "061",
+      "provider_id": "sv03.5-061",
+      "official_name": "Poliwhirl",
+      "provider_name": "Poliwhirl",
+      "category": "pokemon",
+      "species_id": "ndex:0061",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-061:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-061",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "062",
+      "provider_id": "sv03.5-062",
+      "official_name": "Poliwrath",
+      "provider_name": "Poliwrath",
+      "category": "pokemon",
+      "species_id": "ndex:0062",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-062:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-062",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "063",
+      "provider_id": "sv03.5-063",
+      "official_name": "Abra",
+      "provider_name": "Abra",
+      "category": "pokemon",
+      "species_id": "ndex:0063",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-063:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-063",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "064",
+      "provider_id": "sv03.5-064",
+      "official_name": "Kadabra",
+      "provider_name": "Kadabra",
+      "category": "pokemon",
+      "species_id": "ndex:0064",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-064:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-064",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "065",
+      "provider_id": "sv03.5-065",
+      "official_name": "Alakazam ex",
+      "provider_name": "Alakazam ex",
+      "category": "pokemon",
+      "species_id": "ndex:0065",
+      "rarity": "Double rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-065",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "066",
+      "provider_id": "sv03.5-066",
+      "official_name": "Machop",
+      "provider_name": "Machop",
+      "category": "pokemon",
+      "species_id": "ndex:0066",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-066:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-066",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "067",
+      "provider_id": "sv03.5-067",
+      "official_name": "Machoke",
+      "provider_name": "Machoke",
+      "category": "pokemon",
+      "species_id": "ndex:0067",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-067:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-067",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "068",
+      "provider_id": "sv03.5-068",
+      "official_name": "Machamp",
+      "provider_name": "Machamp",
+      "category": "pokemon",
+      "species_id": "ndex:0068",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-068:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        },
+        {
+          "printing_id": "tcgdex:en:sv03.5-068:holo:5zs5af49g93yryvw1ftj",
+          "detail_variant": {
+            "type": "holo",
+            "size": "standard",
+            "foil": "cosmos",
+            "variantId": "5zs5af49g93yryvw1ftj"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-068",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 3
+    },
+    {
+      "number": "069",
+      "provider_id": "sv03.5-069",
+      "official_name": "Bellsprout",
+      "provider_name": "Bellsprout",
+      "category": "pokemon",
+      "species_id": "ndex:0069",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-069:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-069",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "070",
+      "provider_id": "sv03.5-070",
+      "official_name": "Weepinbell",
+      "provider_name": "Weepinbell",
+      "category": "pokemon",
+      "species_id": "ndex:0070",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-070:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-070",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "071",
+      "provider_id": "sv03.5-071",
+      "official_name": "Victreebel",
+      "provider_name": "Victreebel",
+      "category": "pokemon",
+      "species_id": "ndex:0071",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-071:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-071",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "072",
+      "provider_id": "sv03.5-072",
+      "official_name": "Tentacool",
+      "provider_name": "Tentacool",
+      "category": "pokemon",
+      "species_id": "ndex:0072",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-072:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-072",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "073",
+      "provider_id": "sv03.5-073",
+      "official_name": "Tentacruel",
+      "provider_name": "Tentacruel",
+      "category": "pokemon",
+      "species_id": "ndex:0073",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-073:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-073",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "074",
+      "provider_id": "sv03.5-074",
+      "official_name": "Geodude",
+      "provider_name": "Geodude",
+      "category": "pokemon",
+      "species_id": "ndex:0074",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-074:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-074",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "075",
+      "provider_id": "sv03.5-075",
+      "official_name": "Graveler",
+      "provider_name": "Graveler",
+      "category": "pokemon",
+      "species_id": "ndex:0075",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-075:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-075",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "076",
+      "provider_id": "sv03.5-076",
+      "official_name": "Golem ex",
+      "provider_name": "Golem ex",
+      "category": "pokemon",
+      "species_id": "ndex:0076",
+      "rarity": "Double rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-076",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "077",
+      "provider_id": "sv03.5-077",
+      "official_name": "Ponyta",
+      "provider_name": "Ponyta",
+      "category": "pokemon",
+      "species_id": "ndex:0077",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-077:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-077",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "078",
+      "provider_id": "sv03.5-078",
+      "official_name": "Rapidash",
+      "provider_name": "Rapidash",
+      "category": "pokemon",
+      "species_id": "ndex:0078",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-078:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-078",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "079",
+      "provider_id": "sv03.5-079",
+      "official_name": "Slowpoke",
+      "provider_name": "Slowpoke",
+      "category": "pokemon",
+      "species_id": "ndex:0079",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-079:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-079",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "080",
+      "provider_id": "sv03.5-080",
+      "official_name": "Slowbro",
+      "provider_name": "Slowbro",
+      "category": "pokemon",
+      "species_id": "ndex:0080",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-080:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-080",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "081",
+      "provider_id": "sv03.5-081",
+      "official_name": "Magnemite",
+      "provider_name": "Magnemite",
+      "category": "pokemon",
+      "species_id": "ndex:0081",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-081:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-081",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "082",
+      "provider_id": "sv03.5-082",
+      "official_name": "Magneton",
+      "provider_name": "Magneton",
+      "category": "pokemon",
+      "species_id": "ndex:0082",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-082:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-082",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "083",
+      "provider_id": "sv03.5-083",
+      "official_name": "Farfetch’d",
+      "provider_name": "Farfetch'd",
+      "category": "pokemon",
+      "species_id": "ndex:0083",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-083:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-083",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "084",
+      "provider_id": "sv03.5-084",
+      "official_name": "Doduo",
+      "provider_name": "Doduo",
+      "category": "pokemon",
+      "species_id": "ndex:0084",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-084:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-084",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "085",
+      "provider_id": "sv03.5-085",
+      "official_name": "Dodrio",
+      "provider_name": "Dodrio",
+      "category": "pokemon",
+      "species_id": "ndex:0085",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-085:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-085",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "086",
+      "provider_id": "sv03.5-086",
+      "official_name": "Seel",
+      "provider_name": "Seel",
+      "category": "pokemon",
+      "species_id": "ndex:0086",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-086:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-086",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "087",
+      "provider_id": "sv03.5-087",
+      "official_name": "Dewgong",
+      "provider_name": "Dewgong",
+      "category": "pokemon",
+      "species_id": "ndex:0087",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-087:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-087",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "088",
+      "provider_id": "sv03.5-088",
+      "official_name": "Grimer",
+      "provider_name": "Grimer",
+      "category": "pokemon",
+      "species_id": "ndex:0088",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-088:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-088",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "089",
+      "provider_id": "sv03.5-089",
+      "official_name": "Muk",
+      "provider_name": "Muk",
+      "category": "pokemon",
+      "species_id": "ndex:0089",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-089:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-089",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "090",
+      "provider_id": "sv03.5-090",
+      "official_name": "Shellder",
+      "provider_name": "Shellder",
+      "category": "pokemon",
+      "species_id": "ndex:0090",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-090:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-090",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "091",
+      "provider_id": "sv03.5-091",
+      "official_name": "Cloyster",
+      "provider_name": "Cloyster",
+      "category": "pokemon",
+      "species_id": "ndex:0091",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-091:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-091",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "092",
+      "provider_id": "sv03.5-092",
+      "official_name": "Gastly",
+      "provider_name": "Gastly",
+      "category": "pokemon",
+      "species_id": "ndex:0092",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-092:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-092",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "093",
+      "provider_id": "sv03.5-093",
+      "official_name": "Haunter",
+      "provider_name": "Haunter",
+      "category": "pokemon",
+      "species_id": "ndex:0093",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-093:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-093",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "094",
+      "provider_id": "sv03.5-094",
+      "official_name": "Gengar",
+      "provider_name": "Gengar",
+      "category": "pokemon",
+      "species_id": "ndex:0094",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-094:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        },
+        {
+          "printing_id": "tcgdex:en:sv03.5-094:holo:677yasikk9iggi3g0o8t",
+          "detail_variant": {
+            "type": "holo",
+            "size": "standard",
+            "foil": "galaxy",
+            "variantId": "677yasikk9iggi3g0o8t"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-094",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 3
+    },
+    {
+      "number": "095",
+      "provider_id": "sv03.5-095",
+      "official_name": "Onix",
+      "provider_name": "Onix",
+      "category": "pokemon",
+      "species_id": "ndex:0095",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-095:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-095",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "096",
+      "provider_id": "sv03.5-096",
+      "official_name": "Drowzee",
+      "provider_name": "Drowzee",
+      "category": "pokemon",
+      "species_id": "ndex:0096",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-096:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-096",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "097",
+      "provider_id": "sv03.5-097",
+      "official_name": "Hypno",
+      "provider_name": "Hypno",
+      "category": "pokemon",
+      "species_id": "ndex:0097",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-097:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-097",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "098",
+      "provider_id": "sv03.5-098",
+      "official_name": "Krabby",
+      "provider_name": "Krabby",
+      "category": "pokemon",
+      "species_id": "ndex:0098",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-098:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-098",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "099",
+      "provider_id": "sv03.5-099",
+      "official_name": "Kingler",
+      "provider_name": "Kingler",
+      "category": "pokemon",
+      "species_id": "ndex:0099",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-099:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-099",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "100",
+      "provider_id": "sv03.5-100",
+      "official_name": "Voltorb",
+      "provider_name": "Voltorb",
+      "category": "pokemon",
+      "species_id": "ndex:0100",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-100:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-100",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "101",
+      "provider_id": "sv03.5-101",
+      "official_name": "Electrode",
+      "provider_name": "Electrode",
+      "category": "pokemon",
+      "species_id": "ndex:0101",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-101:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-101",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "102",
+      "provider_id": "sv03.5-102",
+      "official_name": "Exeggcute",
+      "provider_name": "Exeggcute",
+      "category": "pokemon",
+      "species_id": "ndex:0102",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-102:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-102",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "103",
+      "provider_id": "sv03.5-103",
+      "official_name": "Exeggutor",
+      "provider_name": "Exeggutor",
+      "category": "pokemon",
+      "species_id": "ndex:0103",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-103:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-103",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "104",
+      "provider_id": "sv03.5-104",
+      "official_name": "Cubone",
+      "provider_name": "Cubone",
+      "category": "pokemon",
+      "species_id": "ndex:0104",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-104:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-104",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "105",
+      "provider_id": "sv03.5-105",
+      "official_name": "Marowak",
+      "provider_name": "Marowak",
+      "category": "pokemon",
+      "species_id": "ndex:0105",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-105:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-105",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "106",
+      "provider_id": "sv03.5-106",
+      "official_name": "Hitmonlee",
+      "provider_name": "Hitmonlee",
+      "category": "pokemon",
+      "species_id": "ndex:0106",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-106:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-106",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "107",
+      "provider_id": "sv03.5-107",
+      "official_name": "Hitmonchan",
+      "provider_name": "Hitmonchan",
+      "category": "pokemon",
+      "species_id": "ndex:0107",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-107:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-107",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "108",
+      "provider_id": "sv03.5-108",
+      "official_name": "Lickitung",
+      "provider_name": "Lickitung",
+      "category": "pokemon",
+      "species_id": "ndex:0108",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-108:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-108",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "109",
+      "provider_id": "sv03.5-109",
+      "official_name": "Koffing",
+      "provider_name": "Koffing",
+      "category": "pokemon",
+      "species_id": "ndex:0109",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-109:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-109",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "110",
+      "provider_id": "sv03.5-110",
+      "official_name": "Weezing",
+      "provider_name": "Weezing",
+      "category": "pokemon",
+      "species_id": "ndex:0110",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-110:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-110",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "111",
+      "provider_id": "sv03.5-111",
+      "official_name": "Rhyhorn",
+      "provider_name": "Rhyhorn",
+      "category": "pokemon",
+      "species_id": "ndex:0111",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-111:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-111",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "112",
+      "provider_id": "sv03.5-112",
+      "official_name": "Rhydon",
+      "provider_name": "Rhydon",
+      "category": "pokemon",
+      "species_id": "ndex:0112",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-112:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-112",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "113",
+      "provider_id": "sv03.5-113",
+      "official_name": "Chansey",
+      "provider_name": "Chansey",
+      "category": "pokemon",
+      "species_id": "ndex:0113",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-113:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-113",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "114",
+      "provider_id": "sv03.5-114",
+      "official_name": "Tangela",
+      "provider_name": "Tangela",
+      "category": "pokemon",
+      "species_id": "ndex:0114",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-114:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-114",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "115",
+      "provider_id": "sv03.5-115",
+      "official_name": "Kangaskhan ex",
+      "provider_name": "Kangaskhan ex",
+      "category": "pokemon",
+      "species_id": "ndex:0115",
+      "rarity": "Double rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-115",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "116",
+      "provider_id": "sv03.5-116",
+      "official_name": "Horsea",
+      "provider_name": "Horsea",
+      "category": "pokemon",
+      "species_id": "ndex:0116",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-116:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-116",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "117",
+      "provider_id": "sv03.5-117",
+      "official_name": "Seadra",
+      "provider_name": "Seadra",
+      "category": "pokemon",
+      "species_id": "ndex:0117",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-117:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-117",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "118",
+      "provider_id": "sv03.5-118",
+      "official_name": "Goldeen",
+      "provider_name": "Goldeen",
+      "category": "pokemon",
+      "species_id": "ndex:0118",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-118:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-118",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "119",
+      "provider_id": "sv03.5-119",
+      "official_name": "Seaking",
+      "provider_name": "Seaking",
+      "category": "pokemon",
+      "species_id": "ndex:0119",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-119:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-119",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "120",
+      "provider_id": "sv03.5-120",
+      "official_name": "Staryu",
+      "provider_name": "Staryu",
+      "category": "pokemon",
+      "species_id": "ndex:0120",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-120:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-120",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "121",
+      "provider_id": "sv03.5-121",
+      "official_name": "Starmie",
+      "provider_name": "Starmie",
+      "category": "pokemon",
+      "species_id": "ndex:0121",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-121:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-121",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "122",
+      "provider_id": "sv03.5-122",
+      "official_name": "Mr. Mime",
+      "provider_name": "Mr. Mime",
+      "category": "pokemon",
+      "species_id": "ndex:0122",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-122:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-122",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "123",
+      "provider_id": "sv03.5-123",
+      "official_name": "Scyther",
+      "provider_name": "Scyther",
+      "category": "pokemon",
+      "species_id": "ndex:0123",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-123:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-123",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "124",
+      "provider_id": "sv03.5-124",
+      "official_name": "Jynx ex",
+      "provider_name": "Jynx ex",
+      "category": "pokemon",
+      "species_id": "ndex:0124",
+      "rarity": "Double rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-124",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "125",
+      "provider_id": "sv03.5-125",
+      "official_name": "Electabuzz",
+      "provider_name": "Electabuzz",
+      "category": "pokemon",
+      "species_id": "ndex:0125",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-125:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-125",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "126",
+      "provider_id": "sv03.5-126",
+      "official_name": "Magmar",
+      "provider_name": "Magmar",
+      "category": "pokemon",
+      "species_id": "ndex:0126",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-126:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-126",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "127",
+      "provider_id": "sv03.5-127",
+      "official_name": "Pinsir",
+      "provider_name": "Pinsir",
+      "category": "pokemon",
+      "species_id": "ndex:0127",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-127:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-127",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "128",
+      "provider_id": "sv03.5-128",
+      "official_name": "Tauros",
+      "provider_name": "Tauros",
+      "category": "pokemon",
+      "species_id": "ndex:0128",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-128:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-128",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "129",
+      "provider_id": "sv03.5-129",
+      "official_name": "Magikarp",
+      "provider_name": "Magikarp",
+      "category": "pokemon",
+      "species_id": "ndex:0129",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-129:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-129",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "130",
+      "provider_id": "sv03.5-130",
+      "official_name": "Gyarados",
+      "provider_name": "Gyarados",
+      "category": "pokemon",
+      "species_id": "ndex:0130",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-130:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-130",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "131",
+      "provider_id": "sv03.5-131",
+      "official_name": "Lapras",
+      "provider_name": "Lapras",
+      "category": "pokemon",
+      "species_id": "ndex:0131",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-131:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-131",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "132",
+      "provider_id": "sv03.5-132",
+      "official_name": "Ditto",
+      "provider_name": "Ditto",
+      "category": "pokemon",
+      "species_id": "ndex:0132",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-132:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-132",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "133",
+      "provider_id": "sv03.5-133",
+      "official_name": "Eevee",
+      "provider_name": "Eevee",
+      "category": "pokemon",
+      "species_id": "ndex:0133",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-133:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        },
+        {
+          "printing_id": "tcgdex:en:sv03.5-133:normal:15i9grynje1x3z7wbc55wmlzcvxpeawg",
+          "detail_variant": {
+            "type": "normal",
+            "size": "standard",
+            "stamp": [
+              "pokemon-together"
+            ],
+            "variantId": "15i9grynje1x3z7wbc55wmlzcvxpeawg"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        },
+        {
+          "printing_id": "tcgdex:en:sv03.5-133:normal:3a83wf50tz03efzvidn9umu5s",
+          "detail_variant": {
+            "type": "normal",
+            "size": "standard",
+            "stamp": [
+              "snowflake"
+            ],
+            "variantId": "3a83wf50tz03efzvidn9umu5s"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-133",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 4
+    },
+    {
+      "number": "134",
+      "provider_id": "sv03.5-134",
+      "official_name": "Vaporeon",
+      "provider_name": "Vaporeon",
+      "category": "pokemon",
+      "species_id": "ndex:0134",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-134:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-134",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "135",
+      "provider_id": "sv03.5-135",
+      "official_name": "Jolteon",
+      "provider_name": "Jolteon",
+      "category": "pokemon",
+      "species_id": "ndex:0135",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-135:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-135",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "136",
+      "provider_id": "sv03.5-136",
+      "official_name": "Flareon",
+      "provider_name": "Flareon",
+      "category": "pokemon",
+      "species_id": "ndex:0136",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-136:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-136",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "137",
+      "provider_id": "sv03.5-137",
+      "official_name": "Porygon",
+      "provider_name": "Porygon",
+      "category": "pokemon",
+      "species_id": "ndex:0137",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-137:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-137",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "138",
+      "provider_id": "sv03.5-138",
+      "official_name": "Omanyte",
+      "provider_name": "Omanyte",
+      "category": "pokemon",
+      "species_id": "ndex:0138",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-138:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-138",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "139",
+      "provider_id": "sv03.5-139",
+      "official_name": "Omastar",
+      "provider_name": "Omastar",
+      "category": "pokemon",
+      "species_id": "ndex:0139",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-139:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-139",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "140",
+      "provider_id": "sv03.5-140",
+      "official_name": "Kabuto",
+      "provider_name": "Kabuto",
+      "category": "pokemon",
+      "species_id": "ndex:0140",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-140:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-140",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "141",
+      "provider_id": "sv03.5-141",
+      "official_name": "Kabutops",
+      "provider_name": "Kabutops",
+      "category": "pokemon",
+      "species_id": "ndex:0141",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-141:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-141",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "142",
+      "provider_id": "sv03.5-142",
+      "official_name": "Aerodactyl",
+      "provider_name": "Aerodactyl",
+      "category": "pokemon",
+      "species_id": "ndex:0142",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-142:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-142",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "143",
+      "provider_id": "sv03.5-143",
+      "official_name": "Snorlax",
+      "provider_name": "Snorlax",
+      "category": "pokemon",
+      "species_id": "ndex:0143",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-143:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-143",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "144",
+      "provider_id": "sv03.5-144",
+      "official_name": "Articuno",
+      "provider_name": "Articuno",
+      "category": "pokemon",
+      "species_id": "ndex:0144",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-144:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-144",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "145",
+      "provider_id": "sv03.5-145",
+      "official_name": "Zapdos ex",
+      "provider_name": "Zapdos ex",
+      "category": "pokemon",
+      "species_id": "ndex:0145",
+      "rarity": "Double rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-145",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "146",
+      "provider_id": "sv03.5-146",
+      "official_name": "Moltres",
+      "provider_name": "Moltres",
+      "category": "pokemon",
+      "species_id": "ndex:0146",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-146:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-146",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "147",
+      "provider_id": "sv03.5-147",
+      "official_name": "Dratini",
+      "provider_name": "Dratini",
+      "category": "pokemon",
+      "species_id": "ndex:0147",
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-147:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-147",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "148",
+      "provider_id": "sv03.5-148",
+      "official_name": "Dragonair",
+      "provider_name": "Dragonair",
+      "category": "pokemon",
+      "species_id": "ndex:0148",
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-148:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-148",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "149",
+      "provider_id": "sv03.5-149",
+      "official_name": "Dragonite",
+      "provider_name": "Dragonite",
+      "category": "pokemon",
+      "species_id": "ndex:0149",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-149:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        },
+        {
+          "printing_id": "tcgdex:en:sv03.5-149:holo:5zs5af49g93yryvw1ftj",
+          "detail_variant": {
+            "type": "holo",
+            "size": "standard",
+            "foil": "cosmos",
+            "variantId": "5zs5af49g93yryvw1ftj"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-149",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 3
+    },
+    {
+      "number": "150",
+      "provider_id": "sv03.5-150",
+      "official_name": "Mewtwo",
+      "provider_name": "Mewtwo",
+      "category": "pokemon",
+      "species_id": "ndex:0150",
+      "rarity": "Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-150:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-150",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "151",
+      "provider_id": "sv03.5-151",
+      "official_name": "Mew ex",
+      "provider_name": "Mew ex",
+      "category": "pokemon",
+      "species_id": "ndex:0151",
+      "rarity": "Double rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-151",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "152",
+      "provider_id": "sv03.5-152",
+      "official_name": "Antique Dome Fossil",
+      "provider_name": "Antique Dome Fossil",
+      "category": "trainer",
+      "species_id": null,
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-152:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-152",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "153",
+      "provider_id": "sv03.5-153",
+      "official_name": "Antique Helix Fossil",
+      "provider_name": "Antique Helix Fossil",
+      "category": "trainer",
+      "species_id": null,
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-153:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-153",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "154",
+      "provider_id": "sv03.5-154",
+      "official_name": "Antique Old Amber",
+      "provider_name": "Antique Old Amber",
+      "category": "trainer",
+      "species_id": null,
+      "rarity": "Common",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-154:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-154",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "155",
+      "provider_id": "sv03.5-155",
+      "official_name": "Big Air Balloon",
+      "provider_name": "Big Air Balloon",
+      "category": "trainer",
+      "species_id": null,
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-155:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-155",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "156",
+      "provider_id": "sv03.5-156",
+      "official_name": "Bill’s Transfer",
+      "provider_name": "Bill's Transfer",
+      "category": "trainer",
+      "species_id": null,
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-156:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-156",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "157",
+      "provider_id": "sv03.5-157",
+      "official_name": "Cycling Road",
+      "provider_name": "Cycling Road",
+      "category": "trainer",
+      "species_id": null,
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-157:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-157",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "158",
+      "provider_id": "sv03.5-158",
+      "official_name": "Daisy’s Help",
+      "provider_name": "Daisy's Help",
+      "category": "trainer",
+      "species_id": null,
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-158:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-158",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "159",
+      "provider_id": "sv03.5-159",
+      "official_name": "Energy Sticker",
+      "provider_name": "Energy Sticker",
+      "category": "trainer",
+      "species_id": null,
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-159:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-159",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "160",
+      "provider_id": "sv03.5-160",
+      "official_name": "Erika’s Invitation",
+      "provider_name": "Erika's Invitation",
+      "category": "trainer",
+      "species_id": null,
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-160:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-160",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "161",
+      "provider_id": "sv03.5-161",
+      "official_name": "Giovanni’s Charisma",
+      "provider_name": "Giovanni's Charisma",
+      "category": "trainer",
+      "species_id": null,
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-161:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-161",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "162",
+      "provider_id": "sv03.5-162",
+      "official_name": "Grabber",
+      "provider_name": "Grabber",
+      "category": "trainer",
+      "species_id": null,
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-162:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-162",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "163",
+      "provider_id": "sv03.5-163",
+      "official_name": "Leftovers",
+      "provider_name": "Leftovers",
+      "category": "trainer",
+      "species_id": null,
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-163:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-163",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "164",
+      "provider_id": "sv03.5-164",
+      "official_name": "Protective Goggles",
+      "provider_name": "Protective Goggles",
+      "category": "trainer",
+      "species_id": null,
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-164:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-164",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "165",
+      "provider_id": "sv03.5-165",
+      "official_name": "Rigid Band",
+      "provider_name": "Rigid Band",
+      "category": "trainer",
+      "species_id": null,
+      "rarity": "Uncommon",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-165:reverse",
+          "detail_variant": {
+            "type": "reverse",
+            "size": "standard",
+            "variantId": "cm4kqul3x1bwlz1f"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-165",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "166",
+      "provider_id": "sv03.5-166",
+      "official_name": "Bulbasaur",
+      "provider_name": "Bulbasaur",
+      "category": "pokemon",
+      "species_id": "ndex:0001",
+      "rarity": "Illustration rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-166",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "167",
+      "provider_id": "sv03.5-167",
+      "official_name": "Ivysaur",
+      "provider_name": "Ivysaur",
+      "category": "pokemon",
+      "species_id": "ndex:0002",
+      "rarity": "Illustration rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-167",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "168",
+      "provider_id": "sv03.5-168",
+      "official_name": "Charmander",
+      "provider_name": "Charmander",
+      "category": "pokemon",
+      "species_id": "ndex:0004",
+      "rarity": "Illustration rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-168",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "169",
+      "provider_id": "sv03.5-169",
+      "official_name": "Charmeleon",
+      "provider_name": "Charmeleon",
+      "category": "pokemon",
+      "species_id": "ndex:0005",
+      "rarity": "Illustration rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-169",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "170",
+      "provider_id": "sv03.5-170",
+      "official_name": "Squirtle",
+      "provider_name": "Squirtle",
+      "category": "pokemon",
+      "species_id": "ndex:0007",
+      "rarity": "Illustration rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-170",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "171",
+      "provider_id": "sv03.5-171",
+      "official_name": "Wartortle",
+      "provider_name": "Wartortle",
+      "category": "pokemon",
+      "species_id": "ndex:0008",
+      "rarity": "Illustration rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-171",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "172",
+      "provider_id": "sv03.5-172",
+      "official_name": "Caterpie",
+      "provider_name": "Caterpie",
+      "category": "pokemon",
+      "species_id": "ndex:0010",
+      "rarity": "Illustration rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-172",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "173",
+      "provider_id": "sv03.5-173",
+      "official_name": "Pikachu",
+      "provider_name": "Pikachu",
+      "category": "pokemon",
+      "species_id": "ndex:0025",
+      "rarity": "Illustration rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-173",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "174",
+      "provider_id": "sv03.5-174",
+      "official_name": "Nidoking",
+      "provider_name": "Nidoking",
+      "category": "pokemon",
+      "species_id": "ndex:0034",
+      "rarity": "Illustration rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-174",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "175",
+      "provider_id": "sv03.5-175",
+      "official_name": "Psyduck",
+      "provider_name": "Psyduck",
+      "category": "pokemon",
+      "species_id": "ndex:0054",
+      "rarity": "Illustration rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-175",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "176",
+      "provider_id": "sv03.5-176",
+      "official_name": "Poliwhirl",
+      "provider_name": "Poliwhirl",
+      "category": "pokemon",
+      "species_id": "ndex:0061",
+      "rarity": "Illustration rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-176",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "177",
+      "provider_id": "sv03.5-177",
+      "official_name": "Machoke",
+      "provider_name": "Machoke",
+      "category": "pokemon",
+      "species_id": "ndex:0067",
+      "rarity": "Illustration rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-177",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "178",
+      "provider_id": "sv03.5-178",
+      "official_name": "Tangela",
+      "provider_name": "Tangela",
+      "category": "pokemon",
+      "species_id": "ndex:0114",
+      "rarity": "Illustration rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-178",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "179",
+      "provider_id": "sv03.5-179",
+      "official_name": "Mr. Mime",
+      "provider_name": "Mr. Mime",
+      "category": "pokemon",
+      "species_id": "ndex:0122",
+      "rarity": "Illustration rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-179",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "180",
+      "provider_id": "sv03.5-180",
+      "official_name": "Omanyte",
+      "provider_name": "Omanyte",
+      "category": "pokemon",
+      "species_id": "ndex:0138",
+      "rarity": "Illustration rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-180",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "181",
+      "provider_id": "sv03.5-181",
+      "official_name": "Dragonair",
+      "provider_name": "Dragonair",
+      "category": "pokemon",
+      "species_id": "ndex:0148",
+      "rarity": "Illustration rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-181",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "182",
+      "provider_id": "sv03.5-182",
+      "official_name": "Venusaur ex",
+      "provider_name": "Venusaur ex",
+      "category": "pokemon",
+      "species_id": "ndex:0003",
+      "rarity": "Ultra Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-182",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "183",
+      "provider_id": "sv03.5-183",
+      "official_name": "Charizard ex",
+      "provider_name": "Charizard ex",
+      "category": "pokemon",
+      "species_id": "ndex:0006",
+      "rarity": "Ultra Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-183",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "184",
+      "provider_id": "sv03.5-184",
+      "official_name": "Blastoise ex",
+      "provider_name": "Blastoise ex",
+      "category": "pokemon",
+      "species_id": "ndex:0009",
+      "rarity": "Ultra Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-184",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "185",
+      "provider_id": "sv03.5-185",
+      "official_name": "Arbok ex",
+      "provider_name": "Arbok ex",
+      "category": "pokemon",
+      "species_id": "ndex:0024",
+      "rarity": "Ultra Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-185",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "186",
+      "provider_id": "sv03.5-186",
+      "official_name": "Ninetales ex",
+      "provider_name": "Ninetales ex",
+      "category": "pokemon",
+      "species_id": "ndex:0038",
+      "rarity": "Ultra Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-186",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "187",
+      "provider_id": "sv03.5-187",
+      "official_name": "Wigglytuff ex",
+      "provider_name": "Wigglytuff ex",
+      "category": "pokemon",
+      "species_id": "ndex:0040",
+      "rarity": "Ultra Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-187",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "188",
+      "provider_id": "sv03.5-188",
+      "official_name": "Alakazam ex",
+      "provider_name": "Alakazam ex",
+      "category": "pokemon",
+      "species_id": "ndex:0065",
+      "rarity": "Ultra Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-188",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "189",
+      "provider_id": "sv03.5-189",
+      "official_name": "Golem ex",
+      "provider_name": "Golem ex",
+      "category": "pokemon",
+      "species_id": "ndex:0076",
+      "rarity": "Ultra Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-189",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "190",
+      "provider_id": "sv03.5-190",
+      "official_name": "Kangaskhan ex",
+      "provider_name": "Kangaskhan ex",
+      "category": "pokemon",
+      "species_id": "ndex:0115",
+      "rarity": "Ultra Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-190",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "191",
+      "provider_id": "sv03.5-191",
+      "official_name": "Jynx ex",
+      "provider_name": "Jynx ex",
+      "category": "pokemon",
+      "species_id": "ndex:0124",
+      "rarity": "Ultra Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-191",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "192",
+      "provider_id": "sv03.5-192",
+      "official_name": "Zapdos ex",
+      "provider_name": "Zapdos ex",
+      "category": "pokemon",
+      "species_id": "ndex:0145",
+      "rarity": "Ultra Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-192",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "193",
+      "provider_id": "sv03.5-193",
+      "official_name": "Mew ex",
+      "provider_name": "Mew ex",
+      "category": "pokemon",
+      "species_id": "ndex:0151",
+      "rarity": "Ultra Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-193",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "194",
+      "provider_id": "sv03.5-194",
+      "official_name": "Bill’s Transfer",
+      "provider_name": "Bill's Transfer",
+      "category": "trainer",
+      "species_id": null,
+      "rarity": "Ultra Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-194",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "195",
+      "provider_id": "sv03.5-195",
+      "official_name": "Daisy’s Help",
+      "provider_name": "Daisy's Help",
+      "category": "trainer",
+      "species_id": null,
+      "rarity": "Ultra Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-195",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "196",
+      "provider_id": "sv03.5-196",
+      "official_name": "Erika’s Invitation",
+      "provider_name": "Erika's Invitation",
+      "category": "trainer",
+      "species_id": null,
+      "rarity": "Ultra Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-196",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "197",
+      "provider_id": "sv03.5-197",
+      "official_name": "Giovanni’s Charisma",
+      "provider_name": "Giovanni's Charisma",
+      "category": "trainer",
+      "species_id": null,
+      "rarity": "Ultra Rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-197",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "198",
+      "provider_id": "sv03.5-198",
+      "official_name": "Venusaur ex",
+      "provider_name": "Venusaur ex",
+      "category": "pokemon",
+      "species_id": "ndex:0003",
+      "rarity": "Special illustration rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-198",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "199",
+      "provider_id": "sv03.5-199",
+      "official_name": "Charizard ex",
+      "provider_name": "Charizard ex",
+      "category": "pokemon",
+      "species_id": "ndex:0006",
+      "rarity": "Special illustration rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-199",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "200",
+      "provider_id": "sv03.5-200",
+      "official_name": "Blastoise ex",
+      "provider_name": "Blastoise ex",
+      "category": "pokemon",
+      "species_id": "ndex:0009",
+      "rarity": "Special illustration rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-200",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "201",
+      "provider_id": "sv03.5-201",
+      "official_name": "Alakazam ex",
+      "provider_name": "Alakazam ex",
+      "category": "pokemon",
+      "species_id": "ndex:0065",
+      "rarity": "Special illustration rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-201",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "202",
+      "provider_id": "sv03.5-202",
+      "official_name": "Zapdos ex",
+      "provider_name": "Zapdos ex",
+      "category": "pokemon",
+      "species_id": "ndex:0145",
+      "rarity": "Special illustration rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-202",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "203",
+      "provider_id": "sv03.5-203",
+      "official_name": "Erika’s Invitation",
+      "provider_name": "Erika's Invitation",
+      "category": "trainer",
+      "species_id": null,
+      "rarity": "Special illustration rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-203",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "204",
+      "provider_id": "sv03.5-204",
+      "official_name": "Giovanni’s Charisma",
+      "provider_name": "Giovanni's Charisma",
+      "category": "trainer",
+      "species_id": null,
+      "rarity": "Special illustration rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [],
+      "sources": [
+        "detail:sv03.5-204",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 1
+    },
+    {
+      "number": "205",
+      "provider_id": "sv03.5-205",
+      "official_name": "Mew ex",
+      "provider_name": "Mew ex",
+      "category": "pokemon",
+      "species_id": "ndex:0151",
+      "rarity": "Hyper rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-205:holo:8ebbnojbbdlcw08zyl",
+          "detail_variant": {
+            "type": "holo",
+            "size": "standard",
+            "foil": "gold",
+            "variantId": "8ebbnojbbdlcw08zyl"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        },
+        {
+          "printing_id": "tcgdex:en:sv03.5-205:holo:d5ghl0jsionvywj",
+          "detail_variant": {
+            "type": "holo",
+            "size": "jumbo",
+            "foil": "gold",
+            "variantId": "d5ghl0jsionvywj"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        },
+        {
+          "printing_id": "tcgdex:en:sv03.5-205:metal:78br1e4mqspe3kabpk4",
+          "detail_variant": {
+            "type": "metal",
+            "size": "standard",
+            "foil": "gold",
+            "variantId": "78br1e4mqspe3kabpk4"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-205",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 4
+    },
+    {
+      "number": "206",
+      "provider_id": "sv03.5-206",
+      "official_name": "Switch",
+      "provider_name": "Switch",
+      "category": "trainer",
+      "species_id": null,
+      "rarity": "Hyper rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-206:holo:8ebbnojbbdlcw08zyl",
+          "detail_variant": {
+            "type": "holo",
+            "size": "standard",
+            "foil": "gold",
+            "variantId": "8ebbnojbbdlcw08zyl"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-206",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    },
+    {
+      "number": "207",
+      "provider_id": "sv03.5-207",
+      "official_name": "Basic",
+      "provider_name": "Basic Psychic Energy",
+      "category": "energy",
+      "species_id": null,
+      "rarity": "Hyper rare",
+      "state": "numbered-identity-reconciled",
+      "gaps": [
+        {
+          "printing_id": "tcgdex:en:sv03.5-207:holo:8ebbnojbbdlcw08zyl",
+          "detail_variant": {
+            "type": "holo",
+            "size": "standard",
+            "foil": "gold",
+            "variantId": "8ebbnojbbdlcw08zyl"
+          },
+          "issue": "Provider variant retained; official booster/promo/deck status unresolved"
+        }
+      ],
+      "sources": [
+        "detail:sv03.5-207",
+        "official-checklist:151-review-v2"
+      ],
+      "variant_count": 2
+    }
+  ],
+  "evidence_class": "Real retained official checklist and provider details; operator source review; independent chain review open"
+}

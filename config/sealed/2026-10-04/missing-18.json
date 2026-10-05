@@ -1,0 +1,261 @@
+{
+  "version": "2026-10-04-v1",
+  "seed": "Original-app ledger as specified by owner; not authenticated inventory",
+  "rows": [
+    {
+      "species_id": "ndex:0003",
+      "name": "Venusaur",
+      "state": "partially-researched",
+      "sources": [
+        "sg",
+        "official-checklist"
+      ],
+      "printing_candidate": "151 #003 ex",
+      "imported_printing": null,
+      "gaps": [
+        "Checklist candidate only; rarity/variant, species mapping, booster membership, product/offer chain not individually normalized or reviewed"
+      ]
+    },
+    {
+      "species_id": "ndex:0017",
+      "name": "Pidgeotto",
+      "state": "partially-researched",
+      "sources": [
+        "sg",
+        "official-checklist"
+      ],
+      "printing_candidate": "151 #017",
+      "imported_printing": null,
+      "gaps": [
+        "Checklist candidate only; rarity/variant, species mapping, booster membership, product/offer chain not individually normalized or reviewed"
+      ]
+    },
+    {
+      "species_id": "ndex:0018",
+      "name": "Pidgeot",
+      "state": "partially-researched",
+      "sources": [
+        "sg",
+        "official-checklist"
+      ],
+      "printing_candidate": "151 #018",
+      "imported_printing": null,
+      "gaps": [
+        "Checklist candidate only; rarity/variant, species mapping, booster membership, product/offer chain not individually normalized or reviewed"
+      ]
+    },
+    {
+      "species_id": "ndex:0036",
+      "name": "Clefable",
+      "state": "partially-researched",
+      "sources": [
+        "sg",
+        "official-checklist"
+      ],
+      "printing_candidate": "151 #036",
+      "imported_printing": null,
+      "gaps": [
+        "Checklist candidate only; rarity/variant, species mapping, booster membership, product/offer chain not individually normalized or reviewed"
+      ]
+    },
+    {
+      "species_id": "ndex:0065",
+      "name": "Alakazam",
+      "state": "partially-researched",
+      "sources": [
+        "sg",
+        "official-checklist"
+      ],
+      "printing_candidate": "151 #065 ex",
+      "imported_printing": null,
+      "gaps": [
+        "Checklist candidate only; rarity/variant, species mapping, booster membership, product/offer chain not individually normalized or reviewed"
+      ]
+    },
+    {
+      "species_id": "ndex:0094",
+      "name": "Gengar",
+      "state": "partially-researched",
+      "sources": [
+        "sg",
+        "official-checklist"
+      ],
+      "printing_candidate": "151 #094",
+      "imported_printing": null,
+      "gaps": [
+        "Checklist candidate only; rarity/variant, species mapping, booster membership, product/offer chain not individually normalized or reviewed"
+      ]
+    },
+    {
+      "species_id": "ndex:0097",
+      "name": "Hypno",
+      "state": "partially-researched",
+      "sources": [
+        "sg",
+        "official-checklist"
+      ],
+      "printing_candidate": "151 #097",
+      "imported_printing": null,
+      "gaps": [
+        "Checklist candidate only; rarity/variant, species mapping, booster membership, product/offer chain not individually normalized or reviewed"
+      ]
+    },
+    {
+      "species_id": "ndex:0113",
+      "name": "Chansey",
+      "state": "partially-researched",
+      "sources": [
+        "sg",
+        "official-checklist"
+      ],
+      "printing_candidate": "151 #113",
+      "imported_printing": null,
+      "gaps": [
+        "Checklist candidate only; rarity/variant, species mapping, booster membership, product/offer chain not individually normalized or reviewed"
+      ]
+    },
+    {
+      "species_id": "ndex:0115",
+      "name": "Kangaskhan",
+      "state": "partially-researched",
+      "sources": [
+        "sg",
+        "official-checklist"
+      ],
+      "printing_candidate": "151 #115 ex",
+      "imported_printing": null,
+      "gaps": [
+        "Checklist candidate only; rarity/variant, species mapping, booster membership, product/offer chain not individually normalized or reviewed"
+      ]
+    },
+    {
+      "species_id": "ndex:0122",
+      "name": "Mr. Mime",
+      "state": "partially-researched",
+      "sources": [
+        "sg",
+        "official-checklist"
+      ],
+      "printing_candidate": "151 #122",
+      "imported_printing": null,
+      "gaps": [
+        "Checklist candidate only; rarity/variant, species mapping, booster membership, product/offer chain not individually normalized or reviewed"
+      ]
+    },
+    {
+      "species_id": "ndex:0123",
+      "name": "Scyther",
+      "state": "partially-researched",
+      "sources": [
+        "sg",
+        "official-checklist",
+        "scyther",
+        "target",
+        "official-product"
+      ],
+      "printing_candidate": "151 #123",
+      "imported_printing": "tcgdex:en:sv03.5-123:normal",
+      "gaps": [
+        "Official pack quantities/guaranteed inclusions unverified; seller/stock/price unknown; independent chain review pending"
+      ]
+    },
+    {
+      "species_id": "ndex:0130",
+      "name": "Gyarados",
+      "state": "partially-researched",
+      "sources": [
+        "sg",
+        "official-checklist"
+      ],
+      "printing_candidate": "151 #130",
+      "imported_printing": null,
+      "gaps": [
+        "Checklist candidate only; rarity/variant, species mapping, booster membership, product/offer chain not individually normalized or reviewed"
+      ]
+    },
+    {
+      "species_id": "ndex:0131",
+      "name": "Lapras",
+      "state": "partially-researched",
+      "sources": [
+        "sg",
+        "official-checklist"
+      ],
+      "printing_candidate": "151 #131",
+      "imported_printing": null,
+      "gaps": [
+        "Checklist candidate only; rarity/variant, species mapping, booster membership, product/offer chain not individually normalized or reviewed"
+      ]
+    },
+    {
+      "species_id": "ndex:0134",
+      "name": "Vaporeon",
+      "state": "partially-researched",
+      "sources": [
+        "sg",
+        "official-checklist"
+      ],
+      "printing_candidate": "151 #134",
+      "imported_printing": null,
+      "gaps": [
+        "Checklist candidate only; rarity/variant, species mapping, booster membership, product/offer chain not individually normalized or reviewed"
+      ]
+    },
+    {
+      "species_id": "ndex:0135",
+      "name": "Jolteon",
+      "state": "partially-researched",
+      "sources": [
+        "sg",
+        "official-checklist"
+      ],
+      "printing_candidate": "151 #135",
+      "imported_printing": null,
+      "gaps": [
+        "Checklist candidate only; rarity/variant, species mapping, booster membership, product/offer chain not individually normalized or reviewed"
+      ]
+    },
+    {
+      "species_id": "ndex:0136",
+      "name": "Flareon",
+      "state": "partially-researched",
+      "sources": [
+        "sg",
+        "official-checklist"
+      ],
+      "printing_candidate": "151 #136",
+      "imported_printing": null,
+      "gaps": [
+        "Checklist candidate only; rarity/variant, species mapping, booster membership, product/offer chain not individually normalized or reviewed"
+      ]
+    },
+    {
+      "species_id": "ndex:0144",
+      "name": "Articuno",
+      "state": "partially-researched",
+      "sources": [
+        "sg",
+        "official-checklist"
+      ],
+      "printing_candidate": "151 #144",
+      "imported_printing": null,
+      "gaps": [
+        "Checklist candidate only; rarity/variant, species mapping, booster membership, product/offer chain not individually normalized or reviewed"
+      ]
+    },
+    {
+      "species_id": "ndex:0146",
+      "name": "Moltres",
+      "state": "partially-researched",
+      "sources": [
+        "sg",
+        "official-checklist"
+      ],
+      "printing_candidate": "151 #146",
+      "imported_printing": null,
+      "gaps": [
+        "Checklist candidate only; rarity/variant, species mapping, booster membership, product/offer chain not individually normalized or reviewed"
+      ]
+    }
+  ]
+}
