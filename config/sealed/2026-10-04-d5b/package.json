@@ -1,0 +1,48 @@
+{
+  "sources": [
+    {
+      "id": "d5b:official-gallery",
+      "provider": "pokemon",
+      "url": "https://www.pokemon.com/us/pokemon-tcg/product-gallery/scarlet-violet-151-booster-bundle",
+      "retrieved_at": "2026-10-05T03:22:16+00:00",
+      "sha256": "993150e0688d4d78157f4a0503f3c63fba2d1da35683d0bb3a0440bb11fb16db",
+      "language": null,
+      "market": null,
+      "authority": "official-product",
+      "status": "unusable",
+      "subjects": [],
+      "supports": [],
+      "rights": "Retained tool error output for evidence review; no source redistribution permission inferred.",
+      "note": "D5b read 1: tool inaccessible; HTTP status unknown; no product bytes/identity/contents supplied. Invocation 2026-10-05T03:22:16+00:00\u20132026-10-05T03:22:17+00:00, UTC second precision. Exact UPC/version/US/English applicability unresolved. No retry or alternate access."
+    },
+    {
+      "id": "d5b:pokemon-center",
+      "provider": "pokemoncenter",
+      "url": "https://www.pokemoncenter.com/product/699-85321/pokemon-tcg-scarlet-and-violet-151-booster-bundle",
+      "retrieved_at": "2026-10-05T03:22:17+00:00",
+      "sha256": "43af7020c1ec38fb0e22f36c91bcad113fe20185bc41f53c298b18e7785a46c8",
+      "language": null,
+      "market": null,
+      "authority": "official-product",
+      "status": "unusable",
+      "subjects": [],
+      "supports": [],
+      "rights": "Retained tool error output for evidence review; no source redistribution permission inferred.",
+      "note": "D5b read 2: tool inaccessible; HTTP status unknown; no product bytes/identity/contents supplied. Invocation 2026-10-05T03:22:17+00:00\u20132026-10-05T03:22:18+00:00, UTC second precision. Exact UPC/version/US/English applicability unresolved. No retry or alternate access."
+    }
+  ],
+  "species": [],
+  "expansions": [],
+  "printings": [],
+  "memberships": [],
+  "products": [],
+  "packs": [],
+  "guaranteed": [],
+  "offers": [],
+  "observations": [],
+  "coverage": [],
+  "mappings": [],
+  "schema_version": "dex-sealed-v1",
+  "provider": "reviewed-d1-e1b",
+  "version": "2026-10-04-d5b-source-outcomes-v1"
+}

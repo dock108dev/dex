@@ -93,7 +93,15 @@ def main():
     init.add_argument(
         "--parity", action="store_true", help="Enable projections and hunts with copied local evidence"
     )
-    for command in ("bootstrap", "serve", "check", "enable-scans", "scan-worker", "enable-catalog"):
+    for command in (
+        "bootstrap",
+        "serve",
+        "check",
+        "enable-scans",
+        "scan-worker",
+        "enable-catalog",
+        "enable-pack-research",
+    ):
         sub.add_parser(command)
     for command in ("invite", "recovery", "revoke"):
         p = sub.add_parser(command)
@@ -123,6 +131,13 @@ def main():
         call_command("migrate", verbosity=0)
         stage = "collection and hunts" if args.parity else "collection" if args.b2 else "accounts"
         print(f"Isolated {stage} database initialized. Provision an isolated account before inviting anyone.")
+    elif args.action == "enable-pack-research":
+        from .pack_research import initialize as migrate_research
+
+        if not settings.B2_ENABLED:
+            raise ValueError("Collection-enabled state required")
+        migrate_research()
+        print("Additive saved Packs research migration complete")
     elif args.action == "bootstrap":
         from pokemon_hunter.inventory import OWNER_ID
 

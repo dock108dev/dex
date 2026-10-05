@@ -130,6 +130,10 @@ def migrate_copy(source):
 def initialize():
     from django.db import connection
 
+    from .pack_research import initialize as migrate_research
+
+    migrate_research()
+
     with connection.cursor() as c:
         c.execute(
             "CREATE TABLE IF NOT EXISTS beta_feedback(id TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id),message TEXT NOT NULL,created DOUBLE PRECISION NOT NULL)"

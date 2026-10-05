@@ -37,6 +37,11 @@ if settings.B2_ENABLED:
     urlpatterns = [
         path("goals/", b2.home),
         path("packs/", packs_views.home),
+        path("packs/save/", packs_views.save),
+        path("packs/saved/", packs_views.saved_list),
+        path("packs/saved/<uuid:key>/", packs_views.saved),
+        path("packs/saved/<uuid:key>/rename/", packs_views.rename),
+        path("packs/saved/<uuid:key>/remove/", packs_views.remove),
         path("settings/", b2.home),
         path("collection-assets/<str:filename>", b2.asset),
         path("api/collection/", b2.dashboard),

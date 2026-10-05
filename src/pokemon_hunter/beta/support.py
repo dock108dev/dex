@@ -26,6 +26,10 @@ def delete_account(who):
 
     for model in (AccessAttempt, AccessLog, AccessFailureLog):
         model.objects.filter(username=user.username).delete()
+    from .pack_research import available
+
+    if available():
+        execute("DELETE FROM saved_pack_research WHERE user_id=%s", [uid])
     # Keep catalog publication integrity and a non-login, non-identifying spend tombstone.
     # The lifetime global reservation sum must never fall on account deletion.
     for table in (

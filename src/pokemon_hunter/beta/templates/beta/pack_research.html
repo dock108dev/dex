@@ -1,0 +1,5 @@
+{% extends 'beta/base.html' %}{% block content %}
+<nav aria-label="Research navigation"><a href="/goals/">Goals</a> · <a href="/">Collection</a></nav>
+<h1>Saved Packs research</h1><p>Private to this account. Reopen the original frozen goal, scope and retained observations. Saving does not check current stock.</p>
+{% for item in items %}<article><h2><a href="/packs/saved/{{ item.id }}/">{{ item.name }}</a></h2><p>Research saved: {{ item.created_at }}</p><a href="/packs/saved/{{ item.id }}/">Reopen {{ item.name }}</a><form method="post" action="/packs/saved/{{ item.id }}/remove/">{% csrf_token %}<button>Remove {{ item.name }}</button></form></article>{% empty %}<p>No saved Packs research yet. Open Packs to open from a goal and select Save research.</p>{% endfor %}
+{% endblock %}

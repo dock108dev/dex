@@ -22,3 +22,11 @@ reorganization.
 [E3a retained-data implementation and partial validation](2026-10-04-E3A-VALIDATION.md).
 
 [E3a local synthetic qualification](2026-10-04-E3A-QUALIFICATION.md).
+
+[D3/D4a bounded source collection, reviewed copied publication and synthetic qualification](2026-10-04-D3-D4A-VALIDATION.md).
+
+[D5a retained-byte Scyther reconstruction, reviewed erratum and synthetic verification](2026-10-04-D5A-VALIDATION.md).
+
+[D5b two exact official reads, unresolved applicability and additive source-outcome publication](2026-10-04-D5B-VALIDATION.md).
+
+[E5a saved Packs research, fresh synthetic migration/preservation and browser qualification](2026-10-05-E5A-VALIDATION.md).

@@ -194,3 +194,84 @@ and protected-state/photo preservation. Zero provider calls and no implementatio
 repairs. The owner installation was untouched. Next is the separate bounded
 D3/D4a exact 151 Bundle contents/offer collection. Full E3/beta, owner acceptance
 and the documented data/provider gates remain open.
+
+
+## October 4 D3/D4a bounded source closeout
+
+[Closeout](D3_D4A.md): four of seven maximum source attempts, no retries; official
+gallery/151 and Pokémon Center unusable. Target exact UPC/TCIN/DPCI yielded a new
+dated USD 27.99 out-of-stock observation; actual seller/shipping remain unknown.
+Walmart/Best Buy/GameStop lack retained exact-product URLs and remain explicit gaps.
+Official pack quantities and guaranteed inclusions remain unknown/unpublished.
+Reviewed publication, rollback and descriptive correction rollback passed on a fresh
+synthetic copy with protected rows/photos/old observations preserved. Focused browser
+filter/reopen checks passed with zero acquisition calls; 46 relevant tests and required
+checks passed. No implementation repair or owner-installation access occurred.
+Full D3/D4/E3/beta remains open. Next: independent retained-evidence Scyther chain
+review, recording downstream contents/seller gaps, with no new acquisition.
+
+
+## October 4 D5a retained-evidence chain review
+
+[D5a closeout](D5A.md) reconstructs Scyther #123, exact normal English 151 printing,
+standard membership, retailer-described exact Bundle association and all three
+immutable Target observations from hash-verified retained bytes. Reverse membership,
+official quantities/inclusions, actual seller/shipping and current purchasability
+remain unresolved. English product-version designation lacks an explicit SKU-language
+label in the retained bytes. Codex reconstruction does not establish separate-person
+review. The checklist has no parallel-set columns: an additive source annotation and
+reviewed coverage erratum preserve the original evidence and correct that wording.
+Official indexed-existence attribution is unsupported by the retained challenge.
+
+Fresh synthetic publication/idempotency/rollback, protected rows/photo preservation,
+46 relevant tests, six framework routes and ordinary browser Scyther/filter/reopen
+checks passed; zero acquisition calls. No application code repair, owner-root access
+or new acquisition. D3/D4a budget stays closed. Full D5, all-era coverage, 177 variant
+memberships, populated eBay and beta/owner acceptance remain open. Next: separately
+authorized D5b official exact-Bundle contents qualification, proposed two exact source
+reads total, no retries/discovery; see D5a for references and stop rules.
+
+
+## October 4 D5b exact official contents qualification
+
+[D5b closeout](D5B.md): two exact official source reads consumed, zero retries;
+both returned tool-inaccessible errors with HTTP status unknown. Exact official
+contents/inclusions, US/English/version applicability and Pokémon Center SKU
+equivalence remain unresolved. Two unusable source records only were validated,
+reviewed, published and rolled back on fresh synthetic state; no product
+relationship, quantity, guaranteed card or observation changed. The three Target
+observations, frozen goals, exact printings, reverse gap, D5a erratum and protected
+rows/photo bytes remain intact. Six projections are identical; the conditional
+ordinary browser check was not triggered. 46 relevant tests and required checks
+passed; six framework routes and zero application acquisition calls qualified.
+A local evidence-helper repair restarted on a fresh copy; consumed reads stayed
+closed. No application repair or owner-root access. Full D5/all-era/177 gaps,
+separate-person review, populated eBay and beta acceptance stay open.
+
+Current next action: **E5a retained-data saved Packs research**, pinning a frozen
+goal version and immutable observation references for save/reopen/filter with
+zero acquisition. Preserve uncertainty and original checked times; qualify on
+fresh synthetic state with browser/preservation evidence. No identical official
+source retry cycle. D3/D4a's budget remains separate and closed.
+
+## E5a — retained-data saved Packs research, October 5
+
+[E5a](E5A.md) implements account-local save/list/reopen/rename/remove for whole-goal
+and species Packs research. Hash-checked server snapshots retain frozen goal/version,
+reviewed catalogs, exact identities, selected filters, ownership context, unresolved
+relationships and original observation times. Missing/archived/changed references
+are explicit gaps; reopening substitutes neither current data nor a successor.
+
+468 tests and required code checks passed. Fresh synthetic SQLite migration,
+repeatability/rollback, actual browser save/reopen, server restart, three Target
+timestamps, predecessor, uncertainty, account isolation and selected removal are
+qualified. All protected application rows and photo bytes are preserved; research
+rows and login bookkeeping are classified separately. Zero acquisition calls.
+[Validation](history/2026-10-05-E5A-VALIDATION.md) retains both the initial helper
+failure and fresh repaired qualification. The owner installation was untouched.
+
+E5a locally synthetic qualified; full E5/E4 and beta remain open. Official contents,
+current purchasability, all-era coverage, separate-person review, populated eBay
+and owner acceptance remain open. Next bounded action: E4a replay-only explicit
+bounded refresh orchestration; no live adapter activation/acquisition until a
+supported source path is separately authorized.
