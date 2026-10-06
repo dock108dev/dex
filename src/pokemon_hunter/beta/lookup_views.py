@@ -1,6 +1,7 @@
 """Ordinary independent lookup and frozen account-local saves, without acquisition."""
 
 import json
+from uuid import UUID
 
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_GET, require_POST
@@ -49,7 +50,7 @@ def save(request):
     if context["goal"]["version"] != request.POST.get("scope_version"):
         raise ValueError("Collection or catalog changed; review the lookup again")
     key = pack_research.store_context(actor(request), context, request.POST.get("name", ""))
-    return redirect(f"/packs/saved/{key}/")
+    return redirect("saved-pack-research", key=UUID(str(key)))
 
 
 @endpoint

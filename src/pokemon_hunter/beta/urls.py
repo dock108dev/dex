@@ -51,7 +51,7 @@ if settings.B2_ENABLED:
         path("packs/refresh/<uuid:key>/<uuid:attempt>/<str:action>/", refresh_views.review),
         path("packs/save/", packs_views.save),
         path("packs/saved/", packs_views.saved_list),
-        path("packs/saved/<uuid:key>/", packs_views.saved),
+        path("packs/saved/<uuid:key>/", packs_views.saved, name="saved-pack-research"),
         path("packs/saved/<uuid:key>/rename/", packs_views.rename),
         path("packs/saved/<uuid:key>/remove/", packs_views.remove),
         path("settings/", b2.home),

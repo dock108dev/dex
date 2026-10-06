@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_GET, require_POST
 
@@ -43,7 +45,7 @@ def save(request):
         request.POST.get("goal_version", ""),
         filters={k: request.POST.get(k, "") for k in offer_filters.FIELDS},
     )
-    return redirect(f"/packs/saved/{key}/")
+    return redirect("saved-pack-research", key=UUID(str(key)))
 
 
 @endpoint
@@ -61,8 +63,9 @@ def saved(request, key):
 @endpoint
 @require_POST
 def rename(request, key):
+    key = UUID(str(key))
     pack_research.rename(actor(request), str(key), request.POST.get("name", ""))
-    return redirect(f"/packs/saved/{key}/")
+    return redirect("saved-pack-research", key=key)
 
 
 @endpoint

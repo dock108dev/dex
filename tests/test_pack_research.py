@@ -7,6 +7,7 @@ from unittest.mock import patch
 import pytest
 from django.db import connection
 from django.http import Http404
+from django.test import RequestFactory
 from test_b2 import apply
 from test_broad_goals import REQ, goal, update
 from test_migration import snapshot as snapshot
@@ -118,7 +119,11 @@ def test_authenticated_ordinary_forms_isolation_csrf_and_selected_remove(e1):
     assert e1["a"].post(f"/packs/saved/{key}/remove/").status_code == 403
     assert e1["a"].get(f"/packs/saved/{key}/remove/").status_code == 405
     snapshot = research.one(e1["actor"], key)["snapshot"]
-    assert post(e1, f"/packs/saved/{key}/rename/", {"name": "<Saved name>"}).status_code == 302
+    renamed = post(
+        e1, f"/packs/saved/{key}/rename/", {"name": "<Saved name>", "next": "https://example.org/"}
+    )
+    assert renamed.status_code == 302
+    assert renamed.url == f"/packs/saved/{key}/"
     assert b"&lt;Saved name&gt;" in e1["a"].get(f"/packs/saved/{key}/").content
     assert research.one(e1["actor"], key)["snapshot"] == snapshot
     assert post(e1, f"/packs/saved/{key}/remove/", {}).status_code == 302
@@ -134,3 +139,18 @@ def test_additive_repeatable_migration_and_integrity(e1):
     inv.execute("UPDATE saved_pack_research SET snapshot='{}' WHERE id=%s", [key])
     with pytest.raises(ValueError, match="integrity"):
         research.reopen(e1["actor"], key)
+
+
+@pytest.mark.parametrize(
+    "key", ["//example.org", "https://example.org/", "../elsewhere", "bad\r\nLocation: https://example.org"]
+)
+def test_rename_rejects_non_uuid_before_mutation(e1, key):
+    from pokemon_hunter.beta import packs_views
+
+    request = RequestFactory().post("/packs/saved/rename/", {"name": "Changed"})
+    request.user = e1["owner"]
+    with patch.object(research, "rename") as rename:
+        response = packs_views.rename(request, key)
+    assert response.status_code == 400
+    assert not response.has_header("Location")
+    rename.assert_not_called()
