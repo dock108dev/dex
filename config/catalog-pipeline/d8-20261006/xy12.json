@@ -1,0 +1,1180 @@
+{
+  "schema_version": "dex-catalog-v1",
+  "game": "pokemon",
+  "provider": "tcgdex",
+  "version": "d8-99c994747cf7-v1",
+  "set_key": "xy12",
+  "set_name": "Evolutions",
+  "language": "en",
+  "aliases": [],
+  "source_url": "https://codeload.github.com/tcgdex/cards-database/tar.gz/99c994747cf7519a3e51166cc932de79a88bd4b3",
+  "source_sha256": "1431e3be180cc5c8e491e480fd78b2b721155622372591d9f82bfb8aa83a6cce",
+  "metadata_permission": "MIT; Copyright (c) 2021 TCGdex; retained evidence/d7-20261005/TCGDEX_LICENSE.txt",
+  "image_permission": "not-included",
+  "coverage": "partial",
+  "expected_count": 113,
+  "cards": [
+    {
+      "external_id": "xy12-1:unspecified",
+      "number": "1",
+      "name": "Venusaur EX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 3,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "xy12-10:unspecified",
+      "number": "10",
+      "name": "Charmeleon",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 5,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "xy12-100:unspecified",
+      "number": "100",
+      "name": "M Venusaur EX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 3,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "xy12-101:unspecified",
+      "number": "101",
+      "name": "M Charizard EX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 6,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "xy12-102:unspecified",
+      "number": "102",
+      "name": "M Blastoise EX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 9,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "xy12-103:unspecified",
+      "number": "103",
+      "name": "Mewtwo EX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 150,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "xy12-104:unspecified",
+      "number": "104",
+      "name": "Pidgeot EX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 18,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "xy12-105:unspecified",
+      "number": "105",
+      "name": "M Pidgeot EX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 18,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "xy12-106:unspecified",
+      "number": "106",
+      "name": "Dragonite EX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 149,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "xy12-109:unspecified",
+      "number": "109",
+      "name": "ナッシー[Exeggutor]",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 103,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Secret Rare"
+      }
+    },
+    {
+      "external_id": "xy12-11:unspecified",
+      "number": "11",
+      "name": "Charizard",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 6,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "xy12-110:unspecified",
+      "number": "110",
+      "name": "Flying Pikachu",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Secret Rare"
+      }
+    },
+    {
+      "external_id": "xy12-111:unspecified",
+      "number": "111",
+      "name": "Surfing Pikachu",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Secret Rare"
+      }
+    },
+    {
+      "external_id": "xy12-112:unspecified",
+      "number": "112",
+      "name": "Imakuni?'s Doduo",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 84,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Secret Rare"
+      }
+    },
+    {
+      "external_id": "xy12-12:unspecified",
+      "number": "12",
+      "name": "Charizard EX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 6,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "xy12-13:unspecified",
+      "number": "13",
+      "name": "M Charizard EX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 6,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "xy12-14:unspecified",
+      "number": "14",
+      "name": "Vulpix",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 37,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "xy12-15:unspecified",
+      "number": "15",
+      "name": "Ninetales",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 38,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "xy12-16:unspecified",
+      "number": "16",
+      "name": "Ninetales BREAK",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 38,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "xy12-17:unspecified",
+      "number": "17",
+      "name": "Growlithe",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 58,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "xy12-18:unspecified",
+      "number": "18",
+      "name": "Arcanine",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 59,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "xy12-19:unspecified",
+      "number": "19",
+      "name": "Ponyta",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 77,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "xy12-2:unspecified",
+      "number": "2",
+      "name": "M Venusaur EX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 3,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "xy12-20:unspecified",
+      "number": "20",
+      "name": "Magmar",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 126,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "xy12-21:unspecified",
+      "number": "21",
+      "name": "Blastoise EX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 9,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "xy12-22:unspecified",
+      "number": "22",
+      "name": "M Blastoise EX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 9,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "xy12-23:unspecified",
+      "number": "23",
+      "name": "Poliwag",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 60,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "xy12-24:unspecified",
+      "number": "24",
+      "name": "Poliwhirl",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 61,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "xy12-25:unspecified",
+      "number": "25",
+      "name": "Poliwrath",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 62,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "xy12-26:unspecified",
+      "number": "26",
+      "name": "Slowbro EX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 80,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "xy12-27:unspecified",
+      "number": "27",
+      "name": "M Slowbro EX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 80,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "xy12-28:unspecified",
+      "number": "28",
+      "name": "Seel",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 86,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "xy12-29:unspecified",
+      "number": "29",
+      "name": "Dewgong",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 87,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "xy12-3:unspecified",
+      "number": "3",
+      "name": "Caterpie",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 10,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "xy12-30:unspecified",
+      "number": "30",
+      "name": "Staryu",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 120,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "xy12-31:unspecified",
+      "number": "31",
+      "name": "Starmie",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 121,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "xy12-32:unspecified",
+      "number": "32",
+      "name": "Starmie BREAK",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 121,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "xy12-33:unspecified",
+      "number": "33",
+      "name": "Magikarp",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 129,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "xy12-34:unspecified",
+      "number": "34",
+      "name": "Gyarados",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 130,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "xy12-35:unspecified",
+      "number": "35",
+      "name": "Pikachu",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "xy12-36:unspecified",
+      "number": "36",
+      "name": "Raichu",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 26,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "xy12-37:unspecified",
+      "number": "37",
+      "name": "Magnemite",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 81,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "xy12-38:unspecified",
+      "number": "38",
+      "name": "Magneton",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 82,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "xy12-39:unspecified",
+      "number": "39",
+      "name": "Voltorb",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 100,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "xy12-4:unspecified",
+      "number": "4",
+      "name": "Metapod",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 11,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "xy12-40:unspecified",
+      "number": "40",
+      "name": "Electrode",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 101,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "xy12-41:unspecified",
+      "number": "41",
+      "name": "Electabuzz",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 125,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "xy12-42:unspecified",
+      "number": "42",
+      "name": "Zapdos",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 145,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "xy12-43:unspecified",
+      "number": "43",
+      "name": "Nidoran♂",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 32,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "xy12-44:unspecified",
+      "number": "44",
+      "name": "Nidorino",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 33,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "xy12-45:unspecified",
+      "number": "45",
+      "name": "Nidoking",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 34,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "xy12-46:unspecified",
+      "number": "46",
+      "name": "Nidoking BREAK",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 34,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "xy12-47:unspecified",
+      "number": "47",
+      "name": "Gastly",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 92,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "xy12-48:unspecified",
+      "number": "48",
+      "name": "Haunter",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 93,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "xy12-49:unspecified",
+      "number": "49",
+      "name": "Drowzee",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 96,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "xy12-5:unspecified",
+      "number": "5",
+      "name": "Weedle",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 13,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "xy12-50:unspecified",
+      "number": "50",
+      "name": "Koffing",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 109,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "xy12-51:unspecified",
+      "number": "51",
+      "name": "Mewtwo",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 150,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "xy12-52:unspecified",
+      "number": "52",
+      "name": "Mewtwo EX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 150,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "xy12-53:unspecified",
+      "number": "53",
+      "name": "Mew",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 151,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "xy12-54:unspecified",
+      "number": "54",
+      "name": "Sandshrew",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 27,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "xy12-55:unspecified",
+      "number": "55",
+      "name": "Diglett",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 50,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "xy12-56:unspecified",
+      "number": "56",
+      "name": "Dugtrio",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 51,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "xy12-57:unspecified",
+      "number": "57",
+      "name": "Machop",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 66,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "xy12-58:unspecified",
+      "number": "58",
+      "name": "Machoke",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 67,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "xy12-59:unspecified",
+      "number": "59",
+      "name": "Machamp",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 68,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "xy12-6:unspecified",
+      "number": "6",
+      "name": "Kakuna",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 14,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "xy12-60:unspecified",
+      "number": "60",
+      "name": "Machamp BREAK",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 68,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "xy12-61:unspecified",
+      "number": "61",
+      "name": "Onix",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 95,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "xy12-62:unspecified",
+      "number": "62",
+      "name": "Hitmonchan",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 107,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "xy12-63:unspecified",
+      "number": "63",
+      "name": "Clefairy",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 35,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "xy12-64:unspecified",
+      "number": "64",
+      "name": "Pidgeot EX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 18,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "xy12-65:unspecified",
+      "number": "65",
+      "name": "M Pidgeot EX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 18,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "xy12-66:unspecified",
+      "number": "66",
+      "name": "Rattata",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 19,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "xy12-67:unspecified",
+      "number": "67",
+      "name": "Raticate",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 20,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "xy12-68:unspecified",
+      "number": "68",
+      "name": "Farfetch'd",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 83,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "xy12-69:unspecified",
+      "number": "69",
+      "name": "Doduo",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 84,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "xy12-7:unspecified",
+      "number": "7",
+      "name": "Beedrill",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 15,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "xy12-70:unspecified",
+      "number": "70",
+      "name": "Chansey",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 113,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "xy12-71:unspecified",
+      "number": "71",
+      "name": "Porygon",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 137,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "xy12-72:unspecified",
+      "number": "72",
+      "name": "Dragonite EX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 149,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "xy12-8:unspecified",
+      "number": "8",
+      "name": "Tangela",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 114,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "xy12-9:unspecified",
+      "number": "9",
+      "name": "Charmander",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 4,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    }
+  ]
+}

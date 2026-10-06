@@ -1,0 +1,760 @@
+{
+  "schema_version": "dex-catalog-v1",
+  "game": "pokemon",
+  "provider": "tcgdex",
+  "version": "d9-99c994747cf7-v1",
+  "set_key": "sm1",
+  "set_name": "Sun & Moon",
+  "language": "en",
+  "aliases": [],
+  "source_url": "https://codeload.github.com/tcgdex/cards-database/tar.gz/99c994747cf7519a3e51166cc932de79a88bd4b3",
+  "source_sha256": "1431e3be180cc5c8e491e480fd78b2b721155622372591d9f82bfb8aa83a6cce",
+  "metadata_permission": "MIT; Copyright (c) 2021 TCGdex; retained evidence/d7-20261005/TCGDEX_LICENSE.txt",
+  "image_permission": "not-included",
+  "coverage": "partial",
+  "expected_count": 172,
+  "cards": [
+    {
+      "external_id": "sm1-1:unspecified",
+      "number": "1",
+      "name": "Caterpie",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 10,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sm1-100:unspecified",
+      "number": "100",
+      "name": "Tauros GX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 128,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "sm1-101:unspecified",
+      "number": "101",
+      "name": "Eevee",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 133,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sm1-139:unspecified",
+      "number": "139",
+      "name": "Lapras GX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 131,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "sm1-140:unspecified",
+      "number": "140",
+      "name": "Espeon GX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 196,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "sm1-142:unspecified",
+      "number": "142",
+      "name": "Umbreon GX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 197,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "sm1-144:unspecified",
+      "number": "144",
+      "name": "Tauros GX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 128,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "sm1-151:unspecified",
+      "number": "151",
+      "name": "Lapras GX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 131,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Secret Rare"
+      }
+    },
+    {
+      "external_id": "sm1-152:unspecified",
+      "number": "152",
+      "name": "Espeon GX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 196,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Secret Rare"
+      }
+    },
+    {
+      "external_id": "sm1-154:unspecified",
+      "number": "154",
+      "name": "Umbreon GX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 197,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Secret Rare"
+      }
+    },
+    {
+      "external_id": "sm1-156:unspecified",
+      "number": "156",
+      "name": "Tauros GX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 128,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Secret Rare"
+      }
+    },
+    {
+      "external_id": "sm1-2:unspecified",
+      "number": "2",
+      "name": "Metapod",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 11,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sm1-21:unspecified",
+      "number": "21",
+      "name": "Growlithe",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 58,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sm1-22:unspecified",
+      "number": "22",
+      "name": "Arcanine",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 59,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "sm1-28:unspecified",
+      "number": "28",
+      "name": "Psyduck",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 54,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sm1-29:unspecified",
+      "number": "29",
+      "name": "Golduck",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 55,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "sm1-3:unspecified",
+      "number": "3",
+      "name": "Butterfree",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 12,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "sm1-30:unspecified",
+      "number": "30",
+      "name": "Poliwag",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 60,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sm1-31:unspecified",
+      "number": "31",
+      "name": "Poliwhirl",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 61,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sm1-32:unspecified",
+      "number": "32",
+      "name": "Poliwrath",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 62,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "sm1-33:unspecified",
+      "number": "33",
+      "name": "Shellder",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 90,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sm1-34:unspecified",
+      "number": "34",
+      "name": "Cloyster",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 91,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "sm1-35:unspecified",
+      "number": "35",
+      "name": "Lapras GX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 131,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "sm1-36:unspecified",
+      "number": "36",
+      "name": "Corsola",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 222,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sm1-4:unspecified",
+      "number": "4",
+      "name": "Paras",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 46,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sm1-49:unspecified",
+      "number": "49",
+      "name": "Chinchou",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 170,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sm1-5:unspecified",
+      "number": "5",
+      "name": "Parasect",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 47,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "sm1-50:unspecified",
+      "number": "50",
+      "name": "Lanturn",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 171,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "sm1-54:unspecified",
+      "number": "54",
+      "name": "Zubat",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 41,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sm1-55:unspecified",
+      "number": "55",
+      "name": "Golbat",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 42,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sm1-56:unspecified",
+      "number": "56",
+      "name": "Crobat",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 169,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "sm1-57:unspecified",
+      "number": "57",
+      "name": "Alolan Grimer",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 88,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sm1-58:unspecified",
+      "number": "58",
+      "name": "Alolan Muk",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 89,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "sm1-59:unspecified",
+      "number": "59",
+      "name": "Drowzee",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 96,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sm1-6:unspecified",
+      "number": "6",
+      "name": "Pinsir",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 127,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sm1-60:unspecified",
+      "number": "60",
+      "name": "Hypno",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 97,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sm1-61:unspecified",
+      "number": "61",
+      "name": "Espeon GX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 196,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "sm1-76:unspecified",
+      "number": "76",
+      "name": "Alolan Rattata",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 19,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sm1-77:unspecified",
+      "number": "77",
+      "name": "Alolan Raticate",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 20,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sm1-78:unspecified",
+      "number": "78",
+      "name": "Alolan Meowth",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 52,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sm1-79:unspecified",
+      "number": "79",
+      "name": "Alolan Persian",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 53,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sm1-80:unspecified",
+      "number": "80",
+      "name": "Umbreon GX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 197,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "sm1-86:unspecified",
+      "number": "86",
+      "name": "Alolan Diglett",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 50,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sm1-87:unspecified",
+      "number": "87",
+      "name": "Alolan Dugtrio",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 51,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "sm1-88:unspecified",
+      "number": "88",
+      "name": "Skarmory",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 227,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sm1-90:unspecified",
+      "number": "90",
+      "name": "Snubbull",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 209,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sm1-91:unspecified",
+      "number": "91",
+      "name": "Granbull",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 210,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sm1-94:unspecified",
+      "number": "94",
+      "name": "Dratini",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 147,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sm1-95:unspecified",
+      "number": "95",
+      "name": "Dragonair",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 148,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sm1-96:unspecified",
+      "number": "96",
+      "name": "Dragonite",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 149,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "sm1-97:unspecified",
+      "number": "97",
+      "name": "Spearow",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 21,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sm1-98:unspecified",
+      "number": "98",
+      "name": "Fearow",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 22,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sm1-99:unspecified",
+      "number": "99",
+      "name": "Kangaskhan",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 115,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    }
+  ]
+}

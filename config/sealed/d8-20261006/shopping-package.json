@@ -1,0 +1,351 @@
+{
+  "sources": [
+    {
+      "id": "d8:bestbuy-crown-rendered",
+      "provider": "best-buy",
+      "url": "https://www.bestbuy.com/product/pokemon-trading-card-game-crown-zenith-elite-trainer-box/J3YSYH3KLV",
+      "retrieved_at": "2026-10-06T16:19:40.754621+00:00",
+      "sha256": "be801c3eab6f1d0f6939e52c13950bba78cb2b85fa903d2a58517c9afdf4a76e",
+      "language": "en",
+      "market": "US",
+      "authority": "retailer",
+      "status": "usable",
+      "subjects": [
+        "pokemon:us:crown-zenith-etb:bestbuy6527309",
+        "d8:offer:bestbuy-crown-rendered",
+        "d8:observation:bestbuy-crown-rendered"
+      ],
+      "supports": [
+        "product-identity",
+        "offer-observation"
+      ],
+      "rights": "Public text retained for dated research; no artwork redistribution",
+      "note": "Model290-87147 / SKU6527309; explicitly no longer available in new condition. Price, actual seller and fulfillment unresolved. Default store hint is not owner applicability."
+    },
+    {
+      "id": "d8:bestbuy-prismatic",
+      "provider": "best-buy",
+      "url": "https://www.bestbuy.com/product/pokemon-trading-card-game-scarlet-violet-prismatic-evolutions-booster-bundle/JJG2TL23JK",
+      "retrieved_at": "2026-10-06T16:21:20.269696+00:00",
+      "sha256": "e682d32ac9a448379807dfae9e2147c97eec46c01df05b7d06e6492d86660cf7",
+      "language": "en",
+      "market": "US",
+      "authority": "retailer",
+      "status": "usable",
+      "subjects": [
+        "pokemon:us:prismatic-bundle:196214112544",
+        "d8:offer:bestbuy-prismatic",
+        "d8:observation:bestbuy-prismatic"
+      ],
+      "supports": [
+        "product-identity",
+        "offer-observation"
+      ],
+      "rights": "Public text retained for dated research; no artwork redistribution",
+      "note": "Model10-10025-101 / SKU10734203; expressly sold and shipped by CARD DOG TCG. Current rendered capture supplies no item price or stock; never copy prior USD105 or search-review prices. Shipping, tax and delivery unknown. AI review/Q&A ignored."
+    },
+    {
+      "id": "d8:bestbuy-stellar",
+      "provider": "best-buy",
+      "url": "https://www.bestbuy.com/product/pokemon-trading-card-game-scarlet-violet-stellar-crown-6pk-booster-bundle/J3YSYH83TL",
+      "retrieved_at": "2026-10-06T16:25:49.612732+00:00",
+      "sha256": "937c457256dbfa9401f015f69aebe665ffb0c44f20eabd65f30eb9dbc3ffec86",
+      "language": "en",
+      "market": "US",
+      "authority": "retailer",
+      "status": "usable",
+      "subjects": [
+        "pokemon:us:stellar-crown-bundle:820650878558",
+        "d8:offer:bestbuy-stellar",
+        "d8:observation:bestbuy-stellar"
+      ],
+      "supports": [
+        "product-identity",
+        "offer-observation"
+      ],
+      "rights": "Public text retained for dated research; no artwork redistribution",
+      "note": "Model190-87855 / SKU6588397; no longer available in new condition. UPC820650878558 is retained historical identity, not newly exposed. Contents remain unresolved and separate from Target UPC820650858550."
+    },
+    {
+      "id": "d8:token-prismatic",
+      "provider": "tokenmtg",
+      "url": "https://tokenmtg.com/products/prismatic-evolutions-booster-bundle",
+      "retrieved_at": "2026-10-06T16:20:21.204089+00:00",
+      "sha256": "2bb617513ad72745766a10a9e01504415dc77c0ac2715cdd8e1744d4f375202b",
+      "language": "en",
+      "market": "US",
+      "authority": "retailer",
+      "status": "usable",
+      "subjects": [
+        "pokemon:us:prismatic-bundle:196214112544",
+        "d8:offer:token-prismatic",
+        "d8:observation:token-prismatic"
+      ],
+      "supports": [
+        "product-identity",
+        "offer-observation"
+      ],
+      "rights": "Public text retained for dated research; no artwork redistribution",
+      "note": "Exact barcode196214112544. Public primary-retailer sealed set listing says 7 in stock, USD120 Excl.VAT, free shop pickup; retained raw HTML and supplemental rendered capture agree. Merchant Token/TokenMTG in Edgewater MD verified on public contact page. No marketplace. Explicit used/rip selection absent; factory-sealed condition not separately stated beyond sealed category. Fulfillment party not separately named. Shipping price, tax, destination eligibility, dates and any delivered total unknown; no checkout or location input. No verified backend availability attestation."
+    },
+    {
+      "id": "d8:salt-prismatic",
+      "provider": "salt-city-games",
+      "url": "https://saltcitygames.shop/products/pui10-10025-101",
+      "retrieved_at": "2026-10-06T16:20:22.591707+00:00",
+      "sha256": "06f962a6326bc8da8f711e388e090f321aab43285e712aea5943433bf8e8e858",
+      "language": "en",
+      "market": "US",
+      "authority": "retailer",
+      "status": "usable",
+      "subjects": [
+        "pokemon:us:prismatic-bundle:196214112544",
+        "d8:offer:salt-prismatic",
+        "d8:observation:salt-prismatic"
+      ],
+      "supports": [
+        "product-identity",
+        "offer-observation"
+      ],
+      "rights": "Public text retained for dated research; no artwork redistribution",
+      "note": "Exact UPC196214112544 / PUI10-10025-101. Sold out. Banner says free shipping over USD75 and item free shipping available, while shipping is calculated at checkout; no unconditional charge or delivered total inferred. Pickup availability failed; no refresh. Tax unknown. New/sealed condition not separately supplied."
+    },
+    {
+      "id": "d8:target-stellar-rendered",
+      "provider": "target",
+      "url": "https://www.target.com/p/-/A-91619942",
+      "retrieved_at": "2026-10-06T16:20:54.775880+00:00",
+      "sha256": "c8d0726e956a8247af50e3e3e22837f0a791130645e3249ec5427ece93048c55",
+      "language": "en",
+      "market": "US",
+      "authority": "retailer",
+      "status": "usable",
+      "subjects": [
+        "pokemon:us:stellar-crown-bundle:820650858550",
+        "d8:offer:target-stellar-rendered",
+        "d8:observation:target-stellar-rendered"
+      ],
+      "supports": [
+        "product-identity",
+        "offer-observation"
+      ],
+      "rights": "Public text retained for dated research; no artwork redistribution",
+      "note": "Exact retained URL TCIN91619942. Fresh static/rendered product title and generic cart control expose no seller, price or stock. Site default location hints were not entered by operator and do not prove owner availability. UPC820650858550 remains retained identity; no new UPC claim. Search snippet USD27.99/out of stock is discovery only. Shipping/tax unknown."
+    },
+    {
+      "id": "d8:retreat-stellar",
+      "provider": "retreatcost",
+      "url": "https://retreatcost.com/stellar-crown/pokemon-tcg-scarlet-violet-stellar-crown-booster-bundle/",
+      "retrieved_at": "2026-10-06T16:25:48.321664+00:00",
+      "sha256": "d5a838c869ed3ab17d9f32a226c2a8c2b242ad95cd8de3f8081320b8ed9f8f0d",
+      "language": "en",
+      "market": "US",
+      "authority": "retailer",
+      "status": "usable",
+      "subjects": [
+        "pokemon:us:stellar-crown-bundle:820650858550",
+        "d8:offer:retreat-stellar",
+        "d8:observation:retreat-stellar"
+      ],
+      "supports": [
+        "product-identity",
+        "offer-observation"
+      ],
+      "rights": "Public text retained for dated research; no artwork redistribution",
+      "note": "Exact UPC820650858550, explicit Out of stock, USD26.99, maximum two units. Public US merchant footer references Bucks County PA. New/sealed condition and fulfillment party not separately named. Shipping, tax and delivery unknown."
+    }
+  ],
+  "species": [],
+  "expansions": [],
+  "printings": [],
+  "memberships": [],
+  "products": [],
+  "packs": [],
+  "guaranteed": [],
+  "offers": [
+    {
+      "id": "d8:offer:bestbuy-crown-rendered",
+      "sources": [
+        "d8:bestbuy-crown-rendered"
+      ],
+      "product_id": "pokemon:us:crown-zenith-etb:bestbuy6527309",
+      "retailer": "Best Buy",
+      "seller": null,
+      "seller_kind": "unknown",
+      "market": "US",
+      "currency": "USD",
+      "url": "https://www.bestbuy.com/product/pokemon-trading-card-game-crown-zenith-elite-trainer-box/J3YSYH3KLV"
+    },
+    {
+      "id": "d8:offer:bestbuy-prismatic",
+      "sources": [
+        "d8:bestbuy-prismatic"
+      ],
+      "product_id": "pokemon:us:prismatic-bundle:196214112544",
+      "retailer": "Best Buy",
+      "seller": "CARD DOG TCG",
+      "seller_kind": "marketplace",
+      "market": "US",
+      "currency": "USD",
+      "url": "https://www.bestbuy.com/product/pokemon-trading-card-game-scarlet-violet-prismatic-evolutions-booster-bundle/JJG2TL23JK"
+    },
+    {
+      "id": "d8:offer:bestbuy-stellar",
+      "sources": [
+        "d8:bestbuy-stellar"
+      ],
+      "product_id": "pokemon:us:stellar-crown-bundle:820650878558",
+      "retailer": "Best Buy",
+      "seller": null,
+      "seller_kind": "unknown",
+      "market": "US",
+      "currency": "USD",
+      "url": "https://www.bestbuy.com/product/pokemon-trading-card-game-scarlet-violet-stellar-crown-6pk-booster-bundle/J3YSYH83TL"
+    },
+    {
+      "id": "d8:offer:token-prismatic",
+      "sources": [
+        "d8:token-prismatic"
+      ],
+      "product_id": "pokemon:us:prismatic-bundle:196214112544",
+      "retailer": "TokenMTG",
+      "seller": "TokenMTG",
+      "seller_kind": "direct",
+      "market": "US",
+      "currency": "USD",
+      "url": "https://tokenmtg.com/products/prismatic-evolutions-booster-bundle"
+    },
+    {
+      "id": "d8:offer:salt-prismatic",
+      "sources": [
+        "d8:salt-prismatic"
+      ],
+      "product_id": "pokemon:us:prismatic-bundle:196214112544",
+      "retailer": "Salt City Games",
+      "seller": "Salt City Games",
+      "seller_kind": "direct",
+      "market": "US",
+      "currency": "USD",
+      "url": "https://saltcitygames.shop/products/pui10-10025-101"
+    },
+    {
+      "id": "d8:offer:target-stellar-rendered",
+      "sources": [
+        "d8:target-stellar-rendered"
+      ],
+      "product_id": "pokemon:us:stellar-crown-bundle:820650858550",
+      "retailer": "Target",
+      "seller": null,
+      "seller_kind": "unknown",
+      "market": "US",
+      "currency": "USD",
+      "url": "https://www.target.com/p/-/A-91619942"
+    },
+    {
+      "id": "d8:offer:retreat-stellar",
+      "sources": [
+        "d8:retreat-stellar"
+      ],
+      "product_id": "pokemon:us:stellar-crown-bundle:820650858550",
+      "retailer": "RetreatCost",
+      "seller": "RetreatCost",
+      "seller_kind": "direct",
+      "market": "US",
+      "currency": "USD",
+      "url": "https://retreatcost.com/stellar-crown/pokemon-tcg-scarlet-violet-stellar-crown-booster-bundle/"
+    }
+  ],
+  "observations": [
+    {
+      "id": "d8:observation:bestbuy-crown-rendered",
+      "sources": [
+        "d8:bestbuy-crown-rendered"
+      ],
+      "offer_id": "d8:offer:bestbuy-crown-rendered",
+      "checked_at": "2026-10-06T16:19:40.754621+00:00",
+      "stock": "out-of-stock",
+      "price_minor": null,
+      "shipping_minor": null,
+      "note": "Model290-87147 / SKU6527309; explicitly no longer available in new condition. Price, actual seller and fulfillment unresolved. Default store hint is not owner applicability."
+    },
+    {
+      "id": "d8:observation:bestbuy-prismatic",
+      "sources": [
+        "d8:bestbuy-prismatic"
+      ],
+      "offer_id": "d8:offer:bestbuy-prismatic",
+      "checked_at": "2026-10-06T16:21:20.269696+00:00",
+      "stock": "unknown",
+      "price_minor": null,
+      "shipping_minor": null,
+      "note": "Model10-10025-101 / SKU10734203; expressly sold and shipped by CARD DOG TCG. Current rendered capture supplies no item price or stock; never copy prior USD105 or search-review prices. Shipping, tax and delivery unknown. AI review/Q&A ignored."
+    },
+    {
+      "id": "d8:observation:bestbuy-stellar",
+      "sources": [
+        "d8:bestbuy-stellar"
+      ],
+      "offer_id": "d8:offer:bestbuy-stellar",
+      "checked_at": "2026-10-06T16:25:49.612732+00:00",
+      "stock": "out-of-stock",
+      "price_minor": null,
+      "shipping_minor": null,
+      "note": "Model190-87855 / SKU6588397; no longer available in new condition. UPC820650878558 is retained historical identity, not newly exposed. Contents remain unresolved and separate from Target UPC820650858550."
+    },
+    {
+      "id": "d8:observation:token-prismatic",
+      "sources": [
+        "d8:token-prismatic"
+      ],
+      "offer_id": "d8:offer:token-prismatic",
+      "checked_at": "2026-10-06T16:20:21.204089+00:00",
+      "stock": "in-stock",
+      "price_minor": 12000,
+      "shipping_minor": null,
+      "note": "Exact barcode196214112544. Public primary-retailer sealed set listing says 7 in stock, USD120 Excl.VAT, free shop pickup; retained raw HTML and supplemental rendered capture agree. Merchant Token/TokenMTG in Edgewater MD verified on public contact page. No marketplace. Explicit used/rip selection absent; factory-sealed condition not separately stated beyond sealed category. Fulfillment party not separately named. Shipping price, tax, destination eligibility, dates and any delivered total unknown; no checkout or location input. No verified backend availability attestation."
+    },
+    {
+      "id": "d8:observation:salt-prismatic",
+      "sources": [
+        "d8:salt-prismatic"
+      ],
+      "offer_id": "d8:offer:salt-prismatic",
+      "checked_at": "2026-10-06T16:20:22.591707+00:00",
+      "stock": "out-of-stock",
+      "price_minor": 8499,
+      "shipping_minor": null,
+      "note": "Exact UPC196214112544 / PUI10-10025-101. Sold out. Banner says free shipping over USD75 and item free shipping available, while shipping is calculated at checkout; no unconditional charge or delivered total inferred. Pickup availability failed; no refresh. Tax unknown. New/sealed condition not separately supplied."
+    },
+    {
+      "id": "d8:observation:target-stellar-rendered",
+      "sources": [
+        "d8:target-stellar-rendered"
+      ],
+      "offer_id": "d8:offer:target-stellar-rendered",
+      "checked_at": "2026-10-06T16:20:54.775880+00:00",
+      "stock": "unknown",
+      "price_minor": null,
+      "shipping_minor": null,
+      "note": "Exact retained URL TCIN91619942. Fresh static/rendered product title and generic cart control expose no seller, price or stock. Site default location hints were not entered by operator and do not prove owner availability. UPC820650858550 remains retained identity; no new UPC claim. Search snippet USD27.99/out of stock is discovery only. Shipping/tax unknown."
+    },
+    {
+      "id": "d8:observation:retreat-stellar",
+      "sources": [
+        "d8:retreat-stellar"
+      ],
+      "offer_id": "d8:offer:retreat-stellar",
+      "checked_at": "2026-10-06T16:25:48.321664+00:00",
+      "stock": "out-of-stock",
+      "price_minor": 2699,
+      "shipping_minor": null,
+      "note": "Exact UPC820650858550, explicit Out of stock, USD26.99, maximum two units. Public US merchant footer references Bucks County PA. New/sealed condition and fulfillment party not separately named. Shipping, tax and delivery unknown."
+    }
+  ],
+  "coverage": [],
+  "mappings": [],
+  "bridges": [],
+  "corrections": [],
+  "schema_version": "dex-sealed-v1",
+  "provider": "pokemon-public-reviewed",
+  "version": "d8-shopping-v1"
+}

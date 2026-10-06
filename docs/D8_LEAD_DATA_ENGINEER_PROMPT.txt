@@ -1,0 +1,66 @@
+D8 — Lead data engineer: usable shopping evidence and all-era catalog expansion
+
+Work in /Users/michaelfuscoletti/Desktop/dex. Deliver a substantive data milestone using public web evidence and the retained catalog snapshot. Finish collection, organization, import-ready packages and disposable qualification; do not stop at a research proposal.
+
+PRODUCT SCOPE
+Beta targets canonical Pokémon #001–251 across the FULL English physical card universe, all eras and sets. Include owned and missing species; do not restrict research to the owner's sets or 14 missing Kanto species. Above-251 metadata can remain for compatibility, but their card/pack research is outside this assignment. US English products are the first shopping market.
+
+The app is Pokédex with ownership, custom goals, filters and card details; Pack lookup with honest recommendations; and eBay Sandbox. Preserve these features and frozen goal policies. Dark, trainer-associated and newer named cards count when correctly mapped to their canonical species. Exact printing ownership remains separate from declared species ownership.
+
+BASELINE AND FIRST CHECKS
+Read these files under /Users/michaelfuscoletti/Desktop/dex:
+- docs/BETA_REQUIREMENTS.md, docs/PM_STATUS.md, docs/ROADMAP.md
+- docs/D6_DATA_COLLECTION.md, docs/D7_DATA_COLLECTION.md, docs/M4.md
+- docs/M5_OWNER_UPDATE.md, docs/M5_CANDIDATE_REVIEW.md
+- evidence/d7-20261005/publication-order.json and raw-source-manifest.json
+- config/catalog-pipeline/m4-20261006/coverage-profile.json
+Also read /Users/michaelfuscoletti/Desktop/dex_next_steps.md.
+
+Git baseline is 16766b5c160c0bac370c1177387662646bf51b42 with inherited working-tree changes. M5 candidate: evidence/m5-20261006/candidate.json; SHA-256 946a1e3bbb4c0e4b977538f9408f2b011b1dd7e25e694c9b51d25fea52b15d03. Verify manifest bytes and listed files. Reconcile later documentation-only review/handoff additions explicitly; stop on unexplained application or source drift. Never reset inherited changes or alter historical manifests.
+
+Installed owner progress is 137/151 Kanto, 24/100 Johto, 161/251 overall, 14/90 missing, 286 marks and 207 physical copies. The owner app is running signed in on port 8011. Leave it and /Users/michaelfuscoletti/dex-private/b2-parity-20260928/review-local untouched. No owner writes, credentials changes, purchases, bids, Production eBay activation or hosting.
+
+Installed coverage is 220 source sets: 205 physical / 15 digital; 29 assessed sets, 1,955 target numbered identities / 3,102 supplied variants. The retained source separately contains 6,991 qualifying numbered printings and 188 completely enumerated physical sets. These are dated source measures, not proof that today's universe is complete. Three product designs are documented; eligible current offers are zero.
+
+WORKSTREAM A — REAL PRODUCT → SELLER CHAINS (PRIMARY)
+Start from D7's exact documented products:
+1. Standard Crown Zenith ETB, Best Buy SKU 6527309/model 290-87147: ten Crown Zenith packs and a separately documented Lucario VSTAR inclusion. Lucario #448 does not contribute to beta target guarantees.
+2. Prismatic Evolutions bundle, UPC 196214112544/model 10-10025-101: six Prismatic packs.
+3. Stellar Crown bundle, retained Target UPC 820650858550: six Stellar Crown packs. Best Buy UPC 820650878558/model 190-87855 is a distinct version with unresolved contents; do not merge them.
+
+Find current exact-product offers from accessible US seller pages. Start with retained exact URLs and product IDs, then search exact product title plus UPC/model. Use official Pokémon product pages/checklists for contents and distribution, and retailer pages for actual offers. Pokémon Center, Target, Best Buy, Walmart and GameStop are starting points, not a mandatory checklist. Accessible specialist retailers may be used with explicit seller identity and fulfillment evidence. Search snippets are discovery only.
+
+Research up to six exact product versions in total. Add alternatives only when they materially improve a supported #001–251 species → printing/variant → booster → exact product → offer chain. Prioritize documented booster relationships over attractive listings with no applicable contents. Include at least one Johto chain when evidence allows. Possible pulls are not guaranteed cards or completion probabilities.
+
+For each observation retain URL, source hash, observed UTC time, product identifiers/version/language, sealed/new condition, named actual seller, fulfillment party when supplied, stock wording, item price/currency, shipping cost or unknown, tax or unknown, delivery/pickup mode, location/account constraints and eligibility reasons. Separate marketplace seller from retailer/platform. Do not infer stock from a price, a generic cart button or an old observation. Do not invent shipping or delivered totals. An unknown field remains unknown; apply the app's existing eligibility rules without weakening them.
+
+Use public rendered pages when static HTML omits seller/stock information. Never bypass challenges, use private accounts, invent a delivery location, or change the owner's browser/session. If location is essential, report the missing input and continue other work. An accessible page can establish partial evidence without qualifying an offer.
+
+WORKSTREAM B — LARGER CACHED CATALOG TRANCHE
+Use evidence/d6-20261005/raw/tcgdex-archive.raw, pinned commit 99c994747cf7519a3e51166cc932de79a88bd4b3 and archive SHA-256 1431e3be180cc5c8e491e480fd78b2b721155622372591d9f82bfb8aa83a6cce. Verify the actual retained archive-integrity record before use; stop if this prompt's identity and retained evidence disagree. Do not redownload the bulk archive or execute upstream code.
+
+Select up to 20 not-yet-published physical English sets, capped at 1,500 qualifying numbered targets, from the retained gap report. Prefer sets that close era gaps and broaden all-251 coverage, rather than the owner's existing sets alone. Publish the selection rationale and expected target counts before generating packages. Treat already assessed partial sets separately from unassessed sets.
+
+Reuse the existing static parser and package formats. Preserve canonical species mappings, exact source IDs/language, numbered identity, provider-described variants and source dates. Do not invent edition/finish/distribution, drop unsupported variants to fit the importer, count whole-set cards as target coverage, or import above-251 cards merely to inflate progress. Emit exception queues for ambiguous mappings, variant completeness and distribution gaps. Cached offline work continues even if shopping sites block access.
+
+ACQUISITION AUTHORITY AND LIMITS
+This assignment authorizes fresh public searches and source reads for Workstream A; earlier D6/D7 budgets stay closed. No extra confirmation is needed for authorized public collection or disposable qualification.
+
+Before the first acquisition, write a source plan and ledger. Limits: 60 charged operations total, including at most 15 discovery searches, 15 official reads and 30 seller reads; 90 minutes acquisition wall time; 100 MiB total new retained evidence, including failed reports and captures. Reserve space for closeout. Each search query, navigation or direct fetch is charged; redirect chains belong to their originating operation and must be recorded. Capture from an already loaded page is not a new acquisition unless it causes a new remote request. Record opaque browser background traffic separately; do not assert a network-request count from a navigation count.
+
+One retry is allowed for a transient transport failure per URL, at most four retries total, charged within the same limits. No retry on challenge, access denial or login requirement: stop that host for this run and continue others. No background polling or automatic budget enlargement. Use bounded transports where supported; disclose opaque timing limits. Stop acquiring when any ceiling is reached, retain the ledger and finish offline. No claim of current absence from failed access.
+
+ORGANIZATION AND IMPORT
+Create evidence/d8-20261006/ for ledgers, raw-source manifests, sanitized captures, chain matrices, exceptions, coverage and validation. Keep immutable original bytes/times plus hashes; no credentials, private owner rows or unrelated account content in public evidence. Use existing config package conventions, with exact references, correction before hashes and dependency order. Separate card catalog, distribution, official product contents and dated seller observations. Do not rewrite earlier observations or refresh their timestamps.
+
+Deliver a per-product chain matrix and all-251 coverage reports distinguishing printing-only, known booster distribution, documented product, observed offer, eligible offer, unavailable, access-limited and unresearched. Report counts separately for source enumeration, prepared packages and disposable publication. Recheck eligibility at closeout using actual observation age; collection success does not guarantee freshness when later installed.
+
+QUALIFICATION
+On fresh disposable SQLite with external application acquisition disabled, preview/review/publish through existing services in the recorded dependency order. Verify exact references, idempotent confirmation, stale-correction refusal without partial writes, rollback/restoration and unchanged protected copies/photos/goals/saves. Run relevant parser/catalog/product/offer tests and repository checks for changed files; broaden tests only for actual changes or failures.
+
+Use a separate disposable browser session/server to exercise owned Vaporeon, missing Scyther and a Johto target: lookup, actual evidence/uncertainty, product/version distinctions, filters, save, restart and reopen with frozen bytes and original times preserved. Do not manufacture a qualifying offer for screenshots. Distinguish real sources from synthetic behavior qualification. If a schema/importer defect blocks real data, retain the package and deliver an exact engineering repair handoff; do not bypass the gate or silently broaden application code work.
+
+CLOSEOUT
+Deliver docs/D8_DATA_COLLECTION.md, a dated validation record, source/budget ledgers, exact package hashes and publication/reversal order, chain/coverage/exception reports, and evidence/d8-20261006/candidate.json with adjacent SHA-256. Update PM status, roadmap, history and /Users/michaelfuscoletti/Desktop/dex_next_steps.md with the actual result and one concrete next assignment. Freeze candidate identity only after final documentation edits; keep historical evidence unchanged.
+
+Success is reproducible import-ready catalog growth plus the strongest obtainable real shopping chains, with truthful remaining gaps. Zero eligible offers is an acceptable evidence outcome, not shopping acceptance. Owner installation of new packages is a subsequent backed-up assignment. Full all-era completeness, PostgreSQL, hosted qualification and broader beta acceptance remain separate.

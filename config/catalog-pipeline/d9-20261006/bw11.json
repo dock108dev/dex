@@ -1,0 +1,354 @@
+{
+  "schema_version": "dex-catalog-v1",
+  "game": "pokemon",
+  "provider": "tcgdex",
+  "version": "d9-99c994747cf7-v1",
+  "set_key": "bw11",
+  "set_name": "Legendary Treasures",
+  "language": "en",
+  "aliases": [],
+  "source_url": "https://codeload.github.com/tcgdex/cards-database/tar.gz/99c994747cf7519a3e51166cc932de79a88bd4b3",
+  "source_sha256": "1431e3be180cc5c8e491e480fd78b2b721155622372591d9f82bfb8aa83a6cce",
+  "metadata_permission": "MIT; Copyright (c) 2021 TCGdex; retained evidence/d7-20261005/TCGDEX_LICENSE.txt",
+  "image_permission": "not-included",
+  "coverage": "partial",
+  "expected_count": 140,
+  "cards": [
+    {
+      "external_id": "bw11-1:unspecified",
+      "number": "1",
+      "name": "Tangela",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 114,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "bw11-102:unspecified",
+      "number": "102",
+      "name": "Lugia-EX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 249,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "bw11-17:unspecified",
+      "number": "17",
+      "name": "Charmander",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 4,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "bw11-18:unspecified",
+      "number": "18",
+      "name": "Charmeleon",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 5,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "bw11-19:unspecified",
+      "number": "19",
+      "name": "Charizard",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 6,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "bw11-20:unspecified",
+      "number": "20",
+      "name": "Vulpix",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 37,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "bw11-21:unspecified",
+      "number": "21",
+      "name": "Ninetales",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 38,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "bw11-22:unspecified",
+      "number": "22",
+      "name": "Moltres",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 146,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "bw11-3:unspecified",
+      "number": "3",
+      "name": "Shuckle",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 213,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "bw11-30:unspecified",
+      "number": "30",
+      "name": "Magikarp",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 129,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "bw11-31:unspecified",
+      "number": "31",
+      "name": "Gyarados",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 130,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "bw11-32:unspecified",
+      "number": "32",
+      "name": "Articuno",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 144,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "bw11-46:unspecified",
+      "number": "46",
+      "name": "Zapdos",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 145,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "bw11-53:unspecified",
+      "number": "53",
+      "name": "Mewtwo",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 150,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "bw11-54:unspecified",
+      "number": "54",
+      "name": "Mewtwo-EX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 150,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "bw11-55:unspecified",
+      "number": "55",
+      "name": "Natu",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 177,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "bw11-56:unspecified",
+      "number": "56",
+      "name": "Xatu",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 178,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "bw11-57:unspecified",
+      "number": "57",
+      "name": "Misdreavus",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 200,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "bw11-RC14:unspecified",
+      "number": "RC14",
+      "name": "Eevee",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 133,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "bw11-RC15:unspecified",
+      "number": "RC15",
+      "name": "Teddiursa",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 216,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "bw11-RC16:unspecified",
+      "number": "RC16",
+      "name": "Ursaring",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 217,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "bw11-RC24:unspecified",
+      "number": "RC24",
+      "name": "Mew-EX",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 151,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "bw11-RC4:unspecified",
+      "number": "RC4",
+      "name": "Growlithe",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 58,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "bw11-RC7:unspecified",
+      "number": "RC7",
+      "name": "Pikachu",
+      "finish": null,
+      "variant": null,
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    }
+  ]
+}

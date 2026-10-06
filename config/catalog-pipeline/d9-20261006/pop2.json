@@ -1,0 +1,270 @@
+{
+  "schema_version": "dex-catalog-v1",
+  "game": "pokemon",
+  "provider": "tcgdex",
+  "version": "d9-99c994747cf7-v1",
+  "set_key": "pop2",
+  "set_name": "POP Series 2",
+  "language": "en",
+  "aliases": [],
+  "source_url": "https://codeload.github.com/tcgdex/cards-database/tar.gz/99c994747cf7519a3e51166cc932de79a88bd4b3",
+  "source_sha256": "1431e3be180cc5c8e491e480fd78b2b721155622372591d9f82bfb8aa83a6cce",
+  "metadata_permission": "MIT; Copyright (c) 2021 TCGdex; retained evidence/d7-20261005/TCGDEX_LICENSE.txt",
+  "image_permission": "not-included",
+  "coverage": "partial",
+  "expected_count": 18,
+  "cards": [
+    {
+      "external_id": "pop2-1:49a7a9ed8f71e46d",
+      "number": "1",
+      "name": "Entei",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 244,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "pop2-1:6d0c671bc6311ab2",
+      "number": "1",
+      "name": "Entei",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 244,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "pop2-12:49a7a9ed8f71e46d",
+      "number": "12",
+      "name": "Bulbasaur",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 1,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "pop2-15:49a7a9ed8f71e46d",
+      "number": "15",
+      "name": "Phanpy",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 231,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "pop2-16:49a7a9ed8f71e46d",
+      "number": "16",
+      "name": "Pikachu",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "pop2-17:49a7a9ed8f71e46d",
+      "number": "17",
+      "name": "Celebi ex",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 251,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "pop2-17:6d0c671bc6311ab2",
+      "number": "17",
+      "name": "Celebi ex",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 251,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "pop2-2:49a7a9ed8f71e46d",
+      "number": "2",
+      "name": "Pidgeot",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 18,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "pop2-2:6d0c671bc6311ab2",
+      "number": "2",
+      "name": "Pidgeot",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 18,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "pop2-3:49a7a9ed8f71e46d",
+      "number": "3",
+      "name": "Raikou",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 243,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "pop2-3:6d0c671bc6311ab2",
+      "number": "3",
+      "name": "Raikou",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 243,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "pop2-4:49a7a9ed8f71e46d",
+      "number": "4",
+      "name": "Suicune",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 245,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "pop2-4:6d0c671bc6311ab2",
+      "number": "4",
+      "name": "Suicune",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 245,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "pop2-5:49a7a9ed8f71e46d",
+      "number": "5",
+      "name": "Tauros",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 128,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "pop2-5:6d0c671bc6311ab2",
+      "number": "5",
+      "name": "Tauros",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 128,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "pop2-6:49a7a9ed8f71e46d",
+      "number": "6",
+      "name": "Venusaur",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 3,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "pop2-6:6d0c671bc6311ab2",
+      "number": "6",
+      "name": "Venusaur",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 3,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "pop2-7:49a7a9ed8f71e46d",
+      "number": "7",
+      "name": "Ivysaur",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 2,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    }
+  ]
+}

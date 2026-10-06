@@ -6,7 +6,7 @@ from copy import deepcopy
 from pokemon_hunter.collection import derive
 
 from . import collection as service
-from . import store
+from . import collection_goals, store
 
 
 def snapshot(actor, key):
@@ -35,7 +35,7 @@ def project(actor, data, scope):
     game_names = {game["id"]: game["name"] for game in store.rows("SELECT id,name FROM games")}
     catalog = {printing["id"]: printing for printing in data["catalog"]}
     source_cards = dict(data["cards"])
-    if scope.get("kind") == "original151":
+    if scope.get("kind") in collection_goals.KINDS:
         sets = {
             r["internal_id"]: r["external_id"]
             for r in store.rows(
@@ -75,7 +75,7 @@ def project(actor, data, scope):
             card["owned"] = (
                 card["printing_id"] in exact_owned and not catalog[card["printing_id"]]["unresolved_fields"]
             )
-        elif scope.get("kind") == "original151":
+        elif scope.get("kind") in collection_goals.KINDS:
             card["owned"] = card["printing_id"] in exact_owned
             card["pokemon_dex"] = frozen_species[card["printing_id"]]
             card["dex_eligible"] = True
@@ -87,6 +87,10 @@ def project(actor, data, scope):
         if policy == "species"
         else {"cards": cards}
     )
+    if scope.get("kind") in collection_goals.OWNERSHIP_KINDS:
+        # Species scoring never labels unowned exact card printings as owned.
+        for number, species in scoped["pokedex"].items():
+            species["dex_owned"] = int(number) in definition["owned_species"]
     return {
         **data,
         **scoped,
@@ -104,5 +108,9 @@ def public(scope):
         "name": scope["name"],
         "version": scope.get("version"),
         "policy": scope["definition"]["policy"],
-        "ownership_basis": "Current account ownership compared with frozen search membership",
+        "ownership_basis": (
+            "Frozen declared collection species; exact printing identity remains separate"
+            if scope.get("kind") in collection_goals.OWNERSHIP_KINDS
+            else "Current account ownership compared with frozen search membership"
+        ),
     }

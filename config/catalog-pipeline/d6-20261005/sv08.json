@@ -1,0 +1,984 @@
+{
+  "schema_version": "dex-catalog-v1",
+  "game": "pokemon",
+  "provider": "tcgdex",
+  "version": "d6-99c994747cf7-v2",
+  "set_key": "sv08",
+  "set_name": "Surging Sparks",
+  "language": "en",
+  "aliases": [],
+  "source_url": "https://codeload.github.com/tcgdex/cards-database/tar.gz/99c994747cf7519a3e51166cc932de79a88bd4b3",
+  "source_sha256": "1431e3be180cc5c8e491e480fd78b2b721155622372591d9f82bfb8aa83a6cce",
+  "metadata_permission": "MIT; Copyright (c) 2021 TCGdex; see evidence/d6-20261005/TCGDEX_LICENSE.txt",
+  "image_permission": "not-included",
+  "coverage": "partial",
+  "expected_count": 252,
+  "cards": [
+    {
+      "external_id": "sv08-001:49a7a9ed8f71e46d",
+      "number": "001",
+      "name": "Exeggcute",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 102,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-001:24d19f6077bc64b1",
+      "number": "001",
+      "name": "Exeggcute",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 102,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-002:49a7a9ed8f71e46d",
+      "number": "002",
+      "name": "Exeggcute",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 102,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-002:24d19f6077bc64b1",
+      "number": "002",
+      "name": "Exeggcute",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 102,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-003:49a7a9ed8f71e46d",
+      "number": "003",
+      "name": "Exeggutor",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 103,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sv08-003:24d19f6077bc64b1",
+      "number": "003",
+      "name": "Exeggutor",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 103,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sv08-016:49a7a9ed8f71e46d",
+      "number": "016",
+      "name": "Vulpix",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 37,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-016:24d19f6077bc64b1",
+      "number": "016",
+      "name": "Vulpix",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 37,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-017:49a7a9ed8f71e46d",
+      "number": "017",
+      "name": "Ninetales",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 38,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sv08-017:24d19f6077bc64b1",
+      "number": "017",
+      "name": "Ninetales",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 38,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sv08-018:49a7a9ed8f71e46d",
+      "number": "018",
+      "name": "Paldean Tauros",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 128,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sv08-018:24d19f6077bc64b1",
+      "number": "018",
+      "name": "Paldean Tauros",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 128,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sv08-019:49a7a9ed8f71e46d",
+      "number": "019",
+      "name": "Ho-Oh",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 250,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sv08-019:24d19f6077bc64b1",
+      "number": "019",
+      "name": "Ho-Oh",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 250,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sv08-019:6166974c0917505c",
+      "number": "019",
+      "name": "Ho-Oh",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"player-rewards-program\"],\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 250,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sv08-039:49a7a9ed8f71e46d",
+      "number": "039",
+      "name": "Paldean Tauros",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 128,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sv08-039:24d19f6077bc64b1",
+      "number": "039",
+      "name": "Paldean Tauros",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 128,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sv08-040:49a7a9ed8f71e46d",
+      "number": "040",
+      "name": "Mantine",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 226,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-040:24d19f6077bc64b1",
+      "number": "040",
+      "name": "Mantine",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 226,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-057:6d0c671bc6311ab2",
+      "number": "057",
+      "name": "Pikachu ex",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Double rare"
+      }
+    },
+    {
+      "external_id": "sv08-057:59a04c071df0830f",
+      "number": "057",
+      "name": "Pikachu ex",
+      "finish": "holo",
+      "variant": "{\"stamp\":[\"player-rewards-program\"],\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Double rare"
+      }
+    },
+    {
+      "external_id": "sv08-058:49a7a9ed8f71e46d",
+      "number": "058",
+      "name": "Magnemite",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 81,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-058:24d19f6077bc64b1",
+      "number": "058",
+      "name": "Magnemite",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 81,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-059:49a7a9ed8f71e46d",
+      "number": "059",
+      "name": "Magneton",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 82,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sv08-059:24d19f6077bc64b1",
+      "number": "059",
+      "name": "Magneton",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 82,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sv08-059:09b17cc5259b7434",
+      "number": "059",
+      "name": "Magneton",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"gym-challenge\"],\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 82,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sv08-059:6166974c0917505c",
+      "number": "059",
+      "name": "Magneton",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"player-rewards-program\"],\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 82,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sv08-070:49a7a9ed8f71e46d",
+      "number": "070",
+      "name": "Togepi",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 175,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-070:24d19f6077bc64b1",
+      "number": "070",
+      "name": "Togepi",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 175,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-071:49a7a9ed8f71e46d",
+      "number": "071",
+      "name": "Togetic",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 176,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-071:24d19f6077bc64b1",
+      "number": "071",
+      "name": "Togetic",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 176,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-073:49a7a9ed8f71e46d",
+      "number": "073",
+      "name": "Marill",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 183,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-073:24d19f6077bc64b1",
+      "number": "073",
+      "name": "Marill",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 183,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-074:49a7a9ed8f71e46d",
+      "number": "074",
+      "name": "Azumarill",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 184,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sv08-074:24d19f6077bc64b1",
+      "number": "074",
+      "name": "Azumarill",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 184,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sv08-074:6166974c0917505c",
+      "number": "074",
+      "name": "Azumarill",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"player-rewards-program\"],\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 184,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sv08-075:49a7a9ed8f71e46d",
+      "number": "075",
+      "name": "Smoochum",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 238,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-075:24d19f6077bc64b1",
+      "number": "075",
+      "name": "Smoochum",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 238,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-098:49a7a9ed8f71e46d",
+      "number": "098",
+      "name": "Mankey",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 56,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-098:24d19f6077bc64b1",
+      "number": "098",
+      "name": "Mankey",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 56,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-099:49a7a9ed8f71e46d",
+      "number": "099",
+      "name": "Primeape",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 57,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-099:24d19f6077bc64b1",
+      "number": "099",
+      "name": "Primeape",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 57,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-101:49a7a9ed8f71e46d",
+      "number": "101",
+      "name": "Paldean Tauros",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 128,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sv08-101:24d19f6077bc64b1",
+      "number": "101",
+      "name": "Paldean Tauros",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 128,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sv08-102:49a7a9ed8f71e46d",
+      "number": "102",
+      "name": "Phanpy",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 231,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-102:24d19f6077bc64b1",
+      "number": "102",
+      "name": "Phanpy",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 231,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-103:49a7a9ed8f71e46d",
+      "number": "103",
+      "name": "Donphan",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 232,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-103:24d19f6077bc64b1",
+      "number": "103",
+      "name": "Donphan",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 232,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-122:49a7a9ed8f71e46d",
+      "number": "122",
+      "name": "Alolan Diglett",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 50,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-122:24d19f6077bc64b1",
+      "number": "122",
+      "name": "Alolan Diglett",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 50,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-123:49a7a9ed8f71e46d",
+      "number": "123",
+      "name": "Alolan Dugtrio",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 51,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sv08-123:24d19f6077bc64b1",
+      "number": "123",
+      "name": "Alolan Dugtrio",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 51,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "sv08-124:49a7a9ed8f71e46d",
+      "number": "124",
+      "name": "Skarmory",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 227,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-124:24d19f6077bc64b1",
+      "number": "124",
+      "name": "Skarmory",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 227,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-133:6d0c671bc6311ab2",
+      "number": "133",
+      "name": "Alolan Exeggutor ex",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 103,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Double rare"
+      }
+    },
+    {
+      "external_id": "sv08-143:49a7a9ed8f71e46d",
+      "number": "143",
+      "name": "Eevee",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 133,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-143:24d19f6077bc64b1",
+      "number": "143",
+      "name": "Eevee",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 133,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-144:49a7a9ed8f71e46d",
+      "number": "144",
+      "name": "Snorlax",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 143,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-144:24d19f6077bc64b1",
+      "number": "144",
+      "name": "Snorlax",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 143,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "sv08-192:6d0c671bc6311ab2",
+      "number": "192",
+      "name": "Exeggcute",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 102,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Illustration rare"
+      }
+    },
+    {
+      "external_id": "sv08-205:6d0c671bc6311ab2",
+      "number": "205",
+      "name": "Phanpy",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 231,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Illustration rare"
+      }
+    },
+    {
+      "external_id": "sv08-208:6d0c671bc6311ab2",
+      "number": "208",
+      "name": "Alolan Dugtrio",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 51,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Illustration rare"
+      }
+    },
+    {
+      "external_id": "sv08-209:6d0c671bc6311ab2",
+      "number": "209",
+      "name": "Skarmory",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 227,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Illustration rare"
+      }
+    },
+    {
+      "external_id": "sv08-219:6d0c671bc6311ab2",
+      "number": "219",
+      "name": "Pikachu ex",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "sv08-225:6d0c671bc6311ab2",
+      "number": "225",
+      "name": "Alolan Exeggutor ex",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 103,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "sv08-238:6d0c671bc6311ab2",
+      "number": "238",
+      "name": "Pikachu ex",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Special illustration rare"
+      }
+    },
+    {
+      "external_id": "sv08-242:6d0c671bc6311ab2",
+      "number": "242",
+      "name": "Alolan Exeggutor ex",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 103,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Special illustration rare"
+      }
+    },
+    {
+      "external_id": "sv08-247:6ab0e6f8cd3d05c8",
+      "number": "247",
+      "name": "Pikachu ex",
+      "finish": "holo",
+      "variant": "{\"foil\":\"gold\",\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Hyper rare"
+      }
+    },
+    {
+      "external_id": "sv08-248:6ab0e6f8cd3d05c8",
+      "number": "248",
+      "name": "Alolan Exeggutor ex",
+      "finish": "holo",
+      "variant": "{\"foil\":\"gold\",\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 103,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Hyper rare"
+      }
+    }
+  ]
+}

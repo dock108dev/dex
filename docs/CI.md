@@ -20,7 +20,7 @@ uv run --no-sync ruff format --check .
 uv run --no-sync pytest -q
 ```
 
-The JavaScript check uses the Ubuntu runner’s preinstalled Node.js; these six
+The JavaScript check uses the Ubuntu runner’s preinstalled Node.js; the
 browser scripts have no npm dependencies or separate frontend build. Named steps
 make syntax, lint, formatting and test failures easy to identify without changing
 the matrix check names.
@@ -38,12 +38,26 @@ changes. GitHub-managed CodeQL configuration and repository protection settings
 are external to this workflow; dated observations belong in
 [verification history](history/2026-10-03-VERIFICATION.md).
 
-## Additional beta acceptance
+## Validation boundaries
 
-[Beta requirements](BETA_REQUIREMENTS.md) require real catalog/product records and
-dated purchasable offers. Add meaningful checks for import idempotency/conflicts,
-migration preservation, canonical species policy, goal updates, missing-species
-unions, promo separation, mixed products, stale/unknown offers, partial provider
-failure, account privacy and no-call reopening. Preserve vintage/eBay regression
-coverage. CI qualifies engineering behavior only; D1–D5 data review, live retailer
-and eBay evidence, and owner acceptance remain separate required gates.
+Synthetic tests cover imports, conflicts, account isolation, goal versions,
+canonical species, distribution/promo separation, dated/unknown offers and
+no-call saved reopening. They do not establish catalog completeness, provider
+access, seller availability, recognition accuracy or deployment acceptance.
+
+## Portable test and runtime inputs
+
+Ordinary CI uses `tests/fixtures/synthetic-collection.csv`, a generated 251-species
+ledger with artificial ownership and card-detail cases. Its counts exercise the
+existing goal, import, privacy and frozen-save regressions; it contains no personal
+inventory. Tests never need `outputs/`.
+Source-reconciliation tests model source receipts and publication references in
+memory, fail on unmodeled private reads and retain hash-drift/conflict assertions.
+Printing-bridge tests use the public reviewed package instead of private rejection
+receipts. Historical operational evidence remains separate from these unit tests.
+
+The current coverage profile packages its reviewed universe and alias review under
+`config/catalog-pipeline/m4-20261006/`, preserving their exact hashes and source
+timestamps. Runtime and tests no longer require ignored `evidence/` files for these
+inputs. These public inputs must accompany source changes in the submitted commit;
+GitHub cannot use files that exist only in a local working tree.

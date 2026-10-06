@@ -1,0 +1,21 @@
+{
+  "version": "m4-reviewed-d6-v1",
+  "universe": "config/catalog-pipeline/m4-20261006/universe-d6.json",
+  "universe_sha256": "94faf98fcb065e4329c2946307d3b250493643237423406c1a66aea14778dbed",
+  "review": "config/catalog-pipeline/m4-20261006/alias-review-d7.json",
+  "review_sha256": "57015f66606d677adbd82edd8481fd6aab987d4328f9d761dde9c2dccb448df2",
+  "identities": [
+    {
+      "provider_code": "sv08.5",
+      "expansion_id": "tcgdex:en:sv08.5",
+      "catalog_set_key": "sv08-5",
+      "current_assessment_id": "tcgdex:en:sv08-5"
+    },
+    {
+      "provider_code": "swsh12.5",
+      "expansion_id": "tcgdex:en:swsh12.5",
+      "catalog_set_key": "swsh12-5",
+      "current_assessment_id": "tcgdex:en:swsh12-5"
+    }
+  ]
+}

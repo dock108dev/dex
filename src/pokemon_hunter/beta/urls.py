@@ -32,11 +32,23 @@ urlpatterns = [
 
 if settings.B2_ENABLED:
     from . import collection_views as b2
-    from . import packs_views
+    from . import lookup_views, packs_views, product_views, refresh_views
 
     urlpatterns = [
+        path("product-review/", product_views.home),
+        path("product-review/preview/", product_views.preview),
+        path("product-review/<uuid:key>/", product_views.detail),
+        path("product-review/<uuid:key>/<str:action>/", product_views.action),
+        path("api/product-coverage/", product_views.coverage),
         path("goals/", b2.home),
+        path("lookup/", lookup_views.home),
+        path("lookup/save/", lookup_views.save),
+        path("api/collection-sources/<str:key>/", lookup_views.source),
         path("packs/", packs_views.home),
+        path("packs/refresh/", refresh_views.home),
+        path("packs/refresh/start/", refresh_views.start),
+        path("packs/refresh/<uuid:key>/stop/", refresh_views.stop),
+        path("packs/refresh/<uuid:key>/<uuid:attempt>/<str:action>/", refresh_views.review),
         path("packs/save/", packs_views.save),
         path("packs/saved/", packs_views.saved_list),
         path("packs/saved/<uuid:key>/", packs_views.saved),
@@ -80,9 +92,17 @@ if settings.B3_ENABLED:
     ] + urlpatterns
 
 if settings.B4_ENABLED:
+    from . import catalog_pipeline_views as pipeline
     from . import catalog_views as catalogs
 
     urlpatterns = [
+        path("catalog-coverage/", pipeline.coverage),
+        path("api/catalog-coverage/", pipeline.report),
+        path("catalog-pipeline/", pipeline.home),
+        path("catalog-pipeline/preview/", pipeline.preview),
+        path("catalog-pipeline/<uuid:key>/", pipeline.detail),
+        path("catalog-pipeline/<uuid:key>/<str:action>/", pipeline.action),
+        path("api/catalog-batches/", pipeline.api_preview),
         path("requests/", catalogs.home),
         path("catalog-review/", catalogs.review_home),
         path("api/catalog-requests/", catalogs.requests),

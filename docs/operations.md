@@ -42,3 +42,13 @@ backup storage and real-device operation remain unverified for a new deployment.
 Detailed historical procedures and exact candidate records are retained in
 [the operations record](history/2026-09-28-B5_OPERATIONS.md). They describe historical
 procedures and candidates; use the current configuration requirements above.
+
+## Current container boundary
+
+The retained Dockerfile copies `config/catalog-imports` only. Current species and
+coverage code also reads the hash-pinned `config/sealed/2026-10-04/package.json`
+and `config/catalog-pipeline` profiles; these inputs are absent from that image.
+Do not treat the historical container as a runnable current beta candidate.
+A separate container update must explicitly include the required public inputs
+in its build context and COPY steps, then qualify offline species/coverage loading
+and staging behavior. The supported local checkout workflow remains independent.

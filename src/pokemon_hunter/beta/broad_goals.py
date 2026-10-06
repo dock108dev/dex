@@ -5,14 +5,12 @@ owner-root rewrite is needed. Lineage references always resolve within the accou
 """
 
 import json
-from pathlib import Path
 
 from django.db import connection
 
 from pokemon_hunter.migration import digest, encode
 
-from . import catalog_imports as cat
-from . import store
+from . import canonical_species, store
 
 POLICY = {
     "id": "original-151-reviewed-v1",
@@ -22,16 +20,17 @@ POLICY = {
     "distribution": "Booster membership and physical distribution are separate; provider existence alone is insufficient.",
 }
 COVERAGE = "Any era is the goal policy. Recognition is limited to the selected reviewed published catalogs; this is not complete all-era coverage. Booster membership is separate."
-SPECIES = Path(__file__).resolve().parents[3] / "config/catalog-imports/staging-ten/species.json"
 
 
-def eligible(p):
+def eligible(p, upper=151):
     a = p["attributes"]
     n = a.get("pokemon_dex")
-    return a.get("supertype") == "Pokémon" and type(n) is int and 1 <= n <= 151
+    return a.get("supertype") == "Pokémon" and type(n) is int and 1 <= n <= upper
 
 
-def reviewed(entries):
+def reviewed(entries, upper=151):
+    from . import catalog_imports as cat
+
     if "catalog_heads" not in connection.introspection.table_names():
         return [], []
     heads = store.rows(
@@ -55,7 +54,7 @@ def reviewed(entries):
         # Membership must be in the actual reviewed package, not merely a row in its set.
         _, approved = cat.rows_for(package)
         approved = {p["id"]: json.loads(p["attributes"]) for p in approved}
-        selected.extend(p for p in members if eligible(p) and p["attributes"] == approved.get(p["id"]))
+        selected.extend(p for p in members if eligible(p, upper) and p["attributes"] == approved.get(p["id"]))
         refs.append(
             dict(
                 set_id=h["set_id"],
@@ -68,29 +67,43 @@ def reviewed(entries):
     return selected, refs
 
 
+def species_items(selected, numbers, *, frozen_labels=True):
+    """Shared frozen species membership shape using canonical identity authority.
+
+    Version-1 collecting goals retain Ho-oh's historical display spelling because
+    labels participate in saved definition hashes. Independent lookup uses the
+    canonical display name. Neither spelling changes canonical species identity.
+    """
+    names = canonical_species.registry()
+    return [
+        dict(
+            label=f"#{n:03} " + ("Ho-oh" if frozen_labels and n == 250 else names[n]["name"]),
+            pokemon_dex=n,
+            printing_ids=sorted(p["id"] for p in selected if p["attributes"]["pokemon_dex"] == n),
+            unresolved=False,
+        )
+        for n in numbers
+    ]
+
+
 def definition(entries):
     selected, refs = reviewed(entries)
-    names = json.loads(SPECIES.read_text())
     return dict(
         policy="species",
         eligibility_policy=POLICY,
         coverage=COVERAGE,
         catalog_references=refs,
         catalog_versions=sorted({r["version"] for r in refs}),
-        items=[
-            dict(
-                label=f"#{n:03} {names[str(n)]['name']}",
-                pokemon_dex=n,
-                printing_ids=sorted(p["id"] for p in selected if p["attributes"]["pokemon_dex"] == n),
-                unresolved=False,
-            )
-            for n in range(1, 152)
-        ],
+        items=species_items(selected, range(1, 152)),
     )
 
 
 def progress(d, active, available):
+    from . import collection_goals
     from .collection import exact_owned_printings
+
+    if d.get("eligibility_policy") in (collection_goals.POLICY, collection_goals.TARGET_POLICY):
+        return collection_goals.progress(d, active, available)
 
     # A later publication cannot revoke an earlier version's reviewed ownership policy.
     # Current selectable coverage is reported separately from its frozen membership.
@@ -111,8 +124,8 @@ def progress(d, active, available):
     return dict(
         progress=items,
         satisfied=satisfied,
-        total=151,
-        missing=151 - satisfied,
+        total=len(items),
+        missing=len(items) - satisfied,
         missing_with_coverage=sum(i["status"] == "missing" for i in items),
         unavailable=sum(i["qualifying_printings"] == 0 for i in items),
         qualifying_printings=sum(i["qualifying_printings"] for i in items),
@@ -133,8 +146,10 @@ def difference(before, after, active, available):
     )
 
 
-def validate(d):
+def validate(d, upper=151, targets=None):
     """Validate frozen imports against retained review journals, not supplied membership."""
+    from . import catalog_imports as cat
+
     if not isinstance(d, dict):
         raise ValueError("Invalid goal definition")
     if d.get("eligibility_policy") != POLICY or d.get("policy") != "species" or d.get("coverage") != COVERAGE:
@@ -170,18 +185,12 @@ def validate(d):
         _, rows = cat.rows_for(p)
         for row in rows:
             row["attributes"] = json.loads(row["attributes"])
-            if eligible(row):
+            if eligible(row, upper):
                 permitted[row["id"]] = row["attributes"]["pokemon_dex"]
-    names = json.loads(SPECIES.read_text())
-    expected = [
-        dict(
-            label=f"#{n:03} {names[str(n)]['name']}",
-            pokemon_dex=n,
-            printing_ids=sorted(p for p, number in permitted.items() if number == n),
-            unresolved=False,
-        )
-        for n in range(1, 152)
-    ]
+    expected = species_items(
+        [{"id": pid, "attributes": {"pokemon_dex": n}} for pid, n in permitted.items()],
+        targets if targets is not None else range(1, upper + 1),
+    )
     if d["items"] != expected or d.get("catalog_versions") != sorted({r["version"] for r in refs}):
         raise ValueError("Forged Original 151 membership")
     if set(d) != {
@@ -197,7 +206,7 @@ def validate(d):
     return d
 
 
-def remap_imports(goals, actor_id, operation_id):
+def remap_imports(goals, actor_id, operation_id, sources=None, mapped=None):
     """Require a complete account-local lineage in the export and remap every reference."""
     from pokemon_hunter.inventory import stable_id
 
@@ -205,12 +214,18 @@ def remap_imports(goals, actor_id, operation_id):
         {g["id"] for g in goals}
     ) != len(goals):
         raise ValueError("Invalid or duplicate goal identity")
+    from . import collection_goals
+
     by_id = {g["id"]: g for g in goals}
     result = {}
     for g in goals:
-        if g.get("kind") != "original151":
+        if g.get("kind") not in collection_goals.KINDS:
             continue
-        d = validate(g["definition"])
+        d = (
+            collection_goals.validate(g["definition"], sources[g["definition"]["collection_source"]["id"]])
+            if g["kind"] in collection_goals.OWNERSHIP_KINDS
+            else validate(g["definition"])
+        )
         lineage = d.get("lineage", {})
         if not isinstance(lineage, dict):
             raise ValueError("Invalid lineage")
@@ -241,6 +256,9 @@ def remap_imports(goals, actor_id, operation_id):
             if prior_lineage["number"] != number - 1 or prior_lineage["root_id"] != root:
                 raise ValueError("Invalid version sequence")
         result[g["id"]] = json.loads(encode(d))
+    for d in result.values():
+        if "collection_source" in d:
+            d["collection_source"] = collection_goals.reference(mapped[d["collection_source"]["id"]])
     # Ordered by sequence so the remapped predecessor's digest is available.
     for key, d in sorted(result.items(), key=lambda item: item[1]["lineage"]["number"]):
         lineage = d["lineage"]

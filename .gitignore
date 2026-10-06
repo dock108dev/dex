@@ -43,3 +43,6 @@ uploads/
 /htmlcov/
 .coverage
 .coverage.*
+
+# Generated personal collection exports and derived reports; preserve local copies.
+/outputs/

@@ -1,0 +1,421 @@
+{
+  "sources": [
+    {
+      "id": "m3-card",
+      "provider": "m3-synthetic",
+      "url": "https://example.test/m3/m3-card",
+      "retrieved_at": "2026-10-06T03:00:00+00:00",
+      "sha256": "ddc0be913f9681e2b0d2a3363b0cc2d469d1190cec3042800de8562866666591",
+      "language": "en",
+      "market": "US",
+      "authority": "official-card",
+      "status": "usable",
+      "subjects": [
+        "m3:en:johto",
+        "m3:en:kingdra:normal",
+        "m3:kingdra:pool"
+      ],
+      "supports": [
+        "printing-identity",
+        "distribution-membership"
+      ],
+      "rights": "Synthetic engineering fixture only",
+      "note": "SYNTHETIC: fabricated qualification input; not official or seller evidence"
+    },
+    {
+      "id": "m3-product",
+      "provider": "m3-synthetic",
+      "url": "https://example.test/m3/m3-product",
+      "retrieved_at": "2026-10-06T03:00:00+00:00",
+      "sha256": "b1e4c57c84b5c69b6e89f2af81cb76e4bf993c1ee360b703bdc63fa328002ad9",
+      "language": "en",
+      "market": "US",
+      "authority": "official-product",
+      "status": "usable",
+      "subjects": [
+        "m3:product:mixed",
+        "m3:product:guaranteed",
+        "m3:product:assortment",
+        "m3:pack:151",
+        "m3:pack:johto",
+        "m3:pack:unknown",
+        "m3:pack:random",
+        "m3:guaranteed:mixed",
+        "m3:guaranteed:guaranteed"
+      ],
+      "supports": [
+        "product-identity",
+        "product-contents"
+      ],
+      "rights": "Synthetic engineering fixture only",
+      "note": "SYNTHETIC: fabricated qualification input; not official or seller evidence"
+    },
+    {
+      "id": "m3-retailer",
+      "provider": "m3-synthetic",
+      "url": "https://example.test/m3/m3-retailer",
+      "retrieved_at": "2026-10-06T03:00:00+00:00",
+      "sha256": "1165e61a057e79dc2fd94291d2894fc91dc5955c64d09f855182676952a0152a",
+      "language": "en",
+      "market": "US",
+      "authority": "retailer",
+      "status": "usable",
+      "subjects": [
+        "m3:offer:fresh",
+        "m3:offer:market",
+        "m3:offer:stale",
+        "m3:offer:unavailable",
+        "m3:offer:unknown",
+        "m3:offer:fresh:observation",
+        "m3:offer:market:observation",
+        "m3:offer:stale:observation",
+        "m3:offer:unavailable:observation",
+        "m3:offer:unknown:observation"
+      ],
+      "supports": [
+        "offer-observation"
+      ],
+      "rights": "Synthetic engineering fixture only",
+      "note": "SYNTHETIC: fabricated qualification input; not official or seller evidence"
+    }
+  ],
+  "species": [],
+  "expansions": [
+    {
+      "id": "m3:en:johto",
+      "sources": [
+        "m3-card"
+      ],
+      "name": "Synthetic Johto distribution",
+      "language": "en",
+      "series": "neo",
+      "medium": "physical",
+      "expected_printings": 1
+    }
+  ],
+  "printings": [
+    {
+      "id": "m3:en:kingdra:normal",
+      "sources": [
+        "m3-card"
+      ],
+      "expansion_id": "m3:en:johto",
+      "species_id": "ndex:0230",
+      "name": "Synthetic Kingdra",
+      "number": "1",
+      "language": "en",
+      "rarity": "Rare",
+      "finish": "normal",
+      "variant": "normal",
+      "category": "pokemon"
+    }
+  ],
+  "memberships": [
+    {
+      "id": "m3:kingdra:pool",
+      "sources": [
+        "m3-card"
+      ],
+      "printing_id": "m3:en:kingdra:normal",
+      "expansion_id": "m3:en:johto",
+      "status": "booster"
+    }
+  ],
+  "products": [
+    {
+      "id": "m3:product:mixed",
+      "sources": [
+        "m3-product"
+      ],
+      "name": "Synthetic mixed product",
+      "sku": "SYNTHETIC-mixed",
+      "version": "fixture-v1",
+      "market": "US",
+      "language": "en",
+      "product_type": "box",
+      "contents": "mixed-known",
+      "total_packs": 4,
+      "guaranteed_cards_known": true
+    },
+    {
+      "id": "m3:product:guaranteed",
+      "sources": [
+        "m3-product"
+      ],
+      "name": "Synthetic guaranteed product",
+      "sku": "SYNTHETIC-guaranteed",
+      "version": "fixture-v1",
+      "market": "US",
+      "language": "en",
+      "product_type": "deck",
+      "contents": "complete",
+      "total_packs": 0,
+      "guaranteed_cards_known": true
+    },
+    {
+      "id": "m3:product:assortment",
+      "sources": [
+        "m3-product"
+      ],
+      "name": "Synthetic assortment product",
+      "sku": "SYNTHETIC-assortment",
+      "version": "fixture-v1",
+      "market": "US",
+      "language": "en",
+      "product_type": "box",
+      "contents": "unknown",
+      "total_packs": null,
+      "guaranteed_cards_known": false
+    }
+  ],
+  "packs": [
+    {
+      "id": "m3:pack:151",
+      "sources": [
+        "m3-product"
+      ],
+      "product_id": "m3:product:mixed",
+      "expansion_id": "tcgdex:en:sv03.5",
+      "quantity": 3
+    },
+    {
+      "id": "m3:pack:johto",
+      "sources": [
+        "m3-product"
+      ],
+      "product_id": "m3:product:mixed",
+      "expansion_id": "m3:en:johto",
+      "quantity": 1
+    },
+    {
+      "id": "m3:pack:unknown",
+      "sources": [
+        "m3-product"
+      ],
+      "product_id": "m3:product:assortment",
+      "expansion_id": "tcgdex:en:sv03.5",
+      "quantity": null
+    },
+    {
+      "id": "m3:pack:random",
+      "sources": [
+        "m3-product"
+      ],
+      "product_id": "m3:product:assortment",
+      "expansion_id": null,
+      "quantity": null
+    }
+  ],
+  "guaranteed": [
+    {
+      "id": "m3:guaranteed:mixed",
+      "sources": [
+        "m3-product"
+      ],
+      "product_id": "m3:product:mixed",
+      "printing_id": "m3:en:kingdra:normal",
+      "quantity": 1
+    },
+    {
+      "id": "m3:guaranteed:guaranteed",
+      "sources": [
+        "m3-product"
+      ],
+      "product_id": "m3:product:guaranteed",
+      "printing_id": "m3:en:kingdra:normal",
+      "quantity": 1
+    }
+  ],
+  "offers": [
+    {
+      "id": "m3:offer:fresh",
+      "sources": [
+        "m3-retailer"
+      ],
+      "product_id": "m3:product:mixed",
+      "retailer": "Synthetic retailer",
+      "seller": "Synthetic direct seller",
+      "seller_kind": "direct",
+      "market": "US",
+      "currency": "USD",
+      "url": "https://example.test/m3/fresh"
+    },
+    {
+      "id": "m3:offer:market",
+      "sources": [
+        "m3-retailer"
+      ],
+      "product_id": "m3:product:mixed",
+      "retailer": "Synthetic retailer",
+      "seller": "Synthetic marketplace seller",
+      "seller_kind": "marketplace",
+      "market": "US",
+      "currency": "USD",
+      "url": "https://example.test/m3/market"
+    },
+    {
+      "id": "m3:offer:stale",
+      "sources": [
+        "m3-retailer"
+      ],
+      "product_id": "m3:product:mixed",
+      "retailer": "Synthetic retailer",
+      "seller": "Synthetic direct seller",
+      "seller_kind": "direct",
+      "market": "US",
+      "currency": "USD",
+      "url": "https://example.test/m3/stale"
+    },
+    {
+      "id": "m3:offer:unavailable",
+      "sources": [
+        "m3-retailer"
+      ],
+      "product_id": "m3:product:mixed",
+      "retailer": "Synthetic retailer",
+      "seller": "Synthetic direct seller",
+      "seller_kind": "direct",
+      "market": "US",
+      "currency": "USD",
+      "url": "https://example.test/m3/unavailable"
+    },
+    {
+      "id": "m3:offer:unknown",
+      "sources": [
+        "m3-retailer"
+      ],
+      "product_id": "m3:product:mixed",
+      "retailer": "Synthetic retailer",
+      "seller": null,
+      "seller_kind": "unknown",
+      "market": "US",
+      "currency": "USD",
+      "url": "https://example.test/m3/unknown"
+    }
+  ],
+  "observations": [
+    {
+      "id": "m3:offer:fresh:observation",
+      "sources": [
+        "m3-retailer"
+      ],
+      "offer_id": "m3:offer:fresh",
+      "checked_at": "2026-10-06T03:00:00+00:00",
+      "stock": "in-stock",
+      "price_minor": 2500,
+      "shipping_minor": null,
+      "note": "Synthetic behavior only; original fixture time, no live stock"
+    },
+    {
+      "id": "m3:offer:market:observation",
+      "sources": [
+        "m3-retailer"
+      ],
+      "offer_id": "m3:offer:market",
+      "checked_at": "2026-10-06T03:00:00+00:00",
+      "stock": "in-stock",
+      "price_minor": 2000,
+      "shipping_minor": 500,
+      "note": "Synthetic behavior only; original fixture time, no live stock"
+    },
+    {
+      "id": "m3:offer:stale:observation",
+      "sources": [
+        "m3-retailer"
+      ],
+      "offer_id": "m3:offer:stale",
+      "checked_at": "2026-10-01T12:00:00+00:00",
+      "stock": "in-stock",
+      "price_minor": 1500,
+      "shipping_minor": null,
+      "note": "Synthetic behavior only; original fixture time, no live stock"
+    },
+    {
+      "id": "m3:offer:unavailable:observation",
+      "sources": [
+        "m3-retailer"
+      ],
+      "offer_id": "m3:offer:unavailable",
+      "checked_at": "2026-10-06T03:00:00+00:00",
+      "stock": "out-of-stock",
+      "price_minor": 2500,
+      "shipping_minor": null,
+      "note": "Synthetic behavior only; original fixture time, no live stock"
+    },
+    {
+      "id": "m3:offer:unknown:observation",
+      "sources": [
+        "m3-retailer"
+      ],
+      "offer_id": "m3:offer:unknown",
+      "checked_at": "2026-10-06T03:00:00+00:00",
+      "stock": "unknown",
+      "price_minor": null,
+      "shipping_minor": null,
+      "note": "Synthetic behavior only; original fixture time, no live stock"
+    }
+  ],
+  "coverage": [],
+  "mappings": [
+    {
+      "provider": "m3-synthetic",
+      "language": "en",
+      "kind": "expansions",
+      "external_id": "johto",
+      "internal_id": "m3:en:johto"
+    },
+    {
+      "provider": "m3-synthetic",
+      "language": "en",
+      "kind": "printings",
+      "external_id": "kingdra",
+      "internal_id": "m3:en:kingdra:normal"
+    }
+  ],
+  "schema_version": "dex-sealed-v1",
+  "provider": "m3-synthetic",
+  "version": "m3-synthetic-v1",
+  "bridges": [
+    {
+      "expansion_id": "m3:en:johto",
+      "package": {
+        "schema_version": "dex-catalog-v1",
+        "game": "pokemon",
+        "set_key": "johto",
+        "set_name": "Synthetic Johto distribution",
+        "language": "en",
+        "aliases": [],
+        "provider": "m3-synthetic",
+        "version": "m3-synthetic-v1",
+        "source_url": "https://example.test/m3/card",
+        "source_sha256": "191f86388cf82898383ae7449a767deb620445e897a9ba8dfccf7c15eb2b0f9a",
+        "metadata_permission": "Synthetic qualification only",
+        "image_permission": "not-included",
+        "coverage": "catalog-entries",
+        "expected_count": 1,
+        "cards": [
+          {
+            "external_id": "kingdra",
+            "number": "1",
+            "name": "Synthetic Kingdra",
+            "edition": null,
+            "finish": "normal",
+            "variant": "normal",
+            "metadata": {
+              "pokemon_dex": 230,
+              "dex_eligible": true,
+              "supertype": "Pok\u00e9mon",
+              "rarity": "Rare"
+            }
+          }
+        ]
+      },
+      "links": [
+        {
+          "printing_id": "m3:en:kingdra:normal",
+          "external_id": "kingdra"
+        }
+      ]
+    }
+  ]
+}

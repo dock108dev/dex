@@ -1,5 +1,36 @@
 # Collection beta — data and workflow design
 
+## Collecting presentation maintenance — October 6, 2026
+
+Current source uses the shared Desktop Starter 02 task hierarchy and accessibility
+guidance, retaining DEX colors and navigation. This supersedes the earlier statement
+that shared requirements were unavailable for that earlier pass.
+
+Pokédex places ownership, common filters and pack actions before compact species
+rows. Card filters and collection recovery remain reachable disclosures. Selected
+lookup is disabled until a Pokémon is selected. Pack lookup places products before
+membership lists; saving remains directly available while naming, references and
+history are secondary. Unknown contents, documented-count meaning, stock check
+dates, shipping uncertainty and refusal to recommend remain beside the results.
+Stored values, forms, calculations, permissions and saved snapshot contracts stay
+unchanged. Initial collection failure now offers Reload collection.
+
+Matched current dirty-source previews use actual templates/JavaScript with wholly
+synthetic intercepted responses: 1280×900 and 390×844, populated, empty, error,
+initial loading shell, saved, missing products and unverified contents. On phone,
+first species row moved from y=1196 to 776; first product from y=3191 to 820;
+Save lookup from y=822 to 592. Keyboard selection, dialog focus return, disclosures,
+44px buttons, no horizontal overflow and 200% desktop text scale pass. The eBay
+regression covers 12 synthetic states; its pre-existing reveal focus-return gap
+remains a separate follow-up. The initial loading shell is not a delayed runtime
+qualification. Backend checks: 61 focused tests passed after restoring retained
+saved-result labels; JavaScript syntax, harness Ruff and diff whitespace pass.
+
+Evidence: [matched previews and measurements](../../evidence/collecting-clarity-20261006/),
+[repeatable harness](../../scripts/verify_collecting_clarity.py).
+Source-only; installed beta, owner data and owner acceptance remain separate.
+
+
 Updated: September 27, 2026. **B0 migration, B1 local authentication and B2 collection workflows are implemented; B3 local photo entry is implemented; B4 local catalog onboarding is implemented; hosted workflows remain target design. Actual owner provisioning remains pending.**
 
 [B2 implementation and verification](2026-09-28-B2_IMPLEMENTATION.md) records the shipped local slice and its limitations.

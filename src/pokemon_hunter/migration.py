@@ -34,7 +34,10 @@ def vintage_progress(cards):
     species = {
         c["pokemon_dex"]
         for c in cards.values()
-        if c.get("owned") and c.get("dex_eligible") and c.get("pokemon_dex")
+        if c.get("owned")
+        and c.get("dex_eligible")
+        and type(c.get("pokemon_dex")) is int
+        and 1 <= c["pokemon_dex"] <= 251
     }
     return {
         "kanto": sum(1 <= n <= 151 for n in species),

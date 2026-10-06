@@ -37,20 +37,66 @@ def set_id(package):
     return found[0]["internal_id"] if found else stable_id("set", "pokemon:" + key)
 
 
-def printing(package, card, sid):
-    found = store.rows(
-        "SELECT internal_id FROM external_mappings WHERE provider='legacy' AND entity_kind='printing' AND external_id IN (%s,%s)",
-        [card["legacy_id"] + ":unresolved", card["legacy_id"] + ":first_edition"],
-    )
-    candidates = store.rows(
-        "SELECT * FROM printings WHERE set_id=%s AND collector_number=%s", [sid, card["number"]]
-    )
+def identity_rows(package, sid):
+    """Fresh package-local legacy evidence, including mappings outside this set."""
+    existing = {r["id"]: r for r in store.rows("SELECT * FROM printings WHERE set_id=%s", [sid])}
+    numbers = {}
+    for row in existing.values():
+        numbers.setdefault(row["collector_number"], []).append(row)
+    mappings = {}
+    for offset in range(0, len(package["cards"]), 250):
+        keys = [
+            c["legacy_id"] + suffix
+            for c in package["cards"][offset : offset + 250]
+            for suffix in (":unresolved", ":first_edition")
+        ]
+        placeholders = ",".join(["%s"] * len(keys))
+        for row in store.rows(
+            "SELECT external_id,internal_id FROM external_mappings "
+            "WHERE provider='legacy' AND entity_kind='printing' "
+            f"AND external_id IN ({placeholders})",
+            keys,
+        ):
+            mappings.setdefault(row["external_id"], []).append(row)
+    mapped_ids = sorted({r["internal_id"] for rows in mappings.values() for r in rows})
+    for offset in range(0, len(mapped_ids), 500):
+        ids = mapped_ids[offset : offset + 500]
+        placeholders = ",".join(["%s"] * len(ids))
+        existing.update(
+            (r["id"], r) for r in store.rows(f"SELECT * FROM printings WHERE id IN ({placeholders})", ids)
+        )
+    return mappings, existing, numbers
+
+
+def printing(package, card, sid, evidence=None):
+    if evidence is None:
+        found = store.rows(
+            "SELECT internal_id FROM external_mappings WHERE provider='legacy' AND entity_kind='printing' AND external_id IN (%s,%s)",
+            [card["legacy_id"] + ":unresolved", card["legacy_id"] + ":first_edition"],
+        )
+        candidates = store.rows(
+            "SELECT * FROM printings WHERE set_id=%s AND collector_number=%s", [sid, card["number"]]
+        )
+    else:
+        mappings, existing, numbers = evidence
+        found = [
+            row
+            for suffix in (":unresolved", ":first_edition")
+            for row in mappings.get(card["legacy_id"] + suffix, [])
+        ]
+        candidates = numbers.get(card["number"], [])
     ids = {r["internal_id"] for r in found} | {r["id"] for r in candidates}
     if len(ids) > 1:
         raise ValueError("Ambiguous printing variants; explicit additional review required")
     if ids:
         pid = next(iter(ids))
-        old = store.rows("SELECT * FROM printings WHERE id=%s", [pid])
+        old = (
+            store.rows("SELECT * FROM printings WHERE id=%s", [pid])
+            if evidence is None
+            else [existing[pid]]
+            if pid in existing
+            else []
+        )
         if (
             not old
             or old[0]["set_id"] != sid

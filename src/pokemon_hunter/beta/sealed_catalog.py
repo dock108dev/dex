@@ -1,4 +1,4 @@
-"""E1 public metadata, immutable source observations and owner-reviewed publication.
+"""Public catalog metadata, immutable source observations and owner-reviewed publication.
 
 Reviewed bridges publish compatible collection metadata in the same transaction.
 Copies and frozen goals remain untouched. Descriptive corrections retain before/after
@@ -8,7 +8,7 @@ meaning and sources; identity changes require distinct records and mapping revie
 import json
 import re
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import Literal
 
 from django.db import connection
@@ -16,9 +16,9 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from pokemon_hunter.migration import encode
 
+from . import canonical_species, store
 from . import catalog_imports as cat
 from . import collection as inv
-from . import store
 from . import transactions as transaction
 
 
@@ -47,6 +47,7 @@ class Source(Model):
             "species-identity",
             "printing-identity",
             "booster-membership",
+            "distribution-membership",
             "product-identity",
             "product-contents",
             "offer-observation",
@@ -101,6 +102,16 @@ class Membership(Record):
     status: Literal["booster", "promo", "deck-only", "unknown"]
 
 
+class IncludedCard(Model):
+    """Documented inclusion with unresolved exact printing; never target coverage."""
+
+    name: str = Field(min_length=1)
+    quantity: int = Field(ge=1)
+    canonical_dex: int | None = Field(default=None, ge=1)
+    exact_printing: Literal["unresolved"]
+    sources: list[str] = Field(min_length=1)
+
+
 class Product(Record):
     name: str
     sku: str | None
@@ -109,8 +120,9 @@ class Product(Record):
     language: str
     product_type: str
     contents: Literal["complete", "mixed-known", "unknown"]
-    total_packs: int | None = Field(ge=1)
+    total_packs: int | None = Field(ge=0)
     guaranteed_cards_known: bool
+    included_cards: list[IncludedCard] = Field(default_factory=list)
 
 
 class Pack(Record):
@@ -139,13 +151,18 @@ class Offer(Record):
 
 class Observation(Record):
     offer_id: str
-    checked_at: str
+    checked_at: str | None
     stock: Literal["in-stock", "out-of-stock", "preorder", "unknown"]
     price_minor: int | None = Field(ge=0)
     shipping_minor: int | None = Field(ge=0)
     note: str
 
-    _dated = field_validator("checked_at")(Source.dated.__func__)
+    @field_validator("checked_at")
+    @classmethod
+    def observation_time(cls, value):
+        if value is not None:
+            instant(value)
+        return value
 
 
 class Mapping(Model):
@@ -273,6 +290,10 @@ def records(published=True):
 
 def validate(raw, existing=None):
     p = Package.model_validate(raw).model_dump()
+    # Keep old product records and correction hashes byte-compatible.
+    for product in p["products"]:
+        if not product["included_cards"]:
+            product.pop("included_cards")
     # Keep legacy package fingerprints stable when optional features are unused.
     if not p["corrections"]:
         p.pop("corrections")
@@ -282,8 +303,16 @@ def validate(raw, existing=None):
         "species": {"name", "sources"},
         "expansions": {"name", "sources"},
         "printings": {"name", "rarity", "sources"},
-        "products": {"name", "contents", "total_packs", "guaranteed_cards_known", "sources"},
+        "products": {
+            "name",
+            "contents",
+            "total_packs",
+            "guaranteed_cards_known",
+            "included_cards",
+            "sources",
+        },
         "packs": {"quantity", "sources"},
+        "memberships": {"status", "sources"},
         "coverage": {"gaps", "sources"},
     }
     corrections = {}
@@ -295,7 +324,7 @@ def validate(raw, existing=None):
         new = next((r for r in p[c["kind"]] if r["id"] == c["id"]), None)
         if not old or not new or cat.fingerprint(old) != c["before_sha256"]:
             raise inv.Conflict("Stale correction or missing published identity")
-        changed = {k for k in old if old[k] != new[k]}
+        changed = {k for k in old.keys() | new.keys() if old.get(k) != new.get(k)}
         if not changed or not changed <= allowed[c["kind"]]:
             raise ValueError(
                 "Canonical identity conflict; requires new record/version and explicit mapping review"
@@ -319,21 +348,37 @@ def validate(raw, existing=None):
         except KeyError as e:
             raise ValueError("Broken reference: " + kind + ":" + key) from e
 
-    def authority(row, required):
-        purpose = {
-            "official-species": "species-identity",
-            "official-card": "booster-membership",
-            "official-product": "product-contents",
-            "retailer": "offer-observation",
-        }[required]
+    def authority(row, required, purpose_override=None, correction_kind=None):
+        purpose = (
+            purpose_override
+            or {
+                "official-species": "species-identity",
+                "official-card": "booster-membership",
+                "official-product": "product-contents",
+                "retailer": "offer-observation",
+            }[required]
+        )
+        source_ids = row["sources"]
+        claims = {
+            "memberships": {"status"},
+            "packs": {"quantity"},
+            "products": {"contents", "total_packs", "guaranteed_cards_known", "included_cards"},
+        }
+        if (correction_kind, row["id"]) in corrections:
+            old = existing[correction_kind][row["id"]]
+            if any(row.get(field) != old.get(field) for field in claims.get(correction_kind, set())):
+                source_ids = list(set(source_ids) - set(old["sources"]))
         return any(
             (source := ref("sources", s))["authority"] == required
             and source["status"] == "usable"
             and row["id"] in source["subjects"]
-            and purpose in source["supports"]
+            and (
+                purpose in source["supports"]
+                or (required == "official-card" and "distribution-membership" in source["supports"])
+            )
             and (row.get("language") is None or source["language"] == row["language"])
             and (row.get("market") is None or source["market"] == row["market"])
-            for s in row["sources"]
+            for s in source_ids
         )
 
     for kind in KINDS[1:]:
@@ -346,6 +391,7 @@ def validate(raw, existing=None):
                 if row[field] is not None:
                     ref(target, row[field])
     for row in p["species"]:
+        canonical_species.require(row["dex"])
         if row["id"] != f"ndex:{row['dex']:04}" or not authority(row, "official-species"):
             raise ValueError("Canonical species requires National Dex identity and official evidence")
     if len({r["dex"] for r in all_records["species"].values()}) != len(all_records["species"]):
@@ -364,12 +410,19 @@ def validate(raw, existing=None):
         expansion = ref("expansions", row["expansion_id"])
         if printing["expansion_id"] != row["expansion_id"]:
             raise ValueError("Membership expansion mismatch")
-        if row["status"] == "booster" and (
+        if row["status"] != "unknown" and (
             expansion["medium"] != "physical"
-            or not authority({**row, "language": printing["language"]}, "official-card")
+            or not authority(
+                {**row, "language": printing["language"]},
+                "official-card",
+                correction_kind="memberships",
+                purpose_override="distribution-membership"
+                if row["status"] in {"promo", "deck-only"}
+                else None,
+            )
         ):
             raise ValueError(
-                "Booster membership requires usable official card evidence and a physical expansion"
+                "Known distribution requires usable official card evidence and a physical expansion"
             )
     member_keys = [(r["printing_id"], r["expansion_id"]) for r in all_records["memberships"].values()]
     if len(member_keys) != len(set(member_keys)):
@@ -381,7 +434,9 @@ def validate(raw, existing=None):
             if ex["language"] != product["language"] or ex["medium"] != "physical":
                 raise ValueError("Product pack language/medium mismatch")
         if row["quantity"] is not None and not authority(
-            {**row, "language": product["language"], "market": product["market"]}, "official-product"
+            {**row, "language": product["language"], "market": product["market"]},
+            "official-product",
+            correction_kind="packs",
         ):
             raise ValueError("Known pack quantities require usable official contents evidence")
     for row in p["guaranteed"]:
@@ -394,6 +449,14 @@ def validate(raw, existing=None):
             != ref("products", row["product_id"])["language"]
         ):
             raise ValueError("Guaranteed card requires official product evidence and matching language")
+    for row in p["products"]:
+        for card in row.get("included_cards", []):
+            if card["canonical_dex"] is not None:
+                canonical_species.require(card["canonical_dex"])
+            if len(card["sources"]) != len(set(card["sources"])) or not authority(
+                dict(row, sources=card["sources"]), "official-product"
+            ):
+                raise ValueError("Included card requires exact official product applicability")
     product_keys = set()
     for row in all_records["products"].values():
         if row["sku"] is not None:
@@ -402,15 +465,17 @@ def validate(raw, existing=None):
                 raise ValueError("Repeated product version")
             product_keys.add(key)
         packs = [x for x in all_records["packs"].values() if x["product_id"] == row["id"]]
-        if row["total_packs"] is not None and not authority(row, "official-product"):
+        if row["total_packs"] is not None and not authority(
+            row, "official-product", correction_kind="products"
+        ):
             raise ValueError("Product totals require official contents evidence")
         if row["contents"] != "unknown":
             if (
-                not packs
+                (not packs and row["total_packs"] != 0)
                 or any(x["quantity"] is None or x["expansion_id"] is None for x in packs)
                 or row["total_packs"] != sum(x["quantity"] for x in packs)
                 or not row["guaranteed_cards_known"]
-                or not authority(row, "official-product")
+                or not authority(row, "official-product", correction_kind="products")
             ):
                 raise ValueError(
                     "Known contents require complete, official pack counts and guaranteed-card review"
@@ -424,14 +489,18 @@ def validate(raw, existing=None):
         offer = ref("offers", row["offer_id"])
         if not any(s["authority"] == "retailer" and s["market"] == offer["market"] for s in applicable):
             raise ValueError("Observation requires applicable retailer provenance")
-        if any(instant(row["checked_at"]) > instant(s["retrieved_at"]) for s in applicable):
+        if row["checked_at"] is not None and any(
+            instant(row["checked_at"]) > instant(s["retrieved_at"]) for s in applicable
+        ):
             raise ValueError("Observation time cannot follow retained evidence retrieval")
         if (
             row["stock"] != "unknown" or row["price_minor"] is not None or row["shipping_minor"] is not None
         ) and not authority({**row, "market": offer["market"]}, "retailer"):
             raise ValueError("Known stock/price requires usable retailer evidence")
     observation_keys = [
-        (r["offer_id"], instant(r["checked_at"])) for r in all_records["observations"].values()
+        (r["offer_id"], instant(r["checked_at"]))
+        for r in all_records["observations"].values()
+        if r["checked_at"] is not None
     ]
     if len(observation_keys) != len(set(observation_keys)):
         raise ValueError("Conflicting dated observation")
@@ -453,6 +522,10 @@ def validate(raw, existing=None):
         if key in mapping_keys:
             raise ValueError("Repeated external mapping")
         mapping_keys.add(key)
+    from . import sealed_bridge
+
+    for bridge in p.get("bridges", []):
+        sealed_bridge.validate(p, bridge)
     return p
 
 
@@ -526,6 +599,9 @@ def preview(actor, raw):
     cat.admin(actor)
     lock()
     p = Package.model_validate(raw).model_dump()
+    for product in p["products"]:
+        if not product["included_cards"]:
+            product.pop("included_cards")
     for optional in ("corrections", "bridges"):
         if not p[optional]:
             p.pop(optional)
@@ -633,6 +709,8 @@ def transition(actor, key, action):
 
 @transaction.atomic
 def report(actor, now=None):
+    from . import offer_filters
+
     cat.admin(actor)
     lock()
     now = now or datetime.now(timezone.utc)
@@ -652,11 +730,12 @@ def report(actor, now=None):
     latest = {}
     for row in current["observations"].values():
         key = row["offer_id"]
-        if key not in latest or instant(row["checked_at"]) > instant(latest[key]["checked_at"]):
+        if key not in latest or offer_filters.observation_key(row) < offer_filters.observation_key(
+            latest[key]
+        ):
             latest[key] = row
     for row in current["observations"].values():
-        age = now - instant(row["checked_at"])
-        fresh = timedelta(0) <= age <= timedelta(hours=24)
+        fresh = offer_filters.age(row["checked_at"], now) == "fresh"
         offer = current["offers"][row["offer_id"]]
         observations.append(
             {
@@ -665,10 +744,9 @@ def report(actor, now=None):
                 "availability": "stale" if not fresh else row["stock"],
                 "latest": latest[row["offer_id"]]["id"] == row["id"],
                 "buy_now": latest[row["offer_id"]]["id"] == row["id"]
-                and fresh
-                and row["stock"] == "in-stock"
-                and row["price_minor"] is not None
-                and offer["seller_kind"] != "unknown",
+                and offer_filters.eligibility(
+                    offer, row, current["products"][offer["product_id"]], current["sources"], now
+                )["purchase_ready"],
             }
         )
     return {

@@ -39,7 +39,7 @@ def special(e1, version="special-v1", extra=False):
         ("Erika's Bulbasaur", 1, "Pokémon"),
         ("Alolan Vulpix", 37, "Pokémon"),
         ("Bulbasaur ex V GX", 1, "Pokémon"),
-        ("Trainer cameo", 1, "Trainer"),
+        ("Trainer cameo", None, "Trainer"),
         ("Energy", None, "Energy"),
         ("Unresolved species", None, "Pokémon"),
         ("Ivysaur", 2, "Pokémon"),

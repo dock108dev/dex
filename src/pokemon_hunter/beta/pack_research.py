@@ -3,14 +3,14 @@
 import hashlib
 import json
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 from django.db import connection
 from django.http import Http404
 
 from pokemon_hunter.migration import encode
 
-from . import collection, packs, sealed_catalog, store, transactions
+from . import collection, offer_filters, packs, sealed_catalog, store, transactions
 
 
 def initialize(db=None):
@@ -83,15 +83,22 @@ def references(context, records):
 
 
 @transactions.atomic
-def save(actor, goal, species="", expansion="", research_name="", goal_version=""):
+def save(actor, goal, species="", expansion="", research_name="", goal_version="", filters=None):
     actor = store.verified(actor)
-    context = packs.project(actor, goal, species, expansion)
+    context = packs.project(actor, goal, species, expansion, filters=filters)
     if not context["supported"] or goal_version != context["goal"]["version"]:
         raise ValueError("Select an exact supported frozen goal version")
     if species and species not in {str(i["pokemon_dex"]) for i in context.get("missing", [])}:
         raise ValueError("Species must belong to the selected missing scope")
     if expansion and expansion not in {g["expansion"]["id"] for g in context.get("options", [])}:
         raise ValueError("Expansion must belong to the selected research")
+    return store_context(actor, context, research_name)
+
+
+def store_context(actor, context, research_name=""):
+    store.verified(actor)
+    goal = context["goal"]["id"]
+    species = context.get("species", "")
     # Options are navigation metadata, not a second broader result snapshot.
     context["options"] = [dict(expansion=g["expansion"]) for g in context.get("options", [])]
     default = f"{context['goal']['name']} · v{context['goal']['definition']['lineage']['number']}"
@@ -138,7 +145,7 @@ def reopen(actor, key, now=None):
     goals = store.rows(
         "SELECT * FROM collection_goals WHERE id=%s AND user_id=%s", [row["goal_id"], actor.user_id]
     )
-    if not goals or goals[0]["version"] != context["goal"]["version"]:
+    if not context.get("lookup") and (not goals or goals[0]["version"] != context["goal"]["version"]):
         context["reference_gaps"].append(
             "Selected frozen goal is missing or changed; saved version retained."
         )
@@ -150,13 +157,9 @@ def reopen(actor, key, now=None):
             )
     # Time passes, but neither original observation dates nor stored context is rewritten.
     now = now or datetime.now(timezone.utc)
-    for group in context["expansions"]:
-        for product in group["products"]:
-            for offer in product["offers"]:
-                for observation in offer["observations"]:
-                    age = now - sealed_catalog.instant(observation["checked_at"])
-                    observation["fresh"] = timedelta(0) <= age <= timedelta(hours=24)
-    return context
+    return offer_filters.apply(
+        context, context.get("offer_filters"), payload["references"].get("sources", {}), now, frozen=True
+    )
 
 
 @transactions.atomic

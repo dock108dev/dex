@@ -1,0 +1,50 @@
+M10 — Backed-up owner installation of reviewed M8 loading repair and ready D9 data
+
+Dispatch this assignment separately. M9 prepared this prompt but did not authorize or perform installation. When the owner dispatches M10, complete the exact-candidate review, full private backup/restoration, fresh actual-owner-copy rehearsal, compatible owner update and actual browser qualification. No generic reconfirmation is needed within this dispatched scope.
+
+Work in /Users/michaelfuscoletti/Desktop/dex. Git baseline remains 16766b5c160c0bac370c1177387662646bf51b42 with inherited working-tree changes. Preserve all inherited work, historical manifests, source/tracker archives and private recovery evidence.
+
+Read docs/M9_CANDIDATE_REVIEW.md, docs/history/2026-10-06-M9-VALIDATION.md, docs/M8_LOADING_REPAIR.md, docs/M7_OWNER_UPDATE.md, docs/D9_DATA_COLLECTION.md, docs/PM_STATUS.md, docs/ROADMAP.md and /Users/michaelfuscoletti/Desktop/dex_next_steps.md. Review sanitized and private M9 receipts as needed without exposing credentials or full owner records.
+
+Verify evidence/m9-20261006/candidate.json against its adjacent candidate.sha256 and every listed file. Its reviewed antecedent is evidence/m8-resume-20261006/candidate.json, SHA-256 b112f0d8c3b1148839e46664d9b90c6ce943e8ee723435510e17e5805622bc38, with 2,448 files verified during M9. Reconcile only explained subsequent documentation additions/changes; stop on unexplained application, package, source or recovery-evidence drift. Do not overwrite historical candidates.
+
+Exact application scope is the reviewed M8 repair in:
+- src/pokemon_hunter/beta/catalog_imports.py — 134dd5c5b1aa922ae6c2ab303e5ad9f6ef03e6141df5d20b355e487dade419fc
+- src/pokemon_hunter/beta/catalog_reconcile.py — 674eb4e74c5f75007b7a91324b44906ee3338d205aa6dd0962c04cd4bab1e5d8
+
+The owner currently runs the prior M7 behavior; establish its actual loaded source/runtime identity before changing it. Preserve current configuration and supported startup/security guards. No further repair is authorized. Install the reviewed repair only, retaining call-local reads, account isolation, nullable identities, provenance/ambiguity and conflict guards.
+
+Ready D9 order and exact file SHA-256:
+1. config/sealed/d9-20261006/catalog-package.json — 7b805602a91dc5130e06eb49fd1384d2652fe8d6566ac679b263fd8efbecb783
+2. config/catalog-pipeline/d9-20261006/batch.json — 834215418ce8412098291e65de037d980bcb89b1d31a5d70cdecd5dce94dfa16
+
+Inspect all 13 completed prerequisites by exact normalized package and journal identity using M9 publication-inspection.json. Reuse matching completed operations; preview/publish only compatible missing D9 deltas through supported services. Do not replay predecessors, substitute journal IDs from another root, copy an expanded test database over owner state, or suppress identity differences. D9 adds 20 sets, 871 numbered targets and 1,468 records. Expected expanded application coverage is 68/220 assessed sets, 3,975 numbered targets and 6,535 records, from prior 48/220, 3,104/5,067 if D9 is not already installed. Preserve source, variant and distribution uncertainties.
+
+Owner root: /Users/michaelfuscoletti/dex-private/b2-parity-20260928/review-local
+Owner runtime: port 8011. Determine its current process identity; do not assume an old PID. Preserve all user-visible tabs and saved context. Use a dedicated hidden agent tab for qualification.
+
+Before owner writes or restart, create a complete consistent private backup and independently verify restoration into a separate root. Include all 57 tables, schema, files/photos, opaque authentication/configuration/credentials, journal history, declaration sources, marks, copies, goals, hunts and saved research. Do not read/reset credentials, change permissions, fabricate sessions or reseed owner data. Retain all-table/file baseline hashes. Bind a supported rollback/recovery plan to this exact fresh backup and runtime/source identity before installation.
+
+Protected semantic baseline:
+- 207 physical copies and 286 supplied marks.
+- 137/151 Kanto, 24/100 Johto, 161/251 total; 14 Kanto and 90 total missing.
+- Exact ownership declarations/source identities.
+- Both original frozen version-1 goals, definitions and membership; new printings do not enter them.
+- All four saved research snapshots, hashes, references and original times, including 8d2b8956-3e96-4fb1-a246-b63b2faa9a06.
+- Credentials, permissions, authentication, configuration and photos.
+
+On a fresh private actual-owner-state copy, inspect prerequisites, apply the exact reviewed source and compatible D9 deltas through supported publication services. Verify idempotency and protected-state preservation; demonstrate supported checkpoint→sealed reversal separately from independent full-root restoration, then qualify a fresh expanded boundary. Inherited M8/M9 test/publication evidence remains labeled inherited; run extra regressions only for a concrete concern. Do not repeat profiles or combined lookup benchmarking without a demonstrated discrepancy.
+
+Start acquisition-disabled copied runtime on port 8016 using a separately backed-up profile-root. Check readiness without initial-data requests. Use existing ordinary authentication only. If unavailable, stop for the owner personally signing into the copy; never inspect credentials or synthesize sessions.
+
+For each qualification boundary (fresh expanded owner copy, then actual installed owner runtime), allow at most two fresh initial Pokédex navigations total, counting failures/invalid attempts. Start an external monotonic clock before explicit navigation to the appropriate /pokedex/ URL in the dedicated hidden tab. Check route/authentication immediately; never reload an unchecked current tab. Include navigation, initial requests and observation overhead. Require all 251 species rows, 161 owned/90 missing, 137/151 Kanto, 24/100 Johto, both original version-1 goals and no loading state within the unchanged 21-second deadline. Report polling results as upper bounds. Preserve failed, invalid, cancelled and timed-out attempts; transport timeout alone is not server failure. Do not add fragile CI timing assertions.
+
+After copied qualification and exact preservation/source checks pass, perform the compatible owner update within the backed-up gate. Use a controlled restart so the running owner runtime loads the exact repaired source. Immediately qualify actual owner rendering and protected state. Account for supported publication/journal changes explicitly; inspect and preserve predecessor rows, all protected tables/files and frozen references. Do not claim all-table equality across authorized publication changes. All-table equality is required across read-only/restart boundaries against the freshly captured installed-state baseline.
+
+Keep TokenMTG's original 2026-10-06T16:20:21.204089+00:00 observation and unchanged inclusive 24-hour freshness policy. Evaluate actual age at execution without acquisition or refresh. Shipping, tax and destination remain unknown; purchase-ready offers remain zero. Keep Stellar 820650858550 and 820650878558 distinct. Crown Lucario #448 is descriptive, unresolved exact printing and outside beta target guarantees. Retained offer age can become stale; installation must not manufacture freshness.
+
+Stop at the first unexplained source/package/state drift, incompatible predecessor, semantic/preservation failure, unavailable authentication, wrong route, incomplete or >21-second render, or exhausted navigation budget. Do not repair or change thresholds. Retain exact evidence and prepare one bounded successor. If an installed-state gate fails, retain the failing state privately and use only the previously verified supported recovery plan; do not overwrite new owner activity or restore a synthetic/older test copy. Report the owner runtime's final state plainly.
+
+No fresh source/provider/product/offer acquisition, purchases, Production activation, PostgreSQL, hosting, catalog expansion, new goals or new saved research. Do not delete prior evidence. Close copied runtimes and agent tabs; keep the qualified owner runtime and user-requested visible tabs available.
+
+Closeout: dated exact-candidate/source/package review; full private backups/restoration/recovery and timing receipts; sanitized publication and protected-state findings; actual copied and owner browser results with evidence class; preserved failures; explicit installed/pass or held status; new frozen candidate and adjacent SHA-256. Update PM status, roadmap, dated history and dex_next_steps.md before preparing one bounded next handoff. Owner installation qualification is separate from broader beta/release, all-era completeness and current purchase readiness.

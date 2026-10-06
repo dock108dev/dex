@@ -1,0 +1,30 @@
+SUPERSEDED as the active assignment by docs/M1_LEAD_ENGINEER_PROMPT.txt after the October 5 scope/UI audit. The E2d ownership correction remains an M1 component. Retained narrow prompt follows for history.
+
+Implement E2d: collection-based Original 151 goals and Packs missingness.
+
+Workspace: /Users/michaelfuscoletti/Desktop/dex
+HEAD: 16766b5c160c0bac370c1177387662646bf51b42
+Entry handoff manifest: evidence/e2d-handoff-20261005/candidate.json and candidate.sha256. Verify every listed file before edits; preserve inherited changes and historical evidence. The verified photo-reconciled predecessor contains 966 files, manifest SHA-256 8d3395ed1494b67872809be9f13f7b94ec17802ac40746d3590e8f0e04d97c4d. Stop on unexplained baseline drift and report the exact differences.
+
+Read docs/PHOTO_RECONCILED_UPDATE.md, docs/BETA_REQUIREMENTS.md, docs/PM_STATUS.md, docs/ROADMAP.md and /Users/michaelfuscoletti/Desktop/dex_next_steps.md. Inspect ownership_declarations.py, broad_goals.py, packs.py, collection goal/import/export/versioning paths, saved Packs snapshots, and their UI/tests before choosing an implementation.
+
+Problem: Pokédex now correctly uses the replacement owner ledger, but Original 151 Goals and Packs still use resolved physical copies. A collector can see 137/151 owned yet receive a conflicting missing list. Deliver an explicit collection-based Original 151 goal using canonical species presence, including Dark, named and EX cards across eras. Retain the existing reviewed-copy policy and historical frozen goal versions.
+
+Authoritative input: outputs/my-have-dex-001-251-photo-reconciled.csv, SHA-256 511dec82f4434e1e90ae27ec634e85e546f7559d43cc61d4cabec310d4ccc1b2. It records 137 Kanto plus 24 Johto species, 286 set/card marks and 90 missing overall. outputs/missing-90-pokemon-all-listed-packs-and-rarities.csv is a supplied missing-species cross-check; its pack claims are not verified distribution evidence.
+
+Required behavior:
+- Offer a plainly named collection-based Original 151 goal, with source hash/revision and account ownership retained. Show species completion separately from exact printing resolution and catalog/product coverage. Canonical species presence counts without fabricating physical copies, edition, finish or quantity.
+- Creating this goal explicitly previews 137/151 owned and exactly 14 missing. Later ledger replacement uses a reviewed successor/source update; it must not silently rewrite an existing version or saved research. Explain the selected source in simple UI language.
+- Carry this goal's missingness through whole-goal and species Packs views, filters, save, restart/reopen and import/export. Declared-owned species stay owned even when catalog printing coverage is absent; unknown product coverage never becomes known membership or purchasability.
+- Preserve the exact reviewed catalog references and distribution evidence used for Packs. Source presence cannot generate booster/product membership. Keep old reviewed-copy goals, predecessor versions, classic eBay behavior, old saved research and account isolation working.
+- Preserve all supplied card names/numbers/rarities and notes; use Clefable Plasma Storm #98, Articuno-EX #25, Dark Vaporeon #45 and Dark Flareon #35 as representative cases.
+
+Acceptance:
+1. On fresh disposable synthetic state, import the supplied replacement through the supported workflow and create the new goal. Verify 137/151 and missing exactly: Venusaur, Pidgeotto, Pidgeot, Alakazam, Gengar, Hypno, Chansey, Kangaskhan, Mr. Mime, Scyther, Gyarados, Lapras, Jolteon, Moltres.
+2. Verify identical missingness in goal and Packs views, including species searches with catalog gaps. Qualify filtered save/reopen after restart, account isolation, a later source successor retaining its predecessor, and import/export validation rejecting tampered or cross-account source references.
+3. Qualify idempotency and rollback; preserve existing physical copies, goals, hunts, observations, photos, reservations and prior snapshots. Retain original immutable source bytes and provenance.
+4. Run relevant regression tests, full suite and required repository checks. Complete an ordinary synthetic browser walkthrough and retain screenshots. Local beta startup/browser verification is authorized; use localhost and disposable state. Stop on an actual runtime/tool denial and retain its evidence. Do not ask for routine localhost permission again.
+
+Boundaries: zero live acquisition/provider calls, purchases, bids, credential changes, hosting or owner-installation writes. Do not invent printings, membership, separate-person review, PostgreSQL execution or owner/beta acceptance. Do not rewrite the owner's installed goals as part of engineering. Existing source-attempt budgets remain closed. Unknown source/printing relationships remain unknown.
+
+Closeout: docs/E2D.md; dated validation record and sanitized evidence with reproduction instructions; exact final candidate manifest/SHA-256; update PM status, roadmap, history and Desktop tracker. Report what is implemented versus qualified, remaining data/provider gates and one bounded next task. Deliver the copied-state candidate for a subsequent owner application of the reviewed new goal.

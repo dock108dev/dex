@@ -101,6 +101,7 @@ def main():
         "scan-worker",
         "enable-catalog",
         "enable-pack-research",
+        "enable-replay-refresh",
     ):
         sub.add_parser(command)
     for command in ("invite", "recovery", "revoke"):
@@ -131,6 +132,13 @@ def main():
         call_command("migrate", verbosity=0)
         stage = "collection and hunts" if args.parity else "collection" if args.b2 else "accounts"
         print(f"Isolated {stage} database initialized. Provision an isolated account before inviting anyone.")
+    elif args.action == "enable-replay-refresh":
+        from . import refresh
+
+        if not refresh.enabled():
+            raise ValueError("Disposable synthetic state required")
+        refresh.initialize()
+        print("Additive replay refresh migration complete; live acquisition unavailable")
     elif args.action == "enable-pack-research":
         from .pack_research import initialize as migrate_research
 

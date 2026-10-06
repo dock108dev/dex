@@ -1,0 +1,47 @@
+# M5 — backed-up owner update
+
+October 6, 2026 (America/New_York). Installed-owner qualification and copied-owner qualification are recorded separately. The owner replied “Looks right” for the delivered ownership totals and Pokédex/Pack lookup flow. Shopping, broader beta acceptance, PostgreSQL, hosted execution and release remain open.
+
+The exact rehearsed update was committed and the owner app remains running at `http://127.0.0.1:8011/pokedex/`, with the actual signed-in browser left on its saved walkthrough. M5 delivery is complete; the owner replied “Looks right” for the delivered ownership totals and flow.
+
+## Entry identities and preservation
+
+HEAD was `16766b5c160c0bac370c1177387662646bf51b42`. M5 handoff SHA-256 `4c73b10d091c7b12edc1703be4c8fc312f36892d62734f517c44d87d26c5d05f` matched every one of 1,978 files. M4 application manifest `68ea8fb8ec2ac2563bcc5f6eaea85b41eba2d6823b6a43de622807da5c0adf12` and review manifest `b43d01e9779c8a32e02e79e087dbd6d9360e0dff7b68de09484580273517ee11` matched their supplied manifest bytes. Differences in their listed documentation were reconciled to the exact M5 handoff: PM status, roadmap, Desktop next steps and history index. No application/source drift or application repair occurred. All inherited uncommitted work and historical manifests were retained.
+
+The actual installed owner source matched `511dec82f4434e1e90ae27ec634e85e546f7559d43cc61d4cabec310d4ccc1b2`, with 137/151 Kanto, 24/100 Johto, 161/251 overall, 14/90 Kanto/overall missing and 286 supplied marks. The 207 physical copies, five immutable declarations and three saved hunts were the preservation baseline. No source was reimported to force these counts.
+
+## Copied-owner qualification
+
+Fresh complete private copies of the actual root preserved accounts, roles, auth configuration, photos/files and private rows. Supported additive migrations enabled sealed catalogs, batch journals and saved pack research; no seed or synthetic product/offer package was imported. Missing prerequisites were the exact real October 4 base and 151 packages, then D7's recorded order: retained M2, Gym Heroes correction, D6 sealed, D6 M2 checkpoint, D7 sealed catalog, D7 M2 checkpoint, D7 shopping, followed by M4 inclusion. Published journals were inspected and reused where matching; repeated confirmation did not replay corrections.
+
+Per-operation before/after hashes bind active catalog and sealed bytes, external mappings and normalized journal package identities. Independent copies generate different journal UUIDs; package hashes, exact existing mappings, record bytes and states are bound instead of pretending UUID equality. Services additionally enforce their own exact transaction baselines and correction before hashes. Original catalog/printing IDs and mappings remain present; frozen references and private copy attributes remain unchanged.
+
+Coverage reversal is read-only: historical 222 rows versus current 220 source sets, 205 physical/15 digital, retaining original source dates. M4 inclusion and D7 shopping → M2 → sealed catalog rollback passed. Immutable goal erasure correctly refused without changes. Complete restoration into another fresh root compared every database table and all protected file/photo bytes. No broad authentication exemptions were used.
+
+The first rehearsal's Espeon ownership assertion was wrong; the selected source marks Espeon missing and Umbreon owned. Only the operator assertion was corrected. A later trial incorrectly attempted immutable-goal undo; the supported refusal was retained and fresh qualification used full-copy restoration for the earlier goal state. The first installed attempt's operator check opened a second SQLite connection inside the migration transaction and failed with a database lock. The supported outer transaction rolled back every owner row. Failed/recovered state was retained; only the SQLite container hash changed, with logical rows and protected files identical. The operator snapshot was corrected to use its transaction connection and the exact outer transaction was qualified on a fresh owner copy before rebinding the application gates. Reviewed application bytes were unchanged.
+
+## Backups and recovery
+
+Private backup/application/rollback receipts are under `/Users/michaelfuscoletti/dex-private/m5-20261006T154525Z/`. `backup-root` contains the transaction-consistent SQLite backup plus complete files/configuration; `inventory-original-bytes.db` retains original container bytes. `restore-root` qualifies complete restoration. Separate immediate pre-application backups and failed-attempt roots remain retained. The private `.env` copy is preserved separately; no credential values or complete owner rows are public.
+
+`ROLLBACK.md` gives supported operation order and complete-root recovery instructions. Never restore a stale full backup over later legitimate edits; compare fresh application/verification state first, preserve current state and stop on conflicts. Frozen goals require an explicit supported successor or appropriately gated complete-root recovery, not direct-table deletion.
+
+## Checks and remaining gates
+
+45 focused tests passed in 27.07s across M4, collection goals, M1 workflow, catalog pipeline and sealed catalog. New operator scripts passed lint/format/compilation and whitespace checks. Historical 569-test M4 evidence remains historical; no new full-suite or PostgreSQL result is claimed. No acquisition, credentials changes, Production eBay activation, purchases/bids or hosting occurred. Current eligible recommendations remain zero; retained seller price/time is not stock/shipping proof.
+
+## Installed outcome and actual browser proof
+
+The confirmed original owner service was launched before M4 on October 5; its in-memory source revision was not asserted from current disk bytes. It was restarted from the reviewed M4 application bytes with existing private configuration and runtime provider guards at the same loopback endpoint. The successful application used the corrected, freshly copied-owner-qualified operator inside a supported outer transaction. Every per-operation rehearsed before/after gate matched. Existing package/source bytes were unchanged. Actual installed catalogs changed from 11 sets/991 printings to 29 sets/3,603 printings; these raw installed row totals are distinct from the 1,955 target identities/3,102 supplied variants in the coverage projection. All 207 physical copies and original mappings/identities were preserved.
+
+The two plainly named collection-source goals were created through supported previews/confirmation: Original 151 (137/151) and Original 251 (161/251). No historical goal was converted. A service-prepared walkthrough was qualified on a copy and saved locally; the actual signed-in browser then created a distinct `M5 signed-in walkthrough — Vaporeon, Scyther and Johto`. Both are retained. All prior hunts/saves remain intact.
+
+Authentication had expired, so the app was left at login and the owner signed in personally. No passwords were read, revealed or reset, and no session was fabricated. The final preservation comparison permits only `auth_user.last_login`, one additional actual-owner session and one appended actual-owner login record; all other auth/account bytes and earlier session/log rows are retained. No broad authentication or private-file exclusion applies.
+
+Actual signed-in browser evidence confirms 161/251 overall, Kanto 137/151 and Johto 24/100; Original 151's 14 missing filter; Original 251's 76 missing Johto filter; owned Vaporeon, missing Scyther and Johto scope; exact Dark Vaporeon #45 metadata with physical-copy uncertainty; mixed owned/missing Pack lookup; 220-set coverage and original `2026-10-06T03:14:11.641494+00:00` source time; separate Stellar UPCs 820650858550/820650878558 with six documented Target packs versus unresolved Best Buy contents; Crown's Lucario #448 descriptive inclusion with zero qualifying guarantees; CARD DOG TCG USD105 with unknown stock/shipping/tax and its original `2026-10-06T03:54:46.844Z` observation. Sandbox eBay loaded without a search. No eligible recommendation/buy-now was established.
+
+The service was restarted after the browser save. The same owner session reopened the same save, with identical frozen snapshot bytes, four-species context, goal/source versions and original observation dates. Every database row matched the immediate pre-restart snapshot. All protected files/photo bytes matched the original baseline; acquisition guards report zero blocked invocations and zero external requests across the owner starts. The final guarded service is intentionally left running, and the browser tab remains open on the saved walkthrough.
+
+Sanitized screenshots and coverage excerpt: `evidence/m5-20261006/browser/`. Complete private DOM captures, table/file comparisons, source/package identities, operation IDs, backups, application and recovery receipts remain under the private M5 root. Sanitized validation binds those receipt hashes without copying credentials or complete owner rows. The final candidate and adjacent SHA-256 are `evidence/m5-20261006/candidate.json` and `candidate.sha256`; original M4/review/handoff manifests remain immutable.
+
+A final whole-plan repeat on previously published complete owner-copy state reused all ten journals and both matching goals. Every operation had identical before/after catalog hashes, all table counts matched and all protected rows/files remained identical; no source correction was replayed.

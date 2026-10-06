@@ -1,10 +1,8 @@
 # Local development
 
-The expanded beta requires [data collection and engineering](BETA_REQUIREMENTS.md).
-Start the D1 source/universe assessment and E1 schema/import slice in the Desktop
-`dex_next_steps.md` handoff. Use disposable roots and copied state; do not seed or
-rehearse migrations on the owner installation. Retain real data provenance even
-when functional checks use synthetic fixtures.
+Use the README's synthetic demo for a new checkout. Existing installations keep
+their private root and are launched without reseeding. Source updates require a
+server restart; the app does not automatically replace an installed build.
 
 Run commands from the repository root with Python >=3.12 and uv. CI tests Python
 3.12 and 3.14 on Ubuntu; the current local product target is macOS.
@@ -82,7 +80,7 @@ and select focused pytest files for the component you change.
 `tests/test_b1.py` covers accounts, `test_b2.py` collection transactions,
 `test_b2_parity.py` projections/hunts, `test_b3.py` photo jobs,
 `test_codex_recognition.py` fake CLI processes, and `test_ssot.py` shared policy/routes.
-Historical names remain stable to avoid breaking commands and fixtures.
+Test filenames are stable command targets; their numeric prefixes do not represent setup steps.
 
 Browser scripts under `scripts/verify_*` are optional developer harnesses with
 additional Playwright requirements. Read each script's entry-point instructions;
@@ -104,28 +102,33 @@ provider access, real-device behavior or recognition accuracy.
 
 `verify_search_clarity.py` intercepts all requests in the actual beta shell for
 configured/disabled, failed/empty/populated searches and long saved history.
-It records source hashes with captures. Both presentation harnesses support desktop
+It records source hashes with captures. The presentation harnesses support desktop
 and narrow viewports; consult their help before creating disposable output.
 
 `scripts/init_local.py` provides an import-safe `initialize(root)` entry point.
 Missing examples fail before creating destinations. Existing files are never
-replaced; new local files use mode 0600. Git excludes private state, evidence and
-media. Public catalog inputs, examples, synthetic fixtures and runtime assets are
+replaced; new local files use mode 0600. Git excludes private state, evidence,
+personal exports under `outputs/`, and media. Public catalog inputs, examples, synthetic fixtures and runtime assets are
 tracked. Add public authored media through a path-specific ignore exception.
 
 
-## E2a runtime qualification — October 4
+## Maintenance and retained inputs
 
-E2a runtime qualification now passes: locked synchronization, all three process
-cleanup cases and the full suite (458 passed, one existing warning), plus compilation,
-JavaScript syntax, lint and formatting. Fresh copied-state preservation and zero-call
-frozen-hunt service assertions pass. E2a remains partial: renewed explicit browser
-permission was requested and is pending; no server, navigation, UI captures or owner
-acceptance occurred. [Qualification record](history/2026-10-04-E2A-QUALIFICATION.md)
-retains commands, runtime, exact hashes and preservation evidence. Full E2 and beta
-remain open.
+The CI guide owns validation commands; this guide owns local setup. The README
+links both rather than repeating milestone status. Historical qualification
+results and environment restrictions live in [verification history](history/README.md),
+not current startup instructions.
 
+`canonical_species.registry` reads the hash-pinned public sealed package under
+`config/sealed/2026-10-04/`. A demo does not need a private `species.json` sidecar.
+Keep reviewed config packages and synthetic test fixtures available in a fresh
+checkout. Coverage-profile inputs are explained in [CI](CI.md#portable-test-and-runtime-inputs).
+Generated export CSVs in `outputs/` are private local artifacts, not runtime or
+ordinary-test inputs; retain them locally. Existing media ignores require explicit
+path exceptions for authored public assets. Do not remove config packages, replay
+fixtures, source tools or historical documents simply because they are large.
 
-E3a retained-data pack discovery: see [setup and remaining browser qualification](E3A.md).
-Only use fresh synthetic/copy roots. The current execution sandbox denies loopback
-bind and process inspection; do not substitute an owner root or weaken security.
+`verify_collecting_clarity.py` captures the current dirty source before editing,
+then compares actual templates and scripts with intercepted synthetic responses.
+Its baseline differs from `verify_ui_cleanup.py`, which reads HEAD. Both preserve
+source identities and write local-only evidence; neither verifies live providers or a deployed installation.

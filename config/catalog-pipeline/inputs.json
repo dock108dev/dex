@@ -1,0 +1,23 @@
+{
+  "evidence_class": "retained normalized metadata; source hashes/time remain inherited",
+  "files": {
+    "config/sealed/2026-10-04/universe.json": "99db2a48e4b806664defbd8671a7b79b2eac60c342f43e3a9fe705e8095f849d",
+    "config/sealed/2026-10-04/source-index.json": "82e003010ee60307437a5bf70640c998804abf69d7423a2420f1be2c0de63334",
+    "config/catalog-imports/staging-ten/source-manifest.json": "a7e0a8e1feaa5ba389853d8d45560584210d359d020d9880c2644512d6452aac",
+    "config/sealed/2026-10-04-151/package.json": "250d0c61aea496d0854c831f62edb1030e1cd3acf91db59d239185528401a45f",
+    "config/sealed/2026-10-05-det1-e1c/package.json": "08495fb8db5cb7f08feaf84923253e49202937cce55b8f1adfb9526d36a44155",
+    "config/catalog-imports/gym-heroes.json": "1ba6fb72505864535fd49a8392020708d8f8c18081428eea0110e62ff656047b",
+    "config/catalog-imports/staging-ten/neo_genesis.json": "4d4190df5ca1985b516b7030299aae01f26225a99027cfb14a63e0fee9189cf8",
+    "config/catalog-imports/staging-ten/neo_discovery.json": "22b81a0cbd202832e9ed97b0da4987248329a5e067c7dbb61ca635ddefaa6910",
+    "config/catalog-imports/staging-ten/jungle.json": "baeb5b9e48f13ea8453aee92307599057aa701c96b6d060e2c84aa53aafa2bd6",
+    "config/catalog-imports/staging-ten/neo_revelation.json": "db86a5e6ac1e916288f74d6ac3a5a42c5e69a3be694c7085bb1a115f8f736889",
+    "config/catalog-imports/staging-ten/wizards_black_star_promos.json": "07909e844f38be6e42cb6f5c928742e144f4a5b502bff1f33f45fbf007959242",
+    "config/catalog-imports/staging-ten/team_rocket.json": "902dd1426782a52f2006b803148c72cd4925db91013b48e36df20dace732f163",
+    "config/catalog-imports/staging-ten/fossil.json": "b996ab3716d7015d26c14d8c577968db8c98b52e93cc8e6613f90140123dad9b",
+    "config/catalog-imports/staging-ten/base_set_2.json": "044b925951d8819530c710bf8b7d2c2fd0421166b00a0f1b8184aa010f54ebca",
+    "config/catalog-imports/staging-ten/neo_destiny.json": "dd9f3d2fa3c64ef1d8764d3f0c69b1e9b3a3f5448d6c944ba984990f8037c3a3",
+    "config/catalog-imports/staging-ten/base_set.json": "3e7a49c09c46f492241d1038381e4aef08adf4569c7d61cddbd3bb351d56d5c6",
+    "config/catalog-pipeline/universe-20261004.json": "6d77e56a38bde89a0262ff14e913b97f3bc630067d6c2beff0d91847703ce71c",
+    "config/catalog-pipeline/retained-20261004.json": "dd3f813bc1af0d739b35fbcc16e8a8b3bf5a71cd9dfc9704102fa04b21e36d68"
+  }
+}

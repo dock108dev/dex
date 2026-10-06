@@ -1,0 +1,15 @@
+# M4 validation — October 6, 2026
+
+[M4 closeout](../M4.md) records final measured scope. All 1,862 D7 entry files and the supplied manifest SHA-256 matched. Final evidence is under `evidence/m4-20261006/`; candidate bytes qualify only the listed identity and local evidence class.
+
+Fresh reversal 1 passed exact original package order, repeated confirmations, bad-reference and stale-before-hash refusal, read-only identity reversal, inclusion rollback and D7 rollback order. Reversal 2 repeated the boundary after source-label refinements. Inspection revealed that published catalog checkpoint assessments masked exact sealed bridge distribution evidence. A bounded read-only repair was made; **fresh reversal 3 and final 3** qualify the repaired projection. Prismatic now reports exactly 39 booster relationships, retaining 89 unknown variants. Earlier successful evidence remains evidence for its earlier projection.
+
+Initial M4 test harness runs exposed missing fixture imports, an assertion comparing already-normalized optional bridge defaults to raw input, a missing saved-research initialization and a missing required mappings list. These were test-harness defects; no owner state was accessed. Logs remain retained. The first full run began before the last harness repair and finished 568 passed / 1 failed. The corrected full run passed 569 tests; a final full run after the bridge projection repair is recorded in `regression3.log` and `checks.json`.
+
+Ordinary browser evidence uses `/private/tmp/dex-m4-final1`, a synthetic collection/accounts root with exact real retained packages, on port 8014. Pokédex initially required waiting for the collection API to finish; early locator/CDP deadlines are not product-success evidence. Later DOM captures show loaded results. Owned Vaporeon, missing Scyther, Johto targets, custom goal review/confirm and region filtering, exact card details, separate Stellar UPCs, Crown's inclusion and seller uncertainty were observed. Save/restart/reopen retained all three snapshot byte strings and all original observations. Protected tables/photos/credentials, predecessor goals/declarations/research and all-table restored backup comparisons passed. Zero provider calls; two server starts; server stopped and temporary tab closed.
+
+`copied-published/missing-delta-preview.json` records preview on a copied already-published D7 database with its exact before hash, without publication writes or blind correction replay. Original package journals were inspected first. `reversal3/identity-reversal.json` documents the projection-only identity migration and database-preserving historical/current reversal.
+
+Repository lint, formatting, Python compilation and JavaScript syntax results are bound in `checks.json`. An inherited formatting discrepancy in `scripts/rehearse_d7.py` was repaired without changing behavior or historical package/manifests; inherited-change evidence discloses it.
+
+No PostgreSQL, hosted matrix, independent review, owner installation or release qualification. Current eligible offers remain zero. The D7 source-budget deviation remains historical and disclosed.

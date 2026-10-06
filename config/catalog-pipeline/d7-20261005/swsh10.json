@@ -1,0 +1,1194 @@
+{
+  "schema_version": "dex-catalog-v1",
+  "game": "pokemon",
+  "provider": "tcgdex",
+  "version": "d7-99c994747cf7-v1",
+  "set_key": "swsh10",
+  "set_name": "Astral Radiance",
+  "language": "en",
+  "aliases": [],
+  "source_url": "https://codeload.github.com/tcgdex/cards-database/tar.gz/99c994747cf7519a3e51166cc932de79a88bd4b3",
+  "source_sha256": "1431e3be180cc5c8e491e480fd78b2b721155622372591d9f82bfb8aa83a6cce",
+  "metadata_permission": "MIT; Copyright (c) 2021 TCGdex; see evidence/d7-20261005/TCGDEX_LICENSE.txt",
+  "image_permission": "not-included",
+  "coverage": "partial",
+  "expected_count": 216,
+  "cards": [
+    {
+      "external_id": "swsh10-001:6d0c671bc6311ab2",
+      "number": "001",
+      "name": "Beedrill V",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 15,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare V"
+      }
+    },
+    {
+      "external_id": "swsh10-002:49a7a9ed8f71e46d",
+      "number": "002",
+      "name": "Hisuian Voltorb",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 100,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-002:24d19f6077bc64b1",
+      "number": "002",
+      "name": "Hisuian Voltorb",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 100,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-003:49a7a9ed8f71e46d",
+      "number": "003",
+      "name": "Hisuian Electrode",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 101,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "swsh10-003:24d19f6077bc64b1",
+      "number": "003",
+      "name": "Hisuian Electrode",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 101,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "swsh10-004:49a7a9ed8f71e46d",
+      "number": "004",
+      "name": "Scyther",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 123,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-004:24d19f6077bc64b1",
+      "number": "004",
+      "name": "Scyther",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 123,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-005:49a7a9ed8f71e46d",
+      "number": "005",
+      "name": "Scyther",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 123,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-005:24d19f6077bc64b1",
+      "number": "005",
+      "name": "Scyther",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 123,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-006:49a7a9ed8f71e46d",
+      "number": "006",
+      "name": "Yanma",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 193,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-006:24d19f6077bc64b1",
+      "number": "006",
+      "name": "Yanma",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 193,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-008:49a7a9ed8f71e46d",
+      "number": "008",
+      "name": "Heracross",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 214,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-008:24d19f6077bc64b1",
+      "number": "008",
+      "name": "Heracross",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 214,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-021:49a7a9ed8f71e46d",
+      "number": "021",
+      "name": "Ponyta",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 77,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-021:24d19f6077bc64b1",
+      "number": "021",
+      "name": "Ponyta",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 77,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-022:49a7a9ed8f71e46d",
+      "number": "022",
+      "name": "Rapidash",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 78,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "swsh10-022:24d19f6077bc64b1",
+      "number": "022",
+      "name": "Rapidash",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 78,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "swsh10-023:49a7a9ed8f71e46d",
+      "number": "023",
+      "name": "Cyndaquil",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 155,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-023:24d19f6077bc64b1",
+      "number": "023",
+      "name": "Cyndaquil",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 155,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-024:49a7a9ed8f71e46d",
+      "number": "024",
+      "name": "Quilava",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 156,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "swsh10-024:24d19f6077bc64b1",
+      "number": "024",
+      "name": "Quilava",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 156,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "swsh10-028:49a7a9ed8f71e46d",
+      "number": "028",
+      "name": "Psyduck",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 54,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-028:24d19f6077bc64b1",
+      "number": "028",
+      "name": "Psyduck",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 54,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-029:49a7a9ed8f71e46d",
+      "number": "029",
+      "name": "Golduck",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 55,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "swsh10-029:24d19f6077bc64b1",
+      "number": "029",
+      "name": "Golduck",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 55,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "swsh10-030:6d0c671bc6311ab2",
+      "number": "030",
+      "name": "Starmie V",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 121,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "swsh10-031:49a7a9ed8f71e46d",
+      "number": "031",
+      "name": "Swinub",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 220,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-031:24d19f6077bc64b1",
+      "number": "031",
+      "name": "Swinub",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 220,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-032:49a7a9ed8f71e46d",
+      "number": "032",
+      "name": "Piloswine",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 221,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "swsh10-032:24d19f6077bc64b1",
+      "number": "032",
+      "name": "Piloswine",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 221,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "swsh10-034:49a7a9ed8f71e46d",
+      "number": "034",
+      "name": "Mantine",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 226,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-034:24d19f6077bc64b1",
+      "number": "034",
+      "name": "Mantine",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 226,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-052:6d0c671bc6311ab2",
+      "number": "052",
+      "name": "Hisuian Typhlosion",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 157,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "swsh10-052:063ac455bc096d22",
+      "number": "052",
+      "name": "Hisuian Typhlosion",
+      "finish": "holo",
+      "variant": "{\"stamp\":[\"set-logo\"],\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 157,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "swsh10-052:24d19f6077bc64b1",
+      "number": "052",
+      "name": "Hisuian Typhlosion",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 157,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "swsh10-053:6d0c671bc6311ab2",
+      "number": "053",
+      "name": "Hisuian Typhlosion V",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 157,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare V"
+      }
+    },
+    {
+      "external_id": "swsh10-054:6d0c671bc6311ab2",
+      "number": "054",
+      "name": "Hisuian Typhlosion VSTAR",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 157,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare VSTAR"
+      }
+    },
+    {
+      "external_id": "swsh10-055:49a7a9ed8f71e46d",
+      "number": "055",
+      "name": "Togepi",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 175,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-055:24d19f6077bc64b1",
+      "number": "055",
+      "name": "Togepi",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 175,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-056:49a7a9ed8f71e46d",
+      "number": "056",
+      "name": "Togetic",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 176,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "swsh10-056:24d19f6077bc64b1",
+      "number": "056",
+      "name": "Togetic",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 176,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "swsh10-058:49a7a9ed8f71e46d",
+      "number": "058",
+      "name": "Misdreavus",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 200,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-058:24d19f6077bc64b1",
+      "number": "058",
+      "name": "Misdreavus",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 200,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-070:49a7a9ed8f71e46d",
+      "number": "070",
+      "name": "Hisuian Growlithe",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 58,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-070:24d19f6077bc64b1",
+      "number": "070",
+      "name": "Hisuian Growlithe",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 58,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-071:49a7a9ed8f71e46d",
+      "number": "071",
+      "name": "Hisuian Arcanine",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 59,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "swsh10-071:24d19f6077bc64b1",
+      "number": "071",
+      "name": "Hisuian Arcanine",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 59,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "swsh10-072:6d0c671bc6311ab2",
+      "number": "072",
+      "name": "Machamp V",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 68,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare V"
+      }
+    },
+    {
+      "external_id": "swsh10-073:6d0c671bc6311ab2",
+      "number": "073",
+      "name": "Machamp VMAX",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 68,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare VMAX"
+      }
+    },
+    {
+      "external_id": "swsh10-074:49a7a9ed8f71e46d",
+      "number": "074",
+      "name": "Sudowoodo",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 185,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-074:24d19f6077bc64b1",
+      "number": "074",
+      "name": "Sudowoodo",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 185,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-088:49a7a9ed8f71e46d",
+      "number": "088",
+      "name": "Hisuian Qwilfish",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 211,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-088:24d19f6077bc64b1",
+      "number": "088",
+      "name": "Hisuian Qwilfish",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 211,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-089:49a7a9ed8f71e46d",
+      "number": "089",
+      "name": "Hisuian Qwilfish",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 211,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-089:24d19f6077bc64b1",
+      "number": "089",
+      "name": "Hisuian Qwilfish",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 211,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-092:49a7a9ed8f71e46d",
+      "number": "092",
+      "name": "Hisuian Sneasel",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 215,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-092:24d19f6077bc64b1",
+      "number": "092",
+      "name": "Hisuian Sneasel",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 215,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-105:49a7a9ed8f71e46d",
+      "number": "105",
+      "name": "Magnemite",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 81,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-105:24d19f6077bc64b1",
+      "number": "105",
+      "name": "Magnemite",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 81,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-106:49a7a9ed8f71e46d",
+      "number": "106",
+      "name": "Magneton",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 82,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "swsh10-106:24d19f6077bc64b1",
+      "number": "106",
+      "name": "Magneton",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 82,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "swsh10-119:49a7a9ed8f71e46d",
+      "number": "119",
+      "name": "Eevee",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 133,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-119:24d19f6077bc64b1",
+      "number": "119",
+      "name": "Eevee",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 133,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-120:49a7a9ed8f71e46d",
+      "number": "120",
+      "name": "Hoothoot",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 163,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-120:24d19f6077bc64b1",
+      "number": "120",
+      "name": "Hoothoot",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 163,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-121:49a7a9ed8f71e46d",
+      "number": "121",
+      "name": "Noctowl",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 164,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "swsh10-121:24d19f6077bc64b1",
+      "number": "121",
+      "name": "Noctowl",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 164,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "swsh10-122:49a7a9ed8f71e46d",
+      "number": "122",
+      "name": "Teddiursa",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 216,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-122:24d19f6077bc64b1",
+      "number": "122",
+      "name": "Teddiursa",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 216,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-123:49a7a9ed8f71e46d",
+      "number": "123",
+      "name": "Ursaring",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 217,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "swsh10-123:24d19f6077bc64b1",
+      "number": "123",
+      "name": "Ursaring",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 217,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "swsh10-125:49a7a9ed8f71e46d",
+      "number": "125",
+      "name": "Stantler",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 234,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-125:3a8d9d5d2f0720df",
+      "number": "125",
+      "name": "Stantler",
+      "finish": "holo",
+      "variant": "{\"stamp\":[\"snowflake\"],\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 234,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-125:24d19f6077bc64b1",
+      "number": "125",
+      "name": "Stantler",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 234,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "swsh10-126:6d0c671bc6311ab2",
+      "number": "126",
+      "name": "Miltank",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 241,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "swsh10-126:24d19f6077bc64b1",
+      "number": "126",
+      "name": "Miltank",
+      "finish": "reverse",
+      "variant": "{\"type\":\"reverse\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 241,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "swsh10-160:6d0c671bc6311ab2",
+      "number": "160",
+      "name": "Beedrill V",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 15,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "swsh10-161:6d0c671bc6311ab2",
+      "number": "161",
+      "name": "Beedrill V",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 15,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "swsh10-166:6d0c671bc6311ab2",
+      "number": "166",
+      "name": "Starmie V",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 121,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "swsh10-169:6d0c671bc6311ab2",
+      "number": "169",
+      "name": "Hisuian Typhlosion V",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 157,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "swsh10-171:6d0c671bc6311ab2",
+      "number": "171",
+      "name": "Machamp V",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 68,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "swsh10-172:6d0c671bc6311ab2",
+      "number": "172",
+      "name": "Machamp V",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 68,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Ultra Rare"
+      }
+    },
+    {
+      "external_id": "swsh10-193:c9ac4e9b6d51d883",
+      "number": "193",
+      "name": "Hisuian Typhlosion VSTAR",
+      "finish": "holo",
+      "variant": "{\"foil\":\"rainbow\",\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 157,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Secret Rare"
+      }
+    },
+    {
+      "external_id": "swsh10-194:c9ac4e9b6d51d883",
+      "number": "194",
+      "name": "Machamp VMAX",
+      "finish": "holo",
+      "variant": "{\"foil\":\"rainbow\",\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 68,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Secret Rare"
+      }
+    }
+  ]
+}

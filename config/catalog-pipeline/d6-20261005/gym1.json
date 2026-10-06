@@ -1,0 +1,4459 @@
+{
+  "schema_version": "dex-catalog-v1",
+  "game": "pokemon",
+  "provider": "tcgdex",
+  "version": "d6-99c994747cf7-v2",
+  "set_key": "gym1",
+  "set_name": "Gym Heroes",
+  "language": "en",
+  "aliases": [
+    "Gym Heroes",
+    "G1"
+  ],
+  "source_url": "https://codeload.github.com/tcgdex/cards-database/tar.gz/99c994747cf7519a3e51166cc932de79a88bd4b3",
+  "source_sha256": "1431e3be180cc5c8e491e480fd78b2b721155622372591d9f82bfb8aa83a6cce",
+  "metadata_permission": "MIT; Copyright (c) 2021 TCGdex; see evidence/d6-20261005/TCGDEX_LICENSE.txt",
+  "image_permission": "not-included",
+  "coverage": "partial",
+  "expected_count": 317,
+  "cards": [
+    {
+      "external_id": "gym1-1",
+      "number": "1",
+      "name": "Blaine's Moltres",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 146,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-2",
+      "number": "2",
+      "name": "Brock's Rhydon",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 112,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-3",
+      "number": "3",
+      "name": "Erika's Clefable",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 36,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-4",
+      "number": "4",
+      "name": "Erika's Dragonair",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 148,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-5",
+      "number": "5",
+      "name": "Erika's Vileplume",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 45,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-6",
+      "number": "6",
+      "name": "Lt. Surge's Electabuzz",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 125,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-7",
+      "number": "7",
+      "name": "Lt. Surge's Fearow",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 22,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-8",
+      "number": "8",
+      "name": "Lt. Surge's Magneton",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 82,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-9",
+      "number": "9",
+      "name": "Misty's Seadra",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 117,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-10",
+      "number": "10",
+      "name": "Misty's Tentacruel",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 73,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-11",
+      "number": "11",
+      "name": "Rocket's Hitmonchan",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 107,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-12",
+      "number": "12",
+      "name": "Rocket's Moltres",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 146,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-13",
+      "number": "13",
+      "name": "Rocket's Scyther",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 123,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-14",
+      "number": "14",
+      "name": "Sabrina's Gengar",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 94,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-15",
+      "number": "15",
+      "name": "Brock",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-16",
+      "number": "16",
+      "name": "Erika",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-17",
+      "number": "17",
+      "name": "Lt. Surge",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-18",
+      "number": "18",
+      "name": "Misty",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-19",
+      "number": "19",
+      "name": "The Rocket's Trap",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-20",
+      "number": "20",
+      "name": "Brock's Golem",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 76,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-21",
+      "number": "21",
+      "name": "Brock's Onix",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 95,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-22",
+      "number": "22",
+      "name": "Brock's Rhyhorn",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 111,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-23",
+      "number": "23",
+      "name": "Brock's Sandslash",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 28,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-24",
+      "number": "24",
+      "name": "Brock's Zubat",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 41,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-25",
+      "number": "25",
+      "name": "Erika's Clefairy",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 35,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-26",
+      "number": "26",
+      "name": "Erika's Victreebel",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 71,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-27",
+      "number": "27",
+      "name": "Lt. Surge's Electabuzz",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 125,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-28",
+      "number": "28",
+      "name": "Lt. Surge's Raichu",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 26,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-29",
+      "number": "29",
+      "name": "Misty's Cloyster",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 91,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-30",
+      "number": "30",
+      "name": "Misty's Goldeen",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 118,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-31",
+      "number": "31",
+      "name": "Misty's Poliwrath",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 62,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-32",
+      "number": "32",
+      "name": "Misty's Tentacool",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 72,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-33",
+      "number": "33",
+      "name": "Rocket's Snorlax",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 143,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-34",
+      "number": "34",
+      "name": "Sabrina's Venomoth",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 49,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-35",
+      "number": "35",
+      "name": "Blaine's Growlithe",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 58,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-36",
+      "number": "36",
+      "name": "Blaine's Kangaskhan",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 115,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-37",
+      "number": "37",
+      "name": "Blaine's Magmar",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 126,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-38",
+      "number": "38",
+      "name": "Brock's Geodude",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 74,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-39",
+      "number": "39",
+      "name": "Brock's Golbat",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 42,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-40",
+      "number": "40",
+      "name": "Brock's Graveler",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 75,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-41",
+      "number": "41",
+      "name": "Brock's Lickitung",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 108,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-42",
+      "number": "42",
+      "name": "Erika's Dratini",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 147,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-43",
+      "number": "43",
+      "name": "Erika's Exeggcute",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 102,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-44",
+      "number": "44",
+      "name": "Erika's Exeggutor",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 103,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-45",
+      "number": "45",
+      "name": "Erika's Gloom",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 44,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-46",
+      "number": "46",
+      "name": "Erika's Gloom",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 44,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-47",
+      "number": "47",
+      "name": "Erika's Oddish",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 43,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-48",
+      "number": "48",
+      "name": "Erika's Weepinbell",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 70,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-49",
+      "number": "49",
+      "name": "Erika's Weepinbell",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 70,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-50",
+      "number": "50",
+      "name": "Lt. Surge's Magnemite",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 81,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-51",
+      "number": "51",
+      "name": "Lt. Surge's Raticate",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 20,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-52",
+      "number": "52",
+      "name": "Lt. Surge's Spearow",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 21,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-53",
+      "number": "53",
+      "name": "Misty's Poliwhirl",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 61,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-54",
+      "number": "54",
+      "name": "Misty's Psyduck",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 54,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-55",
+      "number": "55",
+      "name": "Misty's Seaking",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 119,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-56",
+      "number": "56",
+      "name": "Misty's Starmie",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 121,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-57",
+      "number": "57",
+      "name": "Misty's Tentacool",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 72,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-58",
+      "number": "58",
+      "name": "Sabrina's Haunter",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 93,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-59",
+      "number": "59",
+      "name": "Sabrina's Jynx",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 124,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-60",
+      "number": "60",
+      "name": "Sabrina's Slowbro",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 80,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-61",
+      "number": "61",
+      "name": "Blaine's Charmander",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 4,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-62",
+      "number": "62",
+      "name": "Blaine's Growlithe",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 58,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-63",
+      "number": "63",
+      "name": "Blaine's Ponyta",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 77,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-64",
+      "number": "64",
+      "name": "Blaine's Tauros",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 128,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-65",
+      "number": "65",
+      "name": "Blaine's Vulpix",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 37,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-66",
+      "number": "66",
+      "name": "Brock's Geodude",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 74,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-67",
+      "number": "67",
+      "name": "Brock's Mankey",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 56,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-68",
+      "number": "68",
+      "name": "Brock's Mankey",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 56,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-69",
+      "number": "69",
+      "name": "Brock's Onix",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 95,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-70",
+      "number": "70",
+      "name": "Brock's Rhyhorn",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 111,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-71",
+      "number": "71",
+      "name": "Brock's Sandshrew",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 27,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-72",
+      "number": "72",
+      "name": "Brock's Sandshrew",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 27,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-73",
+      "number": "73",
+      "name": "Brock's Vulpix",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 37,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-74",
+      "number": "74",
+      "name": "Brock's Zubat",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 41,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-75",
+      "number": "75",
+      "name": "Erika's Bellsprout",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 69,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-76",
+      "number": "76",
+      "name": "Erika's Bellsprout",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 69,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-77",
+      "number": "77",
+      "name": "Erika's Exeggcute",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 102,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-78",
+      "number": "78",
+      "name": "Erika's Oddish",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 43,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-79",
+      "number": "79",
+      "name": "Erika's Tangela",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 114,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-80",
+      "number": "80",
+      "name": "Lt. Surge's Magnemite",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 81,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-81",
+      "number": "81",
+      "name": "Lt. Surge's Pikachu",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-82",
+      "number": "82",
+      "name": "Lt. Surge's Rattata",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 19,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-83",
+      "number": "83",
+      "name": "Lt. Surge's Spearow",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 21,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-84",
+      "number": "84",
+      "name": "Lt. Surge's Voltorb",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 100,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-85",
+      "number": "85",
+      "name": "Misty's Goldeen",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 118,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-86",
+      "number": "86",
+      "name": "Misty's Horsea",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 116,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-87",
+      "number": "87",
+      "name": "Misty's Poliwag",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 60,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-88",
+      "number": "88",
+      "name": "Misty's Seel",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 86,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-89",
+      "number": "89",
+      "name": "Misty's Shellder",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 90,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-90",
+      "number": "90",
+      "name": "Misty's Staryu",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 120,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-91",
+      "number": "91",
+      "name": "Sabrina's Abra",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 63,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-92",
+      "number": "92",
+      "name": "Sabrina's Drowzee",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 96,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-93",
+      "number": "93",
+      "name": "Sabrina's Gastly",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 92,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-94",
+      "number": "94",
+      "name": "Sabrina's Mr. Mime",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 122,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-95",
+      "number": "95",
+      "name": "Sabrina's Slowpoke",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 79,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-96",
+      "number": "96",
+      "name": "Sabrina's Venonat",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": 48,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-97",
+      "number": "97",
+      "name": "Blaine's Quiz #1",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-98",
+      "number": "98",
+      "name": "Brock",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-99",
+      "number": "99",
+      "name": "Charity",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-100",
+      "number": "100",
+      "name": "Erika",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-101",
+      "number": "101",
+      "name": "Lt. Surge",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-102",
+      "number": "102",
+      "name": "Misty",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-103",
+      "number": "103",
+      "name": "No Removal Gym",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-104",
+      "number": "104",
+      "name": "The Rocket's Training Gym",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-105",
+      "number": "105",
+      "name": "Blaine's Last Resort",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-106",
+      "number": "106",
+      "name": "Brock's Training Method",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-107",
+      "number": "107",
+      "name": "Celadon City Gym",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-108",
+      "number": "108",
+      "name": "Cerulean City Gym",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-109",
+      "number": "109",
+      "name": "Erika's Maids",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-110",
+      "number": "110",
+      "name": "Erika's Perfume",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-111",
+      "number": "111",
+      "name": "Good Manners",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-112",
+      "number": "112",
+      "name": "Lt. Surge's Treaty",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-113",
+      "number": "113",
+      "name": "Minion of Team Rocket",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-114",
+      "number": "114",
+      "name": "Misty's Wrath",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-115",
+      "number": "115",
+      "name": "Pewter City Gym",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-116",
+      "number": "116",
+      "name": "Recall",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-117",
+      "number": "117",
+      "name": "Sabrina's ESP",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-118",
+      "number": "118",
+      "name": "Secret Mission",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-119",
+      "number": "119",
+      "name": "Tickling Machine",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-120",
+      "number": "120",
+      "name": "Vermilion City Gym",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-121",
+      "number": "121",
+      "name": "Blaine's Gamble",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-122",
+      "number": "122",
+      "name": "Energy Flow",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-123",
+      "number": "123",
+      "name": "Misty's Duel",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-124",
+      "number": "124",
+      "name": "Narrow Gym",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-125",
+      "number": "125",
+      "name": "Sabrina's Gaze",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-126",
+      "number": "126",
+      "name": "Trash Exchange",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Trainer",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-127",
+      "number": "127",
+      "name": "Fighting Energy",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-128",
+      "number": "128",
+      "name": "Fire Energy",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-129",
+      "number": "129",
+      "name": "Grass Energy",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-130",
+      "number": "130",
+      "name": "Lightning Energy",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-131",
+      "number": "131",
+      "name": "Psychic Energy",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-132",
+      "number": "132",
+      "name": "Water Energy",
+      "edition": null,
+      "finish": null,
+      "variant": null,
+      "metadata": {
+        "pokemon_dex": null,
+        "dex_eligible": false,
+        "supertype": "Energy",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-1:6d0c671bc6311ab2",
+      "number": "1",
+      "name": "Blaine's Moltres",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 146,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-1:bd6802a3c8c79134",
+      "number": "1",
+      "name": "Blaine's Moltres",
+      "finish": "holo",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"holo\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 146,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-10:6d0c671bc6311ab2",
+      "number": "10",
+      "name": "Misty's Tentacruel",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 73,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-10:bd6802a3c8c79134",
+      "number": "10",
+      "name": "Misty's Tentacruel",
+      "finish": "holo",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"holo\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 73,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-11:6d0c671bc6311ab2",
+      "number": "11",
+      "name": "Rocket's Hitmonchan",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 107,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-11:bd6802a3c8c79134",
+      "number": "11",
+      "name": "Rocket's Hitmonchan",
+      "finish": "holo",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"holo\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 107,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-11:460b930668c2a873",
+      "number": "11",
+      "name": "Rocket's Hitmonchan",
+      "finish": "holo",
+      "variant": "{\"size\":\"jumbo\",\"stamp\":[\"winner\"],\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 107,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-12:6d0c671bc6311ab2",
+      "number": "12",
+      "name": "Rocket's Moltres",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 146,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-12:bd6802a3c8c79134",
+      "number": "12",
+      "name": "Rocket's Moltres",
+      "finish": "holo",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"holo\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 146,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-13:6d0c671bc6311ab2",
+      "number": "13",
+      "name": "Rocket's Scyther",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 123,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-13:bd6802a3c8c79134",
+      "number": "13",
+      "name": "Rocket's Scyther",
+      "finish": "holo",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"holo\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 123,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-14:6d0c671bc6311ab2",
+      "number": "14",
+      "name": "Sabrina's Gengar",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 94,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-14:bd6802a3c8c79134",
+      "number": "14",
+      "name": "Sabrina's Gengar",
+      "finish": "holo",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"holo\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 94,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-2:6d0c671bc6311ab2",
+      "number": "2",
+      "name": "Brock's Rhydon",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 112,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-2:bd6802a3c8c79134",
+      "number": "2",
+      "name": "Brock's Rhydon",
+      "finish": "holo",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"holo\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 112,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-20:49a7a9ed8f71e46d",
+      "number": "20",
+      "name": "Brock's Golem",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 76,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-20:490e2cb7e0342edc",
+      "number": "20",
+      "name": "Brock's Golem",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 76,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-21:49a7a9ed8f71e46d",
+      "number": "21",
+      "name": "Brock's Onix",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 95,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-21:490e2cb7e0342edc",
+      "number": "21",
+      "name": "Brock's Onix",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 95,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-22:49a7a9ed8f71e46d",
+      "number": "22",
+      "name": "Brock's Rhyhorn",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 111,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-22:490e2cb7e0342edc",
+      "number": "22",
+      "name": "Brock's Rhyhorn",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 111,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-23:49a7a9ed8f71e46d",
+      "number": "23",
+      "name": "Brock's Sandslash",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 28,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-23:490e2cb7e0342edc",
+      "number": "23",
+      "name": "Brock's Sandslash",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 28,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-24:49a7a9ed8f71e46d",
+      "number": "24",
+      "name": "Brock's Zubat",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 41,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-24:490e2cb7e0342edc",
+      "number": "24",
+      "name": "Brock's Zubat",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 41,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-25:49a7a9ed8f71e46d",
+      "number": "25",
+      "name": "Erika's Clefairy",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 35,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-25:490e2cb7e0342edc",
+      "number": "25",
+      "name": "Erika's Clefairy",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 35,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-26:49a7a9ed8f71e46d",
+      "number": "26",
+      "name": "Erika's Victreebel",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 71,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-26:490e2cb7e0342edc",
+      "number": "26",
+      "name": "Erika's Victreebel",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 71,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-27:49a7a9ed8f71e46d",
+      "number": "27",
+      "name": "Lt. Surge's Electabuzz",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 125,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-27:490e2cb7e0342edc",
+      "number": "27",
+      "name": "Lt. Surge's Electabuzz",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 125,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-28:49a7a9ed8f71e46d",
+      "number": "28",
+      "name": "Lt. Surge's Raichu",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 26,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-28:490e2cb7e0342edc",
+      "number": "28",
+      "name": "Lt. Surge's Raichu",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 26,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-29:49a7a9ed8f71e46d",
+      "number": "29",
+      "name": "Misty's Cloyster",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 91,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-29:490e2cb7e0342edc",
+      "number": "29",
+      "name": "Misty's Cloyster",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 91,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-3:6d0c671bc6311ab2",
+      "number": "3",
+      "name": "Erika's Clefable",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 36,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-3:bd6802a3c8c79134",
+      "number": "3",
+      "name": "Erika's Clefable",
+      "finish": "holo",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"holo\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 36,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-30:49a7a9ed8f71e46d",
+      "number": "30",
+      "name": "Misty's Goldeen",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 118,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-30:490e2cb7e0342edc",
+      "number": "30",
+      "name": "Misty's Goldeen",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 118,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-31:49a7a9ed8f71e46d",
+      "number": "31",
+      "name": "Misty's Poliwrath",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 62,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-31:490e2cb7e0342edc",
+      "number": "31",
+      "name": "Misty's Poliwrath",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 62,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-32:49a7a9ed8f71e46d",
+      "number": "32",
+      "name": "Misty's Tentacool",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 72,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-32:490e2cb7e0342edc",
+      "number": "32",
+      "name": "Misty's Tentacool",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 72,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-33:49a7a9ed8f71e46d",
+      "number": "33",
+      "name": "Rocket's Snorlax",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 143,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-33:490e2cb7e0342edc",
+      "number": "33",
+      "name": "Rocket's Snorlax",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 143,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-34:49a7a9ed8f71e46d",
+      "number": "34",
+      "name": "Sabrina's Venomoth",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 49,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-34:490e2cb7e0342edc",
+      "number": "34",
+      "name": "Sabrina's Venomoth",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 49,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Rare"
+      }
+    },
+    {
+      "external_id": "gym1-35:49a7a9ed8f71e46d",
+      "number": "35",
+      "name": "Blaine's Growlithe",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 58,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-35:490e2cb7e0342edc",
+      "number": "35",
+      "name": "Blaine's Growlithe",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 58,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-36:49a7a9ed8f71e46d",
+      "number": "36",
+      "name": "Blaine's Kangaskhan",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 115,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-36:490e2cb7e0342edc",
+      "number": "36",
+      "name": "Blaine's Kangaskhan",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 115,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-37:49a7a9ed8f71e46d",
+      "number": "37",
+      "name": "Blaine's Magmar",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 126,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-37:490e2cb7e0342edc",
+      "number": "37",
+      "name": "Blaine's Magmar",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 126,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-38:49a7a9ed8f71e46d",
+      "number": "38",
+      "name": "Brock's Geodude",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 74,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-38:490e2cb7e0342edc",
+      "number": "38",
+      "name": "Brock's Geodude",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 74,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-39:49a7a9ed8f71e46d",
+      "number": "39",
+      "name": "Brock's Golbat",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 42,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-39:490e2cb7e0342edc",
+      "number": "39",
+      "name": "Brock's Golbat",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 42,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-4:6d0c671bc6311ab2",
+      "number": "4",
+      "name": "Erika's Dragonair",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 148,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-4:bd6802a3c8c79134",
+      "number": "4",
+      "name": "Erika's Dragonair",
+      "finish": "holo",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"holo\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 148,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-40:49a7a9ed8f71e46d",
+      "number": "40",
+      "name": "Brock's Graveler",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 75,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-40:490e2cb7e0342edc",
+      "number": "40",
+      "name": "Brock's Graveler",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 75,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-41:49a7a9ed8f71e46d",
+      "number": "41",
+      "name": "Brock's Lickitung",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 108,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-41:490e2cb7e0342edc",
+      "number": "41",
+      "name": "Brock's Lickitung",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 108,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-42:49a7a9ed8f71e46d",
+      "number": "42",
+      "name": "Erika's Dratini",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 147,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-42:490e2cb7e0342edc",
+      "number": "42",
+      "name": "Erika's Dratini",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 147,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-43:49a7a9ed8f71e46d",
+      "number": "43",
+      "name": "Erika's Exeggcute",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 102,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-43:490e2cb7e0342edc",
+      "number": "43",
+      "name": "Erika's Exeggcute",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 102,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-44:49a7a9ed8f71e46d",
+      "number": "44",
+      "name": "Erika's Exeggutor",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 103,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-44:490e2cb7e0342edc",
+      "number": "44",
+      "name": "Erika's Exeggutor",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 103,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-45:49a7a9ed8f71e46d",
+      "number": "45",
+      "name": "Erika's Gloom",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 44,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-45:490e2cb7e0342edc",
+      "number": "45",
+      "name": "Erika's Gloom",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 44,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-46:49a7a9ed8f71e46d",
+      "number": "46",
+      "name": "Erika's Gloom",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 44,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-46:490e2cb7e0342edc",
+      "number": "46",
+      "name": "Erika's Gloom",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 44,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-47:49a7a9ed8f71e46d",
+      "number": "47",
+      "name": "Erika's Oddish",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 43,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-47:490e2cb7e0342edc",
+      "number": "47",
+      "name": "Erika's Oddish",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 43,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-48:49a7a9ed8f71e46d",
+      "number": "48",
+      "name": "Erika's Weepinbell",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 70,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-48:490e2cb7e0342edc",
+      "number": "48",
+      "name": "Erika's Weepinbell",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 70,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-49:49a7a9ed8f71e46d",
+      "number": "49",
+      "name": "Erika's Weepinbell",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 70,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-49:490e2cb7e0342edc",
+      "number": "49",
+      "name": "Erika's Weepinbell",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 70,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-5:6d0c671bc6311ab2",
+      "number": "5",
+      "name": "Erika's Vileplume",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 45,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-5:bd6802a3c8c79134",
+      "number": "5",
+      "name": "Erika's Vileplume",
+      "finish": "holo",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"holo\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 45,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-50:49a7a9ed8f71e46d",
+      "number": "50",
+      "name": "Lt. Surge's Magnemite",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 81,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-50:490e2cb7e0342edc",
+      "number": "50",
+      "name": "Lt. Surge's Magnemite",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 81,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-51:49a7a9ed8f71e46d",
+      "number": "51",
+      "name": "Lt. Surge's Raticate",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 20,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-51:490e2cb7e0342edc",
+      "number": "51",
+      "name": "Lt. Surge's Raticate",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 20,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-52:49a7a9ed8f71e46d",
+      "number": "52",
+      "name": "Lt. Surge's Spearow",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 21,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-52:490e2cb7e0342edc",
+      "number": "52",
+      "name": "Lt. Surge's Spearow",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 21,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-53:49a7a9ed8f71e46d",
+      "number": "53",
+      "name": "Misty's Poliwhirl",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 61,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-53:490e2cb7e0342edc",
+      "number": "53",
+      "name": "Misty's Poliwhirl",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 61,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-54:49a7a9ed8f71e46d",
+      "number": "54",
+      "name": "Misty's Psyduck",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 54,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-54:490e2cb7e0342edc",
+      "number": "54",
+      "name": "Misty's Psyduck",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 54,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-54:35d295d14b2fc566",
+      "number": "54",
+      "name": "Misty's Psyduck",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"wotc\"],\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 54,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-55:49a7a9ed8f71e46d",
+      "number": "55",
+      "name": "Misty's Seaking",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 119,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-55:490e2cb7e0342edc",
+      "number": "55",
+      "name": "Misty's Seaking",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 119,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-56:49a7a9ed8f71e46d",
+      "number": "56",
+      "name": "Misty's Starmie",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 121,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-56:490e2cb7e0342edc",
+      "number": "56",
+      "name": "Misty's Starmie",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 121,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-57:49a7a9ed8f71e46d",
+      "number": "57",
+      "name": "Misty's Tentacool",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 72,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-57:490e2cb7e0342edc",
+      "number": "57",
+      "name": "Misty's Tentacool",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 72,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-58:49a7a9ed8f71e46d",
+      "number": "58",
+      "name": "Sabrina's Haunter",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 93,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-58:490e2cb7e0342edc",
+      "number": "58",
+      "name": "Sabrina's Haunter",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 93,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-59:49a7a9ed8f71e46d",
+      "number": "59",
+      "name": "Sabrina's Jynx",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 124,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-59:490e2cb7e0342edc",
+      "number": "59",
+      "name": "Sabrina's Jynx",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 124,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-6:6d0c671bc6311ab2",
+      "number": "6",
+      "name": "Lt. Surge's Electabuzz",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 125,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-6:bd6802a3c8c79134",
+      "number": "6",
+      "name": "Lt. Surge's Electabuzz",
+      "finish": "holo",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"holo\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 125,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-60:49a7a9ed8f71e46d",
+      "number": "60",
+      "name": "Sabrina's Slowbro",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 80,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-60:490e2cb7e0342edc",
+      "number": "60",
+      "name": "Sabrina's Slowbro",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 80,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Uncommon"
+      }
+    },
+    {
+      "external_id": "gym1-61:49a7a9ed8f71e46d",
+      "number": "61",
+      "name": "Blaine's Charmander",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 4,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-61:490e2cb7e0342edc",
+      "number": "61",
+      "name": "Blaine's Charmander",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 4,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-62:49a7a9ed8f71e46d",
+      "number": "62",
+      "name": "Blaine's Growlithe",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 58,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-62:490e2cb7e0342edc",
+      "number": "62",
+      "name": "Blaine's Growlithe",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 58,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-63:49a7a9ed8f71e46d",
+      "number": "63",
+      "name": "Blaine's Ponyta",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 77,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-63:490e2cb7e0342edc",
+      "number": "63",
+      "name": "Blaine's Ponyta",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 77,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-64:49a7a9ed8f71e46d",
+      "number": "64",
+      "name": "Blaine's Tauros",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 128,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-64:490e2cb7e0342edc",
+      "number": "64",
+      "name": "Blaine's Tauros",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 128,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-65:49a7a9ed8f71e46d",
+      "number": "65",
+      "name": "Blaine's Vulpix",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 37,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-65:490e2cb7e0342edc",
+      "number": "65",
+      "name": "Blaine's Vulpix",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 37,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-66:49a7a9ed8f71e46d",
+      "number": "66",
+      "name": "Brock's Geodude",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 74,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-66:490e2cb7e0342edc",
+      "number": "66",
+      "name": "Brock's Geodude",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 74,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-67:49a7a9ed8f71e46d",
+      "number": "67",
+      "name": "Brock's Mankey",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 56,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-67:490e2cb7e0342edc",
+      "number": "67",
+      "name": "Brock's Mankey",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 56,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-68:49a7a9ed8f71e46d",
+      "number": "68",
+      "name": "Brock's Mankey",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 56,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-68:490e2cb7e0342edc",
+      "number": "68",
+      "name": "Brock's Mankey",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 56,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-69:49a7a9ed8f71e46d",
+      "number": "69",
+      "name": "Brock's Onix",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 95,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-69:490e2cb7e0342edc",
+      "number": "69",
+      "name": "Brock's Onix",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 95,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-7:6d0c671bc6311ab2",
+      "number": "7",
+      "name": "Lt. Surge's Fearow",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 22,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-7:bd6802a3c8c79134",
+      "number": "7",
+      "name": "Lt. Surge's Fearow",
+      "finish": "holo",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"holo\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 22,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-70:49a7a9ed8f71e46d",
+      "number": "70",
+      "name": "Brock's Rhyhorn",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 111,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-70:490e2cb7e0342edc",
+      "number": "70",
+      "name": "Brock's Rhyhorn",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 111,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-71:49a7a9ed8f71e46d",
+      "number": "71",
+      "name": "Brock's Sandshrew",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 27,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-71:490e2cb7e0342edc",
+      "number": "71",
+      "name": "Brock's Sandshrew",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 27,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-72:49a7a9ed8f71e46d",
+      "number": "72",
+      "name": "Brock's Sandshrew",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 27,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-72:490e2cb7e0342edc",
+      "number": "72",
+      "name": "Brock's Sandshrew",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 27,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-73:49a7a9ed8f71e46d",
+      "number": "73",
+      "name": "Brock's Vulpix",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 37,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-73:490e2cb7e0342edc",
+      "number": "73",
+      "name": "Brock's Vulpix",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 37,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-74:49a7a9ed8f71e46d",
+      "number": "74",
+      "name": "Brock's Zubat",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 41,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-74:490e2cb7e0342edc",
+      "number": "74",
+      "name": "Brock's Zubat",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 41,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-75:49a7a9ed8f71e46d",
+      "number": "75",
+      "name": "Erika's Bellsprout",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 69,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-75:490e2cb7e0342edc",
+      "number": "75",
+      "name": "Erika's Bellsprout",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 69,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-76:49a7a9ed8f71e46d",
+      "number": "76",
+      "name": "Erika's Bellsprout",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 69,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-76:490e2cb7e0342edc",
+      "number": "76",
+      "name": "Erika's Bellsprout",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 69,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-77:49a7a9ed8f71e46d",
+      "number": "77",
+      "name": "Erika's Exeggcute",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 102,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-77:490e2cb7e0342edc",
+      "number": "77",
+      "name": "Erika's Exeggcute",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 102,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-78:49a7a9ed8f71e46d",
+      "number": "78",
+      "name": "Erika's Oddish",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 43,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-78:490e2cb7e0342edc",
+      "number": "78",
+      "name": "Erika's Oddish",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 43,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-79:49a7a9ed8f71e46d",
+      "number": "79",
+      "name": "Erika's Tangela",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 114,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-79:490e2cb7e0342edc",
+      "number": "79",
+      "name": "Erika's Tangela",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 114,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-8:6d0c671bc6311ab2",
+      "number": "8",
+      "name": "Lt. Surge's Magneton",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 82,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-8:bd6802a3c8c79134",
+      "number": "8",
+      "name": "Lt. Surge's Magneton",
+      "finish": "holo",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"holo\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 82,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-80:49a7a9ed8f71e46d",
+      "number": "80",
+      "name": "Lt. Surge's Magnemite",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 81,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-80:490e2cb7e0342edc",
+      "number": "80",
+      "name": "Lt. Surge's Magnemite",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 81,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-81:49a7a9ed8f71e46d",
+      "number": "81",
+      "name": "Lt. Surge's Pikachu",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-81:490e2cb7e0342edc",
+      "number": "81",
+      "name": "Lt. Surge's Pikachu",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-82:49a7a9ed8f71e46d",
+      "number": "82",
+      "name": "Lt. Surge's Rattata",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 19,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-82:490e2cb7e0342edc",
+      "number": "82",
+      "name": "Lt. Surge's Rattata",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 19,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-83:49a7a9ed8f71e46d",
+      "number": "83",
+      "name": "Lt. Surge's Spearow",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 21,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-83:490e2cb7e0342edc",
+      "number": "83",
+      "name": "Lt. Surge's Spearow",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 21,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-84:49a7a9ed8f71e46d",
+      "number": "84",
+      "name": "Lt. Surge's Voltorb",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 100,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-84:490e2cb7e0342edc",
+      "number": "84",
+      "name": "Lt. Surge's Voltorb",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 100,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-85:49a7a9ed8f71e46d",
+      "number": "85",
+      "name": "Misty's Goldeen",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 118,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-85:490e2cb7e0342edc",
+      "number": "85",
+      "name": "Misty's Goldeen",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 118,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-86:49a7a9ed8f71e46d",
+      "number": "86",
+      "name": "Misty's Horsea",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 116,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-86:490e2cb7e0342edc",
+      "number": "86",
+      "name": "Misty's Horsea",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 116,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-87:49a7a9ed8f71e46d",
+      "number": "87",
+      "name": "Misty's Poliwag",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 60,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-87:490e2cb7e0342edc",
+      "number": "87",
+      "name": "Misty's Poliwag",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 60,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-88:49a7a9ed8f71e46d",
+      "number": "88",
+      "name": "Misty's Seel",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 86,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-88:490e2cb7e0342edc",
+      "number": "88",
+      "name": "Misty's Seel",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 86,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-89:49a7a9ed8f71e46d",
+      "number": "89",
+      "name": "Misty's Shellder",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 90,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-89:490e2cb7e0342edc",
+      "number": "89",
+      "name": "Misty's Shellder",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 90,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-9:6d0c671bc6311ab2",
+      "number": "9",
+      "name": "Misty's Seadra",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 117,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-9:bd6802a3c8c79134",
+      "number": "9",
+      "name": "Misty's Seadra",
+      "finish": "holo",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"holo\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 117,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-9:b0eaa3bf79ede822",
+      "number": "9",
+      "name": "Misty's Seadra",
+      "finish": "holo",
+      "variant": "{\"stamp\":[\"pre-release\"],\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 117,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Holo Rare"
+      }
+    },
+    {
+      "external_id": "gym1-90:49a7a9ed8f71e46d",
+      "number": "90",
+      "name": "Misty's Staryu",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 120,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-90:490e2cb7e0342edc",
+      "number": "90",
+      "name": "Misty's Staryu",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 120,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-91:49a7a9ed8f71e46d",
+      "number": "91",
+      "name": "Sabrina's Abra",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 63,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-91:490e2cb7e0342edc",
+      "number": "91",
+      "name": "Sabrina's Abra",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 63,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-92:49a7a9ed8f71e46d",
+      "number": "92",
+      "name": "Sabrina's Drowzee",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 96,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-92:490e2cb7e0342edc",
+      "number": "92",
+      "name": "Sabrina's Drowzee",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 96,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-93:49a7a9ed8f71e46d",
+      "number": "93",
+      "name": "Sabrina's Gastly",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 92,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-93:490e2cb7e0342edc",
+      "number": "93",
+      "name": "Sabrina's Gastly",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 92,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-94:49a7a9ed8f71e46d",
+      "number": "94",
+      "name": "Sabrina's Mr. Mime",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 122,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-94:490e2cb7e0342edc",
+      "number": "94",
+      "name": "Sabrina's Mr. Mime",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 122,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-95:49a7a9ed8f71e46d",
+      "number": "95",
+      "name": "Sabrina's Slowpoke",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 79,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-95:490e2cb7e0342edc",
+      "number": "95",
+      "name": "Sabrina's Slowpoke",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 79,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-96:49a7a9ed8f71e46d",
+      "number": "96",
+      "name": "Sabrina's Venonat",
+      "finish": "normal",
+      "variant": "{\"type\":\"normal\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 48,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    },
+    {
+      "external_id": "gym1-96:490e2cb7e0342edc",
+      "number": "96",
+      "name": "Sabrina's Venonat",
+      "finish": "normal",
+      "variant": "{\"stamp\":[\"1st-edition\"],\"type\":\"normal\"}",
+      "edition": "1st-edition",
+      "metadata": {
+        "pokemon_dex": 48,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Common"
+      }
+    }
+  ]
+}

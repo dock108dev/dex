@@ -1,7 +1,7 @@
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_GET, require_POST
 
-from . import pack_research
+from . import offer_filters, pack_research
 from .collection_views import endpoint
 from .packs import project
 from .views import actor
@@ -15,6 +15,7 @@ def home(request):
         request.GET.get("goal", ""),
         request.GET.get("species", ""),
         request.GET.get("expansion", ""),
+        filters={k: request.GET.get(k, "") for k in offer_filters.FIELDS},
     )
     context["research_enabled"] = pack_research.available()
     return render(request, "beta/packs.html", context)
@@ -23,7 +24,15 @@ def home(request):
 @endpoint
 @require_POST
 def save(request):
-    if set(request.POST) - {"csrfmiddlewaretoken", "goal", "goal_version", "species", "expansion", "name"}:
+    if set(request.POST) - {
+        "csrfmiddlewaretoken",
+        "goal",
+        "goal_version",
+        "species",
+        "expansion",
+        "name",
+        *offer_filters.FIELDS,
+    }:
         raise ValueError("Only selected scope and name are accepted")
     key = pack_research.save(
         actor(request),
@@ -32,6 +41,7 @@ def save(request):
         request.POST.get("expansion", ""),
         request.POST.get("name", ""),
         request.POST.get("goal_version", ""),
+        filters={k: request.POST.get(k, "") for k in offer_filters.FIELDS},
     )
     return redirect(f"/packs/saved/{key}/")
 

@@ -7,13 +7,13 @@ from typing import Literal
 
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from pokemon_hunter.inventory import stable_id
 from pokemon_hunter.migration import digest, encode
 
+from . import canonical_species, store
 from . import collection as inv
-from . import store
 from . import transactions as transaction
 
 ADAPTERS = {
@@ -24,10 +24,20 @@ ADAPTERS = {
 
 class Metadata(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
-    pokemon_dex: int | None = Field(default=None, ge=1, le=251)
+    pokemon_dex: int | None = Field(default=None)
     dex_eligible: bool
     supertype: Literal["Pokémon", "Trainer", "Energy"]
     rarity: str = Field(min_length=1, max_length=80)
+
+    @model_validator(mode="after")
+    def canonical_identity(self):
+        if self.pokemon_dex is not None:
+            canonical_species.require(self.pokemon_dex)
+            if self.supertype != "Pokémon":
+                raise ValueError("Non-Pokémon category cannot map to a canonical species")
+        if self.dex_eligible and (self.supertype != "Pokémon" or self.pokemon_dex is None):
+            raise ValueError("Eligibility requires resolved canonical Pokémon identity")
+        return self
 
 
 class Record(BaseModel):
@@ -171,6 +181,38 @@ def validate(raw):
     return package
 
 
+def identity_rows(package, sid, provider, printing_ids=None):
+    """Read identity guards in bounded batches; never retain them across calls."""
+    mappings = {}
+    existing = {r["id"]: r for r in store.rows("SELECT * FROM printings WHERE set_id=%s", [sid])}
+    identities = {}
+    for row in existing.values():
+        key = tuple(row[k] for k in ("collector_number", "edition", "finish", "variant"))
+        identities.setdefault(key, set()).add(row["id"])
+    for offset in range(0, len(package["cards"]), 500):
+        cards = package["cards"][offset : offset + 500]
+        placeholders = ",".join(["%s"] * len(cards))
+        mappings.update(
+            (r["external_id"], r["internal_id"])
+            for r in store.rows(
+                "SELECT external_id,internal_id FROM external_mappings "
+                f"WHERE provider=%s AND entity_kind='printing' AND external_id IN ({placeholders})",
+                [provider, *[c["external_id"] for c in cards]],
+            )
+        )
+        # IDs are global: retain the guard against repurposing an ID from another set.
+        existing.update(
+            (r["id"], r)
+            for r in store.rows(
+                f"SELECT * FROM printings WHERE id IN ({placeholders})",
+                printing_ids[offset : offset + 500]
+                if printing_ids is not None
+                else [stable_id("catalog-printing", provider + ":" + c["external_id"]) for c in cards],
+            )
+        )
+    return mappings, existing, identities
+
+
 def rows_for(package):
     key = identity(package["game"], package["set_key"], package["language"])
     from . import catalog_reconcile
@@ -200,28 +242,31 @@ def rows_for(package):
     )
     cards = []
     provider = package["provider"] + ":" + package["language"]
-    for c in package["cards"]:
+    reconciled = None
+    if package.get("reconcile_legacy_set"):
+        legacy_evidence = catalog_reconcile.identity_rows(package, sid)
+        reconciled = [catalog_reconcile.printing(package, c, sid, legacy_evidence) for c in package["cards"]]
+    batched = identity_rows(
+        package, sid, provider, [pid for pid, _ in reconciled] if reconciled is not None else None
+    )
+    for index, c in enumerate(package["cards"]):
         pid = stable_id("catalog-printing", provider + ":" + c["external_id"])
         prior = None
-        if package.get("reconcile_legacy_set"):
-            pid, prior = catalog_reconcile.printing(package, c, sid)
+        if reconciled is not None:
+            pid, prior = reconciled[index]
             if prior:
                 c = {**c, **{k: prior[k] for k in ("edition", "finish", "variant")}}
-        mapping = store.rows(
-            "SELECT internal_id FROM external_mappings WHERE provider=%s AND entity_kind='printing' AND external_id=%s",
-            [provider, c["external_id"]],
-        )
+        mappings, existing, identities = batched
+        mapping = [{"internal_id": mappings[c["external_id"]]}] if c["external_id"] in mappings else []
+        key = tuple(c[k] for k in ("number", "edition", "finish", "variant"))
+        same_identity = identities.get(key, set()) - {pid}
+        old = [existing[pid]] if pid in existing else []
         if mapping and mapping[0]["internal_id"] != pid:
             raise ValueError("External identity is already mapped to a different printing")
-        same_identity = store.rows(
-            "SELECT id FROM printings WHERE set_id=%s AND collector_number=%s AND edition IS NOT DISTINCT FROM %s AND finish IS NOT DISTINCT FROM %s AND variant IS NOT DISTINCT FROM %s AND id<>%s",
-            [sid, c["number"], c["edition"], c["finish"], c["variant"], pid],
-        )
         if same_identity:
             raise ValueError(
                 "Printing identity already exists under a different source mapping; reconcile instead of duplicating"
             )
-        old = store.rows("SELECT * FROM printings WHERE id=%s", [pid])
         if old and any(
             old[0][k] != v
             for k, v in {

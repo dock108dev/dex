@@ -284,3 +284,17 @@ def test_authenticated_hunts_use_shared_projection_and_schema(restored):
         assert client.get(route).status_code == 200
         assert post(client, route + "reveal/" + found["results"][0]["id"] + "/", {}).status_code == 200
         assert shared.call_count == 3
+
+
+def test_pokedex_identity_ignores_private_names_and_card_labels(restored):
+    from pokemon_hunter.beta.canonical_species import registry
+
+    # Simulate conflicting old evidence without reading an actual owner export.
+    (restored["root"] / "parity-evidence/species.json").write_text(
+        json.dumps({"1": {"name": "Wrong species"}, "250": {"name": "Wrong Ho-oh"}})
+    )
+    data = parity.projection(restored["actor"])
+    assert data["pokedex"]["1"]["name"] == registry()[1]["name"]
+    assert data["pokedex"]["250"]["name"] == registry()[250]["name"]
+    with pytest.raises(ValueError, match="canonical_species"):
+        parity.evidence("species.json", {})

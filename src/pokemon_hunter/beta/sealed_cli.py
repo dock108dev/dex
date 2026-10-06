@@ -1,4 +1,4 @@
-"""Offline E1 package validation and explicit operator review on a selected root."""
+"""Offline sealed-package validation and explicit operator review on a selected root."""
 
 import argparse
 import json

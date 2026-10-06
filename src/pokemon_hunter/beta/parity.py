@@ -24,19 +24,10 @@ from .diagnostics import failure
 
 
 def evidence(filename, default):
+    if filename not in {"market_values.json", "raw_values.json", "hunt.json", "demo_hunts.json"}:
+        raise ValueError("Unsupported parity evidence; species identity uses canonical_species")
     if getattr(settings, "STAGING", False):
         # Source review permits metadata only. No legacy pricing or hunt redistribution.
-        if filename == "species.json":
-            from .store import rows
-
-            saved = rows("SELECT value FROM beta_operations WHERE key='species'")
-            return (
-                json.loads(saved[0]["value"])
-                if saved
-                else json.loads(
-                    (settings.PROJECT / "config/catalog-imports/staging-ten/species.json").read_text()
-                )
-            )
         return default
     path = settings.ROOT / "parity-evidence" / filename
     return json.loads(path.read_text()) if path.is_file() else default
@@ -51,18 +42,23 @@ def projection(actor):
         r["internal_id"]: r["external_id"]
         for r in store.rows("SELECT * FROM external_mappings WHERE provider='legacy' AND entity_kind='set'")
     }
-    species = evidence("species.json", {})
+    from .canonical_species import registry
+
+    species = registry()
     # No ownership is loaded from the historical species evidence.
     dex = {
         str(n): {
             "dex_number": n,
-            "name": species.get(str(n), {}).get("name", f"Species {n}"),
+            "name": species[n]["name"],
             "generation": 1 if n <= 151 else 2,
         }
         for n in range(1, 252)
     }
     cards = {}
     catalog = service.catalog(actor)
+    from .catalog_pipeline import indexed_eras
+
+    eras = indexed_eras()
     for p in catalog:
         legacy = json.loads(p["provenance"]).get("legacy_id")
         if not legacy:
@@ -70,10 +66,16 @@ def projection(actor):
         copies = by_printing.get(p["id"], [])
         cards[legacy] = {
             **p["attributes"],
+            # The classic overview has a fixed 251-species denominator. Catalog
+            # support and exact printing display retain every canonical identity.
+            "dex_eligible": bool(
+                p["attributes"].get("dex_eligible") and str(p["attributes"].get("pokemon_dex")) in dex
+            ),
             "card_id": legacy,
             "printing_id": p["id"],
             "set_id": sets.get(p["set_id"], p["set_id"]),
             "set": p["set_name"],
+            "era": eras.get(p["set_id"]),
             "number": p["collector_number"],
             "variant": p["variant"],
             "owned": bool(copies),
@@ -82,14 +84,26 @@ def projection(actor):
             "first_edition": any(c["first_edition_selected"] for c in copies),
             "copy_ids": [c["id"] for c in copies],
         }
-        attrs = p["attributes"]
-        n = attrs.get("pokemon_dex")
-        if attrs.get("dex_eligible") and str(n) in dex and str(n) not in species:
-            dex[str(n)]["name"] = attrs["name"]
     data = derive({"cards": cards, "pokedex": dex})
     data["totals"] = {**totals(data), "physical_copies": len(active)}
     data["catalog"] = catalog
     data["valuation"] = estimates(active, catalog)
+    from .ownership_declarations import summary
+
+    declaration = summary(actor)
+    from .collection_goals import latest
+
+    declared_rows = declaration["rows"] + declaration["gen2"]["rows"]
+    has_declaration = bool(latest(actor)) or bool(declared_rows)
+    data["owner_collection"] = dict(
+        kanto=declaration["species"],
+        johto=declaration["gen2"]["species"],
+        total=declaration["species"] + declaration["gen2"]["species"],
+        active=has_declaration,
+    )
+    for key, item in data["pokedex"].items():
+        item["declared_cards"] = [r for r in declared_rows if r["pokemon_dex"] == int(key)]
+        item["collection_owned"] = bool(item["declared_cards"]) if has_declaration else item["dex_owned"]
     return data
 
 

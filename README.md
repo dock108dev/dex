@@ -1,18 +1,15 @@
 # Vintage 251
 
-A local collection app for searching eBay bargains, comparing card and lot prices
-with dated guides, tracking physical copies and building filtered collecting
-goals. The Pokémon Pokédex covers species #001–251.
-The current supported use is a single user on localhost; public hosting and an
-invited-user rollout are not qualified.
+A local Pokémon collection app centered on **Pokédex**, **Pack lookup** and
+**eBay · Sandbox**. Browse species #001–251 across indexed English physical TCG
+eras, maintain ownership and copies, create frozen collecting goals, and save
+pack or eBay research. Catalog/product coverage is partial; seller observations
+are dated and do not establish current purchasability.
 
-The next beta requires an all-era Pokémon TCG catalog and collecting goals,
-retaining classic eBay hunting and adding a sealed-pack shopping index for missing
-species. The owner's first goal is all original 151 using qualifying cards from
-any era. Sourced data collection and engineering are both outstanding requirements.
-See [beta requirements](docs/BETA_REQUIREMENTS.md), [roadmap](docs/ROADMAP.md) and
-[work status](docs/PM_STATUS.md). The capabilities below describe today's app,
-not the completed expanded beta.
+The supported product runs for one user on localhost. Public hosting, complete
+all-era catalog coverage, real-card recognition accuracy and live buying
+recommendations are not qualified. See [catalogs and pack lookup](docs/catalogs.md)
+for data boundaries and [architecture](docs/SSOT.md) for storage and service ownership.
 
 ## Try it locally
 
@@ -27,7 +24,7 @@ uv run python -m pokemon_hunter.beta.synthetic --output "$DEX_DEMO_ROOT"
 uv run python -m pokemon_hunter.beta.cli --root "$DEX_DEMO_ROOT" serve
 ```
 
-Open [Overview](http://127.0.0.1:8011/overview/). Use username `admin` and its generated
+Open [Pokédex](http://127.0.0.1:8011/pokedex/). Use username `admin` and its generated
 password from `credentials.json` in the private demo directory. Keep that file
 private. The seed refuses an existing directory; on subsequent launches run only
 `serve`. Stop the server with Ctrl-C. Port 8011 must be free.
@@ -58,9 +55,9 @@ Real-card accuracy is unmeasured. See [photo entry](docs/photo-entry.md), [eBay 
 ## Development
 
 ```sh
-uv run ruff check .
-uv run ruff format --check .
-uv run pytest -q
+uv run --no-sync ruff check .
+uv run --no-sync ruff format --check .
+uv run --no-sync pytest -q
 ```
 
 For focused changes, select the relevant test files. Tests use temporary synthetic
@@ -68,11 +65,5 @@ state. See [CI](docs/CI.md), [architecture and data ownership](docs/SSOT.md),
 [security](docs/SECURITY.md), [failure recovery](docs/ERROR_HANDLING.md), and
 [optional staging operations](docs/operations.md).
 
-Failures use redacted diagnostics on standard error. Before retrying a failed
-mutation or watcher delivery, inspect saved state: writes or external delivery may
-have completed before the response or bookkeeping failed. The failure-recovery
-guide documents incomplete run states, cleanup errors and retained retry rules.
-
-Security policy covers exact local ingress, JSON mutation formats, explicit search
-controls and private file creation. See [security boundaries](docs/SECURITY.md)
-for the implemented controls and separate checks needed for older files or hosting.
+Read [failure recovery](docs/ERROR_HANDLING.md) before retrying an interrupted
+change. Git excludes local state and evidence; it is not a collection backup.

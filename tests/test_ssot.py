@@ -282,3 +282,54 @@ def test_missing_game_does_not_silently_become_pokemon():
     ):
         with pytest.raises(ValueError, match="unavailable game"):
             goal_hunts.project(object(), data, scope)
+
+
+def test_species_items_preserve_frozen_label_contract_and_use_canonical_names():
+    from pokemon_hunter.beta import broad_goals, canonical_species
+
+    entries = [
+        {"id": "b", "attributes": {"pokemon_dex": 250}},
+        {"id": "a", "attributes": {"pokemon_dex": 250}},
+    ]
+    names = canonical_species.registry()
+    with patch.object(canonical_species, "registry", wraps=canonical_species.registry) as authority:
+        frozen = broad_goals.species_items(entries, [250, 251])
+        current = broad_goals.species_items(entries, [250, 251], frozen_labels=False)
+        assert authority.call_count == 2
+    assert frozen[0]["label"] == "#250 Ho-oh"
+    assert current[0]["label"] == "#250 " + names[250]["name"]
+    assert frozen[0]["printing_ids"] == current[0]["printing_ids"] == ["a", "b"]
+    assert frozen[1]["printing_ids"] == []
+    assert frozen[1]["label"] == current[1]["label"] == "#251 " + names[251]["name"]
+    assert not hasattr(broad_goals, "SPECIES")
+
+
+def test_unregistered_refresh_adapter_interface_is_absent():
+    from pokemon_hunter.beta import refresh
+
+    assert not hasattr(refresh, "Adapter")
+    assert callable(refresh.ReplayAdapter.execute)
+
+
+def test_goal_and_lookup_species_membership_delegate_to_one_builder():
+    from pokemon_hunter.beta import broad_goals, collection_goals, lookup
+
+    entry = {"id": "synthetic-ho-oh", "attributes": {"pokemon_dex": 250}}
+    source = dict(id="source", user_id="account", source_sha256="test", revision=0)
+    with (
+        patch.object(broad_goals, "reviewed", return_value=([entry], [])),
+        patch.object(collection_goals, "source", return_value=source),
+        patch.object(collection_goals, "owned", return_value=[250]),
+        patch.object(collection_goals, "latest", return_value=None),
+        patch.object(lookup.store, "verified"),
+        patch.object(lookup.collection, "catalog", return_value=[entry]),
+        patch.object(lookup.packs, "project", return_value={}) as projector,
+        patch.object(broad_goals, "species_items", wraps=broad_goals.species_items) as builder,
+    ):
+        broad_goals.definition([entry])
+        declared = collection_goals.targets_definition(object(), [entry], "source", [250])
+        lookup.project(type("SyntheticActor", (), {"user_id": "account"})(), {"targets": "250"})
+        assert builder.call_count == 3
+    assert declared["items"][0]["label"] == "#250 Ho-oh"
+    scope = projector.call_args.kwargs["scope"]
+    assert json.loads(scope["definition"])["items"][0]["label"] == "#250 Ho-Oh"

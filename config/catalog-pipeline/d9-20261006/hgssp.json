@@ -1,0 +1,298 @@
+{
+  "schema_version": "dex-catalog-v1",
+  "game": "pokemon",
+  "provider": "tcgdex",
+  "version": "d9-99c994747cf7-v1",
+  "set_key": "hgssp",
+  "set_name": "HGSS Black Star Promos",
+  "language": "en",
+  "aliases": [],
+  "source_url": "https://codeload.github.com/tcgdex/cards-database/tar.gz/99c994747cf7519a3e51166cc932de79a88bd4b3",
+  "source_sha256": "1431e3be180cc5c8e491e480fd78b2b721155622372591d9f82bfb8aa83a6cce",
+  "metadata_permission": "MIT; Copyright (c) 2021 TCGdex; retained evidence/d7-20261005/TCGDEX_LICENSE.txt",
+  "image_permission": "not-included",
+  "coverage": "partial",
+  "expected_count": 25,
+  "cards": [
+    {
+      "external_id": "hgssp-HGSS01:6d0c671bc6311ab2",
+      "number": "HGSS01",
+      "name": "Ho-Oh",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 250,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Promo"
+      }
+    },
+    {
+      "external_id": "hgssp-HGSS02:6d0c671bc6311ab2",
+      "number": "HGSS02",
+      "name": "Lugia",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 249,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Promo"
+      }
+    },
+    {
+      "external_id": "hgssp-HGSS03:6d0c671bc6311ab2",
+      "number": "HGSS03",
+      "name": "Pikachu",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 25,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Promo"
+      }
+    },
+    {
+      "external_id": "hgssp-HGSS04:6d0c671bc6311ab2",
+      "number": "HGSS04",
+      "name": "Wobbuffet",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 202,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Promo"
+      }
+    },
+    {
+      "external_id": "hgssp-HGSS05:6d0c671bc6311ab2",
+      "number": "HGSS05",
+      "name": "Hoothoot",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 163,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Promo"
+      }
+    },
+    {
+      "external_id": "hgssp-HGSS06:6d0c671bc6311ab2",
+      "number": "HGSS06",
+      "name": "Noctowl",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 164,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Promo"
+      }
+    },
+    {
+      "external_id": "hgssp-HGSS07:6d0c671bc6311ab2",
+      "number": "HGSS07",
+      "name": "Feraligatr",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 160,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Promo"
+      }
+    },
+    {
+      "external_id": "hgssp-HGSS08:6d0c671bc6311ab2",
+      "number": "HGSS08",
+      "name": "Meganium",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 154,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Promo"
+      }
+    },
+    {
+      "external_id": "hgssp-HGSS09:6d0c671bc6311ab2",
+      "number": "HGSS09",
+      "name": "Typhlosion",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 157,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Promo"
+      }
+    },
+    {
+      "external_id": "hgssp-HGSS12:6d0c671bc6311ab2",
+      "number": "HGSS12",
+      "name": "Cleffa",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 173,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Promo"
+      }
+    },
+    {
+      "external_id": "hgssp-HGSS13:6d0c671bc6311ab2",
+      "number": "HGSS13",
+      "name": "Smoochum",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 238,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Promo"
+      }
+    },
+    {
+      "external_id": "hgssp-HGSS14:6d0c671bc6311ab2",
+      "number": "HGSS14",
+      "name": "Lapras",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 131,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Promo"
+      }
+    },
+    {
+      "external_id": "hgssp-HGSS15:6d0c671bc6311ab2",
+      "number": "HGSS15",
+      "name": "Shuckle",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 213,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Promo"
+      }
+    },
+    {
+      "external_id": "hgssp-HGSS19:6d0c671bc6311ab2",
+      "number": "HGSS19",
+      "name": "Raikou",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 243,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Promo"
+      }
+    },
+    {
+      "external_id": "hgssp-HGSS20:6d0c671bc6311ab2",
+      "number": "HGSS20",
+      "name": "Entei",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 244,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Promo"
+      }
+    },
+    {
+      "external_id": "hgssp-HGSS21:6d0c671bc6311ab2",
+      "number": "HGSS21",
+      "name": "Suicune",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 245,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Promo"
+      }
+    },
+    {
+      "external_id": "hgssp-HGSS22:6d0c671bc6311ab2",
+      "number": "HGSS22",
+      "name": "Porygon",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 137,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Promo"
+      }
+    },
+    {
+      "external_id": "hgssp-HGSS23:6d0c671bc6311ab2",
+      "number": "HGSS23",
+      "name": "Porygon2",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 233,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Promo"
+      }
+    },
+    {
+      "external_id": "hgssp-HGSS24:6d0c671bc6311ab2",
+      "number": "HGSS24",
+      "name": "Hitmonchan",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 107,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Promo"
+      }
+    },
+    {
+      "external_id": "hgssp-HGSS25:6d0c671bc6311ab2",
+      "number": "HGSS25",
+      "name": "Hitmonlee",
+      "finish": "holo",
+      "variant": "{\"type\":\"holo\"}",
+      "edition": null,
+      "metadata": {
+        "pokemon_dex": 106,
+        "dex_eligible": true,
+        "supertype": "Pokémon",
+        "rarity": "Promo"
+      }
+    }
+  ]
+}

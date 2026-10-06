@@ -270,6 +270,15 @@ def test_promo_deck_guaranteed_and_mixed_contents_are_separate():
             quantity=1,
         )
     )
+    distribution = copy.deepcopy(next(s for s in p["sources"] if s["id"] == "official-checklist"))
+    distribution.update(
+        id="fixture-distribution",
+        supports=["distribution-membership"],
+        subjects=[p["memberships"][0]["id"]],
+        note="Synthetic exact distribution review",
+    )
+    p["sources"].append(distribution)
+    p["memberships"][0]["sources"] = ["fixture-distribution"]
     for status in ("promo", "deck-only", "unknown", "booster"):
         p["memberships"][0]["status"] = status
         result = cat.validate(p)
@@ -291,7 +300,9 @@ def test_latest_observation_prevents_historical_buy_now(e1):
     p["observations"][0].update(stock="in-stock", price_minor=2799)
     publish(e1, p)
     checked = cat.instant(p["observations"][0]["checked_at"])
-    assert cat.report(e1["actor"], checked)["observations"][0]["buy_now"]
+    assert not cat.report(e1["actor"], checked)["observations"][0][
+        "buy_now"
+    ]  # Synthetic is never purchase proof.
     q = delta(p, "latest-check")
     source = copy.deepcopy(p["sources"][-1])
     observation = copy.deepcopy(p["observations"][0])

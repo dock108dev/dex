@@ -73,7 +73,14 @@ def home(request):
 
 @require_GET
 def asset(request, filename):
-    if filename not in {"collection.js", "collection.css", "parity.js", "scans.js", "catalog.js"}:
+    if filename not in {
+        "collection.js",
+        "collection.css",
+        "parity.js",
+        "scans.js",
+        "catalog.js",
+        "pokedex.js",
+    }:
         raise Http404
     return HttpResponse(
         (Path(__file__).parent / "static" / filename).read_text(),
@@ -86,6 +93,18 @@ def asset(request, filename):
 def dashboard(request):
     who = actor(request)
     data = service.export_data(who)
+    from .ownership_declarations import summary
+
+    data["ownership_declaration"] = summary(who)
+    from . import collection_goals
+
+    data["current_collection_source"] = (
+        collection_goals.reference(collection_goals.latest(who)) if collection_goals.latest(who) else None
+    )
+    data["available_collection_sources"] = [
+        dict(collection_goals.reference(r), owned=len(collection_goals.owned(r)))
+        for r in collection_goals.sources(who)
+    ]
     owned_ids = {c["printing_id"] for c in data["copies"]}
     data["printing_details"] = {
         p["id"]: {k: p[k] for k in ("set_name", "edition", "finish", "variant")}

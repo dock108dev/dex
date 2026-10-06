@@ -1,0 +1,26 @@
+{
+  "defect": "Catalog keys permit hyphens but primary expansion codes contain dots; current coverage adds duplicate rows and still reads historical universe",
+  "identities": [
+    {
+      "provider_code": "sv08.5",
+      "expansion_id": "tcgdex:en:sv08.5",
+      "catalog_set_key": "sv08-5",
+      "current_assessment_id": "tcgdex:en:sv08-5"
+    },
+    {
+      "provider_code": "swsh12.5",
+      "expansion_id": "tcgdex:en:swsh12.5",
+      "catalog_set_key": "swsh12-5",
+      "current_assessment_id": "tcgdex:en:swsh12-5"
+    }
+  ],
+  "requirements": [
+    "Explicit reviewed identity mapping, preserve canonical expansion, external printing IDs, catalog IDs, frozen goals and saved references",
+    "Canonical coverage view must count each provider set once; do not silently merge rows or alter historical manifests",
+    "Bind current coverage universe to reviewed D6 pinned source with truthful current/asof labeling",
+    "Rehearse repair with copied SQLite, corrections, idempotency, conflicts and rollback; PostgreSQL separately"
+  ],
+  "source_denominator": 220,
+  "current_runtime_rows": 222,
+  "application_code_changed": false
+}

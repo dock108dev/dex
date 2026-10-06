@@ -1,50 +1,61 @@
-"""Reviewed E1 publication through the existing collection catalog service."""
+"""Reviewed metadata publication through the existing collection catalog service."""
 
+from . import canonical_species, store
 from . import catalog_imports as cat
 from . import collection as inv
-from . import store
+
+
+def validate(package, bridge):
+    printings = {r["id"]: r for r in package["printings"]}
+    raw = bridge["package"]
+    p = cat.validate(raw)
+    if p["game"] != "pokemon" or p["language"] != "en":
+        raise ValueError("Bridge requires reviewed English Pokémon metadata")
+    if len(bridge["links"]) != len(p["cards"]):
+        raise ValueError("Bridge must map every incoming card")
+    links = {r["external_id"]: r["printing_id"] for r in bridge["links"]}
+    if len(links) != len(p["cards"]) or len(set(links.values())) != len(links):
+        raise ValueError("Repeated bridge mapping")
+    # Null edition is explicit unknown. Legacy unlimited bridges retain their
+    # reviewed values; provider variant labels never fill physical attributes.
+    for card in p["cards"]:
+        r = printings.get(links.get(card["external_id"]))
+        if not r or r["expansion_id"] != bridge["expansion_id"]:
+            raise ValueError("Bridge printing/expansion missing")
+        if r["species_id"]:
+            number = int(r["species_id"].split(":")[1])
+            if canonical_species.require(number) != r["species_id"] or r["category"] != "pokemon":
+                raise ValueError("Bridge canonical species/category conflict")
+        expected = dict(
+            pokemon_dex=int(r["species_id"].split(":")[1]) if r["species_id"] else None,
+            dex_eligible=r["category"] == "pokemon",
+            supertype={"pokemon": "Pokémon", "trainer": "Trainer", "energy": "Energy"}.get(r["category"]),
+            rarity=r["rarity"] or "Unknown",
+        )
+        if (
+            any(card[k] != r[k] for k in ("number", "name", "finish", "variant"))
+            or card.get("metadata") != expected
+            or card["edition"] not in {None, "unlimited"}
+        ):
+            raise ValueError("Bridge metadata/category/canonical identity conflict")
+        mappings = [
+            m
+            for m in package["mappings"]
+            if m["kind"] == "printings"
+            and m["internal_id"] == r["id"]
+            and m["external_id"] == card["external_id"]
+            and m["provider"] == p["provider"]
+            and m["language"] == p["language"]
+        ]
+        if not mappings:
+            raise ValueError("Bridge requires explicit external identity mapping")
+    return p, links
 
 
 def preview(actor, package):
     result = []
-    printings = {r["id"]: r for r in package["printings"]}
     for bridge in package["bridges"]:
-        raw = bridge["package"]
-        p = cat.validate(raw)
-        if p["game"] != "pokemon" or p["language"] != "en":
-            raise ValueError("Bridge requires reviewed English Pokémon metadata")
-        if len(bridge["links"]) != len(p["cards"]):
-            raise ValueError("Bridge must map every incoming card")
-        links = {r["external_id"]: r["printing_id"] for r in bridge["links"]}
-        if len(links) != len(p["cards"]) or len(set(links.values())) != len(links):
-            raise ValueError("Repeated bridge mapping")
-        for card in p["cards"]:
-            r = printings.get(links.get(card["external_id"]))
-            if not r or r["expansion_id"] != bridge["expansion_id"]:
-                raise ValueError("Bridge printing/expansion missing")
-            expected = dict(
-                pokemon_dex=int(r["species_id"].split(":")[1]) if r["species_id"] else None,
-                dex_eligible=r["category"] == "pokemon",
-                supertype={"pokemon": "Pokémon", "trainer": "Trainer", "energy": "Energy"}.get(r["category"]),
-                rarity=r["rarity"] or "Unknown",
-            )
-            if (
-                any(card[k] != r[k] for k in ("number", "name", "finish", "variant"))
-                or card.get("metadata") != expected
-                or card["edition"] != "unlimited"
-            ):
-                raise ValueError("Bridge metadata/category/canonical identity conflict")
-            mappings = [
-                m
-                for m in package["mappings"]
-                if m["kind"] == "printings"
-                and m["internal_id"] == r["id"]
-                and m["external_id"] == card["external_id"]
-                and m["provider"] == p["provider"]
-                and m["language"] == p["language"]
-            ]
-            if not mappings:
-                raise ValueError("Bridge requires explicit external identity mapping")
+        p, links = validate(package, bridge)
         op = cat.preview(actor, p)
         if op["preview"]["archived"]:
             raise ValueError("Bridge cannot implicitly archive existing collection printings")

@@ -1,4 +1,4 @@
-"""Create an entirely synthetic, private staging seed. Never reads owner data."""
+"""Create a private local demo and optional staging copy. Never reads owner data."""
 
 import argparse
 import io
@@ -119,9 +119,6 @@ def prepare(root):
         )
     # Deliberately retained interrupted reservation verifies rollback never refunds it.
     inv.execute("UPDATE scan_jobs SET reserved_usd=0.05 WHERE id=%s", [job["id"]])
-    evidence = root / "parity-evidence"
-    evidence.mkdir(mode=0o700)
-    (evidence / "species.json").write_bytes((PACKAGES / "species.json").read_bytes())
     connection.close()
     with (
         sqlite3.connect(root / "inventory.db") as source,

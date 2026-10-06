@@ -1,0 +1,518 @@
+{
+  "numbered_count": 18,
+  "variant_records": 18,
+  "expected_variant_count": null,
+  "canonical_species_count": 18,
+  "original151_count": 13,
+  "trainer_count": 0,
+  "energy_count": 0,
+  "rows": [
+    {
+      "provider_id": "det1-1",
+      "number": "1",
+      "printing_id": "tcgdex:en:det1-1:provider-normal-generated",
+      "category": "pokemon",
+      "species_id": "ndex:0001",
+      "canonical_name": "Bulbasaur",
+      "original151": true,
+      "provider_variant_description": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "provider_variant_flags": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "verified_finish": null,
+      "verified_edition": null,
+      "verified_distribution": null,
+      "membership": "unknown",
+      "source_sha256": "ef22094d07ab95ddaafb1e3f2aeda0997e4e4872b968d3e54df334e3af104223"
+    },
+    {
+      "provider_id": "det1-2",
+      "number": "2",
+      "printing_id": "tcgdex:en:det1-2:provider-normal-generated",
+      "category": "pokemon",
+      "species_id": "ndex:0272",
+      "canonical_name": "Ludicolo",
+      "original151": false,
+      "provider_variant_description": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "provider_variant_flags": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "verified_finish": null,
+      "verified_edition": null,
+      "verified_distribution": null,
+      "membership": "unknown",
+      "source_sha256": "c3371d04728ef2982f555a4afc8c26aaf91c792362d0551dc697c06128543b4c"
+    },
+    {
+      "provider_id": "det1-3",
+      "number": "3",
+      "printing_id": "tcgdex:en:det1-3:provider-normal-generated",
+      "category": "pokemon",
+      "species_id": "ndex:0755",
+      "canonical_name": "Morelull",
+      "original151": false,
+      "provider_variant_description": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "provider_variant_flags": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "verified_finish": null,
+      "verified_edition": null,
+      "verified_distribution": null,
+      "membership": "unknown",
+      "source_sha256": "c5d1aec2957510eb4ed40b3ad16ab551e9ad3148df4e348911f94b67ad8c2bf3"
+    },
+    {
+      "provider_id": "det1-4",
+      "number": "4",
+      "printing_id": "tcgdex:en:det1-4:provider-normal-generated",
+      "category": "pokemon",
+      "species_id": "ndex:0004",
+      "canonical_name": "Charmander",
+      "original151": true,
+      "provider_variant_description": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "provider_variant_flags": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "verified_finish": null,
+      "verified_edition": null,
+      "verified_distribution": null,
+      "membership": "unknown",
+      "source_sha256": "d2b8ea2f325626a767f1466e7c924f3bc9ac94adec59d806cbd59348d5c4ccfb"
+    },
+    {
+      "provider_id": "det1-5",
+      "number": "5",
+      "printing_id": "tcgdex:en:det1-5:provider-normal-generated",
+      "category": "pokemon",
+      "species_id": "ndex:0006",
+      "canonical_name": "Charizard",
+      "original151": true,
+      "provider_variant_description": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "provider_variant_flags": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "verified_finish": null,
+      "verified_edition": null,
+      "verified_distribution": null,
+      "membership": "unknown",
+      "source_sha256": "740c2536722922344e9a9c5dc16bff8bc5e483a1a3b752e26dc9a4411b0036ed"
+    },
+    {
+      "provider_id": "det1-6",
+      "number": "6",
+      "printing_id": "tcgdex:en:det1-6:provider-normal-generated",
+      "category": "pokemon",
+      "species_id": "ndex:0059",
+      "canonical_name": "Arcanine",
+      "original151": true,
+      "provider_variant_description": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "provider_variant_flags": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "verified_finish": null,
+      "verified_edition": null,
+      "verified_distribution": null,
+      "membership": "unknown",
+      "source_sha256": "09a688fcac7ff5751373fbd109fcd1a7b7ac3977f0e77336a645fec6c149d3d2"
+    },
+    {
+      "provider_id": "det1-7",
+      "number": "7",
+      "printing_id": "tcgdex:en:det1-7:provider-normal-generated",
+      "category": "pokemon",
+      "species_id": "ndex:0054",
+      "canonical_name": "Psyduck",
+      "original151": true,
+      "provider_variant_description": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "provider_variant_flags": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "verified_finish": null,
+      "verified_edition": null,
+      "verified_distribution": null,
+      "membership": "unknown",
+      "source_sha256": "c620d9a78c383d29ddb6a6ad0acfc6fb23729211169c85372e5bd49ba0196fb4"
+    },
+    {
+      "provider_id": "det1-8",
+      "number": "8",
+      "printing_id": "tcgdex:en:det1-8:provider-normal-generated",
+      "category": "pokemon",
+      "species_id": "ndex:0129",
+      "canonical_name": "Magikarp",
+      "original151": true,
+      "provider_variant_description": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "provider_variant_flags": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "verified_finish": null,
+      "verified_edition": null,
+      "verified_distribution": null,
+      "membership": "unknown",
+      "source_sha256": "6f559a4147d16665080ae78db30e97b44c0895480085f3558453ff50cf844dc0"
+    },
+    {
+      "provider_id": "det1-9",
+      "number": "9",
+      "printing_id": "tcgdex:en:det1-9:provider-normal-generated",
+      "category": "pokemon",
+      "species_id": "ndex:0658",
+      "canonical_name": "Greninja",
+      "original151": false,
+      "provider_variant_description": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "provider_variant_flags": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "verified_finish": null,
+      "verified_edition": null,
+      "verified_distribution": null,
+      "membership": "unknown",
+      "source_sha256": "3a8275101b18d7943f14c03a89a9fd4d17798767d551fd971ca59d577e4fd470"
+    },
+    {
+      "provider_id": "det1-10",
+      "number": "10",
+      "printing_id": "tcgdex:en:det1-10:provider-normal-generated",
+      "category": "pokemon",
+      "species_id": "ndex:0025",
+      "canonical_name": "Pikachu",
+      "original151": true,
+      "provider_variant_description": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "provider_variant_flags": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "verified_finish": null,
+      "verified_edition": null,
+      "verified_distribution": null,
+      "membership": "unknown",
+      "source_sha256": "a54b1f167f6e77cd7a38dbca42089ae477ac6ad1989716baa864242af787b89f"
+    },
+    {
+      "provider_id": "det1-11",
+      "number": "11",
+      "printing_id": "tcgdex:en:det1-11:provider-normal-generated",
+      "category": "pokemon",
+      "species_id": "ndex:0122",
+      "canonical_name": "Mr. Mime",
+      "original151": true,
+      "provider_variant_description": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "provider_variant_flags": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "verified_finish": null,
+      "verified_edition": null,
+      "verified_distribution": null,
+      "membership": "unknown",
+      "source_sha256": "42c862e9685b37f336d6c99cb591f89d6d28304c1f50a70561a83a55ae88fcd7"
+    },
+    {
+      "provider_id": "det1-12",
+      "number": "12",
+      "printing_id": "tcgdex:en:det1-12:provider-normal-generated",
+      "category": "pokemon",
+      "species_id": "ndex:0150",
+      "canonical_name": "Mewtwo",
+      "original151": true,
+      "provider_variant_description": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "provider_variant_flags": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "verified_finish": null,
+      "verified_edition": null,
+      "verified_distribution": null,
+      "membership": "unknown",
+      "source_sha256": "c31fbf71a469dc13d66cc89df6fe0a07c3ab067435f7a4a43de8f5cc1a489c18"
+    },
+    {
+      "provider_id": "det1-13",
+      "number": "13",
+      "printing_id": "tcgdex:en:det1-13:provider-normal-generated",
+      "category": "pokemon",
+      "species_id": "ndex:0068",
+      "canonical_name": "Machamp",
+      "original151": true,
+      "provider_variant_description": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "provider_variant_flags": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "verified_finish": null,
+      "verified_edition": null,
+      "verified_distribution": null,
+      "membership": "unknown",
+      "source_sha256": "b05251b8cc045de1ca2435511f1683e43371c3d549276520badf9d4d119c22a5"
+    },
+    {
+      "provider_id": "det1-14",
+      "number": "14",
+      "printing_id": "tcgdex:en:det1-14:provider-normal-generated",
+      "category": "pokemon",
+      "species_id": "ndex:0039",
+      "canonical_name": "Jigglypuff",
+      "original151": true,
+      "provider_variant_description": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "provider_variant_flags": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "verified_finish": null,
+      "verified_edition": null,
+      "verified_distribution": null,
+      "membership": "unknown",
+      "source_sha256": "c1f1164c8e9fdfa6747f67a5518ec7534da55e0dd6d03b36e9d01bf7aaf3c82a"
+    },
+    {
+      "provider_id": "det1-15",
+      "number": "15",
+      "printing_id": "tcgdex:en:det1-15:provider-normal-generated",
+      "category": "pokemon",
+      "species_id": "ndex:0209",
+      "canonical_name": "Snubbull",
+      "original151": false,
+      "provider_variant_description": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "provider_variant_flags": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "verified_finish": null,
+      "verified_edition": null,
+      "verified_distribution": null,
+      "membership": "unknown",
+      "source_sha256": "792518b0049d6948568ef4168f363afaabb6d7a1ee8436d4640e0faeab5767c9"
+    },
+    {
+      "provider_id": "det1-16",
+      "number": "16",
+      "printing_id": "tcgdex:en:det1-16:provider-normal-generated",
+      "category": "pokemon",
+      "species_id": "ndex:0108",
+      "canonical_name": "Lickitung",
+      "original151": true,
+      "provider_variant_description": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "provider_variant_flags": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "verified_finish": null,
+      "verified_edition": null,
+      "verified_distribution": null,
+      "membership": "unknown",
+      "source_sha256": "c7d973e434d2d6fd9db66b9d01ed241a127196931d9c8a255605c68eae64723d"
+    },
+    {
+      "provider_id": "det1-17",
+      "number": "17",
+      "printing_id": "tcgdex:en:det1-17:provider-normal-generated",
+      "category": "pokemon",
+      "species_id": "ndex:0132",
+      "canonical_name": "Ditto",
+      "original151": true,
+      "provider_variant_description": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "provider_variant_flags": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "verified_finish": null,
+      "verified_edition": null,
+      "verified_distribution": null,
+      "membership": "unknown",
+      "source_sha256": "dad68aaf54a9b876586a567f3d287fe3b7627f337e29a3b3886427ed5896f555"
+    },
+    {
+      "provider_id": "det1-18",
+      "number": "18",
+      "printing_id": "tcgdex:en:det1-18:provider-normal-generated",
+      "category": "pokemon",
+      "species_id": "ndex:0289",
+      "canonical_name": "Slaking",
+      "original151": false,
+      "provider_variant_description": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "provider_variant_flags": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "verified_finish": null,
+      "verified_edition": null,
+      "verified_distribution": null,
+      "membership": "unknown",
+      "source_sha256": "da361924b988e9243c16843c7520b9e5bc0032b98880cf9b5885cfd93be46392"
+    }
+  ],
+  "bridge_status": "blocked-by-canonical-251-limit",
+  "publication_status": "not-published",
+  "edition_diagnostic_note": "Rejected bridge input uses required unlimited compatibility sentinel; physical edition unknown."
+}
