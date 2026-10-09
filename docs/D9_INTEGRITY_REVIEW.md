@@ -1,5 +1,0 @@
-# D9 integrity and handoff review — October 6, 2026
-
-Verified the frozen candidate hash and all listed files with zero mismatches; exact identity/count are in `evidence/d9-integrity-review-20261006/review.json`. Inspected the closeout and bounded follow-up. Reported 125 regressions and publication/preservation/reversal qualification remain D9 evidence; no tests or browser timing were repeated here.
-
-The twenty-set tranche is prepared and compatible according to retained evidence. Installation remains held: full copied Pokédex rendered correctly but browser completion time was unmeasured. In-process response timings do not close that gate. The next review correctly limits qualification to at most two timed full Pokédex navigations on a fresh expanded retained-owner copy, preserving owner runtime and all records. The running owner app and browser were not operated. This integrity review does not discharge the loading gate or authorize installation. Historical D9 evidence remains unchanged.

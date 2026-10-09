@@ -1,9 +1,0 @@
-# D6 candidate review — October 5, 2026
-
-Manifest SHA-256 `f1afd6c31366e5e19aa1d1ad9cf028e9dc7d17d9a4251df351a1688dbcffa320` and all **1,733 files** match. Closeout/source outcomes distinguish acquired 6,991 numbered targets, prepared 597 targets/1,215 supplied English variants, 26 standard booster relationships and zero documented product/current-offer chains. Reported 55 focused tests and browser/rollback evidence remain D6 qualification; this review did not rerun tests or operate the owner app.
-
-The shopping blocker is source access/evidence, not missing product-import engineering. Official pages returned challenges, checklist guesses returned 404, retailer reads failed or lacked dynamic seller/price/stock fields. Target establishes exact retail identity only. Keep failures, null observations and consumed budgets immutable; do not turn snippets or publication into freshness/availability.
-
-Next data work can normalize the retained seven-set 533-target tranche without new acquisition. Real-shopping work needs a fresh practical official/product/seller source plan using allowed access, including ordinary browser observation when a public page requires rendered content; actual access challenges remain stop conditions. Avoid repeating the same failed static downloads. Next engineering work should reconcile dotted set-code aliases and integrate the already-reviewed D6 packages, preserving stable IDs/frozen references and keeping source universe counts distinct from app catalog counts. M4 can inspect and integrate real catalog/distribution packages; it cannot close shopping acceptance on current evidence. Owner backed-up application remains pending and separately evidenced.
-
-Sanitized review: `evidence/d6-review-20261005/review.json`. No new acquisition, application code change or owner write. Original D6 manifest/evidence remains intact.
