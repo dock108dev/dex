@@ -3,10 +3,12 @@
 import fcntl
 import json
 import os
+import signal
+import subprocess
 import sys
 import time
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 from test_b1 import env as env
@@ -137,7 +139,8 @@ def test_missing_cli_and_busy(tmp_path, monkeypatch):
 
 
 @pytest.mark.parametrize("kind", ["cancel", "timeout", "shutdown"])
-def test_termination_and_cleanup(tmp_path, monkeypatch, kind):
+@pytest.mark.parametrize("zombie_group", [False, True])
+def test_termination_and_cleanup(tmp_path, monkeypatch, kind, zombie_group):
     marker = tmp_path / "process.json"
     fake_cli(
         tmp_path,
@@ -148,6 +151,19 @@ Path({str(marker)!r}).write_text(json.dumps([os.getpid(),child.pid,str(Path.cwd(
 time.sleep(60)
 """,
     )
+    if zombie_group:
+        monkeypatch.setattr(cli.sys, "platform", "darwin")
+        original_killpg = cli.os.killpg
+
+        def killpg(pid, sig):
+            try:
+                original_killpg(pid, sig)
+            except ProcessLookupError:
+                pass
+            if sig == signal.SIGKILL:
+                raise PermissionError(1, "Operation not permitted")
+
+        monkeypatch.setattr(cli.os, "killpg", killpg)
     monkeypatch.setattr(cli, "TIMEOUT", 0.3 if kind == "timeout" else 3)
     start = time.monotonic()
     with pytest.raises(cli.RecognitionError, match="timed out" if kind == "timeout" else "cancelled"):
@@ -158,8 +174,6 @@ time.sleep(60)
     with pytest.raises(ProcessLookupError):
         os.kill(pid, 0)
     # A dead child can briefly be a zombie until reaped by init on CI.
-    import subprocess
-
     status = subprocess.run(
         ["ps", "-o", "stat=", "-p", str(child)], capture_output=True, text=True
     ).stdout.strip()
@@ -178,6 +192,77 @@ def test_output_bound_and_tool_action_rejection(tmp_path, monkeypatch):
     )
     with pytest.raises(cli.RecognitionError, match="unsupported action"):
         cli.recognize([b"image"], tmp_path)
+
+
+@pytest.mark.parametrize("sig", [signal.SIGTERM, signal.SIGKILL])
+@pytest.mark.parametrize("exited,platform", [(True, "darwin"), (False, "darwin"), (True, "linux")])
+def test_cleanup_permission_error_requires_exited_darwin_process(monkeypatch, sig, exited, platform):
+    process = Mock(pid=123, poll=Mock(return_value=0 if exited else None))
+    monkeypatch.setattr(cli.sys, "platform", platform)
+
+    def killpg(pid, received):
+        assert pid == process.pid
+        if received == sig:
+            raise PermissionError(1, "Operation not permitted")
+
+    monkeypatch.setattr(cli.os, "killpg", killpg)
+    if exited and platform == "darwin":
+        cli.terminate(process)
+    else:
+        with pytest.raises(PermissionError):
+            cli.terminate(process)
+    if exited and platform == "darwin" or sig == signal.SIGTERM:
+        process.wait.assert_called_with()
+    else:
+        process.wait.assert_called_once_with(timeout=1)
+
+
+@pytest.mark.skipif(sys.platform != "darwin", reason="Darwin zombie process-group behavior")
+def test_cleanup_exited_unreaped_process():
+    # A pipe closes on exit without polling/reaping the child first.
+    process = subprocess.Popen([sys.executable, "-c", "pass"], stdout=subprocess.PIPE, start_new_session=True)
+    try:
+        assert process.stdout.read() == b""
+        deadline = time.monotonic() + 3
+        while time.monotonic() < deadline:
+            status = subprocess.run(
+                ["ps", "-o", "stat=", "-p", str(process.pid)], capture_output=True, text=True
+            ).stdout.strip()
+            if status.startswith("Z"):
+                break
+        assert status.startswith("Z")
+        cli.terminate(process)
+        assert process.returncode == 0
+    finally:
+        process.stdout.close()
+        process.wait()
+
+
+def test_cleanup_kills_descendant_after_wrapper_exits(tmp_path, monkeypatch):
+    marker = tmp_path / "process.json"
+    fake_cli(
+        tmp_path,
+        monkeypatch,
+        f"""
+child=subprocess.Popen([sys.executable,'-c',
+ 'import signal,time; signal.signal(signal.SIGTERM,signal.SIG_IGN); print("ready",flush=True); time.sleep(60)'],
+ stdout=subprocess.PIPE)
+assert child.stdout.readline() == b'ready\\n'
+Path({str(marker)!r}).write_text(json.dumps([os.getpid(),child.pid,str(Path.cwd())]))
+time.sleep(60)
+""",
+    )
+    with pytest.raises(cli.RecognitionError, match="cancelled"):
+        cli.recognize([b"image"], tmp_path, marker.exists)
+    pid, child, folder = json.loads(marker.read_text())
+    assert not Path(folder).exists()
+    with pytest.raises(ProcessLookupError):
+        os.kill(pid, 0)
+    status = subprocess.run(
+        ["ps", "-o", "stat=", "-p", str(child)], capture_output=True, text=True
+    ).stdout.strip()
+    assert not status or status.startswith("Z")
+    assert records(tmp_path)[0]["outcome"] == "cancelled"
 
 
 def test_cli_shared_confirmation_undo_and_no_api_spend(b3):

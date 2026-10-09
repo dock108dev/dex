@@ -88,18 +88,24 @@ def options(directory):
 
 def terminate(process):
     # A separate session lets us terminate descendants as well as the CLI wrapper.
+    def signal_group(sig):
+        try:
+            os.killpg(process.pid, sig)
+        except ProcessLookupError:
+            pass
+        except PermissionError:
+            # Darwin returns EPERM for zombie-only groups. Reap the wrapper to
+            # confirm exit; a live wrapper or another platform still fails.
+            if sys.platform != "darwin" or process.poll() is None:
+                raise
+
     try:
-        os.killpg(process.pid, signal.SIGTERM)
+        signal_group(signal.SIGTERM)
         process.wait(timeout=1)
     except subprocess.TimeoutExpired:
         pass
-    except ProcessLookupError:
-        pass
     finally:
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
+        signal_group(signal.SIGKILL)
         process.wait()
 
 
