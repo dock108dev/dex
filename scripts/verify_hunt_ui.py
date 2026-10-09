@@ -392,7 +392,7 @@ def run_goals(browser, viewport, output):
     errors = []
     page.on("pageerror", lambda error: errors.append(str(error)))
     page.goto("https://dex-ui.test/goals/")
-    expect(page.get_by_label("Goal type", exact=True)).to_have_value("filtered")
+    page.get_by_label("Goal type", exact=True).select_option("filtered")
     expect(page.locator("#filter-summary")).to_contain_text("251 target species")
     expect(page.locator("#filter-summary")).to_contain_text("1 owned within these filters")
     page.get_by_role("button", name="Original 151", exact=True).click()
@@ -437,6 +437,7 @@ def run_goals(browser, viewport, output):
     assert fixture.requests[-1]["goal_id"] == "goal-2"
 
     page.goto("https://dex-ui.test/goals/")
+    page.get_by_label("Goal type", exact=True).select_option("filtered")
     page.get_by_label("Game", exact=True).select_option("orbits")
     expect(page.get_by_label("Count toward completion", exact=True)).to_have_value("printings")
     expect(page.locator("#filter-dex")).to_be_hidden()

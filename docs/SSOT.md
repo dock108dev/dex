@@ -2,9 +2,9 @@
 
 ## Entry points and storage
 
-The authenticated collection app is Django, served by uvicorn on
-`127.0.0.1:8011`. Templates and plain JavaScript consume private, account-scoped
-projections. A private root holds SQLite inventory, authentication data, the
+The collection app is Django, served by uvicorn on `127.0.0.1:8011`.
+Public browsing uses allowlisted published catalog metadata; signed-in templates
+and plain JavaScript consume private, account-scoped projections. A private root holds SQLite inventory, authentication data, the
 Django secret and provider configuration. The optional staging profile uses
 PostgreSQL and separate web/worker processes; see [operations](operations.md).
 
@@ -20,21 +20,23 @@ Paths in this table are relative to `src/pokemon_hunter/`.
 
 | Responsibility | Source and contract |
 |---|---|
-| Local initialization and serving | `beta/cli.py`, `beta/settings.py`, `beta/urls.py`: root capability markers select compatible handlers; no automatic reseeding |
+| Local initialization and serving | `beta/staging_config.py` owns runtime profile selection; `beta/cli.py`, `beta/settings.py`, `beta/urls.py` consume it and root capability markers; unsupported profiles/actions fail before local initialization, with no automatic reseeding |
 | Authentication and account access | Django auth, `beta/accounts.py`, `beta/store.py`: active mapped account and account-scoped queries; client IDs are selectors, not authority |
+| Guest browsing | `beta/public_catalog.py`, `beta/public_views.py`: shared canonical species and allowlisted published card metadata; no default account, ownership or private sources |
 | Schema and import | `inventory.py`, `migration.py`: compatible additive schema initialization and explicit legacy import |
 | Physical copies and mutations | `beta/collection.py`, `beta/transactions.py`: preview, confirmation, idempotency and conflict-aware undo |
+| Collection serialization and shared printing reads | `beta/collection_imports.py`: import shape, version hashes and frozen checklist validation; `beta/collection_catalog.py`: shared metadata queries; account verification and mutation authority remain in `beta/collection.py` |
 | Canonical species identity | `beta/canonical_species.py`: hash-pinned public registry; mutable catalog names and private evidence are not identity authorities |
-| Frozen collecting goals | `beta/goal_filters.py`, `beta/broad_goals.py`, `beta/collection_goals.py`: shared species builder, versioned membership and declaration references |
+| Frozen collecting goals | `beta/broad_goals.py:species_items` groups species membership for filtered, Vintage 251, Original 151, declaration goals and lookup; `beta/goal_filters.py:printing_items` owns printing checklist shape; callers retain their eligibility policies and stored versions |
 | Declaration-based ownership | `beta/ownership_declarations.py`: account-local source revisions separate from physical copies |
 | Public catalog publication | `beta/catalog_imports.py`, `beta/sealed_catalog.py`, `beta/sealed_bridge.py`: reviewed packages, atomic publication, journaled correction/rollback |
-| Catalog coverage and batch checkpoints | `beta/catalog_pipeline.py`: reviewed universe/alias inputs and existing publication services |
+| Catalog coverage and batch checkpoints | `beta/catalog_coverage.py`: pinned universe/alias inputs and read-only projections; `beta/catalog_pipeline.py`: assessment, reviewed checkpoints and existing publication services |
 | Pack lookup and saved research | `beta/lookup.py`, `beta/packs.py`, `beta/product_lookup.py`, `beta/pack_research.py`: possible/guaranteed coverage and frozen account-local snapshots |
 | Offer age and eligibility | `beta/offer_filters.py`: original observation age and conservative evidence decisions |
 | eBay request validation/scoring | `hunt.py`, `beta/ebay_hunts.py`, `beta/goal_hunts.py`, `beta/hunt_values.py`: explicit search, frozen scope, current ownership and dated guide comparison |
 | Photo jobs | `beta/scans.py`, `beta/scan_worker.py`, `beta/scan_config.py`, `beta/codex_recognition.py`: durable claims/reservations, configured provider and explicit inventory confirmation |
 | Replay refresh | `beta/refresh.py`: bounded synthetic-only replay; no live acquisition adapter |
-| Rendering | `beta/parity.py`, templates and static scripts: session-owned projections, escaped display text |
+| Rendering | `beta/parity.py`, public views, templates and static scripts: separate shared metadata and session-owned projections, escaped display text; [UI design](UI_DESIGN.md) |
 | Security and diagnostics | `security.py`, `beta/security.py`, `beta/diagnostics.py`: ingress, URL policy and redacted failures |
 | Optional deployment | `beta/deployment.py`, `beta/staging_config.py`, `beta/support.py`: staging configuration, copied import and operational commands |
 
@@ -64,7 +66,7 @@ identity authority. Missing or stale guide evidence remains unavailable.
 
 Canonical species, printings, booster membership, product versions, contents and
 seller observations are separate records. The canonical registry contains 1,025
-species; beta card/pack browsing covers #001–251. A source association or retailer
+species; card/pack browsing covers #001–251. A source association or retailer
 description does not prove official product contents or distribution.
 
 Catalog publication requires the owner role. Reviewed changes retain exact
@@ -87,8 +89,12 @@ Photo workers claim durable jobs before provider I/O. Provider requests may cons
 reserved authority even if the response is interrupted. Only confirmation adds
 inventory; recovery does not reset spending or repeat an uncertain provider call.
 The local server starts one scan worker when enabled. Staging runs it separately.
-Manual, fixture, API and authenticated CLI recognition are explicit modes, with no
-automatic fallback. See [photo entry](photo-entry.md) and [recovery](ERROR_HANDLING.md).
+Manual, fixture, API and authenticated CLI recognition are explicit local modes,
+with no automatic fallback. `beta/scan_config.py` owns the accepted fields, modes,
+ceilings and staging restriction. Persistent staging reads, initialization and
+copied import use that validator; CLI recognition is local only. Unknown config
+keys fail instead of appearing to select an unused flag. See
+[photo entry](photo-entry.md) and [recovery](ERROR_HANDLING.md).
 
 Sealed-offer refresh runs only on disposable synthetic roots through the replay
 adapter. Ordinary lookup/reopening does not fetch offers. The eBay flow separately
@@ -101,7 +107,3 @@ compatible contracts. Saved searches without an intent retain missing-target
 semantics. Staging copied import rejects CLI recognition configuration. Retiring
 these contracts requires a migration rather than cosmetic renaming. Metadata
 availability grants no artwork, guide or trademark redistribution rights.
-
-Dated candidate verification and engineering plans are retained in
-[history](history/README.md) and the clearly named status/roadmap records. Their
-results qualify their exact candidates, not this evolving checkout.

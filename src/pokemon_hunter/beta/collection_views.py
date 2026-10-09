@@ -55,9 +55,20 @@ def body(request):
     return data
 
 
-@login_required
 @require_GET
 def home(request):
+    if not request.user.is_authenticated:
+        from . import public_views
+
+        if request.path in {"/", "/pokedex/"}:
+            return public_views.pokedex(request)
+        if request.path == "/hunt/":
+            return public_views.hunt(request)
+    return private_home(request)
+
+
+@login_required
+def private_home(request):
     actor(request)
     return render(
         request,
@@ -80,6 +91,8 @@ def asset(request, filename):
         "scans.js",
         "catalog.js",
         "pokedex.js",
+        "glass.css",
+        "public.css",
     }:
         raise Http404
     return HttpResponse(

@@ -1,0 +1,22 @@
+{% extends 'beta/base.html' %}
+{% block title %}Dex · {{ selected_species.name }}{% endblock %}
+{% block content %}
+<a class="browse-return" href="/pokedex/">← All Pokémon</a>
+<div class="page-title"><div><h1><span class="species-title-number">#{{ selected_species.dex|stringformat:'03d' }}</span> {{ selected_species.name }}</h1><p class="muted">{{ selected_species.region|title }} · {{ cards|length }} indexed card{{ cards|pluralize }}</p></div><a class="button-link" href="/lookup/?targets={{ selected_species.dex }}">Look up packs</a></div>
+{% if cards %}
+<div class="public-cards">
+{% for card in cards %}
+<article class="public-card">
+  <div class="printing-title"><h2>{{ card.set_name }}</h2><span class="printing-number">{% if card.collector_number %}#{{ card.collector_number }}{% else %}Number unknown{% endif %}</span></div>
+  {% if card.name != selected_species.name %}<p class="printing-name">{{ card.name }}</p>{% endif %}
+  <dl class="public-card-facts"><div><dt>Finish</dt><dd>{{ card.finish|default:'Unknown' }}</dd></div><div><dt>Variant</dt><dd>{{ card.variant|default:'Unknown' }}</dd></div><div><dt>Edition</dt><dd>{{ card.edition|default:'Unknown' }}</dd></div><div><dt>Rarity</dt><dd>{{ card.rarity|default:'Unknown' }}</dd></div></dl>
+  {% if card.unresolved_fields %}<p class="card-uncertainty">Unresolved: {{ card.unresolved_fields|join:', ' }}</p>{% endif %}
+  <div class="actions"><a href="/lookup/?printing={{ card.id|urlencode }}">Packs for this printing</a>{% if request.user.is_authenticated %}{% if collection_enabled %}<a href="/collection/">Add or edit a copy</a>{% endif %}{% else %}<a href="/login/?next=/collection/">Sign in to add a copy</a>{% endif %}</div>
+  <details><summary>Catalog reference</summary><p>Coverage: {{ card.coverage_status|default:'Unknown' }} · Version: {{ card.catalog_version|default:'Unknown' }}</p><p class="muted">{{ card.id }}</p></details>
+</article>
+{% endfor %}
+</div>
+{% else %}
+<section class="panel empty"><h2>No cards indexed yet</h2><p>{{ selected_species.name }} belongs in the Pokédex. Its English physical card coverage is still being researched.</p><a href="/lookup/?targets={{ selected_species.dex }}">Check pack research and gaps</a></section>
+{% endif %}
+{% endblock %}

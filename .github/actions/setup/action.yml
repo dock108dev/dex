@@ -1,0 +1,19 @@
+name: Locked Python environment
+description: Install reproducible tools without application credentials.
+inputs:
+  python-version:
+    description: Supported Python runtime
+    required: true
+runs:
+  using: composite
+  steps:
+  - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+    with:
+      version: 0.9.10
+      python-version: ${{ inputs.python-version }}
+      enable-cache: true
+      cache-dependency-glob: uv.lock
+      cache-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ inputs.python-version }}-ci
+  - name: Install locked application and check tools
+    shell: bash
+    run: uv sync --locked --extra dev --extra ci

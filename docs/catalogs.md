@@ -2,7 +2,7 @@
 
 ## Scope and identity
 
-The beta researches Pokémon #001–251 across indexed English physical TCG eras.
+The authenticated app researches Pokémon #001–251 across indexed English physical TCG eras.
 Original 151, Original 251 and custom in-scope targets are collecting scopes,
 not claims of complete catalog coverage. The canonical public registry also
 retains species through #1025 for metadata compatibility. Digital, unreleased or
@@ -88,5 +88,4 @@ refresh tools provide synthetic replay only.
 
 All-era variant/distribution coverage and current purchasability remain incomplete.
 Inspect catalog gap reports and individual evidence rather than treating a missing
-match as proof that no card or product exists. Broader staging/deployment and
-real-provider qualification are separate from synthetic behavior tests.
+match as proof that no card or product exists. Hosted operation and real-provider behavior require checks beyond synthetic tests.

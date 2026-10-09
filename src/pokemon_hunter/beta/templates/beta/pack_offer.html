@@ -1,0 +1,80 @@
+<h4 class="seller-heading">Seller observations</h4>
+<div class="offer-list">
+  {% for o in p.offers %}
+    <article class="offer-observation">
+      <div class="offer-identity">
+        <strong>
+          {{ o.retailer }}
+        </strong>
+        <p class="offer-seller">Seller: {{ o.seller|default:'Unknown' }} · {{ o.seller_kind }}</p>
+        <div class="offer-links">
+          {% if o.eligibility.source %}
+            <a href="{{ o.url }}" rel="noreferrer" target="_blank">View source</a>
+          {% endif %}
+          {% if o.eligibility.offer %}
+            <a href="{{ o.url }}" rel="noreferrer" target="_blank">View offer</a>
+          {% endif %}
+        </div>
+      </div>
+      <dl class="offer-facts">
+        <div>
+          <dt>Item price</dt>
+          <dd>{{ o.representative.price|default:'Unknown' }}</dd>
+        </div>
+        <div>
+          <dt>Shipping</dt>
+          <dd>{{ o.representative.shipping|default:'Unknown' }}</dd>
+        </div>
+        <div>
+          <dt>Stock</dt>
+          <dd>{% if o.representative.stock == 'in-stock' %}Observed in stock{% elif o.representative.stock == 'out-of-stock' %}Observed out of stock{% elif o.representative.stock == 'preorder' %}Observed preorder{% else %}Unknown{% endif %}</dd>
+        </div>
+      </dl>
+      <p class="offer-time"><span class="muted">Originally checked</span><br>{% if o.representative.checked_at %}<time datetime="{{ o.representative.checked_at }}">{{ o.representative.checked_at }}</time>{% else %}Unknown{% endif %}<br><span class="muted">{% if o.representative.fresh %}Within 24 hours; current availability unverified{% else %}Outside the 24-hour window or time unknown{% endif %}</span></p>
+      <div class="offer-assessment">
+        <p class="offer-decision">{% if o.eligibility.recommendation_eligible %}Buying recommendation: documented contents and fresh in-stock seller evidence match these targets.{% else %}<strong>No buying recommendation.</strong> {{ o.eligibility.recommendation_reasons.0 }}{% endif %}</p>
+        <p class="offer-cost-note">Delivered total unknown when shipping or tax is unknown.{% if offer_filters.sort == 'price' and not o.price_comparable %} Item price is not comparable in the selected currency; shown after comparable prices.{% endif %}</p>
+        <div class="offer-details">
+          <details>
+            <summary>Why this offer qualifies or is unavailable</summary>
+            <p>Observation {{ o.representative.id|default:'None retained' }}</p>
+            {% for reason in o.eligibility.recommendation_reasons %}
+              <p>Recommendation: {{ reason }}</p>
+            {% endfor %}
+            {% if o.eligibility.synthetic %}
+              <p>Synthetic behavior qualification only · eligible behavior: {{ o.eligibility.behavior_eligible }}. No real purchasability.</p>
+            {% endif %}
+            {% for reason in o.eligibility.source_reasons %}
+              <p>Source: {{ reason }}</p>
+            {% endfor %}
+            {% for reason in o.eligibility.offer_reasons %}
+              <p>Offer: {{ reason }}</p>
+            {% endfor %}
+            {% for reason in o.eligibility.purchase_reasons %}
+              <p>Purchase-ready unavailable: {{ reason }}</p>
+            {% endfor %}
+          </details>
+          <details>
+            <summary>Full observation history ({{ o.observations|length }})</summary>
+            {% for obs in o.observations %}
+              <article>
+                <p><strong>{% if obs.fresh %}Within 24-hour window · current availability unverified{% else %}Stale / time unavailable for freshness{% endif %}</strong> · observed stock: {{ obs.stock|default:'unknown' }}</p>
+                <p>Originally checked: {{ obs.checked_at|default:'Unknown' }} · Age: {{ obs.age }}</p>
+                <p>Item price: {{ obs.price }} · Shipping: {{ obs.shipping }} · Tax unknown{% if obs.per_pack %} · Price per relevant pack: {{ obs.per_pack }} (shipping/tax excluded){% endif %}</p>
+                <p>{{ obs.note }}</p>
+                <details>
+                  <summary>Observation reference</summary>
+                  <p>{{ obs.id }} · sources {{ obs.sources|join:', ' }}</p>
+                </details>
+              </article>
+            {% empty %}
+              <p>No offer observation retained. No acquisition outcome is converted into a stock observation.</p>
+            {% endfor %}
+          </details>
+        </div>
+      </div>
+    </article>
+  {% empty %}
+    <p class="muted">No retained offers match these filters ({{ p.offer_total }} before offer filtering). Confirmed coverage above is unchanged.</p>
+  {% endfor %}
+</div>

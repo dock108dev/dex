@@ -1,56 +1,52 @@
 # Vintage 251
 
-A local Pokémon collection app centered on **Pokédex**, **Pack lookup** and
-**eBay · Sandbox**. Browse species #001–251 across indexed English physical TCG
-eras, maintain ownership and copies, create frozen collecting goals, and save
-pack or eBay research. Catalog/product coverage is partial; seller observations
-are dated and do not establish current purchasability.
+A local Pokémon collection app for browsing species #001–251, tracking physical
+cards, building collecting goals, researching packs and saving eBay searches.
+It supports personal collections and invited accounts on the same local installation.
 
-The supported product runs for one user on localhost. Public hosting, complete
-all-era catalog coverage, real-card recognition accuracy and live buying
-recommendations are not qualified. See [catalogs and pack lookup](docs/catalogs.md)
-for data boundaries and [architecture](docs/SSOT.md) for storage and service ownership.
+Catalog and product coverage is partial. Seller observations are dated; the app
+never buys, bids or treats a listing as proof of ownership.
 
-## Try it locally
+## Requirements
 
-Requires Python 3.12 or later and uv. From a checkout, create a **new synthetic demo**
-outside the repository. This generates test accounts, catalog entries, copies and
-photos without reading an existing collection or calling a recognition provider.
+- Python 3.12 or later and [uv](https://docs.astral.sh/uv/).
+- macOS or Linux for the local application. Windows process handling is unsupported.
+- An unused local port 8011.
+
+## Quickstart
+
+From the repository root, create a new synthetic demo outside the checkout:
 
 ```sh
 uv sync --locked --extra dev
 export DEX_DEMO_ROOT="$HOME/.local/share/dex-synthetic-demo"
-uv run python -m pokemon_hunter.beta.synthetic --output "$DEX_DEMO_ROOT"
-uv run python -m pokemon_hunter.beta.cli --root "$DEX_DEMO_ROOT" serve
+uv run --no-sync python -m pokemon_hunter.beta.synthetic --output "$DEX_DEMO_ROOT"
+uv run --no-sync python -m pokemon_hunter.beta.cli --root "$DEX_DEMO_ROOT" serve
 ```
 
-Open [Pokédex](http://127.0.0.1:8011/pokedex/). Use username `admin` and its generated
-password from `credentials.json` in the private demo directory. Keep that file
-private. The seed refuses an existing directory; on subsequent launches run only
-`serve`. Stop the server with Ctrl-C. Port 8011 must be free.
+Open [Pokédex](http://127.0.0.1:8011/pokedex/). Browse without signing in, or use
+`admin` and its generated password in the demo's private `credentials.json`.
+The demo creates test accounts, catalog entries, copies and photos without reading
+an existing collection or contacting providers. Recognition is simulated; guide
+prices and hunt snapshots may be unavailable.
 
-The demo uses simulated recognition. It has no price guides or hunt snapshots;
-those results remain unavailable. [Local development](docs/local-development.md)
-explains existing installations, configuration and tests. The [original app](docs/ORIGINAL_APP.md)
-remains available with its separate JSON ownership and history.
+The seed refuses an existing directory. On later launches, run only `serve`.
+Stop with Ctrl-C. For an existing installation, use its private root and follow
+[local operations](docs/operations.md); never reseed it.
 
-## Capabilities and limits
+## Capabilities
 
-- Physical copies, intentional duplicates, binders, import/export and undo.
-- Goal filters for available game, selected sets, card type, rarity and Pokémon
-  Pokédex range, with species or printing completion and frozen checklists.
-- Private photo uploads, manual matching, provisional entries and explicit confirmation.
-- Reviewed catalog publication and rollback; uncertain identity stays visible.
-- Explicit live eBay searches, sample hunts and private saved results with spoiler
-  reveal; search bargains across cards or narrow to a goal's missing targets.
-- Delivered-price comparisons, identified lot subtotals and clearly labeled
-  catalog-average lot benchmarks with date and coverage limits.
-- Conditional price-guide estimates when suitable dated evidence exists, not appraisals.
+- Public species, card-printing and general Pack lookup browsing.
+- Private copies, intentional duplicates, binders, import/export and reviewed undo.
+- Frozen species or printing goals with explicit progress policies.
+- Private photo entry, manual matching and optional configured recognition.
+- Reviewed catalog publication, product contents and dated seller observations.
+- Explicit eBay searches, delivered-price/guide comparisons and saved results with
+  identities hidden until reveal.
 
-Photo recognition can explicitly use an OpenAI API key or a compatible authenticated
-Codex CLI. Both send images to OpenAI; neither mode is enabled by this quickstart.
-Real-card accuracy is unmeasured. See [photo entry](docs/photo-entry.md), [eBay hunts](docs/hunts.md) and the
-[current roadmap](docs/ROADMAP.md).
+Real-card recognition accuracy, all-era variant coverage and current buying
+availability remain limited. Unknown identity, stock, shipping and coverage stay
+visible. Recognition providers and eBay require separate configuration.
 
 ## Development
 
@@ -60,10 +56,12 @@ uv run --no-sync ruff format --check .
 uv run --no-sync pytest -q
 ```
 
-For focused changes, select the relevant test files. Tests use temporary synthetic
-state. See [CI](docs/CI.md), [architecture and data ownership](docs/SSOT.md),
-[security](docs/SECURITY.md), [failure recovery](docs/ERROR_HANDLING.md), and
-[optional staging operations](docs/operations.md).
+Select relevant test files for focused work. Tests use temporary synthetic state.
+See [development](docs/local-development.md), [CI](docs/CI.md),
+[architecture](docs/SSOT.md), [security](docs/SECURITY.md),
+[recovery](docs/ERROR_HANDLING.md), [UI](docs/UI_DESIGN.md),
+[catalogs and packs](docs/catalogs.md), [photo entry](docs/photo-entry.md) and
+[eBay hunts](docs/hunts.md).
 
-Read [failure recovery](docs/ERROR_HANDLING.md) before retrying an interrupted
-change. Git excludes local state and evidence; it is not a collection backup.
+The [original FastAPI app](docs/ORIGINAL_APP.md) and [lot watcher](docs/legacy-watcher.md)
+use separate storage. Git excludes local collection data and is not a backup.

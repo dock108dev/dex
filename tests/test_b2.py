@@ -416,7 +416,6 @@ def test_every_new_feature_is_session_scoped_and_rechecked(b2):
 
 def test_new_route_auth_csrf_and_no_legacy_write_bypass(b2):
     for path in [
-        "/",
         "/goals/",
         "/settings/",
         "/api/collection/",

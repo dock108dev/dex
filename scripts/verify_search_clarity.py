@@ -24,7 +24,7 @@ args.output.mkdir(parents=True, exist_ok=True)
 if not settings.configured:
     settings.configure(USE_I18N=False)
 html = (
-    Engine()
+    Engine(dirs=[ROOT / "src/pokemon_hunter/beta/templates"])
     .from_string((ROOT / "src/pokemon_hunter/beta/templates/beta/b2.html").read_text())
     .render(Context(dict(parity=True, scans=True, expansion=True, staging=False, csrf_token="synthetic")))
 )
@@ -97,6 +97,9 @@ with sync_playwright() as pw:
                     page.get_by_role("button", name="Close copy details").click()
                     metrics[-1]["revealFocusReturned"] = page.locator("[data-reveal-result]").first.evaluate(
                         "e => e === document.activeElement"
+                    )
+                    assert metrics[-1]["revealFocusReturned"], (
+                        "Reveal opener must receive focus after closing"
                     )
                 page.evaluate("document.documentElement.style.fontSize='32px'")
                 assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), state

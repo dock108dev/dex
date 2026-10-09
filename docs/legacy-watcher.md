@@ -1,6 +1,6 @@
 # Original lot watcher
 
-This is the preserved watcher, with separate storage from the authenticated beta.
+This is the original watcher, with separate storage from the authenticated beta.
 For the current product and setup, start at the [repository README](../README.md).
 
 A small daily eBay watcher for inexpensive English Kanto/Johto-era bulk lots. It searches eBay's official Browse API, uses the configured shipping destination and collection gaps, and saves up to five qualifying listings in one digest. It never buys or bids.
@@ -72,7 +72,7 @@ For another Unix host, use cron with the persistent project directory (replace t
 0 8 * * * /absolute/path/dex/.venv/bin/python -m pokemon_hunter.main --root /absolute/path/dex run >> /absolute/path/dex/data/daily.log 2>> /absolute/path/dex/data/daily-error.log
 ```
 
-The repository's GitHub workflow runs **tests only**. Daily execution uses local persistent SQLite, avoiding ephemeral CI runners losing deduplication history.
+GitHub Actions validates source, tests, synthetic UI, distributions and security; it does not run the watcher. Daily execution uses local persistent SQLite, avoiding ephemeral CI runners losing deduplication history.
 
 ## Notifications
 

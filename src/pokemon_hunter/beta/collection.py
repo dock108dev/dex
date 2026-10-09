@@ -4,8 +4,6 @@ All entry points re-resolve the session principal. SQLite IMMEDIATE transactions
 confirmation/undo; revisioned before/after images prevent stale edits and destructive undo.
 """
 
-import csv
-import io
 import json
 import re
 import uuid
@@ -17,19 +15,21 @@ from django.db import connection
 from django.http import Http404
 
 from pokemon_hunter.inventory import stable_id
-from pokemon_hunter.migration import COPY_FIELDS, digest, encode
+from pokemon_hunter.migration import digest, encode
 
-from . import broad_goals, collection_goals, goal_filters, store
+from . import broad_goals, collection_goals, collection_imports, goal_filters, store
 from . import transactions as transaction
+from .collection_catalog import catalog_entries as catalog_entries
+from .collection_imports import FIELDS as FIELDS
+from .collection_imports import SCHEMA as SCHEMA
+from .collection_imports import parse_import as parse_import
 
-SCHEMA = "dex-collection-v2"
 TABLES = {
     "copy": "owned_copies",
     "binder": "binders",
     "goal": "collection_goals",
     "declaration": "ownership_declarations",
 }
-FIELDS = (*COPY_FIELDS, "binder_id")
 
 
 class Conflict(ValueError):
@@ -82,31 +82,7 @@ def bump(actor):
 
 def catalog(actor, query="", set_id="", include_archived=False):
     store.verified(actor)
-    result = store.rows(
-        "SELECT p.*,s.game_id,s.name AS set_name,s.catalog_version,s.coverage_status FROM printings p JOIN catalog_sets s ON s.id=p.set_id "
-        + (
-            "WHERE p.publication_state='published' AND s.publication_state='published' "
-            if settings.B4_ENABLED and not include_archived
-            else ""
-        )
-        + "ORDER BY s.name,p.collector_number"
-    )
-    if getattr(settings, "STAGING", False):
-        result = [
-            r
-            for r in result
-            if json.loads(r["provenance"]).get("provider", "").split(":")[0] in {"tcgdex", "dex-synthetic"}
-        ]
-    for row in result:
-        row["attributes"] = json.loads(row["attributes"])
-        row["unresolved_fields"] = json.loads(row["unresolved_fields"])
-        row["name"] = row["attributes"].get("name", "Unidentified card")
-    return [
-        r
-        for r in result
-        if (not set_id or r["set_id"] == set_id)
-        and query.casefold() in (r["name"] + " " + r["collector_number"] + " " + r["set_name"]).casefold()
-    ]
+    return catalog_entries(query, set_id, include_archived)
 
 
 def printing(actor, key):
@@ -301,17 +277,23 @@ def goal_definition(actor, request):
         templates = store.rows("SELECT * FROM goal_templates WHERE id='vintage-251'")
         if not templates:
             raise ValueError("Vintage 251 template is not available")
+        # This persisted template keeps its historical label/field contract, but
+        # membership grouping comes from the same builder as current goals/lookups.
         items = [
             {
-                "label": f"Species {n:03}",
-                "printing_ids": [
-                    p["id"]
-                    for p in entries
-                    if p["attributes"].get("dex_eligible") and p["attributes"].get("pokemon_dex") == n
-                ],
-                "unresolved": False,
+                "label": f"Species {item['pokemon_dex']:03}",
+                "printing_ids": item["printing_ids"],
+                "unresolved": item["unresolved"],
             }
-            for n in range(1, 252)
+            for item in broad_goals.species_items(
+                [
+                    p
+                    for p in entries
+                    if p["attributes"].get("dex_eligible")
+                    and p["attributes"].get("pokemon_dex") in range(1, 252)
+                ],
+                range(1, 252),
+            )
         ]
         return {
             "policy": "species",
@@ -339,51 +321,6 @@ def goal_definition(actor, request):
         "catalog_versions": sorted({p["catalog_version"] for p in entries}),
         "coverage": "Pinned catalog entries only; edition/variant coverage is not established. This is not a master-set completeness claim.",
     }
-
-
-def parse_import(raw, format):
-    if not isinstance(raw, str) or len(raw.encode()) > 1_500_000:
-        raise ValueError("Import text must be at most 1.5 MB")
-    if format == "csv":
-        reader = csv.DictReader(io.StringIO(raw))
-        allowed = {"id", "printing_id", *FIELDS}
-        if (
-            not reader.fieldnames
-            or set(reader.fieldnames) - allowed
-            or "printing_id" not in reader.fieldnames
-            or len(set(reader.fieldnames)) != len(reader.fieldnames)
-        ):
-            raise ValueError(
-                "CSV needs printing_id and optional id, condition, purchase_amount, purchase_currency, purchase_date, notes, binder_id, grading_company, grade, certificate headers"
-            )
-        data = {"copies": list(reader)}
-    elif format == "json":
-        try:
-            data = json.loads(raw, parse_float=Decimal)
-        except (ValueError, TypeError):
-            raise ValueError("Invalid JSON") from None
-        if isinstance(data, list):
-            data = {"copies": data}
-        if not isinstance(data, dict) or set(data) - {
-            "schema",
-            "copies",
-            "binders",
-            "goals",
-            "vintage_251",
-            "catalog_scope",
-            "collection_sources",
-        }:
-            raise ValueError("Use an inventory JSON array or a supported export object")
-        if data.get("schema") not in {None, SCHEMA}:
-            raise ValueError("Unsupported export schema version")
-    else:
-        raise ValueError("Choose CSV or JSON")
-    if not isinstance(data.get("copies"), list) or len(data["copies"]) > 2000:
-        raise ValueError("Import must have a copies array of at most 2000 rows")
-    for key in ("binders", "goals"):
-        if not isinstance(data.get(key, []), list) or len(data.get(key, [])) > 200:
-            raise ValueError(f"Import {key} must be a list of at most 200 entries")
-    return data
 
 
 def plan(actor, kind, request, operation_id):
@@ -790,94 +727,16 @@ def plan(actor, kind, request, operation_id):
             if not isinstance(g, dict) or not isinstance(g.get("id"), str) or g["id"] in seen_goals:
                 raise ValueError("Invalid or duplicate goal identity")
             seen_goals.add(g["id"])
-            if g.get("kind") not in {
-                "set",
-                "custom",
-                "vintage",
-                "filtered",
-                "original151",
-                *collection_goals.OWNERSHIP_KINDS,
-            }:
-                raise ValueError("Unsupported goal kind")
-            definition = g.get("definition")
-            if not isinstance(definition, dict) or definition.get("policy") not in {
-                "species",
-                "catalog",
-                "exact",
-            }:
-                raise ValueError("Invalid goal definition")
-            if g.get("version") != digest(encode(definition).encode()):
-                raise ValueError("Goal membership version does not match")
-            if not isinstance(definition.get("items"), list) or not 0 < len(definition["items"]) <= 2000:
-                raise ValueError("Invalid goal checklist")
-            if g["kind"] not in {"filtered", "original151", *collection_goals.OWNERSHIP_KINDS} and (
-                definition["policy"] == "species"
-            ) != (g["kind"] == "vintage"):
-                raise ValueError("Species policy requires the versioned Vintage 251 template")
-            if g["kind"] == "filtered":
-                scope = goal_filters.filters(
-                    definition.get("filters"), catalog_rows, store.rows("SELECT id,game_key,name FROM games")
-                )
-                permitted = {p["id"] for p in catalog_rows if goal_filters.matches(p, scope)}
-                if definition["filters"] != scope or (definition["policy"] == "species") != (
-                    scope["completion"] == "species"
-                ):
-                    raise ValueError("Goal filters and completion policy differ")
-                if definition["policy"] == "species":
-                    expected = list(range(scope["pokemon_dex_min"], scope["pokemon_dex_max"] + 1))
-                    if [i.get("pokemon_dex") for i in definition["items"] if isinstance(i, dict)] != expected:
-                        raise ValueError("Goal species membership differs from its filters")
-                seen_printings = set()
-                for item in definition["items"]:
-                    ids = item.get("printing_ids", []) if isinstance(item, dict) else []
-                    if (
-                        not isinstance(ids, list)
-                        or any(not isinstance(i, str) for i in ids)
-                        or len(ids) != len(set(ids))
-                        or not set(ids) <= permitted
-                    ):
-                        raise ValueError("Goal membership is outside its filters")
-                    if definition["policy"] == "species" and any(
-                        resolve(pid)["attributes"].get("pokemon_dex") != item["pokemon_dex"] for pid in ids
-                    ):
-                        raise ValueError("Printing belongs to a different species")
-                    if definition["policy"] != "species" and (
-                        len(ids) != 1 or seen_printings.intersection(ids)
-                    ):
-                        raise ValueError("Printing checklist repeats an identity")
-                    seen_printings.update(ids)
-            if g["kind"] == "vintage":
-                template = goal_definition(actor, {"goal_kind": "vintage"})
-                if (
-                    len(definition["items"]) != 251
-                    or definition.get("rules") != template["rules"]
-                    or definition.get("template_version") != template["template_version"]
-                ):
-                    raise ValueError("Vintage 251 template version/rules differ")
-                for index, item in enumerate(definition["items"]):
-                    if (
-                        not isinstance(item, dict)
-                        or item.get("label") != template["items"][index]["label"]
-                        or not isinstance(item.get("printing_ids"), list)
-                        or not set(item["printing_ids"]) <= set(template["items"][index]["printing_ids"])
-                    ):
-                        raise ValueError("Vintage 251 membership violates its frozen species rules")
-            supported = set(catalog_by_id)
-            for item in definition["items"]:
-                if (
-                    not isinstance(item, dict)
-                    or not isinstance(item.get("label"), str)
-                    or not isinstance(item.get("printing_ids"), list)
-                    or not set(item["printing_ids"]) <= supported
-                    or not isinstance(item.get("unresolved"), bool)
-                ):
-                    raise ValueError("Unsupported goal member")
-                if (
-                    definition["policy"] == "exact"
-                    and not item["unresolved"]
-                    and any(resolve(p)["unresolved_fields"] for p in item["printing_ids"])
-                ):
-                    raise ValueError("Unresolved variant cannot satisfy exact completion")
+            definition = collection_imports.goal_definition(g)
+            collection_imports.validate_membership(
+                g,
+                definition,
+                catalog_rows,
+                games=store.rows("SELECT id,game_key,name FROM games") if g["kind"] == "filtered" else (),
+                vintage_template=goal_definition(actor, {"goal_kind": "vintage"})
+                if g["kind"] == "vintage"
+                else None,
+            )
             create(
                 "goal",
                 {

@@ -1,5 +1,7 @@
 """Reusable catalog filters and frozen species/printing goal membership."""
 
+from . import broad_goals
+
 FIELDS = {"game_id", "set_ids", "card_type", "rarities", "pokemon_dex_min", "pokemon_dex_max", "completion"}
 
 
@@ -95,18 +97,11 @@ def definition(raw, entries, games, policy="catalog"):
     scope = filters(raw, entries, games)
     selected = [p for p in entries if matches(p, scope)]
     if scope["completion"] == "species":
-        items = []
-        for number in range(scope["pokemon_dex_min"], scope["pokemon_dex_max"] + 1):
-            members = [p for p in selected if p["attributes"].get("pokemon_dex") == number]
-            label = members[0]["name"] if members else f"Species {number:03}"
-            items.append(
-                {
-                    "label": f"#{number:03} {label}",
-                    "pokemon_dex": number,
-                    "printing_ids": sorted(p["id"] for p in members),
-                    "unresolved": False,
-                }
-            )
+        items = broad_goals.species_items(
+            selected,
+            range(scope["pokemon_dex_min"], scope["pokemon_dex_max"] + 1),
+            frozen_labels=False,
+        )
         policy = "species"
         coverage = "One eligible printing per species, from your selected catalog filters. Species without matching printings remain unavailable."
     else:

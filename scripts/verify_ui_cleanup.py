@@ -22,7 +22,6 @@ parser.add_argument("--phase", choices=["before", "after"], required=True)
 args = parser.parse_args()
 args.output.mkdir(parents=True, exist_ok=True)
 settings.configure(USE_I18N=False)
-engine = Engine()
 base = ROOT / "src/pokemon_hunter/beta"
 printing = dict(
     id="p1",
@@ -122,6 +121,24 @@ def source(path):
     return path.read_bytes()
 
 
+if args.phase == "before":
+    template_paths = (
+        subprocess.check_output(
+            ["git", "ls-tree", "-r", "--name-only", "HEAD", "src/pokemon_hunter/beta/templates"], cwd=ROOT
+        )
+        .decode()
+        .splitlines()
+    )
+    templates = {
+        str((ROOT / path).relative_to(base / "templates")): source(ROOT / path).decode()
+        for path in template_paths
+        if path.endswith(".html")
+    }
+    engine = Engine(loaders=[("django.template.loaders.locmem.Loader", templates)])
+else:
+    engine = Engine(dirs=[base / "templates"])
+
+
 photo = Image.new("RGB", (400, 560), "#f4d96d")
 ImageDraw.Draw(photo).text((40, 220), "SYNTHETIC CARD\nPreview only", fill="black")
 photo_bytes = io.BytesIO()
@@ -213,7 +230,7 @@ with sync_playwright() as pw:
                 if state in {"cards", "cards-empty"}
                 else "/scan/"
                 if state in {"scan", "ready", "failed", "saved", "processing"}
-                else "/"
+                else "/collection/"
             )
             if state in {"ready", "failed", "saved", "processing"}:
                 path += "#" + job["id"]

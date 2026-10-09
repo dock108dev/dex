@@ -1,0 +1,223 @@
+/* Public catalog and pack research: compact working areas, quiet supporting detail. */
+.public-page main { min-width: 0; }
+.public-page main, .pack-page main { container-type: inline-size; container-name: dex-workspace; }
+.public-page .page-title { margin-bottom: 20px; }
+.public-page .page-title > div { flex: 1; min-width: 0; }
+.public-page .page-title p { font-size: 14px; }
+.public-scope span { white-space: nowrap; }
+.public-filters { margin: 0 0 16px; }
+.public-filter-primary {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+.public-filter-primary label { margin-top: 0; }
+.public-filter-secondary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.public-filter-primary > div, .public-filter-secondary > div { min-width: 0; }
+.public-filters details { margin-top: 8px; border: 0; }
+.public-filters summary { width: fit-content; color: var(--ink); font-size: 15px; }
+.public-filter-secondary { padding: 0 0 12px; }
+.public-result-heading { display: flex; gap: 16px; align-items: center; justify-content: space-between; margin: 0 0 12px; }
+.public-result-heading > div { display: flex; gap: 16px; align-items: baseline; flex-wrap: wrap; }
+.public-result-heading h2 { margin: 0; font-size: 18px; }
+.public-result-heading p { margin: 0; font-size: 14px; }
+.public-result-heading > a { flex-shrink: 0; }
+.public-species-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  padding: 1px;
+  background: var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.public-species-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; min-width: 0; background: #fff; }
+.public-species-row:hover { background: #fff7f8; }
+.public-species-link {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 0 8px;
+  text-decoration: none;
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  color: var(--ink);
+}
+.public-species-link strong { font-size: 18px; font-weight: 650; overflow-wrap: anywhere; line-height: 1.4; }
+.public-species-link .muted { grid-column: 2; font-size: 14px; }
+.public-dex-number { font-size: 14px; font-variant-numeric: tabular-nums; color: var(--muted); align-self: center; grid-row: 1 / 3; }
+.public-pack-link { padding: 0 6px; flex-shrink: 0; color: var(--muted); text-decoration: none; }
+.public-pack-link:hover { color: var(--accent); text-decoration: underline; }
+.browse-return { margin: 0 0 8px; }
+.species-title-number { color: var(--muted); font-size: .65em; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.public-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.public-card { margin: 0; padding: 18px; min-width: 0; border: 1px solid var(--border); border-radius: 12px; background: #fff; }
+.printing-title { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.public-card h2 { margin: 0; font-size: 20px; overflow-wrap: anywhere; }
+.printing-number { flex-shrink: 0; color: var(--muted); font-size: 16px; font-variant-numeric: tabular-nums; }
+.printing-name { margin: 4px 0 0; color: var(--muted); }
+.public-card-facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px 12px; margin: 16px 0 12px; }
+.public-card-facts dt { font-size: 14px; }
+.public-card-facts dd { margin: 2px 0 0; font-size: 16px; font-weight: 500; overflow-wrap: anywhere; }
+.card-uncertainty { font-size: 14px; color: var(--muted); margin: 8px 0; }
+.public-card .actions { gap: 8px 20px; margin: 4px 0 0; justify-content: space-between; }
+.public-card .actions a { font-size: 16px; }
+.public-card .actions a:last-child { color: var(--ink); }
+.public-card details { margin-top: 8px; border: 0; }
+.public-card summary { color: var(--muted); padding-bottom: 0; font-size: 14px; }
+.public-card details[open] summary { padding-bottom: 8px; }
+.public-card details p { margin: 4px 0; overflow-wrap: anywhere; }
+.public-page .empty { text-align: left; padding: 20px; max-width: 640px; margin-top: 16px; }
+.public-page .empty h2 { margin: 0 0 8px; }
+.public-page .empty p { margin: 0 0 8px; }
+
+/* A product is a research record; offers align for comparison, never imply live stock. */
+.pack-page .lookup-form { margin-bottom: 16px; }
+.pack-page .lookup-form.public-lookup { grid-template-columns: minmax(0, 440px) auto; }
+.pack-page .lookup-form small { color: var(--muted); }
+.pack-page .error { margin: 12px 0 16px; }
+.pack-page .error p { margin: 0 0 4px; }
+.lookup-result-bar { display: flex; align-items: start; gap: 16px 24px; justify-content: space-between; margin: 8px 0 12px; }
+.pack-page .scope-summary { margin: 0; min-width: 0; flex: 1; }
+.pack-page .scope-summary > p { margin: 0 0 4px; }
+.pack-page .scope-summary > .muted { max-width: 80ch; font-size: 14px; }
+.pack-page .save-lookup, .pack-page .guest-save { margin: 0; flex-shrink: 0; }
+.pack-page .save-lookup form { gap: 8px; }
+.pack-page .save-lookup details { margin: 0; border: 0; }
+.pack-page .save-lookup summary { font-size: 14px; color: var(--muted); }
+.pack-page .guest-save a { font-size: 15px; }
+.pack-page .offer-filter-panel { margin: 8px 0 20px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.pack-page summary { color: var(--muted); }
+.pack-page .offer-filter-panel > summary { color: var(--ink); }
+.pack-expansion { margin: 24px 0; }
+.pack-expansion-heading { margin: 0 0 12px; }
+.pack-expansion-heading h2 { margin: 0 0 4px; }
+.pack-expansion-heading p { margin: 0; color: var(--muted); }
+.pack-page .product-card { margin: 12px 0; padding: 20px; border: 1px solid var(--border); border-radius: 12px; background: #fff; box-shadow: none; min-width: 0; }
+.product-heading { display: flex; gap: 24px; align-items: start; justify-content: space-between; }
+.product-heading h3 { margin: 0; min-width: 0; font-size: 20px; max-width: 42ch; overflow-wrap: anywhere; }
+.product-coverage-group { flex-shrink: 0; max-width: 100%; }
+.pack-page .product-coverage-group > p { margin: 0 0 4px; font-size: 14px; }
+.pack-page .product-coverage { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; flex-shrink: 0; }
+.product-coverage dt { font-size: 14px; }
+.product-coverage dd { margin: 2px 0 0; font-size: 20px; font-variant-numeric: tabular-nums; }
+.pack-page .product-card > p { margin: 12px 0; }
+.pack-page .product-card > .notice { font-size: 15px; padding: 10px 12px; margin: 12px 0 8px; }
+.product-details, .offer-details { display: flex; align-items: start; gap: 0 24px; flex-wrap: wrap; }
+.product-details details, .offer-details details { min-width: 0; border: 0; margin: 0; }
+.product-details summary, .offer-details summary { font-size: 14px; }
+.product-details details[open], .offer-details details[open] { flex-basis: 100%; }
+.pack-page .product-card .seller-heading { margin: 12px 0 4px; font-size: 16px; }
+.offer-observation {
+  display: grid;
+  grid-template-columns: minmax(0, .85fr) minmax(0, 1.2fr) minmax(0, 1fr);
+  column-gap: 24px;
+  align-items: start;
+  border-top: 1px solid var(--border);
+  padding: 16px 0 8px;
+}
+.offer-identity { grid-column: 1; grid-row: 1 / 3; min-width: 0; overflow-wrap: anywhere; }
+.offer-identity strong { font-weight: 650; }
+.pack-page .offer-seller { font-size: 14px; color: var(--muted); margin: 4px 0; }
+.offer-links { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.offer-links a { font-size: 15px; }
+.offer-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; grid-column: 2; margin: 0; }
+.offer-facts dt { font-size: 14px; }
+.offer-facts dd { font-size: 16px; margin: 2px 0 0; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.pack-page .offer-time { margin: 0; font-size: 14px; grid-column: 3; overflow-wrap: anywhere; }
+.offer-assessment { grid-column: 2 / 4; min-width: 0; }
+.pack-page .offer-decision { margin: 8px 0 4px; font-size: 15px; }
+.pack-page .offer-cost-note { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+.pack-expansion > details { margin: 0; border: 0; }
+.pack-expansion > p { margin: 0; }
+.pack-expansion .grid { align-items: start; }
+.pack-page .saved-summary { border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 20px; }
+
+@media (max-width: 1000px) {
+  .public-species-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .public-card-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lookup-result-bar { flex-wrap: wrap; }
+  .lookup-result-bar .scope-summary { flex-basis: 100%; }
+  .product-heading { display: block; }
+  .product-coverage-group { margin-top: 12px; }
+  .pack-page .product-coverage { width: fit-content; max-width: 100%; }
+  .offer-observation { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 12px 20px; }
+  .offer-facts { grid-column: 2; }
+  .pack-page .offer-time { grid-column: 1; }
+  .offer-assessment { grid-column: 2; grid-row: 2 / 4; }
+  .offer-identity { grid-row: 1; }
+}
+@media (max-width: 700px) {
+  .public-species-list, .public-cards { grid-template-columns: 1fr; }
+  .public-filter-primary { grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; }
+  .public-filter-primary > div:first-child { grid-column: 1 / -1; }
+  .public-filter-secondary { grid-template-columns: 1fr; }
+  .public-filter-primary button { align-self: end; }
+  .public-result-heading > div { display: block; }
+  .public-result-heading p { margin-top: 4px; }
+  .public-result-heading { align-items: start; }
+  .public-page .page-title { gap: 12px; margin-bottom: 16px; }
+  .public-page .page-title .button-link { width: auto; }
+  .public-cards { gap: 12px; }
+  .public-card { padding: 16px; }
+  .public-card .actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .public-card .actions a:last-child { text-align: right; justify-content: flex-end; }
+  .pack-page .lookup-form.public-lookup { grid-template-columns: 1fr; }
+  .pack-page .lookup-form.public-lookup button { margin-top: 0; justify-self: start; }
+  .pack-page .product-card { padding: 16px; }
+  .offer-observation { display: block; padding: 12px 0 8px; }
+  .offer-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 8px 0; }
+  .offer-facts > div:last-child { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 8px; }
+  .offer-facts > div:last-child dd { margin: 0; }
+  .pack-page .offer-time { margin: 8px 0; }
+  .pack-page .offer-decision { margin-top: 12px; }
+  .product-details, .offer-details { gap: 0; display: block; }
+  .pack-page .product-coverage { gap: 8px; }
+  .product-coverage dt { overflow-wrap: anywhere; }
+}
+
+@container dex-workspace (max-width: 1000px) {
+  .public-species-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .public-card-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lookup-result-bar { flex-wrap: wrap; }
+  .lookup-result-bar .scope-summary { flex-basis: 100%; }
+  .product-heading { display: block; }
+  .product-coverage-group { margin-top: 12px; }
+  .pack-page .product-coverage { width: fit-content; max-width: 100%; }
+  .offer-observation { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 12px 20px; }
+  .offer-facts { grid-column: 2; }
+  .pack-page .offer-time { grid-column: 1; }
+  .offer-assessment { grid-column: 2; grid-row: 2 / 4; }
+  .offer-identity { grid-row: 1; }
+}
+
+@container dex-workspace (max-width: 700px) {
+  .pack-page .lookup-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .public-species-list, .public-cards { grid-template-columns: 1fr; }
+  .public-filter-primary { grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; }
+  .public-filter-primary > div:first-child { grid-column: 1 / -1; }
+  .public-filter-secondary { grid-template-columns: 1fr; }
+  .public-filter-primary button { align-self: end; }
+  .public-result-heading > div { display: block; }
+  .public-result-heading p { margin-top: 4px; }
+  .public-result-heading { align-items: start; }
+  .public-page .page-title { gap: 12px; margin-bottom: 16px; }
+  .public-page .page-title .button-link { width: auto; }
+  .public-cards { gap: 12px; }
+  .public-card { padding: 16px; }
+  .public-card .actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .public-card .actions a:last-child { text-align: right; justify-content: flex-end; }
+  .pack-page .lookup-form.public-lookup { grid-template-columns: 1fr; }
+  .pack-page .lookup-form.public-lookup button { margin-top: 0; justify-self: start; }
+  .pack-page .product-card { padding: 16px; }
+  .offer-observation { display: block; padding: 12px 0 8px; }
+  .offer-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 8px 0; }
+  .offer-facts > div:last-child { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 8px; }
+  .offer-facts > div:last-child dd { margin: 0; }
+  .pack-page .offer-time { margin: 8px 0; }
+  .pack-page .offer-decision { margin-top: 12px; }
+  .product-details, .offer-details { gap: 0; display: block; }
+  .pack-page .product-coverage { gap: 8px; }
+  .product-coverage dt { overflow-wrap: anywhere; }
+}

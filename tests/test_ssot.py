@@ -74,14 +74,14 @@ def test_local_and_persistent_readers_delegate_to_policy(env):
     with patch.object(scan_config, "validate", wraps=scan_config.validate) as policy:
         with override_settings(STAGING=False, ROOT=env["root"]):
             assert scans.config() == value
-            policy.assert_called_once_with(value, require_complete=False)
+            policy.assert_called_once_with(value, require_complete=False, staging=False)
         policy.reset_mock()
         with (
             override_settings(STAGING=True),
             patch.object(scans.store, "rows", return_value=[{"value": json.dumps(value)}]),
         ):
             assert scans.config() == value
-            policy.assert_called_once_with(value, require_complete=True)
+            policy.assert_called_once_with(value, require_complete=True, staging=True)
 
 
 def test_copy_import_uses_policy_before_opening_database(env):
@@ -95,7 +95,7 @@ def test_copy_import_uses_policy_before_opening_database(env):
     ):
         with pytest.raises(ValueError, match="synthetic policy rejection"):
             deployment.migrate_copy(source)
-        policy.assert_called_once_with(value, require_complete=True)
+        policy.assert_called_once_with(value, require_complete=True, staging=True)
         connect.assert_not_called()
     value["mode"] = "codex_cli"
     source.with_suffix(".scan-config.json").write_text(json.dumps(value))
@@ -333,3 +333,133 @@ def test_goal_and_lookup_species_membership_delegate_to_one_builder():
     assert declared["items"][0]["label"] == "#250 Ho-oh"
     scope = projector.call_args.kwargs["scope"]
     assert json.loads(scope["definition"])["items"][0]["label"] == "#250 Ho-Oh"
+
+
+@pytest.mark.parametrize("mode", sorted(scan_config.MODES))
+def test_recognition_profile_policy_is_shared(mode):
+    value = dict(mode=mode, enabled=False, ceiling_usd=0.25, user_ceiling_usd=0.1)
+    assert scan_config.validate(value, require_complete=True)["mode"] == mode
+    if mode == "codex_cli":
+        with pytest.raises(ValueError, match="does not support codex_cli"):
+            scan_config.validate(value, require_complete=True, staging=True)
+    else:
+        assert scan_config.validate(value, require_complete=True, staging=True) == value
+
+
+def test_recognition_rejects_unused_configuration_keys():
+    with pytest.raises(ValueError, match="Unsupported scan configuration fields"):
+        scan_config.validate({"mode": "manual", "provider_fallback": "openai"})
+
+
+def test_persistent_recognition_reader_enforces_profile_without_resetting_config(env):
+    from django.test import override_settings
+
+    value = dict(mode="codex_cli", enabled=True, ceiling_usd=0.25, user_ceiling_usd=0.1)
+    record = dict(value=json.dumps(value))
+    with (
+        override_settings(STAGING=True),
+        patch.object(scans.store, "rows", return_value=[record]),
+        patch.object(scans.inventory, "execute") as write,
+        patch.object(scans.codex_recognition, "recognize") as cli,
+        patch.object(scans.httpx, "post") as api,
+    ):
+        with pytest.raises(ValueError, match="does not support codex_cli"):
+            scans.config()
+        write.assert_not_called()
+        cli.assert_not_called()
+        api.assert_not_called()
+    assert json.loads(record["value"]) == value
+    with override_settings(STAGING=True), patch.object(scans.store, "rows", return_value=[]):
+        with pytest.raises(ValueError, match="staging migration required"):
+            scans.config()
+
+
+@pytest.mark.parametrize("profile", ["staging", "unsupported"])
+def test_unsupported_local_initialization_fails_before_filesystem_write(tmp_path, monkeypatch, profile):
+    import sys
+
+    from pokemon_hunter.beta import cli
+
+    root = tmp_path / "must-not-exist"
+    monkeypatch.setenv("DEX_PROFILE", profile)
+    monkeypatch.setattr(sys, "argv", ["dex", "--root", str(root), "init", "--parity"])
+    with patch.object(cli, "setup") as setup:
+        with pytest.raises(
+            (ValueError, RuntimeError), match="staging deployment operator|Unknown DEX_PROFILE"
+        ):
+            cli.main()
+        setup.assert_not_called()
+    assert not root.exists()
+    with pytest.raises((ValueError, RuntimeError), match="staging deployment operator|Unknown DEX_PROFILE"):
+        cli.initialize(root, parity=True)
+    assert not root.exists()
+
+
+def test_runtime_profile_uses_explicit_authority():
+    from pokemon_hunter.beta import staging_config
+
+    assert staging_config.profile({}) == "local"
+    assert staging_config.profile({"DEX_PROFILE": "staging"}) == "staging"
+    with pytest.raises(RuntimeError, match="Unknown DEX_PROFILE"):
+        staging_config.profile({"DEX_PROFILE": ""})
+
+
+def test_parity_initialization_does_not_create_obsolete_species_sidecar(tmp_path, snapshot):
+    import sqlite3
+
+    from pokemon_hunter.beta import cli
+    from pokemon_hunter.migration import import_snapshot
+
+    (snapshot / "config/hunt.json").write_text('{"synthetic":true}')
+    copied = tmp_path / "synthetic.copied.sqlite3"
+    import_snapshot(snapshot, copied)
+    root = tmp_path / "new-root"
+    cli.initialize(root, copied, parity=True)
+    evidence = root / "parity-evidence"
+    assert not (evidence / "species.json").exists()
+    assert json.loads((evidence / "hunt.json").read_text()) == {"synthetic": True}
+    # Historical archival bytes remain in storage; removing the writer is not erasure.
+    with sqlite3.connect(root / "inventory.db") as db:
+        row = db.execute(
+            "SELECT content FROM private_archives WHERE path='config/pokedex_251.json'"
+        ).fetchone()
+    assert bytes(row[0]) == (snapshot / "config/pokedex_251.json").read_bytes()
+
+
+def test_filtered_and_vintage_species_goals_use_shared_builder():
+    from pokemon_hunter.beta import broad_goals, collection, goal_filters
+
+    entries = [
+        dict(
+            id=key,
+            game_id="pokemon",
+            set_id="synthetic",
+            catalog_version="v1",
+            name="Mutable card name",
+            attributes=dict(pokemon_dex=250, dex_eligible=True),
+        )
+        for key in ("z", "a")
+    ]
+    entries.append(
+        dict(
+            id="unresolved-species",
+            game_id="pokemon",
+            set_id="synthetic",
+            catalog_version="v1",
+            attributes=dict(dex_eligible=True),
+        )
+    )
+    games = [dict(id="pokemon", game_key="pokemon")]
+    raw = dict(game_id="pokemon", completion="species", pokemon_dex_min=250, pokemon_dex_max=251)
+    with (
+        patch.object(broad_goals, "species_items", wraps=broad_goals.species_items) as builder,
+        patch.object(collection, "catalog", return_value=entries),
+        patch.object(collection.store, "rows", return_value=[dict(version="legacy-v1", rules="{}")]),
+    ):
+        filtered = goal_filters.definition(raw, entries, games)
+        vintage = collection.goal_definition(object(), dict(goal_kind="vintage"))
+        assert builder.call_count == 2
+    assert filtered["items"][0]["label"] == "#250 Ho-Oh"
+    assert filtered["items"][1]["label"] == "#251 Celebi"
+    assert filtered["items"][0]["printing_ids"] == vintage["items"][249]["printing_ids"] == ["a", "z"]
+    assert vintage["items"][249] == dict(label="Species 250", printing_ids=["a", "z"], unresolved=False)

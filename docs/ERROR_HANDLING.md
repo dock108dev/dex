@@ -7,7 +7,7 @@ which reaches the server/worker's standard error under the supplied configuratio
 Each record contains a fixed event, exception class and traceback code locations
 (file basename, line and function). It omits exception messages, source lines,
 locals, exception chains, URLs, request payloads, SQL, photos and subprocess output.
-Keep the server's standard error when investigating failures; there is no new
+Keep the server's standard error when investigating failures; there is no
 persistent log store or alerting service. Repeated failures emit repeated records.
 
 | Event | Meaning and response |
@@ -28,8 +28,8 @@ persistent log store or alerting service. Repeated failures emit repeated record
 | `worker_shutdown_incomplete` | The local worker remained alive after the five-second shutdown join. An optional API call can outlast that bound; check the job's durable state on reopening. This event does not certify provider cancellation. |
 
 Django/axes request logging and access logging remain suppressed because URLs may
-contain bearer setup links. The independent diagnostic channel restores view
-failure visibility without recording those URLs. It does not observe every error
+contain bearer setup links. The independent diagnostic channel records view
+failures without recording those URLs. It does not observe every error
 inside third-party middleware. No debug mode is enabled.
 
 The original FastAPI app handles unexpected view failures at its request middleware
@@ -117,7 +117,7 @@ of an in-flight API request is not promised.
 - The optional legacy LaunchAgent scheduler tolerates an unloaded agent's bootout
   failure, but reports the nonzero exit without printing subprocess output.
   Removing a schedule file explicitly does not confirm an in-flight watcher has
-  stopped. Managed startup for the current authenticated app remains deferred.
+  stopped. The authenticated app has no managed startup service.
 - Catalog review may omit photos that were deleted, expired or are no longer
   authorized. Import previews collect row errors before any confirmation.
 - Invalid images fail validation; decompression warnings are promoted to errors.

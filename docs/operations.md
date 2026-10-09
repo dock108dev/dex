@@ -1,54 +1,67 @@
-# Optional staging operations
+# Operations
 
-The supported product target is localhost. The repository also retains a PostgreSQL
-staging implementation, container and deployment examples. These are not a qualified
-public deployment or a requirement for local development.
+## Existing local installations
 
-`beta/deployment.py` supplies `check`, `web`, `worker`, `migrate-copy`, backup,
-restore, retention and diagnostics commands. Inspect its `--help` before use.
-Staging uses PostgreSQL 17, one web process and one independent worker. Local
-normalized photos become private database bytes, so database backup includes them.
+Select the installation's private root and start it using
+[local development](local-development.md#new-demos-and-existing-installations).
+The authenticated server binds to `127.0.0.1:8011`. Restart after source changes;
+never seed, initialize or bootstrap an existing installation again merely to run it.
 
-## Required environment
+Stop the app before a data/schema update and back up the complete private root,
+including database, secret, photos, provider settings and journals. Preserve file
+permissions. Git is not a collection backup. Rehearse unfamiliar imports or
+rollback on a copy. Confirm the affected copies, goals and saved lookups afterward.
+Do not reset spend reservations or overwrite later writes to recover a failed step;
+see [recovery](ERROR_HANDLING.md).
 
-- `DEX_PROFILE=staging`, `DATABASE_URL`, `DEX_SECRET_KEY` and `DEX_PUBLIC_ORIGIN`.
-- `DEX_INGRESS=proxy` with explicit `DEX_PROXY_NETWORKS`, or the retained Render
-  ingress configuration. The backend must not be directly publicly reachable.
-- `DEX_DATABASE_SSLMODE` defaults to `require`; disabling database TLS is supported
-  only for a loopback database.
-- `OPENAI_API_KEY` only for explicitly configured API recognition. CLI recognition
-  is not supported by the copied staging importer.
+## Invited accounts and recovery
 
-The reverse proxy must replace forwarded headers and provide HTTPS matching the
-configured origin. Secure cookies, CSRF and exact Host/Origin checks remain enabled.
-`/healthz/` checks schema, scan configuration and worker heartbeat; unavailable
-prerequisites return 503. Diagnostics contain aggregate state, not private content.
+Local operator commands create private one-use links; they do not send messages:
 
-## Data and deployment boundaries
+```sh
+uv run --no-sync python -m pokemon_hunter.beta.cli --root "$DEX_APP_ROOT" invite USERNAME --link-file "$DEX_APP_ROOT/invite-link.txt"
+uv run --no-sync python -m pokemon_hunter.beta.cli --root "$DEX_APP_ROOT" recovery USERNAME --link-file "$DEX_APP_ROOT/recovery-link.txt"
+uv run --no-sync python -m pokemon_hunter.beta.cli --root "$DEX_APP_ROOT" revoke USERNAME
+```
 
-Use a synthetic seed and an empty database for rehearsals. `migrate-copy` consumes
-a compatible copied inventory plus scan-config sidecar; it refuses an occupied
-target and compares imported rows. It is not an arbitrary SQLite converter.
-Backup and restore preserve identities and spending reservations. Restore requires
-an empty target; never reset reservations as part of recovery.
+Set `DEX_APP_ROOT` to the existing root first. Choose a new link filename; the
+operator refuses overwrite. Links expire after 30 minutes and must be shared
+privately. Revocation invalidates account access, sessions and outstanding links.
+Separate installations can have independent provider configuration and storage.
 
-`deploy/Dockerfile`, `deploy/render.yaml` and the release manifest describe retained
-infrastructure. A recorded image identifies its historical source, not current
-uncommitted changes. Any rebuilt image needs its own identity and affected checks.
-The loopback rehearsal proxy and browser certificate exceptions do not establish
-real-device TLS trust. Hosting, ingress, startup/restart behavior, independent
-backup storage and real-device operation remain unverified for a new deployment.
+## Optional PostgreSQL/HTTPS profile
 
-Detailed historical procedures and exact candidate records are retained in
-[the operations record](history/2026-09-28-B5_OPERATIONS.md). They describe historical
-procedures and candidates; use the current configuration requirements above.
+The staging profile is implemented separately from local serving. It requires an
+operator-managed database, HTTPS origin, proxy trust and separate web/worker
+processes. These settings alone do not establish a working hosted deployment.
 
-## Current container boundary
+| Environment variable | Requirement |
+| --- | --- |
+| `DEX_PROFILE` | `staging` |
+| `DATABASE_URL` | PostgreSQL URL |
+| `DEX_SECRET_KEY` | Private secret of at least 50 characters |
+| `DEX_PUBLIC_ORIGIN` | Exact HTTPS origin without a path |
+| `DEX_INGRESS` | `proxy` by default, or `render` with matching provider environment |
+| `DEX_PROXY_NETWORKS` | Verified proxy CIDRs for `proxy`; no all-address network |
+| `DEX_DATABASE_SSLMODE` | `require` by default or `verify-full`; `disable` only for loopback |
 
-The retained Dockerfile copies `config/catalog-imports` only. Current species and
-coverage code also reads the hash-pinned `config/sealed/2026-10-04/package.json`
-and `config/catalog-pipeline` profiles; these inputs are absent from that image.
-Do not treat the historical container as a runnable current beta candidate.
-A separate container update must explicitly include the required public inputs
-in its build context and COPY steps, then qualify offline species/coverage loading
-and staging behavior. The supported local checkout workflow remains independent.
+`staging_config.py` validates these settings. Render ingress also requires its
+service identity and matching external hostname; do not invent proxy networks.
+Staging disables live hunts and CLI recognition. Scanning configuration and
+reservations persist in the database.
+
+Inspect operator commands before using a configured staging environment:
+
+```sh
+uv run --no-sync python -m pokemon_hunter.beta.deployment --help
+```
+
+The operator supports explicit migration/copied import, public catalog publication,
+web/worker serving, backup/restore, diagnostics, scan disablement and cleanup.
+Restore and cleanup are operational mutations, not startup commands. Backups
+contain private state and need restricted storage. Container build inputs are in
+`deploy/Dockerfile`; there is no repository-owned registry, Render account,
+release identity or automatic publication configuration.
+
+For provider settings use [photo entry](photo-entry.md) and [eBay hunts](hunts.md).
+For original-app scheduling use the [watcher guide](legacy-watcher.md).

@@ -1,0 +1,37 @@
+{% extends 'beta/base.html' %}
+{% block title %}Dex · Browse Pokémon{% endblock %}
+{% block content %}
+<div class="page-title">
+  <div><h1>Pokédex</h1><p class="muted public-scope"><span>Kanto and Johto</span> · <span>#001–251</span></p></div>
+  <a class="button-link secondary" href="{% if request.user.is_authenticated %}/{% else %}/login/?next=/pokedex/{% endif %}">Track my collection</a>
+</div>
+{% if page_error %}<p class="error" role="alert">{{ page_error }}</p>{% endif %}
+<form method="get" action="/pokedex/" class="public-filters" aria-label="Filter Pokémon">
+  <div class="public-filter-primary">
+    <div><label for="browse-query">Find a Pokémon or card</label><input id="browse-query" type="search" name="q" value="{{ filters.q }}" placeholder="Name, number, or set"></div>
+    <div><label for="browse-region">Region</label><select id="browse-region" name="region"><option value="">Kanto and Johto</option><option value="kanto" {% if filters.region == 'kanto' %}selected{% endif %}>Kanto · 001–151</option><option value="johto" {% if filters.region == 'johto' %}selected{% endif %}>Johto · 152–251</option></select></div>
+    <button type="submit">Search</button>
+  </div>
+  <details {% if filters.set or filters.era or filters.type %}open{% endif %}>
+    <summary>Card filters{% if filters.set or filters.era or filters.type %} · Applied{% endif %}</summary>
+    <div class="public-filter-secondary">
+      <div><label for="browse-set">Indexed set</label><select id="browse-set" name="set"><option value="">All indexed sets</option>{% for set in sets %}<option value="{{ set.id }}" {% if filters.set == set.id %}selected{% endif %}>{{ set.name }}</option>{% endfor %}</select></div>
+      <div><label for="browse-era">Era</label><select id="browse-era" name="era"><option value="">All indexed eras</option>{% for era in eras %}<option value="{{ era }}" {% if filters.era == era %}selected{% endif %}>{{ era }}</option>{% endfor %}</select></div>
+      <div><label for="browse-type">Card type</label><select id="browse-type" name="type"><option value="">All Pokémon cards</option>{% for card_type in types %}<option value="{{ card_type }}" {% if filters.type == card_type %}selected{% endif %}>{{ card_type }}</option>{% endfor %}</select></div>
+    </div>
+  </details>
+</form>
+<div class="public-result-heading"><div><h2>{{ species|length }} Pokémon</h2><p class="muted">Card coverage is partial. “No indexed cards” means a catalog gap.</p></div>{% if filters.q or filters.region or filters.set or filters.era or filters.type %}<a href="/pokedex/">Clear filters</a>{% endif %}</div>
+{% if species %}
+<div class="public-species-list">
+  {% for item in species %}
+  <article class="public-species-row">
+    <a class="public-species-link" href="/pokedex/{{ item.dex }}/"><span class="public-dex-number">#{{ item.dex|stringformat:'03d' }}</span><strong>{{ item.name }}</strong><span class="muted">{% if item.printing_count %}{{ item.printing_count }} indexed card{{ item.printing_count|pluralize }}{% else %}No indexed cards{% endif %}</span></a>
+    <a class="public-pack-link" href="/lookup/?targets={{ item.dex }}" aria-label="Look up packs for {{ item.name }}">Packs</a>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="panel empty"><h2>No matching Pokémon</h2><p>Try another name or number, or clear the card filters.</p><a href="/pokedex/">Show all 251 Pokémon</a></div>
+{% endif %}
+{% endblock %}

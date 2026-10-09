@@ -1,0 +1,61 @@
+name: Scheduled assurance
+'on':
+  schedule:
+  - cron: 23 9 * * 0
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: Merge checks or additional supported runtime coverage
+        type: choice
+        options:
+        - full
+        - compatibility
+        default: full
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  inputs:
+    name: Validate diagnostic scope
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+    - name: Validate typed dispatch input
+      env:
+        EVENT: ${{ github.event_name }}
+        SCOPE: ${{ inputs.scope }}
+      run: |-
+        if [[ "$EVENT" == workflow_dispatch && "$SCOPE" != full && "$SCOPE" != compatibility ]]; then
+          echo "Invalid diagnostic scope" >&2
+          exit 1
+        fi
+  ci:
+    name: CI
+    needs: inputs
+    uses: ./.github/workflows/validate.yml
+    with:
+      compatibility: ${{ github.event_name == 'schedule' || inputs.scope == 'compatibility' }}
+  health:
+    name: Bounded CI health
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Last 30 completed runs within 30 days
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: python3 scripts/ci/health.py --repository "$GITHUB_REPOSITORY" --output reports/ci/health/metrics.json
+    - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      if: always()
+      with:
+        name: health-${{ github.run_id }}-${{ github.run_attempt }}
+        path: reports/ci/health/
+        if-no-files-found: error
+        retention-days: 30
+    permissions:
+      contents: read
+      actions: read

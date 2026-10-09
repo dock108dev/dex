@@ -1,134 +1,116 @@
 # Local development
 
-Use the README's synthetic demo for a new checkout. Existing installations keep
-their private root and are launched without reseeding. Source updates require a
-server restart; the app does not automatically replace an installed build.
-
-Run commands from the repository root with Python >=3.12 and uv. CI tests Python
-3.12 and 3.14 on Ubuntu; the current local product target is macOS.
-`uv sync --locked --extra dev` installs the committed dependencies and rejects a
-stale lockfile. There is no Node build or separate type-check command: the frontend
-is ordinary JavaScript/CSS and Django templates. CI checks browser-script syntax
-with Node; the [CI guide](CI.md) owns the exact validation commands.
-
-## New demo versus existing installation
-
-The README's `pokemon_hunter.beta.synthetic` command is the portable demo setup.
-It generates two accounts, catalogs, copies, goals, request history and geometric
-photos in a new private directory. `credentials.json` holds random passwords for
-`admin` and `synthetic-member`. It also writes a copied database and configuration
-sidecar for optional staging rehearsals. It reads packaged catalog data only.
-The simulation includes a retained reservation for testing accounting behavior.
-
-For an existing authenticated installation, set a shell variable to its existing
-private root and launch it; do not seed, initialize or bootstrap again:
+Run commands from the repository root with Python >=3.12 and uv. The
+[README](../README.md) provides the new-demo quickstart. Dependencies are locked:
 
 ```sh
-uv run python -m pokemon_hunter.beta.cli --root "$DEX_APP_ROOT" check
-uv run python -m pokemon_hunter.beta.cli --root "$DEX_APP_ROOT" serve
+uv sync --locked --extra dev
 ```
 
-`DEX_APP_ROOT` is a shell convenience, not a runtime configuration key. The CLI sets
-`DEX_B1_ROOT` and `DJANGO_SETTINGS_MODULE` internally. The root must be outside the
-checkout with mode 0700 and private `inventory.db` and `secret.key` files. Keep
-these together across restarts. The server listens only on 127.0.0.1:8011 with no
-automatic reload. Restart after changing source. `serve` starts the scan worker
-when photo entry is enabled; do not start a second local worker unnecessarily.
+A stale lockfile makes this command fail. The frontend is plain JavaScript/CSS and
+Django templates, with no Node build, asset bundler or separate typing command.
+Node is needed for the optional syntax check in the [CI guide](CI.md).
 
-The lower-level `init --b2 --parity --copied-inventory PATH` command creates a new
-root from a compatible copied inventory database. It is not a general import of
-arbitrary SQLite files or a restart command. Empty low-level initialization does
-not populate a catalog. Use the synthetic seed for development; importing an
-existing collection is a separate data migration. Original-app and authenticated
-stores are never automatically synchronized.
+## New demos and existing installations
+
+`pokemon_hunter.beta.synthetic --output DIRECTORY` creates a new private demo
+outside the checkout. It reads packaged public metadata and generates accounts,
+copies, goals and geometric photos. Passwords are in `credentials.json`; keep it
+private. The seed refuses an existing directory and must not be used to restart
+an installation.
+
+For an existing authenticated installation, select its private directory:
+
+```sh
+export DEX_APP_ROOT="$HOME/.local/share/dex"
+uv run --no-sync python -m pokemon_hunter.beta.cli --root "$DEX_APP_ROOT" check
+uv run --no-sync python -m pokemon_hunter.beta.cli --root "$DEX_APP_ROOT" serve
+```
+
+Use the directory that actually holds your installation. `DEX_APP_ROOT` is a shell
+variable; the CLI sets `DEX_B1_ROOT` and `DJANGO_SETTINGS_MODULE`. The root must be
+outside the checkout, have mode 0700, and contain its database and secret. The
+server binds to `127.0.0.1:8011`, starts a scan worker when photo entry is enabled,
+and does not reload automatically. Restart after a source update; do not launch
+a duplicate worker.
+
+The lower-level `init --b2 --parity --copied-inventory PATH` creates a new isolated
+root from a compatible inventory database. It neither imports arbitrary SQLite
+files nor populates an empty catalog. Use the demo for development. Migrating a
+real collection requires the supported import workflow and a backup.
 
 ## Configuration
 
-| Setting | Role |
-|---|---|
-| `DEX_PROFILE` | `local` by default; `staging` selects separate PostgreSQL/HTTPS configuration |
-| `DEX_B1_ROOT` | Private root set by the local CLI's `--root` argument |
-| `scan-config.json` in the root | Provider, enablement and lifetime API reservation ceilings; see [photo entry](photo-entry.md) |
-| `OPENAI_API_KEY` | Server/worker environment only, for explicitly selected API recognition |
-| `PATH` / `HOME` / optional `CODEX_HOME` | Locates the CLI and its own saved authentication for CLI recognition |
-| `EBAY_CLIENT_ID` / `EBAY_CLIENT_SECRET` | Server-only eBay application credentials for explicit local live hunts; environment values override the local `.env` |
-| `EBAY_DELIVERY_POSTAL_CODE` | Optional eBay destination override from the server environment or local `.env` |
-| `config/settings.yaml` | Shared eBay environment, marketplace, destination and bounded search settings; also used by the original watcher/app |
+| Setting | Purpose |
+| --- | --- |
+| `DEX_PROFILE` | `local` by default; `staging` selects PostgreSQL/HTTPS settings; other values fail |
+| `DEX_B1_ROOT` | Private local root selected by the CLI |
+| `scan-config.json` | Recognition enablement, provider and lifetime ceilings; see [photo entry](photo-entry.md) |
+| `OPENAI_API_KEY` | Server/worker environment for explicitly selected API recognition |
+| `PATH`, `HOME`, optional `CODEX_HOME` | Locates the CLI recognizer and its own authentication |
+| `EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET` | eBay credentials; process environment overrides the local `.env` |
+| `EBAY_DELIVERY_POSTAL_CODE` | Optional destination override |
+| `config/settings.yaml` | eBay environment, marketplace, destination and bounded search settings |
 
-Local authenticated eBay search reads only the three eBay keys listed above from
-the checkout's `.env`; it does not load recognition or webhook credentials from
-that file. Both consumers use `config.read_env` / `config.load_settings`; the original
-CLI requires its settings file, while beta can use model defaults if it is absent.
-Malformed existing settings fail rather than selecting a fallback environment.
-Map App ID (Client ID) to `EBAY_CLIENT_ID` and Cert ID (Client Secret)
-to `EBAY_CLIENT_SECRET`; Dev ID is not required. Credentials must match the
-`environment` selected in `config/settings.yaml`. The committed example selects
-Production; Sandbox requires a separate Sandbox credential pair. Access depends
-on the application keyset and provider permissions, not merely nonempty keys.
-Use `.env.example` for names and keep real secrets private. Live hunts
-are disabled in the optional staging profile. See [eBay hunts](hunts.md) for the
-explicit search workflow and result limits. Never put API credentials in
-`scan-config.json`. Marker names such as `B1_ISOLATED`,
-`B2_PARITY_ISOLATED`, `B3_ISOLATED` and `B4_ISOLATED` are persisted capability
-contracts, not steps a new reader must perform. Do not rename or manually fabricate
-them. Older account-only roots remain supported.
+Use `.env.example` for local credential names. Recognition credentials belong in
+the server environment, not `scan-config.json`. The authenticated app loads only
+the three eBay settings from `.env`. The original watcher also supports its
+optional outbound webhook. [eBay hunts](hunts.md) explains Sandbox/Production
+credential separation. Missing settings use model defaults in the authenticated
+app; malformed existing settings fail.
 
-## Tests and navigation
+`staging_config.profile` owns profile selection. Local initialization rejects
+staging before creating files. Persisted capability-marker names are compatibility
+contracts, not instructions to fabricate files. Older account-only roots remain
+supported. Use [operations](operations.md) for backup and optional staging setup.
 
-Use the [CI guide](CI.md) for compilation, browser syntax and Ruff commands,
-and select focused pytest files for the component you change.
-`tests/test_b1.py` covers accounts, `test_b2.py` collection transactions,
-`test_b2_parity.py` projections/hunts, `test_b3.py` photo jobs,
-`test_codex_recognition.py` fake CLI processes, and `test_ssot.py` shared policy/routes.
-Test filenames are stable command targets; their numeric prefixes do not represent setup steps.
+## Tests and optional tools
 
-Browser scripts under `scripts/verify_*` are optional developer harnesses with
-additional Playwright requirements. Read each script's entry-point instructions;
-some require fresh accounts and write fixture data. Never aim them at a personal
-installation. `scripts/verify_ui_cleanup.py` intercepts data requests for synthetic
-presentation checks; its `before` mode reads HEAD, so record HEAD with captures.
+Select focused tests for the behavior you change:
 
-Local backup: stop the app and preserve the entire private root with its permissions,
-including database, secret, provider settings and local evidence. Git excludes
-private state and is not its backup. Staging has separate backup/restore commands.
+```sh
+uv run --no-sync pytest -q tests/test_b2.py tests/test_filtered_goals.py
+```
 
-## Frontend and repository conventions
+Accounts are covered by `test_b1.py`, collection transactions by `test_b2.py`,
+photo jobs by `test_b3.py`, shared policy by `test_ssot.py`, and public browsing by
+`test_public_access.py`. CI reporting and historical metrics have separate suites.
+Original-app collection, ingress/privacy and initializer tests are also separate.
+Numeric test names remain stable command targets, not setup steps.
 
-Django templates and `beta/static` own the authenticated UI; `web` owns the
-original app. Keep results and primary actions ahead of optional breakdowns.
-Show guide dates, incomplete coverage, unresolved variants and auction uncertainty
-alongside comparisons. Browser harnesses use synthetic data and cannot establish
-provider access, real-device behavior or recognition accuracy.
+Browser harnesses under `scripts/verify_*` require Playwright. Read their help
+before use: they can generate accounts, mutate synthetic data and write captures.
+Never point them at a real collection. `scripts/ci/browser.py` creates its own
+synthetic root and starts `scripts/serve_e4a.py`, which refuses ordinary roots and
+blocks acquisition. UI comparison harnesses use either HEAD or a saved source
+copy as their baseline; follow the selected harness's instructions.
 
-`verify_search_clarity.py` intercepts all requests in the actual beta shell for
-configured/disabled, failed/empty/populated searches and long saved history.
-It records source hashes with captures. The presentation harnesses support desktop
-and narrow viewports; consult their help before creating disposable output.
+`scripts/init_local.py` initializes only the separate original app. It creates
+missing private files and never replaces existing state.
 
-`scripts/init_local.py` provides an import-safe `initialize(root)` entry point.
-Missing examples fail before creating destinations. Existing files are never
-replaced; new local files use mode 0600. Git excludes private state, evidence,
-personal exports under `outputs/`, and media. Public catalog inputs, examples, synthetic fixtures and runtime assets are
-tracked. Add public authored media through a path-specific ignore exception.
+## Repository conventions
 
+`beta/templates` and `beta/static` implement the Django UI; `web` implements the
+original app. [Architecture](SSOT.md) describes module ownership and persisted
+contracts; [UI guidance](UI_DESIGN.md) describes presentation and accessibility.
+Keep account verification at service boundaries and public output allowlisted.
 
-## Maintenance and retained inputs
+Public catalog packages, source licenses, synthetic fixtures and runtime assets
+are repository inputs. Packaging selects public data explicitly in `pyproject.toml`;
+`runtime_data.py` resolves the source or installed layout. Do not replace those
+inputs with private sidecars. Keep secrets, exports, reports, screenshots and local
+working notes out of Git. Put generated captures in `reports/` or `evidence/`;
+authored public media can be tracked normally.
 
-The CI guide owns validation commands; this guide owns local setup. The README
-links both rather than repeating milestone status. Historical qualification
-results and environment restrictions live in [verification history](history/README.md),
-not current startup instructions.
+Ruff uses a 110-character line setting and E4/E7/E9/F/I rules. Review cohesion when
+Python exceeds 500 lines, JavaScript/styles 300 or templates 250; above
+1,000/600/500 respectively, extract a real responsibility or explain its necessary
+coupling. Dense render strings also need review. Do not split bulk data, change
+persisted schemas or compress formatting merely to reduce line counts.
 
-`canonical_species.registry` reads the hash-pinned public sealed package under
-`config/sealed/2026-10-04/`. A demo does not need a private `species.json` sidecar.
-Keep reviewed config packages and synthetic test fixtures available in a fresh
-checkout. Coverage-profile inputs are explained in [CI](CI.md#portable-test-and-runtime-inputs).
-Generated export CSVs in `outputs/` are private local artifacts, not runtime or
-ordinary-test inputs; retain them locally. Existing media ignores require explicit
-path exceptions for authored public assets. Do not remove config packages, replay
-fixtures, source tools or historical documents simply because they are large.
-
-`verify_collecting_clarity.py` captures the current dirty source before editing,
-then compares actual templates and scripts with intercepted synthetic responses.
-Its baseline differs from `verify_ui_cleanup.py`, which reads HEAD. Both preserve
-source identities and write local-only evidence; neither verifies live providers or a deployed installation.
+Collection confirmation/undo stays together to expose recomputation, revision and
+before/after-image invariants. Sealed package types and cross-record validation
+share a publication service. Installed-artifact probes stay inside their isolated
+interpreter rather than importing ambient checkout helpers. Frontend route
+presenters still share dialog state and classic-script globals; changing that
+ownership or the stylesheet cascade requires focused behavior checks.

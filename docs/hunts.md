@@ -83,10 +83,9 @@ Saved snapshots persist provider data; changing provider compliance or retention
 requires a separate integration design. Consult the provider's current requirements
 for the selected application. The app does not activate keysets automatically.
 
-[Historical provider observations](history/2026-10-03-VERIFICATION.md) concern exact
-older candidates and one installation. They do not establish access for a new
-clone. Populated Production comparison, reveal and seller-review behavior still
-needs live evidence. Local mocked-provider checks cover engineering behavior only.
+Provider availability must be checked for the configured installation. Mocked
+responses and sample searches verify behavior, not Production access or seller
+availability.
 
 ## Frozen goal scope and pack research
 

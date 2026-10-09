@@ -28,6 +28,7 @@ FILES = [
     "static/parity.js",
     "static/pokedex.js",
 ]
+OPTIONAL_FILES = ["templates/beta/header.html", "static/glass.css", "static/public.css"]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--phase", choices=["before", "after"], required=True)
 parser.add_argument("--output", type=Path, required=True)
@@ -35,9 +36,8 @@ args = parser.parse_args()
 args.output.mkdir(parents=True, exist_ok=True)
 if not settings.configured:
     settings.configure(USE_I18N=False)
-engine = Engine()
-if args.phase == "before":
-    for name in FILES:
+if args.phase == "before" and not (args.output / "before-source-hashes.json").exists():
+    for name in FILES + [name for name in OPTIONAL_FILES if (BASE / name).is_file()]:
         dest = args.output / "before-source" / name
         dest.parent.mkdir(parents=True, exist_ok=True)
         if not dest.exists():
@@ -45,6 +45,8 @@ if args.phase == "before":
 
 
 SOURCE = args.output / "before-source" if args.phase == "before" else BASE
+engine = Engine(dirs=[SOURCE / "templates"])
+FILES += [name for name in OPTIONAL_FILES if (SOURCE / name).is_file()]
 
 
 def template(name, context):

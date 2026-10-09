@@ -49,9 +49,17 @@ class InviteView(RedeemView):
     token_generator = invite_token
 
 
-@login_required
 @require_GET
 def home(request):
+    if not request.user.is_authenticated:
+        from .public_views import pokedex
+
+        return pokedex(request)
+    return private_home(request)
+
+
+@login_required
+def private_home(request):
     who = actor(request)
     copies = store.collection(who)
     for c in copies:

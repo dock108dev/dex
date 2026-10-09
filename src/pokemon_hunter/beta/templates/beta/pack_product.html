@@ -1,0 +1,56 @@
+<article class="product-card">
+  <div class="product-heading">
+    <h3>{{ p.name }}</h3>
+    <div class="product-coverage-group">
+      <p class="muted">Documented target coverage</p>
+      <dl class="product-coverage" aria-label="Documented target coverage">
+        <div>
+          <dt>Possible species</dt>
+          <dd>{{ p.possible_count }}</dd>
+        </div>
+        <div>
+          <dt>Guaranteed species</dt>
+          <dd>{{ p.guaranteed_count }}</dd>
+        </div>
+        <div>
+          <dt>Distinct targets</dt>
+          <dd>{{ p.distinct_target_count }}</dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+  {% if p.verified %}
+    <p>Documented contents · {{ p.total_packs|default_if_none:'Unknown' }} total packs · {{ p.quantity }} relevant packs</p>
+  {% else %}
+    <p class="notice"><strong>Official contents and quantities remain unverified.</strong> Confirmed product coverage is unknown; the recorded expansion association is not verified pack contents.</p>
+  {% endif %}
+  {% if not p.guaranteed_cards_known %}
+    <p class="muted">Included cards: Unknown. Only documented guarantees are counted.</p>
+  {% endif %}
+  <div class="product-details">
+    <details>
+      <summary>Contents and guaranteed included cards</summary>
+      <p>Contents: {{ p.contents }} · Total packs: {{ p.total_packs|default_if_none:'Unknown' }}</p>
+      {% for pack in p.packs %}
+        <p>{{ pack.expansion_id|default:'Unknown expansion / assortment' }} · quantity {{ pack.quantity|default_if_none:'Unknown' }}</p>
+      {% endfor %}
+      {% if not p.guaranteed_cards_known %}
+        <p>Guaranteed inclusions unknown. Zero retained guaranteed-card records does not prove no cards are included.</p>
+      {% elif not p.guaranteed and not p.included_cards %}
+        <p>No qualifying exact guaranteed cards indexed. See documented contents; missing records do not establish no included cards.</p>
+      {% endif %}
+      {% for card in p.included_cards %}
+        <p>Documented included card: {{ card.name }} · quantity {{ card.quantity }} · National Dex #{{ card.canonical_dex }}{% if card.canonical_dex > 251 %} · outside #001–251{% endif %} · Exact printing unresolved; contributes no qualifying target guarantee.</p>
+      {% endfor %}
+      {% for card in p.guaranteed %}
+        <p>Guaranteed included card (separate from booster pulls){% if card.selected_target %} · selected target{% endif %}: {{ card.printing.name }} · {{ card.printing.id }} · quantity {{ card.quantity }}</p>
+      {% endfor %}
+    </details>
+    <details>
+      <summary>Product version and reference</summary>
+      <p>{{ p.sku|default:'Unknown SKU' }} · {{ p.version }} · {{ p.market }} · {{ p.language }}</p>
+      <p>Exact product: {{ p.id }}</p>
+    </details>
+  </div>
+  {% include 'beta/pack_offer.html' %}
+</article>

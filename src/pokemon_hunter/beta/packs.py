@@ -59,6 +59,17 @@ def project(actor, key, species="", expansion="", now=None, filters=None, scope=
     )
     if species and not selected:
         result["limitations"].append("This species is not missing in the selected goal version.")
+    return project_evidence(result, d, selected, available, expansion, now, filters)
+
+
+def project_evidence(result, definition, selected, available, expansion="", now=None, filters=None):
+    """Shared public evidence stage, independent of accounts and ownership.
+
+    Authenticated callers supply their frozen selected scope. Guest callers
+    supply current reviewed catalog membership without any account projection.
+    """
+    d = definition
+    filters = offer_filters.validate(filters)
     if "sealed_bridges" not in connection.introspection.table_names():
         result["limitations"].append("Reviewed sealed publication coverage is unavailable.")
         return result

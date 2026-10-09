@@ -58,14 +58,16 @@ def initialize(db):
 
 
 def config():
-    if getattr(settings, "STAGING", False):
-        value = json.loads(
-            store.rows("SELECT value FROM beta_operations WHERE key='scan_config'")[0]["value"]
-        )
+    staging = settings.STAGING
+    if staging:
+        rows = store.rows("SELECT value FROM beta_operations WHERE key='scan_config'")
+        if not rows:
+            raise ValueError("Persistent scan configuration missing; staging migration required")
+        value = json.loads(rows[0]["value"])
     else:
         path = settings.ROOT / "scan-config.json"
         value = json.loads(path.read_text()) if path.exists() else {}
-    return scan_config.validate(value, require_complete=getattr(settings, "STAGING", False))
+    return scan_config.validate(value, require_complete=staging, staging=staging)
 
 
 def normalized(upload):
@@ -276,7 +278,7 @@ def process_one(stop=None):
         error = ""
         if not cfg["enabled"]:
             error = "Scanning disabled"
-        if row["mode"] not in {"manual", "fixture", "openai", "codex_cli"}:
+        if row["mode"] not in scan_config.MODES:
             error = "Unknown recognition provider. Choose manually."
         if row["mode"] != cfg["mode"]:
             error = "Selected provider changed. Start a new photo entry or choose manually."
@@ -347,8 +349,10 @@ def process_one(stop=None):
                     )
 
                 clues, usage = codex_recognition.recognize(images, settings.ROOT, cancelled, row["id"])
-            else:
+            elif row["mode"] == "openai":
                 clues, cost = recognize(images)
+            else:
+                raise ValueError("Unsupported recognition provider; choose a configured provider")
             state, result = match(actor, clues)
             if row["mode"] == "codex_cli":
                 result["usage"] = usage

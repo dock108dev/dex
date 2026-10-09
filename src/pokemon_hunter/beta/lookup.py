@@ -22,7 +22,7 @@ def request(raw):
     if result["targets"]:
         parts = result["targets"].split(",")
         if any(not p.isdecimal() for p in parts):
-            raise ValueError("Use canonical species numbers separated by commas")
+            raise ValueError("Enter Pokédex numbers separated by commas, for example 123,134.")
         result["targets"] = ",".join(map(str, goals.targets(list(map(int, parts)))))
     return result
 
