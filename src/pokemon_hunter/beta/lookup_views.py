@@ -11,9 +11,17 @@ from .collection_views import endpoint
 from .views import actor
 
 
-@endpoint
 @require_GET
 def home(request):
+    if not request.user.is_authenticated:
+        from . import public_views
+
+        return public_views.lookup(request)
+    return private_home(request)
+
+
+@endpoint
+def private_home(request):
     who = actor(request)
     raw = {k: request.GET.get(k, "") for k in lookup.FIELDS}
     context = lookup.project(

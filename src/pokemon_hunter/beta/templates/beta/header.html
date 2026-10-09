@@ -1,0 +1,33 @@
+<header class="app-header">
+  <div class="header-inner">
+    <a class="brand" href="/pokedex/" aria-label="Dex · Pokémon collection">
+      <span class="pokeball" aria-hidden="true"></span><span>Dex</span>
+    </a>
+    <nav aria-label="Main">
+      <a href="{% if request.path == '/' and parity %}/{% else %}/pokedex/{% endif %}" {% if request.path == '/pokedex/' or '/pokedex/' in request.path or request.path == '/' and parity or request.path == '/' and not request.user.is_authenticated %}aria-current="page"{% endif %}>{% if request.user.is_authenticated or not request and not public %}Pokédex{% else %}Browse Pokémon{% endif %}</a>
+      <a href="/lookup/" {% if request.path == '/lookup/' or '/packs/' in request.path %}aria-current="page"{% endif %}>Pack lookup</a>
+      <a href="/hunt/" {% if request.path == '/hunt/' or request.path == '/missing/' %}aria-current="page"{% endif %}>{% if request.user.is_authenticated or not request and not public %}eBay{% else %}eBay guide{% endif %}</a>
+      {% if not request.user.is_authenticated and public or request and not request.user.is_authenticated %}
+      <a class="header-account" href="/login/?next={% if request.path == '/login/' %}{{ next|default:'/pokedex/'|urlencode }}{% else %}{{ request.get_full_path|default:'/pokedex/'|urlencode }}{% endif %}" {% if request.path == '/login/' %}aria-current="page"{% endif %}>Sign in</a>
+      {% else %}
+      <details class="app-tools">
+        <summary>My collection</summary>
+        <div class="tools-menu">
+          {% if parity or not request %}<a href="/overview/" {% if request.path == '/overview/' %}aria-current="page"{% endif %}>Overview</a>{% endif %}
+          {% if parity or not request %}<a href="/cards/" {% if request.path == '/cards/' %}aria-current="page"{% endif %}>My cards</a>{% endif %}
+          {% if collection_enabled or not request %}<a href="/collection/" {% if request.path == '/collection/' %}aria-current="page"{% endif %}>Physical copies</a>{% else %}<a href="/" {% if request.path == '/' %}aria-current="page"{% endif %}>Your collection</a>{% endif %}
+          {% if collection_enabled or not request %}<a href="/goals/" {% if request.path == '/goals/' %}aria-current="page"{% endif %}>Goals</a>
+          <a href="/packs/saved/" {% if request.path == '/packs/saved/' %}aria-current="page"{% endif %}>Saved pack lookups</a>{% endif %}
+          {% if parity or not request %}<a href="/finds/" {% if request.path == '/finds/' %}aria-current="page"{% endif %}>Saved eBay finds</a>{% endif %}
+          {% if scans or request.path == '/scan/' %}<a href="/scan/" {% if request.path == '/scan/' %}aria-current="page"{% endif %}>Scan/Add</a>{% endif %}
+          {% if expansion or admin %}<a href="/requests/">Catalog requests</a><a href="/catalog-coverage/">Catalog coverage</a>{% endif %}
+          {% if admin %}<a href="/catalog-review/">Catalog review</a><a href="/catalog-pipeline/">Batch review</a><a href="/product-review/">Product review</a>{% endif %}
+          {% if collection_enabled or not request %}<a href="/settings/" {% if request.path == '/settings/' %}aria-current="page"{% endif %}>Data and history</a>{% endif %}
+          <form action="/logout/" method="post">{% csrf_token %}<button class="quiet">Sign out</button></form>
+        </div>
+      </details>
+      {% endif %}
+    </nav>
+    {% if staging %}<p class="environment-note">Staging copy · Prices and external artwork unavailable</p>{% endif %}
+  </div>
+</header>

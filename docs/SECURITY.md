@@ -2,9 +2,11 @@
 
 ## Surfaces and trust boundaries
 
-- The authenticated Django app binds to `127.0.0.1:8011`. Its outer middleware
+- The Django collection app binds to `127.0.0.1:8011`. Its outer middleware
   checks exact Host, loopback peer, Origin and absence of forwarded headers.
-  Login, recovery and invitation entry are public; inventory, exports, photos,
+  Canonical Pokémon browsing, allowlisted published card details, general Pack
+  lookup, the eBay explanation, login, recovery and invitation entry are public.
+  Public views do not select an account or read private ownership. Inventory, exports, photos,
   operations and scan jobs require a session plus an active mapped account.
 - `store.principal`, `store.verified` and account-scoped SQL are the ownership
   boundary. Client IDs are selectors, not authorization. Catalog import,
@@ -15,7 +17,7 @@
   CSRF. Axes limits login attempts. Invitations and recovery have distinct token
   purposes; reissue invalidates previous tokens/sessions. Local operator commands
   are privileged and are not exposed as anonymous HTTP routes.
-- The preserved FastAPI collection app is unauthenticated and loopback-only.
+- The original FastAPI collection app is unauthenticated and loopback-only.
   It accepts only `localhost` or `127.0.0.1` with a valid optional port, a loopback
   client address, no forwarded headers and a matching Origin when present.
   Duplicate Host headers and the test hostname `testserver` are rejected.
@@ -35,7 +37,7 @@
   generated internally. Seller links receive a separate server-side URL policy.
   There is no payment endpoint or third-party callback/webhook receiver. Optional
   legacy notification delivery is outbound and operator-configured.
-- Staging remains deferred. Its separate configuration requires HTTPS, PostgreSQL,
+- The optional staging profile requires HTTPS, PostgreSQL,
   secure cookies and explicit proxy/Render ingress assumptions. The container runs
   as a non-root user. These source controls do not establish deployment security.
 

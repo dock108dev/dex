@@ -4,9 +4,9 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
-STAGING = os.environ.get("DEX_PROFILE", "local") == "staging"
-if os.environ.get("DEX_PROFILE", "local") not in {"local", "staging"}:
-    raise RuntimeError("Unknown DEX_PROFILE")
+from .staging_config import configuration, profile
+
+STAGING = profile() == "staging"
 PROJECT = Path(__file__).resolve().parents[3]
 if STAGING:
     ROOT = Path(os.environ.get("DEX_B1_ROOT", "/tmp/dex-staging"))
@@ -83,7 +83,7 @@ CSRF_COOKIE_SECURE = False
 PASSWORD_RESET_TIMEOUT = 1800
 LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/"
-LOGOUT_REDIRECT_URL = "/login/"
+LOGOUT_REDIRECT_URL = "/pokedex/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 USE_TZ = True
 PARITY_ENABLED = (ROOT / "B2_PARITY_ISOLATED").is_file()
@@ -107,8 +107,6 @@ DATA_UPLOAD_MAX_NUMBER_FILES = 2
 B4_ENABLED = (ROOT / "B4_ISOLATED").is_file()
 
 if STAGING:
-    from .staging_config import configuration
-
     globals().update(configuration())
     MIDDLEWARE[0] = "pokemon_hunter.beta.security.StagingMiddleware"
     B2_ENABLED = PARITY_ENABLED = B3_ENABLED = B4_ENABLED = True

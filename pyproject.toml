@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling==1.27.0"]
 build-backend = "hatchling.build"
 
 [project]
@@ -21,12 +21,41 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8,<10", "ruff>=0.11,<1"]
+ci = [
+    "bandit==1.9.4",
+    "hatchling==1.27.0",
+    "pip-audit==2.10.1",
+    "playwright==1.63.0",
+    "pytest-cov==7.0.0",
+    "pytest-socket==0.7.0",
+    "shellcheck-py==0.11.0.1",
+]
 
 [project.scripts]
 pokemon-hunter = "pokemon_hunter.main:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["pokemon_hunter"]
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.hatch.build.targets.wheel.force-include]
+"config/catalog-imports" = "pokemon_hunter/data/config/catalog-imports"
+"config/sealed/2026-10-04" = "pokemon_hunter/data/config/sealed/2026-10-04"
+"config/sealed/2026-10-04-151/package.json" = "pokemon_hunter/data/config/sealed/2026-10-04-151/package.json"
+"config/sealed/2026-10-05-det1-e1c/package.json" = "pokemon_hunter/data/config/sealed/2026-10-05-det1-e1c/package.json"
+"config/catalog-pipeline/inputs.json" = "pokemon_hunter/data/config/catalog-pipeline/inputs.json"
+"config/catalog-pipeline/retained-20261004.json" = "pokemon_hunter/data/config/catalog-pipeline/retained-20261004.json"
+"config/catalog-pipeline/universe-20261004.json" = "pokemon_hunter/data/config/catalog-pipeline/universe-20261004.json"
+"config/catalog-pipeline/m4-20261006" = "pokemon_hunter/data/config/catalog-pipeline/m4-20261006"
+
+[tool.hatch.build.targets.sdist]
+include = ["/src", "/web", "/config/catalog-imports", "/config/sealed/2026-10-04", "/config/sealed/2026-10-04-151/package.json", "/config/sealed/2026-10-05-det1-e1c/package.json", "/config/catalog-pipeline/inputs.json", "/config/catalog-pipeline/retained-20261004.json", "/config/catalog-pipeline/universe-20261004.json", "/config/catalog-pipeline/m4-20261006", "/pyproject.toml", "/uv.lock", "/README.md"]
 
 [tool.ruff]
 line-length = 110

@@ -9,7 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "evidence/d1c-20261005"
-PRIVATE = Path("/Users/michaelfuscoletti/dex-private")
+PRIVATE = None
 
 
 def read(path):
@@ -29,14 +29,18 @@ def write(name, value, check):
         path.write_text(data)
 
 
-def run(check=False):
+def run(check=False, *, private_root=None):
+    private = private_root if private_root is not None else PRIVATE
+    if private is None:
+        raise ValueError("Provide an explicit private source directory with --private-root")
+    private = Path(private)
     lock = read(OUT / "inputs.json")
     for path, expected in lock["files"].items():
         assert digest(path) == expected, f"Source hash mismatch: {path}"
     u = read(ROOT / "config/sealed/2026-10-04/universe.json")
     index = read(ROOT / "config/sealed/2026-10-04/source-index.json")
-    rawroot = PRIVATE / "d1-e1-20261004/source-evidence"
-    detailroot = PRIVATE / "d1-e1b-20261004/source-evidence"
+    rawroot = private / "d1-e1-20261004/source-evidence"
+    detailroot = private / "d1-e1b-20261004/source-evidence"
     for filename, expected in read(detailroot / "retained-hashes.json").items():
         assert digest(detailroot / filename) == expected, filename
     detailindex = read(detailroot / "index.json")
@@ -56,7 +60,7 @@ def run(check=False):
         sourcechecks.append({"id": key, **index[key], "retained_path": str(path)})
     p = read(ROOT / "config/sealed/2026-10-04-151/package.json")
     reconciliation = read(ROOT / "config/sealed/2026-10-04-151/reconciliation.json")
-    reportpath = PRIVATE / "d1-e1b-20261004/rehearsal-evidence-3/report.json"
+    reportpath = private / "d1-e1b-20261004/rehearsal-evidence-3/report.json"
     report = read(reportpath)
     assert {r["printing_id"] for r in report["printings_bridged"]} == {r["id"] for r in p["printings"]}
     assert report["booster_memberships_evidenced"] == 207
@@ -341,4 +345,6 @@ def run(check=False):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true")
-    run(parser.parse_args().check)
+    parser.add_argument("--private-root", type=Path, required=True)
+    args = parser.parse_args()
+    run(args.check, private_root=args.private_root)

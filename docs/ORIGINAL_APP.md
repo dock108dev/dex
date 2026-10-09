@@ -1,6 +1,6 @@
-# Original local app — preserved
+# Original local app
 
-These commands run the preserved original app, not the authenticated app on port 8011. Run them from the repository root. The initializer only creates missing files; it does not overwrite existing state. It
+These commands run the original app, not the authenticated app on port 8011. Run them from the repository root. The initializer only creates missing files; it does not overwrite existing state. It
 reads each example before creating its destination, so a missing example leaves
 no empty state placeholder. Existing installations need only the final launch command.
 
@@ -20,7 +20,7 @@ Existing local collections are preserved. Fresh checkouts start empty; examples 
 - Filter by focus and delivered budget; revisit saved hunts with spoilers hidden.
 - Export the authoritative collection JSON from the sidebar.
 
-**All 251 species now have eligible printings**, with Neo Revelation and Neo Destiny included.
+The pinned vintage catalog includes eligible printings for all 251 species, with Neo Revelation and Neo Destiny included.
 
 ## Original-app data and local files
 
@@ -34,7 +34,7 @@ Saving collection changes replaces the collection using a unique private tempora
 file. A failed replacement leaves the original and a private `.tmp` file for
 inspection. Symlinked collection-write and hunt-database destinations are refused.
 Existing databases, exports and backups still need their own permission review;
-these source changes do not alter the current private installation.
+review their existing permissions when backing up.
 
 | File | Purpose |
 |---|---|
@@ -43,9 +43,8 @@ these source changes do not alter the current private installation.
 | `config/hunt.json` | Search pools, bounded coverage and scoring weights |
 | `config/raw_values.json` | Sourced raw LP/NM prices, when configured |
 | `data/collection_hunts.db` | Local search history, including separate sample/live labels |
-| `docs/history/2026-09-28-APP_SPEC.md` | Product rules, implemented behavior and remaining integrations |
 
-Preserve the collection JSON and history database when backing up. Updating ownership recomputes species ownership immediately. The old species-only CLI now redirects edits to exact cards, avoiding two competing ownership sources.
+Preserve the collection JSON and history database when backing up. Updating ownership recomputes species ownership immediately. The species-only CLI redirects edits to exact cards, avoiding two competing ownership sources.
 
 ## Live eBay
 
@@ -58,7 +57,7 @@ The original lot watcher uses explicit seller text, not photos. Unknown lot cont
 
 ## Earlier watcher
 
-The original `run`, `doctor`, and `status` commands remain available. They now read species ownership from the new authoritative file, but their historical broader set filter and bulk-lot digest behavior remain separate from the app. **The old digest reveals listing titles.** See [legacy watcher documentation](legacy-watcher.md) for its original behavior; its species-edit instructions are superseded by exact-card editing in the app.
+The original `run`, `doctor`, and `status` commands remain available. They read species ownership from the exact-card file, but their historical broader set filter and bulk-lot digest behavior remain separate from the app. **The old digest reveals listing titles.** See [legacy watcher documentation](legacy-watcher.md) for its original behavior; its species-edit instructions are superseded by exact-card editing in the app.
 
 ## Original-app collection estimates
 

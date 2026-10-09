@@ -62,4 +62,10 @@ class StagingMiddleware:
 def profile_context(request):
     from django.conf import settings
 
-    return {"staging": getattr(settings, "STAGING", False)}
+    return {
+        "staging": getattr(settings, "STAGING", False),
+        "parity": settings.PARITY_ENABLED,
+        "collection_enabled": settings.B2_ENABLED,
+        "scans": settings.B3_ENABLED,
+        "expansion": settings.B4_ENABLED,
+    }

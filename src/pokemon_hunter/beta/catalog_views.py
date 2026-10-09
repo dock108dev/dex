@@ -1,9 +1,10 @@
 import json
-from pathlib import Path
 
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_GET, require_POST
+
+from pokemon_hunter.runtime_data import root
 
 from . import catalog_imports as catalogs
 from . import catalog_requests as service
@@ -111,5 +112,5 @@ def package(request, name):
     catalogs.admin(actor(request))
     if name not in {"gym-heroes", "synthetic-orbits"}:
         raise Http404
-    path = Path(__file__).resolve().parents[3] / "config" / "catalog-imports" / (name + ".json")
+    path = root() / "config" / "catalog-imports" / (name + ".json")
     return JsonResponse(json.loads(path.read_text()))

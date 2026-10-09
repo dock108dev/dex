@@ -8,8 +8,12 @@ import sqlite3
 import sys
 from pathlib import Path
 
+from . import staging_config
+
 
 def initialize(root, source=None, b2=False, parity=False):
+    if staging_config.profile() != "local":
+        raise ValueError("Use the staging deployment operator for initialization")
     root = root.expanduser().absolute()
     project = Path(__file__).resolve().parents[3]
     if root.resolve().is_relative_to(project):
@@ -50,7 +54,6 @@ def initialize(root, source=None, b2=False, parity=False):
                 "raw_values.json",
                 "hunt.json",
                 "demo_hunts.json",
-                "pokedex_251.json",
             ):
                 row = db.execute(
                     "SELECT content FROM private_archives WHERE path=? ORDER BY rowid LIMIT 1",
@@ -59,12 +62,6 @@ def initialize(root, source=None, b2=False, parity=False):
                 if not row:
                     continue
                 value = json.loads(bytes(row[0]))
-                if filename == "pokedex_251.json":
-                    value = {
-                        key: {k: v for k, v in species.items() if k in ("name", "dex_number", "generation")}
-                        for key, species in value.get("pokedex", {}).items()
-                    }
-                    filename = "species.json"
                 (evidence / filename).write_text(json.dumps(value))
         (root / "B2_PARITY_ISOLATED").write_text("Fresh B2 parity rehearsal; no live providers\n")
     (root / "secret.key").write_text(secrets.token_urlsafe(64))
@@ -111,9 +108,7 @@ def main():
             p.add_argument("--link-file", type=Path, required=True)
     args = parser.parse_args()
     os.umask(0o077)
-    if args.action == "init":
-        initialize(args.root, args.copied_inventory, b2=args.b2, parity=args.parity)
-    if os.environ.get("DEX_PROFILE") == "staging" and args.action not in {
+    if staging_config.profile() == "staging" and args.action not in {
         "bootstrap",
         "invite",
         "recovery",
@@ -121,6 +116,8 @@ def main():
         "check",
     }:
         raise ValueError("Use the staging deployment operator for this action")
+    if args.action == "init":
+        initialize(args.root, args.copied_inventory, b2=args.b2, parity=args.parity)
     setup(args.root)
     from django.conf import settings
     from django.contrib.auth import get_user_model

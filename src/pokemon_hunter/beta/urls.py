@@ -2,14 +2,19 @@ from django.conf import settings
 from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
 
-from . import views
+from . import collection_views as collection_assets
+from . import public_views, views
 
 # Choose one authoritative handler per URL; retain account-only handlers for account-only roots.
 collection_routes = views
 hunt_routes = views
 hunt_detail = views.hunt_detail
+lookup_home = public_views.lookup
 if settings.B2_ENABLED:
     from . import collection_views as collection_routes
+    from . import lookup_views
+
+    lookup_home = lookup_views.home
 if settings.PARITY_ENABLED:
     from . import parity_views as hunt_routes
 
@@ -17,6 +22,10 @@ if settings.PARITY_ENABLED:
 
 urlpatterns = [
     path("", collection_routes.home),
+    path("pokedex/<int:dex>/", public_views.pokedex),
+    path("lookup/", lookup_home),
+    path("api/public/catalog/", public_views.catalog),
+    path("collection-assets/<str:filename>", collection_assets.asset),
     path("login/", LoginView.as_view(template_name="beta/login.html")),
     path("logout/", LogoutView.as_view()),
     path("recovery/", views.recovery_help),
@@ -40,8 +49,8 @@ if settings.B2_ENABLED:
         path("product-review/<uuid:key>/", product_views.detail),
         path("product-review/<uuid:key>/<str:action>/", product_views.action),
         path("api/product-coverage/", product_views.coverage),
+        path("collection/", b2.home),
         path("goals/", b2.home),
-        path("lookup/", lookup_views.home),
         path("lookup/save/", lookup_views.save),
         path("api/collection-sources/<str:key>/", lookup_views.source),
         path("packs/", packs_views.home),
@@ -55,7 +64,6 @@ if settings.B2_ENABLED:
         path("packs/saved/<uuid:key>/rename/", packs_views.rename),
         path("packs/saved/<uuid:key>/remove/", packs_views.remove),
         path("settings/", b2.home),
-        path("collection-assets/<str:filename>", b2.asset),
         path("api/collection/", b2.dashboard),
         path("api/catalog/", b2.catalog),
         path("api/binders/", b2.binders),
@@ -79,6 +87,8 @@ if settings.PARITY_ENABLED:
         path("api/parity/", parity.projection),
         path("api/hunts/<uuid:batch>/<int:key>/reveal/<uuid:result>/", parity.reveal),
     ] + urlpatterns
+else:
+    urlpatterns = [path("pokedex/", public_views.pokedex), path("hunt/", public_views.hunt)] + urlpatterns
 
 if settings.B3_ENABLED:
     from . import scan_views as scans

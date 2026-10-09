@@ -194,9 +194,7 @@ def test_hunts_reveal_reopen_rescore_and_cross_account(restored):
     assert a.get(route).json()["results"][0]["dex_hits"] == 1
     for path in [
         "/overview/",
-        "/pokedex/",
         "/cards/",
-        "/hunt/",
         "/missing/",
         "/finds/",
         "/api/parity/",
@@ -204,6 +202,8 @@ def test_hunts_reveal_reopen_rescore_and_cross_account(restored):
         route,
     ]:
         assert restored["client"]().get(path).status_code == 302
+    for path in ["/pokedex/", "/hunt/"]:
+        assert restored["client"]().get(path).status_code == 200
     anon = restored["client"]()
     anon.get("/login/")
     assert post(anon, reveal, {}).status_code == 302

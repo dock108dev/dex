@@ -115,7 +115,9 @@ function renderHunt(){
  updateHuntControls();
  document.querySelectorAll('[data-reveal-result]').forEach(b=>b.onclick=async()=>{
   const sequence=huntSequence;b.disabled=true;
-  try{const r=await api(`/api/hunts/${h.batch}/${h.id}/reveal/${b.dataset.revealResult}/`,{});if(sequence!==huntSequence||savedHunt!==h)return;$('#editor-title').textContent='Revealed contents';$('#editor-body').innerHTML=`<h3>${esc(r.title)}</h3><p>${esc(r.confidence)} · Candidates only; no inventory is added.</p>${guideComparison(r)}${revealedGuides(r)}${r.cards.map(k=>{const c=window.parityData.cards[k];return `<p>${esc(c?.name||k)} · ${esc(c?.set)} #${esc(c?.number)}</p>`;}).join('')||'<p>Exact contents unknown; no specific species yield is claimed.</p>'}${r.url?`<p>The seller’s page reveals photos and names.</p><a href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">Open on eBay</a>`:'<p>No purchase link for samples.</p>'}`;openDialog('#editor');}
+  try{const r=await api(`/api/hunts/${h.batch}/${h.id}/reveal/${b.dataset.revealResult}/`,{});if(sequence!==huntSequence||savedHunt!==h)return;$('#editor-title').textContent='Revealed contents';$('#editor-body').innerHTML=`<h3>${esc(r.title)}</h3><p>${esc(r.confidence)} · Candidates only; no inventory is added.</p>${guideComparison(r)}${revealedGuides(r)}${r.cards.map(k=>{const c=window.parityData.cards[k];return `<p>${esc(c?.name||k)} · ${esc(c?.set)} #${esc(c?.number)}</p>`;}).join('')||'<p>Exact contents unknown; no specific species yield is claimed.</p>'}${r.url?`<p>The seller’s page reveals photos and names.</p><a href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">Open on eBay</a>`:'<p>No purchase link for samples.</p>'}`;
+  // Native dialog focus handback needs an enabled opener at showModal time.
+  b.disabled=false;b.focus({preventScroll:true});openDialog('#editor');}
   catch(e){if(sequence===huntSequence&&savedHunt===h)status(e.message,true);}
   finally{b.disabled=false;}
  });

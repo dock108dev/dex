@@ -39,10 +39,9 @@ def migrate_copy(source):
         raise ValueError(
             "Copied database requires its .scan-config.json sidecar; never reset spending configuration"
         )
-    scan_config = scan_policy.validate(json.loads(scan_config_path.read_text()), require_complete=True)
-    # Copy import never provisions a local subscription login in staging.
-    if scan_config["mode"] == "codex_cli":
-        raise ValueError("Copied staging configuration does not support codex_cli")
+    scan_config = scan_policy.validate(
+        json.loads(scan_config_path.read_text()), require_complete=True, staging=True
+    )
     with sqlite3.connect(f"{source.resolve().as_uri()}?mode=ro", uri=True) as old:
         schema = old.execute(
             "SELECT name,sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY rowid"
@@ -141,7 +140,7 @@ def initialize():
         c.execute("CREATE TABLE IF NOT EXISTS beta_operations(key TEXT PRIMARY KEY,value TEXT NOT NULL)")
         c.execute(
             "INSERT INTO beta_operations VALUES('scan_config',%s) ON CONFLICT DO NOTHING",
-            [json.dumps(scan_policy.validate({}))],
+            [json.dumps(scan_policy.validate({}, staging=True))],
         )
         c.execute("INSERT INTO beta_operations VALUES('schema','5') ON CONFLICT DO NOTHING")
 

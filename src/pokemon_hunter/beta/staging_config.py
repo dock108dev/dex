@@ -4,6 +4,15 @@ import os
 from urllib.parse import unquote, urlsplit
 
 
+def profile(env=None):
+    """One runtime profile contract, checked before local initialization or serving."""
+    env = os.environ if env is None else env
+    value = env.get("DEX_PROFILE", "local")
+    if not isinstance(value, str) or value not in {"local", "staging"}:
+        raise RuntimeError("Unknown DEX_PROFILE; use local or staging")
+    return value
+
+
 def configuration(env=None):
     env = os.environ if env is None else env
     required = ("DATABASE_URL", "DEX_SECRET_KEY", "DEX_PUBLIC_ORIGIN")

@@ -1,15 +1,16 @@
 """Catalog identity authority; goal denominators and eligibility remain separate.
 
-The retained D1/E1 package pins official species provenance for 1,025 species.
+The packaged public registry pins official species provenance for 1,025 species.
 No provider request or mutable database row supplies catalog identity authority.
 """
 
 import hashlib
 import json
 from functools import cache
-from pathlib import Path
 
-REGISTRY = Path(__file__).resolve().parents[3] / "config/sealed/2026-10-04/package.json"
+from pokemon_hunter.runtime_data import root
+
+REGISTRY = root() / "config/sealed/2026-10-04/package.json"
 REGISTRY_SHA256 = "ec4c1f062ec822e44793de381390c626da4b8c59d0935879a52c5e6b74e85313"
 
 

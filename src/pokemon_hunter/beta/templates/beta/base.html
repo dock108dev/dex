@@ -1,2 +1,16 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dex · {% if staging %}Staging pre-alpha{% else %}Local collection{% endif %}</title><style>
-body{font:17px system-ui;margin:0;background:#f4f3f0;color:#202124}header{background:#9c2430;color:white;padding:20px 6vw}main{max-width:1000px;margin:30px auto;padding:0 24px}a{color:#8b1c29}input,button,textarea{font:inherit;padding:10px;max-width:100%;box-sizing:border-box}button{background:#9c2430;color:white;border:0;border-radius:5px;cursor:pointer}label{display:block;margin-top:16px}table{width:100%;border-collapse:collapse;background:white}td,th{text-align:left;padding:12px;border-bottom:1px solid #ddd}.notice{background:#fff0ce;padding:16px;border-left:4px solid #b66c00}.errorlist{color:#9c2430}.nav{display:flex;gap:20px;align-items:center;flex-wrap:wrap}.helptext{display:block;font-size:14px}h1{font-size:30px}</style></head><body><header><strong>DEX · {% if staging %}STAGING PRE-ALPHA{% else %}LOCAL COLLECTION{% endif %}</strong><div>{% if staging %}Copied data · Hosted qualification pending{% else %}Local only · Separate from original-app ownership{% endif %}</div></header><main>{% block content %}{% endblock %}</main></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{% block title %}Dex · Pokémon collection{% endblock %}</title>
+  <link rel="stylesheet" href="/collection-assets/glass.css">
+  <link rel="stylesheet" href="/collection-assets/collection.css">
+  {% if public %}<link rel="stylesheet" href="/collection-assets/public.css">{% endif %}
+</head>
+<body class="{% block body_class %}{{ body_class|default:'public-page' }}{% endblock %}">
+  <a class="skip" href="#main">Skip to content</a>
+  {% include 'beta/header.html' %}
+  <main id="main">{% block content %}{% endblock %}</main>
+</body>
+</html>

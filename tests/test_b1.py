@@ -101,11 +101,11 @@ def test_two_sessions_preservation_empty_member_and_forged_ids(env):
     assert b.get(f"/api/export/?user_id={OWNER_ID}").json()["copies"] == []
     assert len(a.get("/api/hunts/").json()["hunts"]) == 2
     assert b"Your collection is empty" in b.get("/").content
-    assert b"LOCAL COLLECTION" in a.get("/").content
+    assert b"Your collection" in a.get("/").content
 
 
 @pytest.mark.parametrize(
-    "route", ["/", "/api/inventory/", "/api/hunts/", "/api/archives/", "/api/export/", "/api/admin/catalog/"]
+    "route", ["/api/inventory/", "/api/hunts/", "/api/archives/", "/api/export/", "/api/admin/catalog/"]
 )
 def test_anonymous_cannot_read(env, route):
     assert env["client"]().get(route).status_code == 302

@@ -22,7 +22,7 @@ def run(root, output, port=8011):
     def prohibited(*args, **kwargs):
         count["calls"] += 1
         path.write_text(json.dumps(count))
-        raise AssertionError("Acquisition disabled in E4a")
+        raise AssertionError("Acquisition disabled in the synthetic server")
 
     from pokemon_hunter.beta.cli import setup
 

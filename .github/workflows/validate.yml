@@ -1,0 +1,278 @@
+name: Shared validation
+'on':
+  workflow_call:
+    inputs:
+      compatibility:
+        description: Include Python 3.13 and macOS Python 3.14
+        type: boolean
+        default: false
+    outputs:
+      result:
+        description: Required-check aggregate conclusion
+        value: ${{ jobs.gate.outputs.result }}
+permissions:
+  contents: read
+env:
+  CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  UV_NO_PROGRESS: '1'
+jobs:
+  quality:
+    name: Source quality
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - id: setup
+      uses: ./.github/actions/setup
+      with:
+        python-version: '3.12'
+    - name: Actions-aware validation
+      id: actions
+      run: |-
+        uv run --no-sync python scripts/ci/install_tools.py actionlint --destination "$RUNNER_TEMP/ci-tools"
+        uv run --no-sync "$RUNNER_TEMP/ci-tools/actionlint" -color
+      if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+    - name: Lint
+      id: lint
+      run: uv run --no-sync ruff check .
+      if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+    - name: Formatting
+      id: format
+      run: uv run --no-sync ruff format --check .
+      if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+    - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      id: node
+      if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+      with:
+        node-version: 22.18.0
+        package-manager-cache: false
+    - name: Compile, JavaScript and maintained documentation
+      id: source
+      run: |-
+        uv run --no-sync python -m compileall -q src scripts
+        uv run --no-sync python scripts/ci/source.py
+      if: ${{ !cancelled() && steps.node.outcome == 'success' }}
+    - name: Required result report
+      if: always()
+      env:
+        SETUP: ${{ steps.setup.outcome }}
+        ACTIONS: ${{ steps.actions.outcome }}
+        LINT: ${{ steps.lint.outcome }}
+        FORMAT: ${{ steps.format.outcome }}
+        NODE: ${{ steps.node.outcome }}
+        SOURCE: ${{ steps.source.outcome }}
+      run: |
+        report_python=(python3)
+        if [[ "$SETUP" == success ]]; then
+          report_python=(uv run --no-sync python)
+        fi
+        "${report_python[@]}" scripts/ci/report.py job --name "Source quality" --output reports/ci/quality/metrics.json --outcome "setup=$SETUP" --outcome "actions=$ACTIONS" --outcome "lint=$LINT" --outcome "format=$FORMAT" --outcome "node=$NODE" --outcome "source=$SOURCE"
+    - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      if: always()
+      with:
+        name: quality-${{ github.run_id }}-${{ github.run_attempt }}
+        path: reports/ci/quality/
+        if-no-files-found: error
+        retention-days: 14
+  behavior:
+    name: Behavior (${{ matrix.os }}, Python ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - id: setup
+      uses: ./.github/actions/setup
+      with:
+        python-version: ${{ matrix.python }}
+    - name: Offline component tests and branch coverage
+      id: tests
+      run: |-
+        mkdir -p reports/ci/behavior
+        uv run --no-sync pytest -q --disable-socket --allow-unix-socket --junitxml=reports/ci/behavior/junit.xml --cov=pokemon_hunter --cov-branch --cov-report=xml:reports/ci/behavior/coverage.xml --cov-report=json:reports/ci/behavior/coverage.json --cov-report=term
+    - name: Required result report
+      if: always()
+      env:
+        SETUP: ${{ steps.setup.outcome }}
+        TESTS: ${{ steps.tests.outcome }}
+      run: |
+        report_python=(python3)
+        if [[ "$SETUP" == success ]]; then
+          report_python=(uv run --no-sync python)
+        fi
+        "${report_python[@]}" scripts/ci/report.py job --name "Behavior" --output reports/ci/behavior/metrics.json --outcome "setup=$SETUP" --outcome "tests=$TESTS" --junit reports/ci/behavior/junit.xml --coverage reports/ci/behavior/coverage.json \
+          --expect-suite tests.test_b1 --expect-suite tests.test_b2 --expect-suite tests.test_b3 \
+          --expect-suite tests.test_public_access --expect-suite tests.test_collection_app \
+          --expect-suite tests.test_original_security --expect-suite tests.test_init_local \
+          --expect-suite tests.test_collection_goals --expect-suite tests.test_catalog_pipeline \
+          --expect-suite tests.test_pack_research --expect-suite tests.test_ci_reporting \
+          --expect-suite tests.test_ci_health \
+          --expect-suite tests.test_ci_security --expect-suite tests.test_ci_smoke --expect-suite tests.test_ci_browser
+    - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      if: always()
+      with:
+        name: behavior-${{ matrix.os }}-py${{ matrix.python }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: reports/ci/behavior/
+        if-no-files-found: error
+        retention-days: 14
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(inputs.compatibility && '[{"os":"ubuntu-24.04","python":"3.12"},{"os":"ubuntu-24.04","python":"3.14"},{"os":"macos-15","python":"3.12"},{"os":"ubuntu-24.04","python":"3.13"},{"os":"macos-15","python":"3.14"}]'
+          || '[{"os":"ubuntu-24.04","python":"3.12"},{"os":"ubuntu-24.04","python":"3.14"},{"os":"macos-15","python":"3.12"}]') }}
+  distribution:
+    name: Fresh distribution
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - id: setup
+      uses: ./.github/actions/setup
+      with:
+        python-version: '3.12'
+    - name: Build and install in an empty environment
+      id: build
+      run: |
+        uv build --no-build-isolation
+        uv build --no-build-isolation --out-dir "$RUNNER_TEMP/dex-build-repeat"
+        wheel=(dist/*.whl)
+        repeat=("$RUNNER_TEMP/dex-build-repeat"/*.whl)
+        sdist=(dist/*.tar.gz)
+        [[ ${#wheel[@]} -eq 1 && ${#repeat[@]} -eq 1 && ${#sdist[@]} -eq 1 ]]
+        uv venv --python 3.12 "$RUNNER_TEMP/dex-wheel"
+        uv export --locked --no-dev --no-emit-project --format requirements-txt --output-file "$RUNNER_TEMP/runtime-requirements.txt" > /dev/null
+        uv pip sync --python "$RUNNER_TEMP/dex-wheel/bin/python" --require-hashes "$RUNNER_TEMP/runtime-requirements.txt"
+        uv pip install --python "$RUNNER_TEMP/dex-wheel/bin/python" --no-deps "${wheel[0]}"
+        uv run --no-sync python scripts/ci/smoke.py --wheel "${wheel[0]}" --comparison-wheel "${repeat[0]}" --sdist "${sdist[0]}" --python "$RUNNER_TEMP/dex-wheel/bin/python" --report reports/ci/distribution/smoke.json
+    - name: Required result report
+      if: always()
+      env:
+        SETUP: ${{ steps.setup.outcome }}
+        BUILD: ${{ steps.build.outcome }}
+      run: |
+        report_python=(python3)
+        if [[ "$SETUP" == success ]]; then
+          report_python=(uv run --no-sync python)
+        fi
+        "${report_python[@]}" scripts/ci/report.py job --name "Fresh distribution" --output reports/ci/distribution/metrics.json --outcome "setup=$SETUP" --outcome "build=$BUILD" --measurement reports/ci/distribution/smoke.json
+    - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      if: always()
+      with:
+        name: distribution-${{ github.run_id }}-${{ github.run_attempt }}
+        path: reports/ci/distribution/
+        if-no-files-found: error
+        retention-days: 14
+  browser:
+    name: Synthetic browser journeys
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - id: setup
+      uses: ./.github/actions/setup
+      with:
+        python-version: '3.12'
+    - name: Install pinned Chromium and OS dependencies
+      id: chromium
+      run: uv run --no-sync playwright install --with-deps chromium
+    - name: Guest/member, keyboard, narrow and 200 percent layouts
+      id: browser
+      run: uv run --no-sync python scripts/ci/browser.py --output reports/ci/browser
+    - name: Required result report
+      if: always()
+      env:
+        SETUP: ${{ steps.setup.outcome }}
+        CHROMIUM: ${{ steps.chromium.outcome }}
+        BROWSER: ${{ steps.browser.outcome }}
+      run: |
+        report_python=(python3)
+        if [[ "$SETUP" == success ]]; then
+          report_python=(uv run --no-sync python)
+        fi
+        "${report_python[@]}" scripts/ci/report.py job --name "Synthetic browser journeys" --output reports/ci/browser/metrics.json --outcome "setup=$SETUP" --outcome "chromium=$CHROMIUM" --outcome "browser=$BROWSER" --measurement reports/ci/browser/report.json
+    - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      if: always()
+      with:
+        name: browser-${{ github.run_id }}-${{ github.run_attempt }}
+        path: reports/ci/browser/
+        if-no-files-found: error
+        retention-days: 7
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: /tmp/dex-ci-browsers
+  security:
+    name: Security and dependencies
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+        fetch-depth: 0
+    - id: setup
+      uses: ./.github/actions/setup
+      with:
+        python-version: '3.12'
+    - name: Install checksum-pinned secret scanner
+      id: gitleaks
+      run: uv run --no-sync python scripts/ci/install_tools.py gitleaks --destination "$RUNNER_TEMP/ci-tools"
+    - name: Source, locked dependency and redacted secret scans
+      id: security
+      if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+      run: uv run --no-sync python scripts/ci/security.py --output-dir reports/ci/security --gitleaks-bin "$RUNNER_TEMP/ci-tools/gitleaks"
+    - name: Required result report
+      if: always()
+      env:
+        SETUP: ${{ steps.setup.outcome }}
+        GITLEAKS: ${{ steps.gitleaks.outcome }}
+        SECURITY: ${{ steps.security.outcome }}
+      run: |
+        report_python=(python3)
+        if [[ "$SETUP" == success ]]; then
+          report_python=(uv run --no-sync python)
+        fi
+        "${report_python[@]}" scripts/ci/report.py job --name "Security and dependencies" --output reports/ci/security/metrics.json --outcome "setup=$SETUP" --outcome "gitleaks=$GITLEAKS" --outcome "security=$SECURITY" --security bandit=reports/ci/security/bandit.json --security pip-audit=reports/ci/security/pip-audit.json --security gitleaks=reports/ci/security/gitleaks.json --measurement reports/ci/security/security-status.json
+    - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      if: always()
+      with:
+        name: security-${{ github.run_id }}-${{ github.run_attempt }}
+        path: reports/ci/security/*.json
+        if-no-files-found: error
+        retention-days: 14
+  gate:
+    name: Required checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Require every independent job and report
+      id: result
+      env:
+        NEEDS_JSON: ${{ toJSON(needs) }}
+      run: |-
+        python3 scripts/ci/report.py aggregate --needs-json "$NEEDS_JSON" --output reports/ci/gate/metrics.json --required quality --required behavior --required distribution --required browser --required security
+        echo "result=PASS" >> "$GITHUB_OUTPUT"
+    - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      if: always()
+      with:
+        name: gate-${{ github.run_id }}-${{ github.run_attempt }}
+        path: reports/ci/gate/
+        if-no-files-found: error
+        retention-days: 14
+    if: always()
+    needs:
+    - quality
+    - behavior
+    - distribution
+    - browser
+    - security
+    outputs:
+      result: ${{ steps.result.outputs.result }}

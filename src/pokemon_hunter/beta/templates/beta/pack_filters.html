@@ -1,0 +1,75 @@
+{% if supported and not saved %}
+  <details class="offer-filter-panel">
+    <summary>Filter offers · {% if offer_filters.stock == "in-stock" %}Observed in stock{% elif offer_filters.stock == "out-of-stock" %}Observed out of stock{% elif offer_filters.stock == "unknown" %}Unknown stock{% else %}All stock states{% endif %}{% if offer_filters.age != "all" %} · {% if offer_filters.age == "fresh" %}Within 24 hours{% elif offer_filters.age == "older" %}Older than 24 hours{% else %}Unknown check time{% endif %}{% endif %}{% if offer_filters.max_price %} · Up to {{ offer_filters.currency }} {{ offer_filters.max_price }}{% elif offer_filters.currency %} · {{ offer_filters.currency }}{% endif %}{% if offer_filters.sort == "price" %} · Lowest item price{% endif %}</summary>
+    <form method="get" class="toolbar" {% if lookup %}action="/lookup/"{% endif %}>
+      {% if public %}
+        <input type="hidden" name="targets" value="{{ lookup_request.targets }}">
+        <input type="hidden" name="printing" value="{{ lookup_request.printing }}">
+      {% elif lookup %}
+        <input type="hidden" name="goal" value="{{ lookup_request.goal }}">
+        <input type="hidden" name="targets" value="{{ lookup_request.targets }}">
+        <input type="hidden" name="scope" value="{{ lookup_request.scope }}">
+        <input type="hidden" name="printing" value="{{ lookup_request.printing }}">
+        <input type="hidden" name="scope_version" value="{{ goal.version }}">
+      {% else %}
+        <input type="hidden" name="goal" value="{{ goal.id }}">
+      {% endif %}
+      {% if not lookup %}
+        <div>
+          <label for="species">Selected missing species</label>
+          <select name="species" id="species">
+            <option value="">Whole goal · all missing species</option>
+            {% for i in missing %}
+              <option value="{{ i.pokemon_dex }}" {% if species == i.pokemon_dex|stringformat:'s' %}selected{% endif %}>{{ i.label }}{% if i.status == 'unavailable' %} · Printing coverage unavailable{% endif %}</option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endif %}
+      <div>
+        <label for="expansion">Expansion</label>
+        <select name="expansion" id="expansion">
+          <option value="">All reviewed matching expansions</option>
+          {% for g in options %}
+            <option value="{{ g.expansion.id }}" {% if expansion == g.expansion.id %}selected{% endif %}>{{ g.expansion.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="stock">Observed stock</label>
+        <select id="stock" name="stock">
+          <option value="all" {% if offer_filters.stock == 'all' %}selected{% endif %}>All</option>
+          <option value="in-stock" {% if offer_filters.stock == 'in-stock' %}selected{% endif %}>Observed in stock</option>
+          <option value="out-of-stock" {% if offer_filters.stock == 'out-of-stock' %}selected{% endif %}>Observed out of stock</option>
+          <option value="unknown" {% if offer_filters.stock == 'unknown' %}selected{% endif %}>Unknown</option>
+        </select>
+      </div>
+      <div>
+        <label for="age">Original observation age</label>
+        <select id="age" name="age">
+          <option value="all" {% if offer_filters.age == 'all' %}selected{% endif %}>All</option>
+          <option value="fresh" {% if offer_filters.age == 'fresh' %}selected{% endif %}>Within 24 hours</option>
+          <option value="older" {% if offer_filters.age == 'older' %}selected{% endif %}>Older than 24 hours</option>
+          <option value="unknown" {% if offer_filters.age == 'unknown' %}selected{% endif %}>Unknown time</option>
+        </select>
+      </div>
+      <div>
+        <label for="max-price">Maximum item price</label>
+        <input id="max-price" name="max_price" value="{{ offer_filters.max_price }}" inputmode="decimal">
+      </div>
+      <div>
+        <label for="currency">Currency for comparison</label>
+        <input id="currency" name="currency" value="{{ offer_filters.currency }}" placeholder="USD" maxlength="3">
+      </div>
+      <div>
+        <label for="sort">Sort offers</label>
+        <select id="sort" name="sort">
+          <option value="checked" {% if offer_filters.sort == 'checked' %}selected{% endif %}>Original checked time (newest first)</option>
+          <option value="price" {% if offer_filters.sort == 'price' %}selected{% endif %}>Comparable item price (lowest first)</option>
+        </select>
+      </div>
+      <button>Apply filters</button>
+    </form>
+    <p><a href="{% if public %}/lookup/?targets={{ lookup_request.targets|urlencode }}&printing={{ lookup_request.printing|urlencode }}&expansion={{ expansion|urlencode }}{% elif lookup %}/lookup/?goal={{ lookup_request.goal|urlencode }}&targets={{ lookup_request.targets|urlencode }}&scope={{ lookup_request.scope }}&printing={{ lookup_request.printing|urlencode }}&expansion={{ expansion|urlencode }}{% else %}/packs/?goal={{ goal.id|urlencode }}&species={{ species|urlencode }}&expansion={{ expansion|urlencode }}{% endif %}">Reset offer filters</a> · {% if public %}Keeps your Pokémon selection.{% else %}Filters keep the selected version.{% endif %} No stock refresh.</p>
+    <p>Offer filters use the newest original check time. Future and unknown times are not fresh. Filtering offers does not change which Pokémon match these packs.</p>
+  </details>
+{% endif %}

@@ -18,7 +18,15 @@ The private root's `scan-config.json` selects a provider:
 | `manual` | Default for ordinary new roots; choose identity yourself |
 | `fixture` | Simulated results for tests and the synthetic demo |
 | `openai` | `OPENAI_API_KEY` in the server/worker environment; sends image bytes to the API |
-| `codex_cli` | Compatible `codex` executable on PATH with its own saved ChatGPT authentication; sends images through the CLI |
+| `codex_cli` | Local only: compatible `codex` executable on PATH with its own saved ChatGPT authentication; sends images through the CLI |
+
+`beta/scan_config.py` validates the four keys shown above. Other keys fail rather
+than act as ignored provider/fallback settings. Staging stores a complete config
+in `beta_operations` and supports `manual`, `fixture` and `openai`; both copied
+import and runtime startup reject `codex_cli`, including disabled configurations.
+Missing persistent staging configuration requires the existing staging migration
+path; reading it does not invent defaults or reset reservations. Local roots keep
+their supported manual defaults when a config file is absent.
 
 Provider changes affect new work; queued jobs from a different provider fail instead
 of switching silently. Running calls retain their original provider. Disabling
@@ -39,8 +47,8 @@ payloads on ordinary exit/cancellation. Hard OS termination cannot guarantee cle
 The CLI manages its own authentication; Dex does not copy tokens. Private
 `codex-usage.jsonl` records attempts and reported usage separately from API dollars.
 Remaining subscription capacity is unavailable; usage is not represented as free
-or unlimited. Historical CLI transport observations do not guarantee compatibility
-with every future CLI release.
+or unlimited. CLI compatibility depends on the required protocol and flags; incompatible
+releases fail explicitly.
 
 ## Durable work and privacy
 

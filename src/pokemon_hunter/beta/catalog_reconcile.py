@@ -2,13 +2,13 @@
 
 import json
 import re
-from pathlib import Path
 
 from pokemon_hunter.inventory import stable_id
+from pokemon_hunter.runtime_data import root
 
 from . import store
 
-PACKAGES = Path(__file__).resolve().parents[3] / "config/catalog-imports/staging-ten"
+PACKAGES = root() / "config/catalog-imports/staging-ten"
 
 
 def approved(package):

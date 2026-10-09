@@ -144,3 +144,25 @@ def test_filtered_export_import_and_membership_validation(b2):
         b2, "import", {"text": json.dumps(tampered), "format": "json", "duplicate_policy": "allow"}
     )
     assert invalid.status_code == 400
+
+
+def test_new_species_labels_are_canonical_and_historical_labels_import_unchanged(b2):
+    from pokemon_hunter.migration import digest, encode
+
+    apply(b2, "goal", request(b2))
+    original = service.goals(b2["actor"])[0]
+    assert original["definition"]["items"][0]["label"] == "#001 Bulbasaur"
+    assert original["definition"]["items"][1]["label"] == "#002 Ivysaur"
+    exported = service.export_data(b2["actor"])
+    # A retained pre-enforcement definition has catalog-derived or placeholder labels.
+    historical = exported["goals"][0]
+    historical["definition"]["items"][0]["label"] = "#001 Normal"
+    historical["definition"]["items"][1]["label"] = "#002 Species 002"
+    historical["version"] = digest(encode(historical["definition"]).encode())
+    apply(
+        b2, "import", {"text": json.dumps(exported), "format": "json", "duplicate_policy": "allow"}, b2["b"]
+    )
+    imported = service.goals(b2["member"])[0]
+    assert imported["definition"] == historical["definition"]
+    assert imported["version"] == historical["version"]
+    assert service.goals(b2["actor"])[0]["definition"] == original["definition"]

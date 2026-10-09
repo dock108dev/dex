@@ -146,3 +146,11 @@ def test_conflict_excludes_affected_set_and_continues(failure):
     assert len(rows) == 220
     totals = outputs["per-set.json"]["totals"]
     assert totals["reviewed_numbered"] + totals["numbered_count_gap"] == totals["expected_numbered"]
+
+
+def test_missing_private_root_fails_before_reading_inputs(monkeypatch):
+    monkeypatch.setattr(d1c, "PRIVATE", None)
+    with patch.object(d1c, "read") as reader:
+        with pytest.raises(ValueError, match="explicit private source directory"):
+            d1c.run()
+    reader.assert_not_called()
