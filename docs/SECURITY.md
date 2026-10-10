@@ -43,6 +43,18 @@
 
 ## Input and browser policy
 
+The supported Django local, staging and synthetic-browser launchers use
+`beta.asgi.get_asgi_application`. It bounds declared and streamed request bytes
+before Django buffers them or runs middleware/views. Ordinary requests use
+`DATA_UPLOAD_MAX_MEMORY_SIZE` (16,384 bytes for account-only roots; 2,000,000 for
+collection/staging roots). Enabled `POST /api/scans/` allows 16,100,000 bytes,
+including multipart overhead; each photo still has its separate 8,000,000-byte
+validation limit. Oversized bodies return a fixed 413 and close Django's temporary
+spool; invalid/duplicate Content-Length values return 400. Limits apply without
+Content-Length and cannot be bypassed by understating it. Custom launchers that
+call Django's factory directly bypass this guard. This is a per-request size bound,
+not a request-duration, connection-concurrency or aggregate disk quota.
+
 The shared `security.ebay_url` validator requires HTTPS and ebay.com, and rejects
 backslashes, whitespace/control characters, credentials and malformed/nonstandard
 ports. Invalid links cannot qualify for watcher alerts and become unavailable in
@@ -57,6 +69,9 @@ construction. Body-free original-app reveal operations remain supported.
 Search `demo` controls require actual JSON booleans and continuation offsets require
 integers, excluding booleans, strings and fractional values. Saved requests already
 use normalized booleans/integers; this does not reinterpret stored hunt state.
+Both Shopping comparison routes also require a JSON boolean for optional `save`.
+Only `true` requests persistence; `false` or omission calculates without saving.
+Invalid save intent is refused before comparison evaluation or storage.
 Both apps share no-store, nosniff, DENY framing,
 CSP base/object restrictions and same-origin camera permissions. Inline scripts are
 disallowed; existing inline styles are allowed. Denials receive these headers too.

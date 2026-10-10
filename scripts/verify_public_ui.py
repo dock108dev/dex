@@ -256,6 +256,60 @@ def run(root, base, output):
             page.goto(base + "/settings/")
             expect(page.get_by_role("heading", name="Settings & data", exact=True)).to_be_visible()
             capture(page, width, "member-settings")
+            page.goto(base + "/shopping/")
+            expect(page.get_by_role("heading", name="Lot calculator", exact=True)).to_be_visible()
+            expect(page.locator("#cards .card").first).to_be_visible()
+            capture(page, width, "member-shopping-empty")
+            card = page.locator("#cards .card").first
+            card.get_by_label("Quantity to add").fill("2")
+            card.get_by_role("button", name="Add card", exact=True).click()
+            row = page.locator("#selections .selection").first
+            expect(row.get_by_label("In this lot", exact=True)).to_have_value("2")
+            expect(row.locator(".value-cell")).to_have_count(4)
+            row.get_by_label("Wanted quantity", exact=True).fill("3")
+            with page.expect_response(lambda response: "/api/shopping/wants/" in response.url) as lock_write:
+                row.get_by_label("Lock wanted card", exact=True).check()
+            assert lock_write.value.status == 200
+            page.locator("#lot-price").fill("12")
+            with page.expect_response(
+                lambda response: "/api/shopping/lot-compare/" in response.url
+            ) as compared:
+                page.get_by_role("button", name="Total and compare", exact=True).click()
+            payload = compared.value.json()
+            assert compared.value.status == 200 and payload["schema"] == "dex-lot-v2"
+            assert set(payload["scenarios"]) == {"raw", "8", "9", "10"}
+            assert all(
+                scenario["result"]["coverage"]["selected_units"] == 2
+                for scenario in payload["scenarios"].values()
+            )
+            expect(page.locator("#summary .scenario")).to_have_count(4)
+            capture(page, width, "member-shopping-compared")
+            if width == 1280:
+                page.add_style_tag(content="body { zoom: 2; }")
+                capture(page, width, "member-shopping-zoom200")
+                page.add_style_tag(content="body { zoom: 1; }")
+            # A semantically invalid URL reaches the server; HTML validity alone cannot cover this path.
+            page.get_by_text("Listing, planned bid and delivery costs", exact=True).click()
+            page.locator("#listing-url").fill("javascript:invalid")
+            with page.expect_response(
+                lambda response: "/api/shopping/lot-compare/" in response.url
+            ) as invalid:
+                page.get_by_role("button", name="Total and compare", exact=True).click()
+            assert invalid.value.status == 400
+            expect(page.locator("#status")).to_be_focused()
+            expect(row.get_by_label("In this lot", exact=True)).to_have_value("2")
+            capture(page, width, "member-shopping-error")
+            page.locator("#listing-url").fill("")
+            page.locator("#clear-lot").click()
+            expect(row.get_by_label("In this lot", exact=True)).to_have_value("0")
+            expect(row.get_by_label("Wanted quantity", exact=True)).to_have_value("3")
+            expect(row.get_by_label("Lock wanted card", exact=True)).to_be_checked()
+            expect(page.locator("#results")).to_be_hidden()
+            page.reload()
+            expect(page.locator("#selections .selection")).to_have_count(1)
+            expect(page.get_by_label("In this lot", exact=True)).to_have_value("0")
+            expect(page.get_by_label("Wanted quantity", exact=True)).to_have_value("3")
+            capture(page, width, "member-shopping-next-lot")
             page.goto(base + "/packs/saved/")
             expect(page.get_by_role("heading", name="Saved Packs research", exact=True)).to_be_visible()
             page.get_by_role("link", name="Synthetic saved baseline", exact=True).click()

@@ -5,8 +5,8 @@ from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
 import pytest
-from test_ci_reporting import identity as identity
-from test_ci_reporting import load_script
+from ci_reporting_helpers import identity as identity
+from ci_reporting_helpers import load_script
 
 health = load_script("health")
 

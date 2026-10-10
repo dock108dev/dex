@@ -10,6 +10,7 @@
       {% if not request.user.is_authenticated and public or request and not request.user.is_authenticated %}
       <a class="header-account" href="/login/?next={% if request.path == '/login/' %}{{ next|default:'/pokedex/'|urlencode }}{% else %}{{ request.get_full_path|default:'/pokedex/'|urlencode }}{% endif %}" {% if request.path == '/login/' %}aria-current="page"{% endif %}>Sign in</a>
       {% else %}
+      {% if collection_enabled or not request %}<a href="/shopping/" {% if "/shopping/" in request.path %}aria-current="page"{% endif %}>Shopping</a>{% endif %}
       <details class="app-tools">
         <summary>My collection</summary>
         <div class="tools-menu">

@@ -29,12 +29,23 @@ def wheel(tmp_path, *, omit=None, extra=None):
     return destination
 
 
-def test_missing_runtime_asset_fails_with_required_check_in_report(tmp_path):
-    artifact = wheel(tmp_path, omit="pokemon_hunter/beta/static/public.css")
+@pytest.mark.parametrize(
+    "missing",
+    [
+        "static/public.css",
+        "asgi.py",
+        "static/lot_calculator.js",
+        "templates/beta/lot_calculator.html",
+        "retained_guide_admission.json",
+        "shopping_math.py",
+    ],
+)
+def test_missing_runtime_asset_fails_with_required_check_in_report(tmp_path, missing):
+    artifact = wheel(tmp_path, omit="pokemon_hunter/beta/" + missing)
     report = ci_smoke.smoke(artifact, Path(sys.executable))
     assert report["status"] == "FAIL"
     assert report["checks"][0]["status"] == "FAIL"
-    assert "public.css" in report["failure"]
+    assert missing in report["failure"]
     assert report["python_version"] is None
 
 

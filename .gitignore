@@ -152,3 +152,24 @@ config/market_values.json
 /scripts/verify_m7.py
 /scripts/verify_parity_browser.py
 /scripts/verify_parity_snapshot.py
+
+# Private repository instructions and implementation notes.
+/AGENTS.md
+/docs/shopping/
+/docs/ci-improvement-2026-10-09.md
+/docs/security-hardening-2026-10-09.md
+/docs/shopping-interface-2026-10-09.md
+/docs/ssot-enforcement-2026-10-09.md
+
+# Intermediate catalog exports; runtime packages and test fixtures stay tracked.
+/config/catalog-pipeline/d7-20261005/
+/config/catalog-pipeline/d8-20261006/
+/config/catalog-pipeline/d9-20261006/
+/config/sealed/2026-10-04-d3-d4a/
+/config/sealed/2026-10-04-d5a/
+/config/sealed/2026-10-04-d5b/
+/config/sealed/d6-20261005/
+/config/sealed/d7-20261005/
+/config/sealed/d8-20261006/
+/config/sealed/d9-20261006/
+/config/sealed/m4-20261006/

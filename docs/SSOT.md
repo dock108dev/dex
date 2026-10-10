@@ -36,8 +36,12 @@ Paths in this table are relative to `src/pokemon_hunter/`.
 | eBay request validation/scoring | `hunt.py`, `beta/ebay_hunts.py`, `beta/goal_hunts.py`, `beta/hunt_values.py`: explicit search, frozen scope, current ownership and dated guide comparison |
 | Photo jobs | `beta/scans.py`, `beta/scan_worker.py`, `beta/scan_config.py`, `beta/codex_recognition.py`: durable claims/reservations, configured provider and explicit inventory confirmation |
 | Replay refresh | `beta/refresh.py`: bounded synthetic-only replay; no live acquisition adapter |
+| Lot calculator and retained-guide admission | `beta/lot_calculator.py`: vintage account-scoped selector, session-private wants, separate included quantities, four scenarios and the preexisting-guide admission boundary |
+| Shopping input validation | `beta/shopping_inputs.py`: shared fields, text, cost and original-research input shapes; `beta/shopping.py` preserves public imports; no database/account reads in validators |
+| Shopping arithmetic | `beta/shopping_math.py`: decimal totals, partial coverage, unknown costs and per-card versus group-total scope; both calculator and original research preparation delegate to this evaluator |
+| Shopping history | `beta/shopping.py:store_payload/reopen/reevaluate`: one account, byte-integrity and supported-schema policy for old/new saves; `beta/shopping_views.py` delegates both history routes without its own decoding or reevaluation branch |
 | Rendering | `beta/parity.py`, public views, templates and static scripts: separate shared metadata and session-owned projections, escaped display text; [UI design](UI_DESIGN.md) |
-| Security and diagnostics | `security.py`, `beta/security.py`, `beta/diagnostics.py`: ingress, URL policy and redacted failures |
+| Security and diagnostics | `security.py`, `beta/security.py`, `beta/asgi.py`, `beta/diagnostics.py`: ingress, request-byte limits before buffering, URL policy and redacted failures |
 | Optional deployment | `beta/deployment.py`, `beta/staging_config.py`, `beta/support.py`: staging configuration, copied import and operational commands |
 
 ## Ownership and goal contracts
@@ -107,3 +111,17 @@ compatible contracts. Saved searches without an intent retain missing-target
 semantics. Staging copied import rejects CLI recognition configuration. Retiring
 these contracts requires a migration rather than cosmetic renaming. Metadata
 availability grants no artwork, guide or trademark redistribution rights.
+
+Shopping history explicitly supports `dex-shopping-v1` (original per-card/group
+research) and `dex-lot-v2` (four independent scenarios). Unknown/missing schemas
+fail before saving, rendering or reevaluation; they never select the original
+format implicitly. Reopening preserves original bytes and captured results.
+Current-reference evaluation creates a separate child using that format's
+preparation contract. The original editor at `/shopping/legacy/` and its APIs
+remain supported for group values, frozen goals and retained history; they are
+not alternate implementations of the four-scenario calculator.
+
+Shopping displays admitted retained guides; complete automatic four-grade price
+coverage is unavailable. Partial source coverage and source-specific retention
+limits remain separate from arithmetic and UI behavior. There is no general
+new-provider purge mechanism or automatic price collector.

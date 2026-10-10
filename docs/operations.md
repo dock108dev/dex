@@ -3,7 +3,7 @@
 ## Existing local installations
 
 Select the installation's private root and start it using
-[local development](local-development.md#new-demos-and-existing-installations).
+[local development](local-development.md#existing-installations).
 The authenticated server binds to `127.0.0.1:8011`. Restart after source changes;
 never seed, initialize or bootstrap an existing installation again merely to run it.
 

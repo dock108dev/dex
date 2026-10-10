@@ -87,11 +87,37 @@ Provider availability must be checked for the configured installation. Mocked
 responses and sample searches verify behavior, not Production access or seller
 availability.
 
-## Frozen goal scope and pack research
+## Shopping lot calculator
 
-Goal-scoped searches capture the selected goal ID, digest, kind and frozen
-membership. Older saved hunts keep their query plan after successor goals are
-created. Current ownership is projected separately, including on reopening;
-archived metadata remains recognizable inside retained broad scopes. Reopening,
-filtering and sample searches make no provider calls. Pack lookup uses separate
-reviewed catalog/product evidence; see [catalogs](catalogs.md).
+`/shopping/` compares explicitly included quantities with a lot price. Search the
+vintage card selector, add cards, lock wanted targets, fill in the remaining lot
+and compare. Clear lot / Next lot removes current contents and costs while keeping
+locked wants. Locks belong to the signed-in session; they are not evidence of
+seller contents or owned cards. Only included quantities contribute to totals.
+
+The selector covers Base Set, Jungle, Fossil, Base Set 2, Team Rocket, Gym Heroes,
+Gym Challenge, Neo Genesis, Neo Discovery, Neo Revelation and Neo Destiny.
+Selectable entries depend on the installation's published catalog. Owned cards
+remain selectable; this scope does not restrict unrelated all-era browsing or goals.
+
+Ungraded / Grade 8 / Grade 9 / Grade 10 are independent scenarios with
+quantity-aware totals. They are not added together or treated as the card's
+certified grade. The calculator displays eligible retained values automatically;
+missing values remain unpriced. Estimated grades or unknown graded basis are
+excluded. Source, date and grader details remain available. Unknown shipping,
+tax or other costs prevent a complete delivered comparison; a known subtotal is
+shown separately. Results are dated reference differences, not profit estimates.
+
+Automatic price acquisition is unfinished. Guide admission is limited to existing
+approved records; the repository does not contain the private price snapshot.
+Searching or reopening a comparison does not fetch prices. Source identity,
+grade meaning, valuation date and applicable use/storage rights must be resolved
+before connecting new data. No price-refresh schedule is provided.
+
+Saved comparisons retain their captured inputs and results privately. Reopening
+preserves the snapshot; evaluating current references creates a separate child
+result. Research, locks and bid intent never change ownership or frozen goals.
+The original editor at `/shopping/legacy/` remains available for per-card/group
+values and goal-based research. Both formats share account-scoped history policy;
+see [architecture](SSOT.md). Saved history requires the explicit `enable-shopping`
+operator command on collection-enabled installations; back up before enabling it.

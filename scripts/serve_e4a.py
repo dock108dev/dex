@@ -45,7 +45,8 @@ def run(root, output, port=8011):
 
         security.LocalOnlyMiddleware.__call__ = local_port
     import uvicorn
-    from django.core.asgi import get_asgi_application
+
+    from pokemon_hunter.beta.asgi import get_asgi_application
 
     with (
         patch("httpx.Client.send", prohibited),

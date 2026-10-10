@@ -72,7 +72,7 @@ jobs:
     - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
       if: always()
       with:
-        name: quality-${{ github.run_id }}-${{ github.run_attempt }}
+        name: ci-quality-${{ github.run_id }}-${{ github.run_attempt }}
         path: reports/ci/quality/
         if-no-files-found: error
         retention-days: 14
@@ -104,17 +104,11 @@ jobs:
           report_python=(uv run --no-sync python)
         fi
         "${report_python[@]}" scripts/ci/report.py job --name "Behavior" --output reports/ci/behavior/metrics.json --outcome "setup=$SETUP" --outcome "tests=$TESTS" --junit reports/ci/behavior/junit.xml --coverage reports/ci/behavior/coverage.json \
-          --expect-suite tests.test_b1 --expect-suite tests.test_b2 --expect-suite tests.test_b3 \
-          --expect-suite tests.test_public_access --expect-suite tests.test_collection_app \
-          --expect-suite tests.test_original_security --expect-suite tests.test_init_local \
-          --expect-suite tests.test_collection_goals --expect-suite tests.test_catalog_pipeline \
-          --expect-suite tests.test_pack_research --expect-suite tests.test_ci_reporting \
-          --expect-suite tests.test_ci_health \
-          --expect-suite tests.test_ci_security --expect-suite tests.test_ci_smoke --expect-suite tests.test_ci_browser
+          --expect-discovered-suites
     - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
       if: always()
       with:
-        name: behavior-${{ matrix.os }}-py${{ matrix.python }}-${{ github.run_id }}-${{ github.run_attempt }}
+        name: ci-behavior-${{ matrix.os }}-py${{ matrix.python }}-${{ github.run_id }}-${{ github.run_attempt }}
         path: reports/ci/behavior/
         if-no-files-found: error
         retention-days: 14
@@ -163,7 +157,7 @@ jobs:
     - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
       if: always()
       with:
-        name: distribution-${{ github.run_id }}-${{ github.run_attempt }}
+        name: ci-distribution-${{ github.run_id }}-${{ github.run_attempt }}
         path: reports/ci/distribution/
         if-no-files-found: error
         retention-days: 14
@@ -200,7 +194,7 @@ jobs:
     - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
       if: always()
       with:
-        name: browser-${{ github.run_id }}-${{ github.run_attempt }}
+        name: ci-browser-${{ github.run_id }}-${{ github.run_attempt }}
         path: reports/ci/browser/
         if-no-files-found: error
         retention-days: 7
@@ -241,7 +235,7 @@ jobs:
     - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
       if: always()
       with:
-        name: security-${{ github.run_id }}-${{ github.run_attempt }}
+        name: ci-security-${{ github.run_id }}-${{ github.run_attempt }}
         path: reports/ci/security/*.json
         if-no-files-found: error
         retention-days: 14
@@ -253,12 +247,22 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
+    - name: Collect this attempt's native job reports
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+      if: always()
+      with:
+        pattern: ci-*-${{ github.run_id }}-${{ github.run_attempt }}
+        path: reports/ci/children
     - name: Require every independent job and report
       id: result
+      if: always()
       env:
         NEEDS_JSON: ${{ toJSON(needs) }}
       run: |-
-        python3 scripts/ci/report.py aggregate --needs-json "$NEEDS_JSON" --output reports/ci/gate/metrics.json --required quality --required behavior --required distribution --required browser --required security
+        python3 scripts/ci/report.py aggregate --needs-json "$NEEDS_JSON" --output reports/ci/gate/metrics.json --required quality --required behavior --required distribution --required browser --required security \
+          --report-directory reports/ci/children \
+          --expect-job-reports "Source quality=1" --expect-job-reports "Behavior=${{ inputs.compatibility && 5 || 3 }}" \
+          --expect-job-reports "Fresh distribution=1" --expect-job-reports "Synthetic browser journeys=1" --expect-job-reports "Security and dependencies=1"
         echo "result=PASS" >> "$GITHUB_OUTPUT"
     - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
       if: always()

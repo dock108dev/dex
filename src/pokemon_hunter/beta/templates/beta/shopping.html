@@ -1,0 +1,65 @@
+{% extends 'beta/base.html' %}
+{% block title %}Shopping · Dex{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="/collection-assets/shopping.css">
+<div class="shopping">
+  <h1>Card shopping</h1>
+  <p>Keep eBay beside Dex. Select recognizable cards, enter estimates and compare your planned costs.</p>
+  <p id="status" role="status" tabindex="-1"></p>
+  {% if captured %}
+    <h2>{{ captured.saved.name }}</h2>
+    <p>Captured history · {{ captured.context.evaluation_date }} · America/New_York. Ownership and values at evaluation time.</p>
+    {% if captured.saved.parent_id %}<a href="/shopping/saved/{{ captured.saved.parent_id }}/">Original comparison</a>{% endif %}
+    <form method="post" action="/shopping/saved/{{ captured.saved.id }}/current/">{% csrf_token %}<button>Evaluate current in a separate saved comparison</button></form>
+    <a href="/shopping/">New comparison</a>
+    {{ captured|json_script:'captured-shopping' }}
+  {% else %}
+  <section aria-labelledby="research-title">
+    <h2 id="research-title">1. Find cards</h2>
+    <form id="research" class="controls">
+      <label>Card, set or number<input name="q" type="search"></label>
+      <label>Frozen goal<select aria-label="Frozen goal" name="goal" id="goal"><option value="">No goal</option></select></label>
+      <label>Show<select name="missing" aria-label="Show"><option value="">All cards, including owned</option><option value="species">Missing species in selected goal</option><option value="printing">Missing exact printings</option></select></label>
+      <label>Catalog edition<input name="edition" placeholder="Optional exact edition"></label>
+      <label>Variant<input name="variant" placeholder="Optional variant text"></label>
+      <label>Value availability<select name="value" aria-label="Value availability"><option value="">All values</option><option value="available">Available guide scenario</option><option value="unavailable">Guide unavailable</option></select></label>
+      <label>Sort<select name="sort" aria-label="Sort"><option value="name">Card name</option><option value="set">Set and number</option><option value="value_asc">Available value: low first</option><option value="value_desc">Available value: high first</option></select></label>
+      <details class="wide"><summary>Guide valuation assumptions</summary><div class="controls">
+        <label>Reference edition<select name="value_edition" aria-label="Reference edition"><option value="standard">Standard scenario</option><option value="first_edition">First-edition scenario</option></select></label>
+        <label>Raw condition<select name="condition" aria-label="Raw condition"><option value="">Unknown raw condition</option><option value="NM">NM scenario</option><option value="LP">LP scenario</option></select></label>
+        <label>Grade<input name="grade" placeholder="Empty for raw"></label><label>Grader<input name="grader" placeholder="For example PSA"></label>
+      </div><p>Condition is a value assumption, separate from catalog metadata. Guide fit and physical identity can remain unresolved.</p></details>
+      <button>Search indexed cards</button>
+    </form>
+    <p id="catalog-count"></p><div id="cards" class="card-grid"></div>
+    <div class="actions"><button id="previous" type="button">Previous cards</button><button id="next" type="button">Next cards</button></div>
+  </section>
+  <section aria-labelledby="lot-title"><h2 id="lot-title">2. Recognized lot cards</h2>
+    <p>Selecting a catalog entry records a candidate identity. Confirm the physical identity separately for the selected goal policy.</p>
+    <div id="selections"></div><p id="empty-lot">No cards selected. Add a card above.</p>
+    <details><summary>One total for a selected group</summary>
+      <p>Check “Include in group” on the cards, then capture their current quantities. The amount counts once and supplies no individual values. Changing membership or quantity requires a new reviewed estimate.</p>
+      <div class="controls"><label>Group total, USD<input id="group-amount" inputmode="decimal" placeholder="14.00"></label><label>Estimate date<input id="group-date" type="date"></label><label>Assumptions<input id="group-assumptions" placeholder="Identity, edition, condition or grade basis"></label></div>
+      <button id="capture-group" type="button">Capture group estimate</button><p id="group-status"></p>
+    </details>
+    <label>Unknown / unselected remainder quantity<input id="remainder" type="number" min="0" max="100000" placeholder="Unknown"></label>
+    <label>Remainder notes<textarea id="remainder-notes" placeholder="Unrecognized cards or uncertain contents"></textarea></label>
+  </section>
+  <details><summary>Amount and quantity formats</summary><p>Use unsigned decimal amounts with a leading digit, no commas or exponent, at most six decimal places and a maximum of $1,000,000,000,000. Quantities are whole numbers from 1 to 100,000; the selected and known lot total cannot exceed 100,000. Only USD values are eligible. Blank costs stay unknown; enter zero only when confirmed. Final values round once to cents using half-even rounding.</p></details>
+  <section aria-labelledby="cost-title"><h2 id="cost-title">3. Listing and planned costs</h2>
+    <label>Editable eBay search<input id="ebay-query" placeholder="Pokemon card lot"></label><a id="ebay-search" href="https://www.ebay.com/sch/i.html?_nkw=Pokemon%20card%20lot" target="_blank" rel="noopener noreferrer">Open search on eBay</a>
+    <label>Listing URL<input id="listing-url" type="url" placeholder="https://www.ebay.com/itm/…"></label>
+    <p>Links open on your request. Pasted listings are not fetched.</p>
+    <div id="costs" class="cost-grid"></div>
+  </section>
+  <form id="comparison">{% csrf_token %}
+    <label>Comparison name<input id="comparison-name" maxlength="160" placeholder="For example: Chansey and Scyther lot"></label>
+    <div class="actions"><button type="submit" value="compare">Compare</button><button type="submit" value="save" {% if not research_enabled %}disabled{% endif %}>Save private comparison</button></div>
+    {% if not research_enabled %}<p>Saved comparison storage has not been enabled for this installation. Comparisons remain available.</p>{% endif %}
+  </form>
+  {% endif %}
+  <section id="results" aria-labelledby="results-title" tabindex="-1" hidden><h2 id="results-title">Reference comparison</h2><div id="result-content"></div></section>
+  <details><summary>Saved private comparisons</summary><ul>{% for item in items %}<li><a href="/shopping/saved/{{ item.id }}/">{{ item.name }}</a> · {{ item.created_at }}</li>{% empty %}<li>No saved comparisons.</li>{% endfor %}</ul></details>
+</div>
+<script src="/collection-assets/shopping.js" defer></script>
+{% endblock %}

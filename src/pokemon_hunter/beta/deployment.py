@@ -346,7 +346,8 @@ def main():
             raise ValueError("Staging migration required")
         config()
         import uvicorn
-        from django.core.asgi import get_asgi_application
+
+        from .asgi import get_asgi_application
 
         uvicorn.run(
             get_asgi_application(),

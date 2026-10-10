@@ -1,0 +1,135 @@
+/* Shopping workspace: Dex red, quiet surfaces and aligned independent values. */
+.lot-page main { max-width: 1340px; margin: 24px auto 0; padding: 0 28px 48px; }
+.lot-calculator { overflow-wrap: anywhere; }
+.lot-calculator h1 { margin: 0; }
+.lot-heading, .lot-calculator .section-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.lot-heading { margin-bottom: 18px; }
+.lot-heading p { margin: 6px 0 0; }
+.lot-help-link { min-height: 44px; display: inline-flex; align-items: center; }
+.lot-calculator h2 { font-size: 19px; margin: 0; }
+.lot-calculator h3 { font-size: 17px; line-height: 1.4; }
+.lot-calculator p { margin: 0 0 12px; }
+.lot-calculator label { font-size: 14px; margin: 0; }
+.lot-calculator input { margin-top: 6px; }
+.lot-calculator button, .lot-calculator summary { min-height: 44px; }
+.lot-calculator button { flex-shrink: 0; }
+.lot-calculator .pricing-status { padding: 10px 14px; margin: 0 0 20px; border: 1px solid #d4c8b3; border-radius: 10px; color: #594a2e; background: #fffaf0; font-size: 14px; }
+.lot-workspace { display: grid; grid-template-columns: minmax(280px, 330px) minmax(0, 1fr); align-items: start; gap: 24px; }
+.lot-search { padding: 18px; border: 1px solid var(--border); border-radius: 14px; background: #ffffffbf; }
+.search-top>p:first-of-type { margin: 6px 0 18px; font-size: 14px; }
+.search-controls>div { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.search-controls input { margin: 0; min-width: 0; }
+.search-controls button { padding: 9px 10px; }
+.lot-calculator #catalog-count { margin: 14px 0 2px; font-size: 14px; }
+.lot-calculator .card-grid { display: grid; gap: 0; }
+.lot-calculator .card-grid .card { padding: 16px 0; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; }
+.lot-calculator .card-grid .card h3 { margin: 0 0 3px; }
+.lot-calculator .card-meta { color: var(--muted); font-size: 14px; margin: 0 0 10px; }
+.catalog-actions { display: flex; align-items: end; gap: 12px; }
+.catalog-actions label { flex: 1; }
+.catalog-actions button { min-width: 98px; }
+.lot-calculator .lookup-quantity { max-width: 110px; }
+.pagination { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.pagination button { padding: 8px 10px; font-size: 14px; }
+.lot-working-area { min-width: 0; }
+.lot-items { padding: 20px; background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 4px 18px #20212605; }
+.lot-calculator .section-heading { margin: 0 0 16px; }
+.lot-calculator .section-heading p { font-size: 14px; margin: 4px 0 0; }
+.lot-calculator .section-heading>span { font-size: 14px; }
+.lot-calculator .selection { padding: 18px 0; min-width: 0; border-top: 1px solid var(--border); }
+.selection-heading { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
+.selection-heading h3 { margin: 0 0 3px; }
+.lot-calculator .remove-card { background: transparent; border-color: transparent; color: var(--muted); padding: 8px; }
+.lot-calculator .remove-card:hover { color: var(--ink); background: #f1f1f3; }
+.lot-calculator .row-controls { display: flex; align-items: end; flex-wrap: wrap; gap: 12px; margin: 8px 0 18px; }
+.row-controls label { max-width: 145px; flex: 1 1 100px; }
+.row-controls .lock-control { display: flex; flex-direction: row-reverse; justify-content: end; align-items: center; gap: 8px; min-height: 44px; flex: 0 1 auto; max-width: none; }
+.lock-control input { margin: 0; cursor: pointer; }
+.selection.locked .lock-control { color: #216349; }
+.lot-calculator .value-columns, .lot-calculator .scenarios { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.value-cell { padding: 0 12px; min-width: 0; border-left: 1px solid #e2e3e6; }
+.value-cell:first-child { padding-left: 0; border-left: 0; }
+.value-cell h4 { font-size: 14px; font-weight: 500; color: var(--muted); margin: 0 0 4px; }
+.value-cell strong { display: block; font-size: 20px; line-height: 1.4; font-variant-numeric: tabular-nums; }
+.value-cell p { font-size: 13px; color: var(--muted); margin: 4px 0 0; }
+.value-cell .unpriced { font-size: 16px; font-weight: 500; color: var(--muted); }
+.lot-calculator .price-details { border: 0; margin: 8px 0 0; }
+.price-details summary { font-size: 14px; color: var(--muted); padding: 10px 0; }
+.price-details p { font-size: 14px; }
+.lot-calculator pre { font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; background: #f5f5f6; border-radius: 8px; padding: 14px; }
+.compare-bar { display: flex; align-items: end; flex-wrap: wrap; gap: 12px; padding-top: 18px; border-top: 1px solid var(--border); }
+.compare-bar .price { max-width: 190px; flex: 1 1 150px; }
+.lot-calculator .compare-bar p { width: 100%; font-size: 14px; margin: 0; }
+.lot-calculator #status { font-size: 14px; padding: 8px 0 0; margin: 0; border: 0; background: transparent; }
+.lot-calculator #status:empty { display: none; }
+.lot-calculator #status[role=alert] { margin-top: 12px; padding: 10px 12px; border: 1px solid #cf7782; color: #8f1d2c; background: #fff1f3; border-radius: 8px; }
+.lot-empty { padding: 32px 16px; background: #f6f6f8; border-radius: 10px; text-align: center; margin: 0 0 18px; }
+.lot-empty h3 { margin: 0 0 6px; }
+.lot-calculator .lot-empty p { margin: 0; color: var(--muted); }
+.lot-results { margin-top: 20px; }
+.lot-calculator .scenarios { gap: 10px; }
+.scenario { min-width: 0; padding: 14px 12px; border: 1px solid var(--border); background: #fff; border-radius: 10px; }
+.scenario h3 { margin: 0 0 8px; font-size: 15px; font-weight: 600; }
+.scenario>strong { display: block; font-size: 24px; letter-spacing: -.5px; font-variant-numeric: tabular-nums; }
+.lot-calculator .scenario .coverage-note { font-size: 13px; color: var(--muted); margin: 6px 0 12px; }
+.difference { border-top: 1px solid #e2e3e6; padding-top: 10px; }
+.difference span { display: block; color: var(--muted); font-size: 13px; }
+.difference strong { font-size: 18px; font-variant-numeric: tabular-nums; }
+.scenario details { margin-top: 10px; }
+.scenario summary { font-size: 13px; color: var(--muted); padding: 10px 0; }
+.lot-calculator .scenario details p { font-size: 14px; }
+.lot-options { margin: 14px 0 0; }
+.lot-options summary { color: var(--ink); padding: 12px 0; font-weight: 600; }
+.lot-options p { max-width: 72ch; }
+.lot-options .details-body { padding-bottom: 14px; }
+.lot-options .details-body>label { max-width: 640px; }
+.lot-options .details-body>p { margin-top: 8px; font-size: 14px; }
+.cost-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-top: 18px; }
+.cost-grid .basis { min-width: 0; }
+.cost-grid label { margin: 12px 0 0; }
+.save-controls { display: flex; align-items: end; flex-wrap: wrap; gap: 12px; }
+.save-controls label { max-width: 360px; flex: 1 1 200px; }
+.saved-list { list-style: none; padding: 0; margin: 18px 0; }
+.saved-list li { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 16px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.saved-list a { min-height: 44px; display: inline-flex; align-items: center; }
+.saved-list span { font-size: 14px; align-self: center; }
+.saved-context { margin-bottom: 20px; }
+.saved-context form { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.saved-context span { font-size: 14px; }
+#captured-rows { margin: 24px 0; }
+#captured-rows .selection { padding: 20px 0; }
+#captured-rows .selection h3 { margin-bottom: 16px; }
+@media (max-width: 1050px) {
+  .lot-workspace { grid-template-columns: minmax(250px, 290px) minmax(0, 1fr); gap: 18px; }
+  .lot-calculator .scenarios { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lot-calculator .section-heading { align-items: start; }
+}
+@media (max-width: 760px) {
+  .lot-page main { margin-top: 20px; padding: 0 16px 32px; }
+  .lot-workspace { grid-template-columns: minmax(0, 1fr); grid-template-areas: "search" "lot" "matches"; gap: 20px; }
+  .lot-search { display: contents; }
+  .search-top { grid-area: search; }
+  .search-matches { grid-area: matches; padding: 16px; border: 1px solid var(--border); border-radius: 14px; background: #ffffffbf; }
+  .lot-working-area { grid-area: lot; }
+  .lot-search, .lot-items { padding: 16px; }
+  .lot-calculator .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 16px; }
+  .catalog-actions { flex-wrap: wrap; gap: 8px; }
+  .catalog-actions button { flex: 1; }
+  .cost-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 480px) {
+  .lot-heading { align-items: start; gap: 8px; }
+  .lot-help-link { font-size: 14px; }
+  .lot-calculator .card-grid { grid-template-columns: minmax(0, 1fr); }
+  .catalog-actions { flex-wrap: nowrap; }
+  .lot-calculator .value-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 14px; }
+  .value-cell:nth-child(3) { padding-left: 0; border-left: 0; }
+  .lot-calculator .row-controls { gap: 10px; }
+  .row-controls .lock-control { flex-basis: 100%; justify-content: end; }
+  .compare-bar button { flex: 1 1 140px; }
+  .scenario>strong { font-size: 22px; }
+  .selection-heading { gap: 8px; }
+  .lot-calculator .section-heading>button { font-size: 14px; padding: 8px 10px; }
+}
+
+.catalog-empty { margin-top: 16px !important; color: var(--muted); }

@@ -86,6 +86,10 @@ def private_home(request):
 def asset(request, filename):
     if filename not in {
         "collection.js",
+        "shopping.js",
+        "lot_calculator.js",
+        "lot_calculator.css",
+        "shopping.css",
         "collection.css",
         "parity.js",
         "scans.js",

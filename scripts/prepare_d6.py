@@ -297,7 +297,7 @@ def run():
             expected_count=max(len(cardpaths), len(cards)),
             cards=cards,
         )
-        # M2 complete reconciliation currently requires every numbered source identity represented.
+        # Complete reconciliation requires every numbered source identity to be represented.
         # Do not invent above-251 imports to force target-only packages complete.
         assessments.append(
             dict(

@@ -12,6 +12,7 @@ import platform
 import re
 import sys
 import unicodedata
+from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -28,6 +29,7 @@ from scripts.ci.report_readers import ReportError as ReportError
 from scripts.ci.report_readers import number as number
 from scripts.ci.report_readers import read_bytes as read_bytes
 from scripts.ci.report_readers import read_coverage as read_coverage
+from scripts.ci.report_readers import read_job_metrics as read_job_metrics
 from scripts.ci.report_readers import read_json as read_json
 from scripts.ci.report_readers import read_junit as read_junit
 from scripts.ci.report_readers import read_measurement as read_measurement
@@ -36,6 +38,15 @@ from scripts.ci.report_readers import status as status
 from scripts.ci.report_readers import xml_number as xml_number
 
 NAME = re.compile(r"[A-Za-z0-9_.-]{1,100}\Z")
+
+
+def discovered_suites(root: Path | None = None) -> list[str]:
+    """Every test module in the candidate must execute; a stale hand-written list cannot omit new domains."""
+    root = root or Path(__file__).resolve().parents[2] / "tests"
+    suites = ["tests." + path.stem for path in sorted(root.glob("test_*.py")) if path.is_file()]
+    if not suites or any(not SUITE_NAME.fullmatch(suite) for suite in suites):
+        raise ReportError("Candidate test modules are missing or malformed")
+    return suites
 
 
 def markdown(value: Any) -> str:
@@ -126,6 +137,11 @@ def write_result(output: Path, data: dict[str, Any], summary: str) -> None:
 def job(args: argparse.Namespace) -> int:
     errors: list[str] = []
     reports: dict[str, Any] = {"junit": None, "coverage": None, "security": [], "measurements": []}
+    if args.expect_discovered_suites:
+        try:
+            args.expect_suite = sorted(set(args.expect_suite) | set(discovered_suites()))
+        except ReportError as exc:
+            errors.append(str(exc))
     if args.expect_suite and not args.junit:
         errors.append("Expected suites require a JUnit report")
     try:
@@ -185,6 +201,12 @@ def job(args: argparse.Namespace) -> int:
         "tool_versions": {**installed_versions(), **versions},
         "outcomes": outcomes,
         "expected_suites": args.expect_suite,
+        "required_reports": {
+            "junit": bool(args.junit),
+            "coverage": bool(args.coverage),
+            "security": len(args.security),
+            "measurements": len(args.measurement),
+        },
         "reports": reports,
         "errors": errors,
         "baseline": None,
@@ -299,25 +321,48 @@ def aggregate(args: argparse.Namespace) -> int:
         if outcomes[name] != "PASS" and not (outcomes[name] == "SKIPPED" and name in allowed):
             errors.append(f"Required job {name}: {outcomes[name]}")
     records = []
-    for path in args.report:
+    paths = list(args.report)
+    if args.report_directory:
+        discovered = sorted(Path(args.report_directory).glob("*/metrics.json"))
+        if not discovered or len(discovered) > 20:
+            errors.append("Required job metrics absent or exceed the 20-report bound")
+        else:
+            paths.extend(str(path) for path in discovered)
+    seen = set()
+    for path in paths:
         try:
-            report = read_json(Path(path))
-            if (
-                not isinstance(report, dict)
-                or report.get("schema_version") != 1
-                or report.get("kind") != "job"
-            ):
-                raise ReportError("Invalid job metrics record")
-            if status(report.get("result")) != "PASS":
-                raise ReportError(f"Retained job report failed: {report.get('name')}")
-            candidate = identity()["tested_sha"]
-            if not isinstance(report.get("identity"), dict):
-                raise ReportError("Invalid retained job candidate identity")
-            if candidate and report["identity"].get("tested_sha") != candidate:
-                raise ReportError("Job metrics candidate differs from aggregate candidate")
+            report = read_job_metrics(Path(path))
+            for field in ("tested_sha", "run_id", "run_attempt", "repository", "event", "ref"):
+                expected = identity()[field]
+                if expected and report["identity"].get(field) != expected:
+                    raise ReportError(f"Job metrics {field} differs from aggregate identity")
+            environment = report["environment"]
+            key = (report["name"], environment["os"], environment["python"])
+            if key in seen:
+                raise ReportError("Duplicate retained job environment")
+            seen.add(key)
             records.append(report)
+            if status(report.get("result")) != "PASS":
+                errors.append(f"Retained job report failed: {report['name']}")
         except ReportError as exc:
             errors.append(str(exc))
+    try:
+        expected_counts = {}
+        for value in args.expect_job_reports:
+            name, separator, count = value.rpartition("=")
+            if (
+                not separator
+                or not name
+                or name in expected_counts
+                or not re.fullmatch(r"[1-9][0-9]?", count)
+            ):
+                raise ReportError("Expected job reports require unique NAME=COUNT pairs")
+            expected_counts[name] = int(count)
+        actual_counts = dict(Counter(record["name"] for record in records))
+        if expected_counts and actual_counts != expected_counts:
+            errors.append("Required job report counts do not match the selected matrix")
+    except ReportError as exc:
+        errors.append(str(exc))
     result = "FAIL" if errors else "PASS"
     record = {
         "schema_version": 1,
@@ -338,6 +383,32 @@ def aggregate(args: argparse.Namespace) -> int:
         for name, outcome in outcomes.items()
     ]
     summary += ["", f"Tested SHA: {markdown(record['identity']['tested_sha'] or 'unavailable')}."]
+    summary += [
+        "",
+        "| Retained job | Runtime | Result | Tests passed / failed / skipped | Line / branch coverage |",
+        "|---|---|---|---|---|",
+    ]
+    for retained in records:
+        environment = retained.get("environment", {})
+        native = retained.get("reports", {})
+        native = native if isinstance(native, dict) else {}
+        tests, coverage = native.get("junit"), native.get("coverage")
+        counts = "unavailable"
+        coverage_text = "unavailable"
+        if isinstance(tests, dict):
+            counts = " / ".join(
+                markdown(tests.get(key, "unavailable")) for key in ("passed", "failed", "skipped")
+            )
+        if isinstance(coverage, dict):
+            coverage_text = " / ".join(
+                markdown(coverage.get(key) if coverage.get(key) is not None else "unavailable")
+                for key in ("line_percent", "branch_percent")
+            )
+        summary.append(
+            f"| {markdown(retained['name'])} | {markdown(environment.get('os', 'unavailable'))} "
+            f"Python {markdown(environment.get('python', 'unavailable'))} | {markdown(retained['result'])} "
+            f"| {counts} | {coverage_text} |"
+        )
     summary += [f"- {markdown(error)}" for error in errors[:10]]
     summary += [
         "",
@@ -361,6 +432,7 @@ def main(argv: list[str] | None = None) -> int:
     job_parser.add_argument("--outcome", action="append", default=[])
     job_parser.add_argument("--junit")
     job_parser.add_argument("--expect-suite", action="append", default=[])
+    job_parser.add_argument("--expect-discovered-suites", action="store_true")
     job_parser.add_argument("--coverage")
     job_parser.add_argument("--security", action="append", default=[])
     job_parser.add_argument("--measurement", action="append", default=[])
@@ -372,6 +444,8 @@ def main(argv: list[str] | None = None) -> int:
     aggregate_parser.add_argument("--required", action="append", default=[])
     aggregate_parser.add_argument("--allow-skipped", action="append", default=[])
     aggregate_parser.add_argument("--report", action="append", default=[])
+    aggregate_parser.add_argument("--report-directory")
+    aggregate_parser.add_argument("--expect-job-reports", action="append", default=[])
     aggregate_parser.add_argument("--output", required=True)
     aggregate_parser.set_defaults(handler=aggregate)
     args = parser.parse_args(argv)

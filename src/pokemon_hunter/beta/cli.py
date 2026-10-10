@@ -98,6 +98,7 @@ def main():
         "scan-worker",
         "enable-catalog",
         "enable-pack-research",
+        "enable-shopping",
         "enable-replay-refresh",
     ):
         sub.add_parser(command)
@@ -136,6 +137,13 @@ def main():
             raise ValueError("Disposable synthetic state required")
         refresh.initialize()
         print("Additive replay refresh migration complete; live acquisition unavailable")
+    elif args.action == "enable-shopping":
+        from .shopping import initialize as migrate_shopping
+
+        if not settings.B2_ENABLED:
+            raise ValueError("Collection-enabled state required")
+        migrate_shopping()
+        print("Additive saved shopping migration complete")
     elif args.action == "enable-pack-research":
         from .pack_research import initialize as migrate_research
 
@@ -206,7 +214,8 @@ def main():
         run()
     elif args.action == "serve":
         import uvicorn
-        from django.core.asgi import get_asgi_application
+
+        from .asgi import get_asgi_application
 
         worker = None
         if (args.root / "B3_ISOLATED").is_file():

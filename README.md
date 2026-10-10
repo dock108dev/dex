@@ -11,28 +11,27 @@ never buys, bids or treats a listing as proof of ownership.
 
 - Python 3.12 or later and [uv](https://docs.astral.sh/uv/).
 - macOS or Linux for the local application. Windows process handling is unsupported.
-- An unused local port 8011.
+- Port 8011 for the ordinary local server; reuse an already running installation.
 
-## Quickstart
+## Run the existing application
 
-From the repository root, create a new synthetic demo outside the checkout:
+Select your existing private application directory and use normal sign-in.
+[Local development](docs/local-development.md#existing-installations) explains
+startup and separate test fixtures:
 
 ```sh
 uv sync --locked --extra dev
-export DEX_DEMO_ROOT="$HOME/.local/share/dex-synthetic-demo"
-uv run --no-sync python -m pokemon_hunter.beta.synthetic --output "$DEX_DEMO_ROOT"
-uv run --no-sync python -m pokemon_hunter.beta.cli --root "$DEX_DEMO_ROOT" serve
+export DEX_APP_ROOT="/absolute/path/to/your/existing-dex-installation"
+uv run --no-sync python -m pokemon_hunter.beta.cli --root "$DEX_APP_ROOT" serve
 ```
 
-Open [Pokédex](http://127.0.0.1:8011/pokedex/). Browse without signing in, or use
-`admin` and its generated password in the demo's private `credentials.json`.
-The demo creates test accounts, catalog entries, copies and photos without reading
-an existing collection or contacting providers. Recognition is simulated; guide
-prices and hunt snapshots may be unavailable.
+Open [Pokédex](http://127.0.0.1:8011/pokedex/).
+Stop a server you started with Ctrl-C. Preserve data before updates; never reseed
+an existing installation. [Operations](docs/operations.md) covers backup/recovery.
 
-The seed refuses an existing directory. On later launches, run only `serve`.
-Stop with Ctrl-C. For an existing installation, use its private root and follow
-[local operations](docs/operations.md); never reseed it.
+For engineering tests or an explicitly requested simulation, use the
+[synthetic fixture instructions](docs/local-development.md#engineering-fixtures).
+Fixtures are not the customer's collection or current prices.
 
 ## Capabilities
 
@@ -43,17 +42,21 @@ Stop with Ctrl-C. For an existing installation, use its private root and follow
 - Reviewed catalog publication, product contents and dated seller observations.
 - Explicit eBay searches, delivered-price/guide comparisons and saved results with
   identities hidden until reveal.
+- Vintage Shopping lots with separate included quantities and wanted targets,
+  four independent guide-value scenarios and private saved comparisons.
 
 Real-card recognition accuracy, all-era variant coverage and current buying
 availability remain limited. Unknown identity, stock, shipping and coverage stay
 visible. Recognition providers and eBay require separate configuration.
+Shopping uses dated, admitted retained references; automatic price acquisition
+is unfinished. Missing values remain unpriced.
 
 ## Development
 
 ```sh
 uv run --no-sync ruff check .
 uv run --no-sync ruff format --check .
-uv run --no-sync pytest -q
+uv run --no-sync pytest -q tests/test_b2.py tests/test_filtered_goals.py
 ```
 
 Select relevant test files for focused work. Tests use temporary synthetic state.

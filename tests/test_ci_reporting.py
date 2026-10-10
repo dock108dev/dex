@@ -1,51 +1,10 @@
-"""Failure-path checks for native CI reporting and bounded historical evidence."""
+"""Native job summaries, report readers and suite-execution regressions."""
 
-import importlib.util
 import json
-import sys
-from pathlib import Path
 
 import pytest
-
-ROOT = Path(__file__).resolve().parents[1]
-
-
-def load_script(name):
-    spec = importlib.util.spec_from_file_location(name, ROOT / "scripts" / "ci" / f"{name}.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-report = load_script("report")
-sys.modules.setdefault("report", report)
-
-
-@pytest.fixture
-def identity(monkeypatch, tmp_path):
-    monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(tmp_path / "summary.md"))
-    monkeypatch.setenv("GITHUB_SHA", "tested-merge-sha")
-    monkeypatch.setenv("CI_PR_HEAD_SHA", "pr-head-sha")
-    monkeypatch.setenv("GITHUB_REF", "refs/pull/4/merge")
-    monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request")
-    monkeypatch.setenv("GITHUB_REPOSITORY", "owner/repo")
-    monkeypatch.setenv("GITHUB_RUN_ID", "42")
-    return tmp_path
-
-
-def fixture_json(path, data):
-    path.write_text(json.dumps(data))
-    return path
-
-
-def junit(path, failure=False):
-    path.write_text(
-        '<testsuites><testsuite tests="2" failures="%d" errors="0" skipped="1" time="0.5">'
-        '<testcase classname="suite" name="alpha" time="0.2">%s</testcase>'
-        '<testcase name="beta" time="0.1"><skipped/></testcase></testsuite></testsuites>'
-        % (int(failure), '<failure message="raw log never rendered">details</failure>' if failure else "")
-    )
-    return path
+from ci_reporting_helpers import fixture_json, junit, report
+from ci_reporting_helpers import identity as identity
 
 
 def test_job_records_actual_outcomes_tests_coverage_identity_and_summary(identity):
@@ -420,76 +379,31 @@ def test_browser_and_security_measurement_schemas_and_conflicting_statuses(ident
         report.read_measurement(browser)
 
 
-@pytest.mark.parametrize(
-    "needs,expected",
-    [
-        ({"quality": {"result": "success"}, "tests": {"result": "success"}}, 0),
-        ({"quality": {"result": "success"}, "tests": {"result": "failure"}}, 1),
-        ({"quality": {"result": "success"}, "tests": {"result": "skipped"}}, 1),
-        ({"quality": {"result": "success"}, "tests": {"result": "cancelled"}}, 1),
-        ({"quality": {"result": "success"}}, 1),
-        ({"quality": {"result": "success"}, "tests": {"result": "unknown"}}, 1),
-    ],
-)
-def test_aggregate_requires_all_actual_child_job_results(identity, needs, expected):
-    assert (
-        report.main(
-            [
-                "aggregate",
-                "--needs-json",
-                json.dumps(needs),
-                "--required",
-                "quality",
-                "--required",
-                "tests",
-                "--output",
-                str(identity / "aggregate.json"),
-            ]
-        )
-        == expected
-    )
-
-
-def test_explicit_intentional_skip_is_allowed_but_missing_report_is_not(identity):
-    arguments = [
-        "aggregate",
-        "--needs-json",
-        '{"optional":{"result":"skipped"}}',
-        "--required",
-        "optional",
-        "--allow-skipped",
-        "optional",
+def test_new_candidate_module_cannot_be_omitted_from_successful_test_report(identity, monkeypatch):
+    root = identity / "tests"
+    root.mkdir()
+    (root / "test_existing.py").touch()
+    (root / "test_shopping_new.py").touch()
+    discovered = report.discovered_suites(root)
+    monkeypatch.setattr(report, "discovered_suites", lambda: discovered)
+    native = identity / "native.xml"
+    native.write_text('<testsuite><testcase classname="tests.test_existing"/></testsuite>')
+    output = identity / "job.json"
+    args = [
+        "job",
+        "--name",
+        "Behavior",
+        "--outcome",
+        "tests=success",
+        "--expect-discovered-suites",
+        "--junit",
+        str(native),
         "--output",
-        str(identity / "aggregate.json"),
+        str(output),
     ]
-    assert report.main(arguments) == 0
-    assert report.main(arguments + ["--report", str(identity / "missing.json")]) == 1
-
-
-def test_aggregate_rejects_cross_candidate_metrics(identity):
-    path = fixture_json(
-        identity / "metrics.json",
-        {
-            "schema_version": 1,
-            "kind": "job",
-            "name": "tests",
-            "result": "PASS",
-            "identity": {"tested_sha": "stale-sha"},
-        },
+    assert report.main(args) == 1
+    assert "tests.test_shopping_new" in str(json.loads(output.read_text())["errors"])
+    native.write_text(
+        '<testsuite><testcase classname="tests.test_existing"/><testcase classname="tests.test_shopping_new"/></testsuite>'
     )
-    assert (
-        report.main(
-            [
-                "aggregate",
-                "--needs-json",
-                '{"tests":{"result":"success"}}',
-                "--required",
-                "tests",
-                "--report",
-                str(path),
-                "--output",
-                str(identity / "aggregate.json"),
-            ]
-        )
-        == 1
-    )
+    assert report.main(args) == 0

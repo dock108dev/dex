@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "pokemon-hunter"
 version = "0.1.0"
-description = "A small, conservative daily eBay watcher for vintage Pokemon lots"
+description = "A local Pokémon collection app with explicit, conservative eBay research"
 requires-python = ">=3.12"
 dependencies = [
     "django>=5.2,<6.2",

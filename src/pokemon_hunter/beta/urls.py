@@ -41,9 +41,18 @@ urlpatterns = [
 
 if settings.B2_ENABLED:
     from . import collection_views as b2
-    from . import lookup_views, packs_views, product_views, refresh_views
+    from . import lookup_views, packs_views, product_views, refresh_views, shopping_views
 
     urlpatterns = [
+        path("shopping/", shopping_views.home),
+        path("shopping/legacy/", shopping_views.legacy),
+        path("api/shopping/lot-catalog/", shopping_views.lot_catalog),
+        path("api/shopping/wants/", shopping_views.wanted),
+        path("api/shopping/lot-compare/", shopping_views.lot_compare),
+        path("api/shopping/catalog/", shopping_views.catalog),
+        path("api/shopping/compare/", shopping_views.compare),
+        path("shopping/saved/<uuid:key>/", shopping_views.saved),
+        path("shopping/saved/<uuid:key>/current/", shopping_views.current),
         path("product-review/", product_views.home),
         path("product-review/preview/", product_views.preview),
         path("product-review/<uuid:key>/", product_views.detail),

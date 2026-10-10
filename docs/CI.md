@@ -23,8 +23,16 @@ use Ubuntu Python 3.12. These are configured checks, not a claim that a particul
 hosted run passed. Repository branch-protection settings are managed separately.
 
 The aggregate rejects missing, malformed, cancelled or unexpected skipped results.
+It downloads only this run/attempt’s `ci-*` artifacts, reads bounded JSON without
+executing artifact content, requires seven reports (nine for compatibility), and
+rejects stale candidate/attempt identities and duplicate job/runtime records.
+Use **Re-run all jobs** for a fresh qualification. Re-running only failed jobs
+leaves successful jobs’ prior-attempt artifacts outside the accepted boundary;
+the aggregate will fail with missing reports until all jobs run in one attempt.
+Each report must agree with its native outcomes; a PASS label cannot override a
+failed test or scan. Failed records remain visible in the consolidated summary.
 Security policy blocks all dependency advisories, all secret findings and
-high/medium Bandit findings. Lower Bandit findings remain reported. Tool and
+high/medium Bandit findings with high confidence. Other Bandit findings remain reported. Tool and
 download failures are failures rather than zero findings.
 
 ## Local checks
@@ -78,14 +86,20 @@ that app is not a standalone installed-wheel website.
 
 ## Reports and permissions
 
+`scripts/ci/package_artifacts.py` inspects wheel/sdist inputs without extraction;
+`smoke.py` owns isolated startup and teardown.
 `scripts/ci/report_readers.py` parses bounded native results; `report.py` owns job
 and aggregate commands, identity and safe summaries. Direct-script and module
-entry points are supported. Required-suite checks include health, original-app
-security and initializer tests so missing extracted tests cannot be hidden by a
-passing parent suite.
+entry points are supported. Required-suite checks discover every candidate `tests/test_*.py` module, including
+Shopping, history, body limits, health, original-app security and initializer tests.
+Job-report and aggregate-gate tests are separate suites sharing
+`tests/ci_reporting_helpers.py`; health imports that helper rather than a test
+module. Each module must execute at least one test; missing or all-skipped modules fail.
 
 Jobs write GitHub summaries and metrics under `reports/ci/`. Ordinary reports are
-retained for 14 days, browser captures for 7 and historical health for 30. Coverage,
+retained for 14 days, browser captures for 7 and historical health for 30. Coverage targets `pokemon_hunter`; scripts, original-app web code and child
+processes are not instrumented by this report even when their behavior is checked.
+Changed-code coverage has no comparable baseline. Coverage,
 synthetic timings and archive sizes are measurements; comparable baselines and
 deltas can remain unavailable. Reports omit owner databases, credentials and
 secret/source snippets. Generated output is excluded from Git.
@@ -109,3 +123,29 @@ process cancellation is unsupported. The source tree has no established full
 static-typing contract; lint, compilation and input/behavior checks apply.
 Known test-client deprecation and SQLite-resource warnings should remain visible
 and be addressed through dependency/resource ownership changes.
+
+## Required-check enforcement
+
+The workflow's aggregate is named **CI / Required checks**. To enforce it for
+merges, configure branch protection or a ruleset separately using the check
+context observed in a successful run. Workflow configuration alone does not
+protect a branch. If a merge queue is enabled, add `merge_group` to the caller's
+events before requiring the check for queued merges.
+
+Schedules run the default branch and can be delayed; a scheduled pass does not
+validate a changed pull request. Manual compatibility dispatch validates its
+selected ref. No publishing, signing or deployment is part of these workflows.
+
+## Tools and service boundaries
+
+The workflow uses SHA-pinned GitHub Actions and the locked CI extra. Native
+summaries, artifacts and coverage provide results without a separate reporting
+service. `scripts/ci/install_tools.py` downloads checksum-pinned actionlint and
+Gitleaks binaries. Bandit scans Python locally; pip-audit sends dependency names
+and versions to PyPI's advisory service. No owner database or provider credentials
+belong in uploaded reports. Dependency audits and tool downloads require network
+access and fail explicitly when unavailable.
+
+GitHub account quotas, branch rules and code-scanning settings are managed outside
+the repository. Consult the applicable service settings before enabling another
+integration; do not infer activation or entitlement from source configuration.

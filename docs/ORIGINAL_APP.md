@@ -6,8 +6,8 @@ no empty state placeholder. Existing installations need only the final launch co
 
 ```sh
 uv sync --locked --extra dev
-uv run python scripts/init_local.py
-uv run pokemon-hunter app --port 8766
+uv run --no-sync python scripts/init_local.py
+uv run --no-sync pokemon-hunter app --port 8766
 ```
 
 Visit [Vintage 251](http://127.0.0.1:8766). Everything saves locally. Sample hunts need no credentials. Stop the server with Ctrl-C.
@@ -65,7 +65,11 @@ The Overview shows ungraded and Grade 7/8/9/10 estimates for one of each owned p
 
 `config/market_values.json` holds dated USD PriceCharting guide snapshots. Grade 10 uses its PSA 10 guide; other grades are general grade scenarios. Grade 7–8 values marked * interpolate geometrically between ungraded and Grade 9 when no direct guide snapshot exists: raw × (grade9/raw)^(1/3 or 2/3). This is a rough heuristic, not observed sales or a predicted card grade. No grading or selling fees included. Records older than 30 days are excluded; partial totals disclose coverage.
 
-The explicit network operation to refresh public guide tables is `uv run python scripts/refresh_values.py`. It stops on HTTP failures, preserves prior records, and records its result in `data/value-refresh.json`. This collection estimate is separate from condition-qualified hunt bid calculations.
+`scripts/refresh_values.py` is a legacy network scraper for owned-card guide tables,
+not a startup or supported automatic-pricing step. It lacks source-rights admission
+and provider-expiry purge. Do not use it without establishing the applicable
+extraction/storage permissions. Collection estimates remain separate from
+condition-qualified hunt bid calculations.
 
 
 These records belong to the original app. The authenticated app tracks physical copies and can retain intentional duplicates; consult [the source-of-truth map](SSOT.md) before changing either store.

@@ -1,0 +1,84 @@
+{% extends 'beta/base.html' %}
+{% block title %}Lot calculator · Dex{% endblock %}
+{% block body_class %}lot-page{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="/collection-assets/lot_calculator.css">
+<div class="shopping lot-calculator">
+{% if captured %}
+<div class="lot-heading">
+  <div><h1>{{ captured.saved.name }}</h1><p class="muted">Saved comparison · {{ captured.context.evaluation_date }} · America/New_York</p></div>
+  <a class="button-link secondary" href="/shopping/">Next lot</a>
+</div>
+{{ captured|json_script:'captured-lot' }}
+<section class="saved-context" aria-label="Saved comparison actions">
+  <p>These are the original cards, prices and results.</p>
+  <form method="post" action="/shopping/saved/{{ captured.saved.id }}/current/">{% csrf_token %}
+    <button class="secondary">Compare with current references</button>
+    <span class="muted">Creates a separate saved comparison.</span>
+  </form>
+</section>
+<section id="results" class="lot-results" aria-label="Four independent scenarios">
+  <div class="section-heading"><h2>Value comparison</h2><span class="muted">Separate grade scenarios · USD</span></div>
+  <div id="summary" class="scenarios"></div>
+</section>
+<div id="captured-rows"></div>
+{% else %}
+<div class="lot-heading"><h1>Lot calculator</h1><a class="lot-help-link" href="#lot-help">How locks work</a></div>
+<p class="pricing-status" role="note">Price refresh is not connected. Available guides are dated; missing prices stay unpriced.</p>
+{{ wants|json_script:'wanted-cards' }}
+<div class="lot-workspace">
+<section class="lot-search" aria-labelledby="search-heading">
+  <div class="search-top"><h2 id="search-heading">Add cards</h2>
+  <p class="muted">Base Set through Neo Destiny · owned cards included</p>
+  <form id="lookup" class="search-controls">
+    <label for="query">Card name, set or number</label>
+    <div><input id="query" type="search" placeholder="Search vintage cards"><button class="secondary">Find cards</button></div>
+  </form></div>
+  <div class="search-matches" id="search-matches"><p id="catalog-count" class="muted"></p>
+  <div id="cards" class="card-grid"></div>
+  <div class="pagination"><button id="previous" class="secondary" type="button">Previous cards</button><button id="next" class="secondary" type="button">Next cards</button></div></div>
+</section>
+<div class="lot-working-area">
+<section class="lot-items" aria-labelledby="lot-heading">
+  <div class="section-heading"><div><h2 id="lot-heading">This lot</h2><p id="lot-count" class="muted"></p></div><button id="clear-lot" class="secondary" type="button">Clear lot / Next lot</button></div>
+  <form id="comparison" class="compare-bar">{% csrf_token %}
+    <label class="price" for="lot-price">Lot price, USD<input id="lot-price" inputmode="decimal" placeholder="Unknown"></label>
+    <button type="submit" value="compare">Total and compare</button>
+    <p id="compare-note" class="muted">Only included quantities count.</p>
+  </form>
+  <p id="status" role="status" tabindex="-1"></p>
+<section id="results" class="lot-results" aria-label="Four independent scenarios" hidden>
+  <div class="section-heading"><h2>Value comparison</h2><span class="muted">Separate grade scenarios · USD</span></div>
+  <div id="summary" class="scenarios"></div>
+</section>
+  <div id="selections"></div>
+  <div id="empty-lot" class="lot-empty"><h3>No cards in this lot</h3><p>Add a card and quantity from the search results.</p></div>
+</section>
+<details class="lot-options"><summary>Listing, planned bid and delivery costs</summary>
+  <div class="details-body"><label>Listing URL<input id="listing-url" type="url" placeholder="https://www.ebay.com/itm/…"></label>
+  <p class="muted">Saved as a reference; never fetched. Blank costs remain unknown.</p><div id="costs" class="cost-grid"></div></div>
+</details>
+<details class="lot-options" id="lot-help"><summary>How locks work</summary>
+  <p>Lock a card to keep it as a wanted target for the next lot. Set “In this lot” to the number actually included; zero means absent. Clearing a lot keeps locked targets and resets quantities, the listing and costs.</p>
+  <p class="muted">Wanted targets last for this signed-in session. Research does not add cards to your collection.</p>
+</details>
+</div>
+</div>
+{% endif %}
+<details class="lot-options save-history"><summary>Save and history</summary>
+  <div class="details-body">
+  {% if not captured %}
+  <div class="save-controls"><label>Comparison name<input id="comparison-name" maxlength="160" placeholder="My lot"></label>
+  <button id="save-lot" type="submit" form="comparison" value="save" {% if not research_enabled %}disabled aria-describedby="save-unavailable"{% endif %}>Save private comparison</button></div>
+  {% if not research_enabled %}<p id="save-unavailable" class="muted">Saving is unavailable here. Calculations and session wants still work.</p>{% endif %}
+  {% endif %}
+  <ul class="saved-list">{% for item in items %}<li><a href="/shopping/saved/{{ item.id }}/">{{ item.name }}</a><span class="muted">{{ item.created_at }}</span></li>{% empty %}<li class="muted">No saved comparisons yet.</li>{% endfor %}</ul>
+  <a href="/shopping/legacy/">Group-total and frozen-goal comparison editor</a>
+  </div>
+</details>
+{% if not captured %}
+<details class="lot-options"><summary>Amount and quantity formats</summary><p>USD unsigned decimals, up to six decimal places, maximum 1,000,000,000,000. Whole quantities up to 100,000 total units. Values multiply by included quantities and round once to cents, half-even. Blank costs remain unknown; zero is explicit. Manual estimates retain their supplied date and scenario basis.</p></details>
+{% endif %}
+</div>
+<script src="/collection-assets/lot_calculator.js" defer></script>
+{% endblock %}

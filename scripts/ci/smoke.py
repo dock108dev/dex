@@ -18,6 +18,7 @@ import json
 import os
 import socket
 import subprocess
+import sys
 import tarfile
 import tempfile
 import time
@@ -25,25 +26,16 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 
-REQUIRED_FILES = (
-    "pokemon_hunter/main.py",
-    "pokemon_hunter/runtime_data.py",
-    "pokemon_hunter/beta/synthetic.py",
-    "pokemon_hunter/beta/templates/beta/public_pokedex.html",
-    "pokemon_hunter/beta/templates/beta/login.html",
-    "pokemon_hunter/beta/static/glass.css",
-    "pokemon_hunter/beta/static/public.css",
-    "pokemon_hunter/beta/static/parity.js",
-    "pokemon_hunter/data/config/sealed/2026-10-04/package.json",
-    "pokemon_hunter/data/config/catalog-imports/gym-heroes.json",
-    "pokemon_hunter/data/config/catalog-imports/synthetic-orbits.json",
-    "pokemon_hunter/data/config/catalog-imports/staging-ten/base_set.json",
-    "pokemon_hunter/data/config/catalog-pipeline/inputs.json",
-    "pokemon_hunter/data/config/catalog-pipeline/m4-20261006/coverage-profile.json",
-)
-PRIVATE_NAMES = {".env", "settings.yaml", "pokedex_251.json", "secret.key", "credentials.json"}
+# The harness may run directly or as a module; children remain isolated from checkout imports.
+if not __package__:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+from scripts.ci.package_artifacts import REQUIRED_FILES as REQUIRED_FILES
+from scripts.ci.package_artifacts import SmokeFailure as SmokeFailure
+from scripts.ci.package_artifacts import inspect_sdist as inspect_sdist
+from scripts.ci.package_artifacts import inspect_wheel as inspect_wheel
 
 # Execute before importing app code. Isolated subprocesses have no provider keys;
 # this also makes an accidental external socket/DNS request a visible failure.
@@ -113,77 +105,6 @@ uvicorn.run = run
 sys.argv = ['pokemon_hunter.beta.cli', '--root', root, 'serve']
 runpy.run_module('pokemon_hunter.beta.cli', run_name='__main__')
 """
-
-
-class SmokeFailure(RuntimeError):
-    pass
-
-
-def inspect_wheel(wheel):
-    with zipfile.ZipFile(wheel) as archive:
-        entries = [entry for entry in archive.infolist() if not entry.is_dir()]
-        names = {entry.filename for entry in entries}
-        if len(names) != len(entries):
-            raise SmokeFailure("Wheel contains duplicate file names")
-        if any(name.startswith("/") or ".." in PurePosixPath(name).parts for name in names):
-            raise SmokeFailure("Wheel contains unsafe paths")
-        missing = set(REQUIRED_FILES) - names
-        if missing:
-            raise SmokeFailure("Wheel is missing required runtime files: " + ", ".join(sorted(missing)))
-        if any(Path(name).name in PRIVATE_NAMES for name in names):
-            raise SmokeFailure("Wheel contains a private state or configuration filename")
-        if any(Path(name).suffix in {".db", ".sqlite3"} for name in names):
-            raise SmokeFailure("Wheel contains a local database")
-        hashes = {
-            name: hashlib.sha256(archive.read(name)).hexdigest()
-            for name in sorted(names)
-            if name.startswith("pokemon_hunter/")
-        }
-        return {
-            "wheel_bytes": wheel.stat().st_size,
-            "wheel_uncompressed_bytes": sum(entry.file_size for entry in entries),
-            "wheel_file_count": len(entries),
-            "wheel_sha256": hashlib.sha256(wheel.read_bytes()).hexdigest(),
-        }, hashes
-
-
-def inspect_sdist(sdist, wheel_hashes):
-    with tarfile.open(sdist, "r:gz") as archive:
-        members = archive.getmembers()
-        if any(member.issym() or member.islnk() for member in members):
-            raise SmokeFailure("Source distribution contains symbolic or hard links")
-        files = [member for member in members if member.isfile()]
-        paths = [PurePosixPath(member.name) for member in files]
-        if any(path.is_absolute() or ".." in path.parts or len(path.parts) < 2 for path in paths):
-            raise SmokeFailure("Source distribution contains unsafe paths")
-        if len({path.parts[0] for path in paths}) != 1:
-            raise SmokeFailure("Source distribution lacks a single package root")
-        relative = {str(PurePosixPath(*path.parts[1:])): member for path, member in zip(paths, files)}
-        if len(relative) != len(files):
-            raise SmokeFailure("Source distribution contains duplicate file names")
-        if any(PurePosixPath(name).name in PRIVATE_NAMES for name in relative):
-            raise SmokeFailure("Source distribution contains private state or configuration")
-        if any(PurePosixPath(name).suffix in {".db", ".sqlite3"} for name in relative):
-            raise SmokeFailure("Source distribution contains a local database")
-        if not {"pyproject.toml", "uv.lock"}.issubset(relative):
-            raise SmokeFailure("Source distribution is missing its locked build inputs")
-        for name, expected in wheel_hashes.items():
-            source_name = (
-                name.removeprefix("pokemon_hunter/data/")
-                if name.startswith("pokemon_hunter/data/")
-                else "src/" + name
-            )
-            if source_name not in relative:
-                raise SmokeFailure("Source distribution is missing wheel input: " + source_name)
-            with archive.extractfile(relative[source_name]) as data:
-                if hashlib.sha256(data.read()).hexdigest() != expected:
-                    raise SmokeFailure("Source distribution differs from wheel input: " + source_name)
-        return {
-            "sdist_bytes": sdist.stat().st_size,
-            "sdist_uncompressed_bytes": sum(member.size for member in files),
-            "sdist_file_count": len(files),
-            "sdist_sha256": hashlib.sha256(sdist.read_bytes()).hexdigest(),
-        }
 
 
 def isolated_environment(python, home):
@@ -282,12 +203,29 @@ def browser_smoke(python, cwd, env, root, timeout):
         if status != 200 or not catalog["printings"] or "counts" not in catalog:
             raise SmokeFailure("Public catalog did not load packaged synthetic inputs")
         checks += 1
-        for route in ("/api/collection/", "/api/inventory/", "/api/export/", "/collection/"):
+        for route in (
+            "/api/collection/",
+            "/api/inventory/",
+            "/api/export/",
+            "/collection/",
+            "/shopping/",
+            "/api/shopping/lot-catalog/",
+        ):
             status, headers, _ = request(guest, port, route)
             if status != 302 or not headers.get("Location", "").startswith("/login/"):
                 raise SmokeFailure("Guest access was not denied: " + route)
             checks += 1
-        for asset in ("glass.css", "public.css", "collection.css", "parity.js", "pokedex.js"):
+        for asset in (
+            "glass.css",
+            "public.css",
+            "collection.css",
+            "parity.js",
+            "pokedex.js",
+            "lot_calculator.css",
+            "lot_calculator.js",
+            "shopping.css",
+            "shopping.js",
+        ):
             status, headers, body = request(guest, port, "/collection-assets/" + asset)
             expected_type = "text/javascript" if asset.endswith(".js") else "text/css"
             if status != 200 or not body or expected_type not in headers.get("Content-Type", ""):
@@ -317,10 +255,15 @@ def browser_smoke(python, cwd, env, root, timeout):
         status, headers, _ = request(owner, port, "/login/", data, {"Origin": "http://127.0.0.1:8011"})
         if status != 302 or headers.get("Location") != "/":
             raise SmokeFailure("Synthetic account login failed")
-        for route in ("/collection/", "/api/collection/", "/api/catalog-packages/gym-heroes/"):
+        for route in ("/collection/", "/api/collection/", "/api/catalog-packages/gym-heroes/", "/shopping/"):
             if request(owner, port, route)[0] != 200:
                 raise SmokeFailure("Authenticated route failed: " + route)
             checks += 1
+        status, _, body = request(owner, port, "/api/shopping/lot-catalog/")
+        shopping = json.loads(body)
+        if status != 200 or not shopping.get("cards"):
+            raise SmokeFailure("Installed Shopping catalog failed")
+        checks += 1
         return {"http_assertions": checks + 2, "listener": "ephemeral loopback, ordinary CLI serve"}
     finally:
         server.terminate()

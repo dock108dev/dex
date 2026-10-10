@@ -30,6 +30,10 @@ def delete_account(who):
 
     if available():
         execute("DELETE FROM saved_pack_research WHERE user_id=%s", [uid])
+    from .shopping import available as shopping_available
+
+    if shopping_available():
+        execute("DELETE FROM saved_shopping_comparisons WHERE user_id=%s", [uid])
     # Keep catalog publication integrity and a non-login, non-identifying spend tombstone.
     # The lifetime global reservation sum must never fall on account deletion.
     for table in (

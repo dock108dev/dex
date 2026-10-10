@@ -64,6 +64,89 @@ def number(value: Any, label: str, *, integer: bool = False) -> int | float:
     return int(value) if integer else value
 
 
+def read_job_metrics(path: Path) -> dict[str, Any]:
+    """Reject truncated or contradictory aggregate inputs, even if their label says PASS."""
+    data = read_json(path)
+    if not isinstance(data, dict) or data.get("schema_version") != 1 or data.get("kind") != "job":
+        raise ReportError("Invalid job metrics record")
+    for key in ("identity", "environment", "outcomes", "reports"):
+        if not isinstance(data.get(key), dict):
+            raise ReportError(f"Invalid retained job {key}")
+    if not isinstance(data.get("name"), str) or not data["name"]:
+        raise ReportError("Invalid retained job name")
+    if any(
+        not isinstance(data["environment"].get(key), str) or not data["environment"][key]
+        for key in ("os", "python")
+    ):
+        raise ReportError("Invalid retained job environment identity")
+    if not data["outcomes"] or any(not isinstance(key, str) for key in data["outcomes"]):
+        raise ReportError("Retained job outcomes are missing")
+    outcomes = [status(value) for value in data["outcomes"].values()]
+    if not isinstance(data.get("errors"), list) or any(not isinstance(item, str) for item in data["errors"]):
+        raise ReportError("Invalid retained job errors")
+    native = data["reports"]
+    if set(native) != {"junit", "coverage", "security", "measurements"}:
+        raise ReportError("Retained native reports are missing or unsupported")
+    required = data.get("required_reports")
+    if not isinstance(required, dict) or set(required) != set(native):
+        raise ReportError("Retained native report requirements are missing")
+    if any(type(required[key]) is not bool for key in ("junit", "coverage")):
+        raise ReportError("Invalid retained report requirements")
+    for key in ("security", "measurements"):
+        number(required[key], "required report count", integer=True)
+    for key in ("junit", "coverage"):
+        if native[key] is not None and not isinstance(native[key], dict):
+            raise ReportError(f"Invalid retained {key}")
+    if any(
+        not isinstance(native[key], list) or any(not isinstance(item, dict) for item in native[key])
+        for key in ("security", "measurements")
+    ):
+        raise ReportError("Invalid retained security or measurement reports")
+    tests = native["junit"]
+    if tests is not None:
+        counts = {
+            key: number(tests.get(key), f"retained test {key}", integer=True)
+            for key in ("tests", "passed", "failed", "skipped")
+        }
+        if not counts["tests"] or counts["tests"] != sum(
+            counts[key] for key in ("passed", "failed", "skipped")
+        ):
+            raise ReportError("Inconsistent retained test counts")
+        if not isinstance(tests.get("validation_errors"), list):
+            raise ReportError("Missing retained test validation")
+    coverage = native["coverage"]
+    if coverage is not None:
+        for total, covered, percent in (
+            ("lines", "covered_lines", "line_percent"),
+            ("branches", "covered_branches", "branch_percent"),
+        ):
+            denominator = number(coverage.get(total), f"retained {total}", integer=True)
+            numerator = number(coverage.get(covered), f"retained {covered}", integer=True)
+            expected = round(100 * numerator / denominator, 3) if denominator else None
+            if (
+                numerator > denominator
+                or coverage.get(percent) != expected
+                or (total == "lines" and not denominator)
+            ):
+                raise ReportError("Inconsistent retained coverage counts")
+    findings = [
+        number(scan.get("blocking_findings"), "retained findings", integer=True)
+        for scan in native["security"]
+    ]
+    measurements = [status(item.get("status")) for item in native["measurements"]]
+    if status(data.get("result")) == "PASS" and (
+        data["errors"]
+        or any(value != "PASS" for value in outcomes)
+        or any(findings)
+        or any(value != "PASS" for value in measurements)
+        or (tests and (tests["failed"] or tests["validation_errors"] or tests["skipped"] == tests["tests"]))
+        or any(required[key] != (native[key] is not None) for key in ("junit", "coverage"))
+        or any(required[key] != len(native[key]) for key in ("security", "measurements"))
+    ):
+        raise ReportError("Retained PASS contradicts native results")
+    return data
+
+
 def xml_number(value: str | None, label: str, *, integer: bool = False) -> int | float:
     try:
         return number(float(value), label, integer=integer)
