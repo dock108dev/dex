@@ -258,12 +258,16 @@ def run(root, base, output):
             capture(page, width, "member-settings")
             page.goto(base + "/shopping/")
             expect(page.get_by_role("heading", name="Lot calculator", exact=True)).to_be_visible()
+            printing_choice = page.get_by_role("combobox", name="Printing", exact=True)
+            expect(printing_choice).to_be_enabled()
             expect(page.locator("#cards .card").first).to_be_visible()
             capture(page, width, "member-shopping-empty")
             card = page.locator("#cards .card").first
-            card.get_by_label("Quantity to add").fill("2")
-            card.get_by_role("button", name="Add card", exact=True).click()
+            printing_id = printing_choice.input_value()
+            card.get_by_role("spinbutton").fill("2")
+            card.get_by_role("button", name="Add", exact=True).click()
             row = page.locator("#selections .selection").first
+            expect(row).to_have_attribute("data-printing", printing_id)
             expect(row.get_by_label("In this lot", exact=True)).to_have_value("2")
             expect(row.locator(".value-cell")).to_have_count(4)
             row.get_by_label("Wanted quantity", exact=True).fill("3")
@@ -274,7 +278,7 @@ def run(root, base, output):
             with page.expect_response(
                 lambda response: "/api/shopping/lot-compare/" in response.url
             ) as compared:
-                page.get_by_role("button", name="Total and compare", exact=True).click()
+                page.get_by_role("button", name="Compare", exact=True).click()
             payload = compared.value.json()
             assert compared.value.status == 200 and payload["schema"] == "dex-lot-v2"
             assert set(payload["scenarios"]) == {"raw", "8", "9", "10"}
@@ -282,7 +286,20 @@ def run(root, base, output):
                 scenario["result"]["coverage"]["selected_units"] == 2
                 for scenario in payload["scenarios"].values()
             )
-            expect(page.locator("#summary .scenario")).to_have_count(4)
+            visible_grades = [
+                grade
+                for grade in ("raw", "8", "9", "10")
+                if grade == "raw" or payload["scenarios"][grade]["result"]["coverage"]["priced_units"] > 0
+            ]
+            expect(page.locator("#summary .scenario")).to_have_count(len(visible_grades))
+            for grade in ("raw", "8", "9", "10"):
+                cell = row.locator(f'.value-cell[data-grade="{grade}"]')
+                if grade in visible_grades:
+                    expect(cell).to_be_visible()
+                    expect(page.locator(f'#summary [data-scenario="{grade}"]')).to_be_visible()
+                else:
+                    expect(cell).to_be_hidden()
+                    expect(page.locator(f'#summary [data-scenario="{grade}"]')).to_have_count(0)
             capture(page, width, "member-shopping-compared")
             if width == 1280:
                 page.add_style_tag(content="body { zoom: 2; }")
@@ -294,7 +311,7 @@ def run(root, base, output):
             with page.expect_response(
                 lambda response: "/api/shopping/lot-compare/" in response.url
             ) as invalid:
-                page.get_by_role("button", name="Total and compare", exact=True).click()
+                page.get_by_role("button", name="Compare", exact=True).click()
             assert invalid.value.status == 400
             expect(page.locator("#status")).to_be_focused()
             expect(row.get_by_label("In this lot", exact=True)).to_have_value("2")

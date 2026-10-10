@@ -19,6 +19,32 @@ from pokemon_hunter.beta import (
 TODAY = date(2026, 10, 10)
 
 
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://EXAMPLE.test:443/guide?q=1#source",
+        "https://sub-domain.example.test/guide",
+        "https://xn--bcher-kva.example/guide",
+    ],
+)
+def test_source_url_preserves_supported_ascii_hosts(url):
+    assert policy.source_url(url) == url
+
+
+@pytest.mark.parametrize(
+    "host",
+    ["example", ".example.test", "example..test", "example.test.", "under_score.test", "é.test"],
+)
+def test_source_url_rejects_invalid_host_labels(host):
+    assert policy.source_url(f"https://{host}/guide") is None
+
+
+def test_source_url_rejects_long_adversarial_hosts_and_keeps_length_limit():
+    assert policy.source_url("https://" + "-" * 1900 + ".test!") is None
+    assert policy.source_url("https://" + "a." * 950 + "test!") is None
+    assert policy.source_url("https://example.test/" + "a" * 2000) is None
+
+
 def guide(**changes):
     return dict(
         card_id="synthetic",

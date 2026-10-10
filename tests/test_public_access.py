@@ -182,6 +182,30 @@ def test_guest_lookup_private_or_invalid_scope_is_a_helpful_error(b4, query):
     assert b'role="alert"' in response.content
 
 
+@pytest.mark.parametrize("route", ["/pokedex/", "/pokedex/123/", "/api/public/catalog/", "/lookup/"])
+def test_public_validation_errors_never_expose_exception_details(b4, route):
+    sentinel = "PRIVATE-ERROR /private/catalog.db SELECT secret FROM accounts"
+    original = public_catalog.pokedex
+
+    def fail_query(raw, dex=None):
+        if raw:
+            raise ValueError(sentinel)
+        return original(raw, dex)
+
+    with (
+        patch.object(public_catalog, "pokedex", side_effect=fail_query),
+        patch.object(public_catalog, "pack_lookup", side_effect=ValueError(sentinel)),
+    ):
+        response = b4["client"]().get(route, {"q": "bad"} if route != "/lookup/" else {"targets": "123"})
+    assert response.status_code == 400
+    assert sentinel.encode() not in response.content
+    assert b"Choose valid" in response.content
+    if route == "/api/public/catalog/":
+        assert set(response.json()) == {"error"}
+    else:
+        assert b'role="alert"' in response.content
+
+
 def test_guest_pokedex_dispatch_and_signed_in_collection_remain_distinct(b4):
     from django.conf import settings
     from django.urls import clear_url_caches

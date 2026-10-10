@@ -5,7 +5,6 @@ identity, grade matching and source rights are enforced by their domain services
 """
 
 import ipaddress
-import re
 from datetime import date
 from decimal import Decimal, InvalidOperation
 from urllib.parse import urlsplit
@@ -32,12 +31,18 @@ def source_url(value):
     try:
         parsed = urlsplit(value)
         host = parsed.hostname or ""
+        # Split once and scan each character once; no backtracking on untrusted hosts.
+        labels = host.split(".")
         if (
             parsed.scheme != "https"
             or parsed.username is not None
             or parsed.password is not None
             or parsed.port not in (None, 443)
-            or not re.fullmatch(r"[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+", host)
+            or len(labels) < 2
+            or not all(
+                label and all("a" <= c <= "z" or "0" <= c <= "9" or c == "-" for c in label)
+                for label in labels
+            )
             or host.endswith(".localhost")
         ):
             return None

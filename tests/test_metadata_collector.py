@@ -116,9 +116,45 @@ def fixture_worker(store, pipe, seconds):
 @pytest.fixture
 def case(tmp_path):
     manifest = tmp_path / "manifest.json"
-    # Exact original first-request bytes, not a broadened fixture request.
-    manifest.write_bytes(
-        Path("evidence/shopping/original151-multisource/metadata-proposal.json").read_bytes()
+    # Test-only contract with the fixed request/limits; no private approval file
+    # is shipped or read, and fixture_worker prohibits all external transport.
+    manifest.write_text(
+        json.dumps(
+            {
+                "schema": "dex-metadata-proposal-v1",
+                "source": "TCGCSV",
+                "request_type": "Pokemon group metadata only",
+                "dispatch_enabled": False,
+                "evidence_class": "synthetic offline test manifest",
+                "requests": [
+                    {
+                        "method": "GET",
+                        "url": "https://tcgcsv.com/tcgplayer/3/groups",
+                        "evidence_locator": "https://tcgcsv.com/docs, Pokemon categoryId=3 and documented groups route",
+                        "credentials": "none",
+                        "user_agent": "DexPrivateMetadataReview/1.0 (bounded personal local review)",
+                        "accept": "application/json",
+                        "accept_encoding": "identity",
+                    }
+                ],
+                "ceilings": {
+                    "attempts": 1,
+                    "files": 1,
+                    "rows": 500,
+                    "encoded_bytes": 1048576,
+                    "decoded_bytes": 1048576,
+                    "wall_seconds": 30,
+                    "redirects": 0,
+                    "retries": 0,
+                    "paging": 0,
+                    "product_files": 0,
+                    "price_files": 0,
+                    "price_endpoint_requests": 0,
+                    "price_cells": 0,
+                    "spending_usd": 0,
+                },
+            }
+        )
     )
     return dict(
         root=tmp_path,
@@ -388,8 +424,11 @@ def test_private_path_and_no_installation_repository_side_effects(case, monkeypa
     monkeypatch.setattr(collector, "OWNER_ROOT", case["root"] / "owner")
     with pytest.raises(collector.Rejected, match="outside_installation"):
         collector.location(case["root"] / "owner" / "anything", case["ledger"])
+    repository = case["root"] / "repository"
+    (repository / ".git").mkdir(parents=True)
     with pytest.raises(collector.Rejected, match="outside_installation"):
-        collector.location(Path.cwd() / "evidence" / "bad", case["ledger"])
+        collector.location(repository / "evidence" / "bad", case["ledger"])
+    assert not (repository / "evidence").exists()
     linked = case["root"] / "linked"
     linked.symlink_to(case["root"])
     with pytest.raises(collector.Rejected, match="linked_path"):

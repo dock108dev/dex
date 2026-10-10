@@ -13,9 +13,9 @@ def pokedex(request, dex=None):
     template = "beta/public_species.html" if dex is not None else "beta/public_pokedex.html"
     try:
         context = public_catalog.pokedex(request.GET.dict(), dex)
-    except ValueError as exc:
+    except ValueError:
         context = public_catalog.pokedex({}, dex)
-        context["page_error"] = str(exc)
+        context["page_error"] = "Choose valid, shorter catalog filters. Sign in for collection tools."
         return render(request, template, context, status=400)
     return render(request, template, context)
 
@@ -29,8 +29,8 @@ def hunt(request):
 def catalog(request):
     try:
         context = public_catalog.pokedex(request.GET.dict())
-    except ValueError as exc:
-        return JsonResponse({"error": str(exc)}, status=400)
+    except ValueError:
+        return JsonResponse({"error": "Choose valid, shorter catalog filters."}, status=400)
     return JsonResponse({"printings": context["cards"], "counts": context["counts"]})
 
 
@@ -47,7 +47,7 @@ def lookup(request):
             filters={key: request.GET.get(key, "") for key in offer_filters.FIELDS},
             expansion=request.GET.get("expansion", ""),
         )
-    except ValueError as exc:
+    except ValueError:
         context = dict(
             public=True,
             lookup=True,
@@ -58,7 +58,7 @@ def lookup(request):
             goal=dict(name="Selected Pokémon"),
             progress={},
             expansions=[],
-            page_error=str(exc),
+            page_error="Choose valid Pokémon and offer filters. Sign in to use saved goals or collection tools.",
         )
         return render(request, "beta/packs.html", context, status=400)
     return render(request, "beta/packs.html", context)

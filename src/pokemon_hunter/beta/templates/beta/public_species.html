@@ -3,6 +3,7 @@
 {% block content %}
 <a class="browse-return" href="/pokedex/">← All Pokémon</a>
 <div class="page-title"><div><h1><span class="species-title-number">#{{ selected_species.dex|stringformat:'03d' }}</span> {{ selected_species.name }}</h1><p class="muted">{{ selected_species.region|title }} · {{ cards|length }} indexed card{{ cards|pluralize }}</p></div><a class="button-link" href="/lookup/?targets={{ selected_species.dex }}">Look up packs</a></div>
+{% if page_error %}<p class="error" role="alert">{{ page_error }}</p>{% endif %}
 {% if cards %}
 <div class="public-cards">
 {% for card in cards %}
