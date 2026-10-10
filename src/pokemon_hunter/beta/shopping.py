@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 from django.db import connection
 from django.http import Http404
 
+from pokemon_hunter import reference_policy as references
 from pokemon_hunter.migration import encode
 
 from . import (
@@ -131,7 +132,7 @@ def observations(p, records, raw_values, edition, condition, grade, grader, toda
         safe = (
             raw.get("currency") == "USD"
             and raw.get("edition") == edition == "standard"
-            and hunt_values._source(raw.get("source_url") or raw.get("source"))
+            and references.source_url(raw.get("source_url") or raw.get("source"))
         )
         ref = dict(
             reference_id=oid,

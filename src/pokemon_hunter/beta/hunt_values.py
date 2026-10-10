@@ -1,12 +1,11 @@
 """Dated guide comparisons, keeping seller clues and unknown lot contents conditional."""
 
-import ipaddress
 import re
 from datetime import date
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 from urllib.parse import urlsplit
 
-MAX_VALUE = Decimal("1000000000000")
+from pokemon_hunter import reference_policy as references
 
 
 class GuideContext:
@@ -26,63 +25,8 @@ def prepare_records(records):
     return records if isinstance(records, GuideContext) else GuideContext(records)
 
 
-def _amount(value):
-    try:
-        result = Decimal(str(value))
-        return result if result.is_finite() and 0 <= result <= MAX_VALUE else None
-    except (InvalidOperation, TypeError, ValueError):
-        return None
-
-
 def _money(value):
     return str(value.quantize(Decimal(".01"))) if value is not None else None
-
-
-def _source(value):
-    if (
-        not isinstance(value, str)
-        or len(value) > 2000
-        or any(ord(c) <= 32 or ord(c) == 127 or c == "\\" for c in value)
-    ):
-        return None
-    try:
-        parsed = urlsplit(value)
-        host = parsed.hostname or ""
-        if (
-            parsed.scheme != "https"
-            or parsed.username is not None
-            or parsed.password is not None
-            or parsed.port not in (None, 443)
-            or not re.fullmatch(r"[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+", host)
-            or host.endswith(".localhost")
-        ):
-            return None
-        try:
-            if not ipaddress.ip_address(host).is_global:
-                return None
-        except ValueError:
-            pass
-    except ValueError:
-        return None
-    return value
-
-
-def _valid(record, today, *, guide):
-    if not isinstance(record, dict) or record.get("currency", "USD" if not guide else None) != "USD":
-        return None
-    if guide and record.get("variant_verified") is not True:
-        return None
-    source = _source(record.get("source_url") or (None if guide else record.get("source")))
-    try:
-        observed = date.fromisoformat(record["as_of"])
-        if not 0 <= (today - observed).days <= 30:
-            return None
-    except (KeyError, TypeError, ValueError):
-        return None
-    value = _amount(record.get("value"))
-    if source is None or value is None:
-        return None
-    return {"guidevalue": _money(value), "source_url": source, "as_of": observed.isoformat()}
 
 
 def _clues(row):
@@ -116,7 +60,7 @@ def _guide(key, edition, grade, records, today):
             or str(record.get("grade")) != wanted
         ):
             continue
-        valid = _valid(record, today, guide=True)
+        valid = references.valid_record(record, today, guide=True)
         if valid is None:
             continue
         grader = record.get("grader")
@@ -157,7 +101,7 @@ def _raw(key, edition, condition, values, today):
     record = entries.get(basis) if isinstance(entries, dict) and basis else None
     if not isinstance(record, dict):
         return None
-    valid = _valid(record, today, guide=False)
+    valid = references.valid_record(record, today, guide=False)
     if valid is None or record.get("edition", "standard") != edition:
         return None
     return {**valid, "card_id": key, "grade": "raw", "edition": edition}
@@ -181,7 +125,7 @@ def price_comparison(row, data, guide_records, raw_values, scope=None, *, today=
     keys = list(dict.fromkeys(key for key in row.get("cards", []) if key in cards))
     count = row.get("count")
     count = count if type(count) is int and 0 < count <= 100000 else None
-    delivered = _amount(row.get("delivered"))
+    delivered = references.amount(row.get("delivered"))
     text, edition, edition_known, grade, graded = _clues(row)
     lot_assumption = bool(keys) and (
         len(keys) > 1 or count is not None and count > 1 or row.get("pool") == "known_lots"

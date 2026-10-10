@@ -4,8 +4,41 @@
   const columns = [['raw', 'Ungraded'], ['8', 'Grade 8'], ['9', 'Grade 9'], ['10', 'Grade 10']];
   const today = new Intl.DateTimeFormat('en-CA', {timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit'}).format(new Date());
   let offset = 0, total = 0, busy = false, searchVersion = 0, lockWrites = Promise.resolve(), statusTimer;
+  let missingMode = Boolean($('missing-goal')), missingItem = '';
   const node = (tag, text) => { const n = document.createElement(tag); if (text !== undefined) n.textContent = text; return n; };
   const dollars = v => v === null || v === undefined ? 'Unavailable' : `$${v}`;
+  const hasValue = v => v !== null && v !== undefined;
+  function printingVariant(p) {
+    let variants = [p.variant];
+    try {
+      const value = JSON.parse(p.variant);
+      if (value && typeof value === 'object' && !Array.isArray(value)) variants = Object.values(value).flat();
+    } catch { /* Literal variant labels are already readable. */ }
+    return [...new Set([p.edition, p.finish, ...variants].filter(Boolean))].join(' · ');
+  }
+  function priceNotes(sources) {
+    const notes = node('div'); notes.className = 'price-notes';
+    notes.append(node('p', 'References depend on edition and condition. Graded values retain the source’s grader.'));
+    for (const [title, ref] of Object.entries(sources)) {
+      if (!hasValue(ref?.amount)) continue;
+      notes.append(node('p', ref.date_basis === 'publisher_build'
+        ? `${title}: publisher build ${ref.as_of}; provider valuation date unavailable.`
+        : `${title}: ${ref.as_of} · ${ref.grader || 'No certified grader'}`));
+      if (ref.match_status === 'conditional') notes.append(node('p', ref.assumptions.join(' ')));
+      if (ref.source_url) { const link = node('a', `${title} source`); link.href = ref.source_url; link.target = '_blank'; link.rel = 'noopener noreferrer'; notes.append(link); }
+    }
+    return notes;
+  }
+  function priceDetails(sources) {
+    const d = node('details'); d.className = 'price-details';
+    d.append(node('summary', 'Price details'), priceNotes(sources));
+    details(d, 'Source record', sources); return d;
+  }
+  function updatePriceDetails(box, sources) {
+    const d = box.querySelector('.price-details'), pre = d.querySelector('pre'), text = JSON.stringify(sources, null, 2);
+    if (pre.textContent === text) return;
+    d.querySelector('.price-notes').replaceWith(priceNotes(sources)); pre.textContent = text;
+  }
   const field = (parent, label, value = '', type = 'text') => {
     const l = node('label', label), i = node('input'); i.type = type; i.value = value;
     l.append(i); parent.append(l); return i;
@@ -37,6 +70,7 @@
     const wanted = [...rows.values()].filter(r => r.lock.checked).length;
     $('lot-count').textContent = rows.size === 0 ? '' : `${rows.size} card ${rows.size === 1 ? 'type' : 'types'} · ${included} included${wanted ? ` · ${wanted} locked` : ''}`;
     $('empty-lot').hidden = rows.size > 0;
+    document.querySelectorAll('[data-lock-printing]').forEach(b => { b.textContent = rows.get(b.dataset.lockPrinting)?.lock.checked ? 'Locked' : 'Lock'; });
   }
   function invalidate() {
     if ($('captured-lot')) return;
@@ -50,6 +84,7 @@
     if ($('compare-note')) $('compare-note').textContent = 'Only included quantities count.';
     for (const [key, title] of columns) {
       const r = payload.scenarios[key].result, c = r.comparisons.listing_observation, b = r.comparisons.planned_bid;
+      if (key !== 'raw' && r.coverage.priced_units === 0) continue;
       const n = node('div'); n.className = 'scenario'; n.dataset.scenario = key;
       const coverage = node('p', `${r.selected_status === 'full' ? 'Total' : r.selected_status === 'partial' ? 'Partial subtotal' : 'Unavailable'} · ${r.coverage.priced_units} of ${r.coverage.selected_units} units priced`);
       coverage.className = 'coverage-note';
@@ -67,14 +102,15 @@
       for (const c of payload.context.cards) {
         const box = node('div'); box.className = 'selection';
         box.append(node('h3', `${c.captured_identity.name} · ${c.captured_identity.set_name} #${c.captured_identity.collector_number} × ${c.quantity}`));
-        const grid = node('div'); grid.className = 'value-columns';
+        const grid = node('div'); grid.className = 'value-columns'; const sources = {};
         for (const [g, title] of columns) {
           const ref = payload.scenarios[g].references.find(r => r.printing_id === c.printing_id || r.reference_id === c.printing_id + ':' + g), cell = node('div'); cell.className = 'value-cell';
-          cell.append(node('h4', title), node('strong', ref ? dollars(ref.amount) : 'No price'));
-          if (ref) cell.append(node('p', `Per card · ${ref.as_of} · ${ref.grader || 'No certified grader'}`), node('p', ref.provenance));
+          const priced = hasValue(ref?.amount); cell.hidden = g !== 'raw' && !priced;
+          cell.append(node('h4', title), node('strong', priced ? dollars(ref.amount) : 'No price'));
+          sources[title] = ref || 'No price for this printing.';
           grid.append(cell);
         }
-        box.append(grid); $('captured-rows').append(box);
+        box.append(grid, priceDetails(sources)); $('captured-rows').append(box);
       }
       details($('captured-rows'), 'Original inputs, results and provenance', payload);
     }
@@ -99,18 +135,18 @@
     heading.append(identity, remove);
     const q = field(controls, 'In this lot', quantity, 'number'), want = field(controls, 'Wanted quantity', wanted, 'number');
     const lock = field(controls, 'Lock wanted card', '', 'checkbox'); lock.parentElement.className = 'lock-control'; lock.checked = locked;
+    for (const control of [q, want, lock, remove]) control.disabled = busy;
     want.min = '1'; want.max = '100000'; q.min = '0'; q.max = '100000';
     const grid = node('div'); grid.className = 'value-columns'; const values = {}, sources = {};
     for (const [g, title] of columns) {
-      const cell = node('div'), guide = p.cells?.[g]; cell.className = 'value-cell';
-      const amount = node('strong', guide ? dollars(guide.amount) : 'No price'); if (!guide) amount.className = 'unpriced';
+      const cell = node('div'), guide = p.cells?.[g]; cell.className = 'value-cell'; cell.dataset.grade = g;
+      const priced = hasValue(guide?.amount); cell.hidden = g !== 'raw' && !priced;
+      const amount = node('strong', priced ? dollars(guide.amount) : 'No price'); if (!priced) amount.className = 'unpriced';
       cell.append(node('h4', title), amount);
-      if (guide) cell.append(node('p', `Guide · ${guide.as_of}`));
-      values[g] = {mode: guide ? 'guide' : 'none'}; sources[title] = guide || 'No eligible guide for this printing.'; grid.append(cell);
+      values[g] = {mode: guide ? 'guide' : 'none'}; sources[title] = guide || p.price_reasons?.[g] || 'Missing snapshot or observation for this printing.'; grid.append(cell);
     }
-    const sourceDetails = node('details'); sourceDetails.className = 'price-details';
-    sourceDetails.append(node('summary', 'Price sources'), node('p', 'Guide values depend on edition and condition. Graded values retain their source’s grader; they do not grade your card.'), node('pre', JSON.stringify(sources, null, 2)));
-    box.append(heading, controls, grid, sourceDetails); rows.set(p.id, {p, box, lock, wanted: want, q, values}); $('selections').append(box);
+    const sourceDetails = priceDetails(sources);
+    box.append(heading, controls, grid, sourceDetails); rows.set(p.id, {p, box, lock, wanted: want, q, values, sources}); $('selections').append(box);
     box.classList.toggle('locked', locked); updateLot();
     lock.onchange = async () => {
       if (busy) return; const selected = lock.checked; lock.disabled = true;
@@ -121,28 +157,125 @@
     q.addEventListener('input', invalidate);
     if (!restoring) { invalidate(); status(`${p.name} added to this lot.`); }
   }
-  function pagination() { $('previous').disabled = busy || offset === 0; $('next').disabled = busy || offset + 40 >= total; }
+  // Drop current-source values and their displayed derivatives at expiry while keeping inputs and wants.
+  setInterval(() => {
+    let expired = false;
+    for (const r of rows.values()) {
+      for (const [g, title] of columns) {
+        const guide = r.p.cells?.[g];
+        if (guide?.conflicts?.some(c => c.expires_at && Date.parse(c.expires_at) <= Date.now())) {
+          guide.conflicts = guide.conflicts.filter(c => !c.expires_at || Date.parse(c.expires_at) > Date.now());
+          updatePriceDetails(r.box, r.sources);
+        }
+        if (!guide?.expires_at || Date.parse(guide.expires_at) > Date.now()) continue;
+        delete r.p.cells[g]; r.values[g] = {mode: 'none'}; r.sources[title] = 'Snapshot expired; price removed.';
+        const cell = r.box.querySelector(`[data-grade="${g}"]`);
+        cell?.replaceChildren(node('h4', title), node('strong', 'No price'));
+        if (cell) cell.hidden = g !== 'raw';
+        expired = true;
+      }
+      if (expired) updatePriceDetails(r.box, r.sources);
+    }
+    if (expired) { $('summary').replaceChildren(); invalidate(); status('Snapshot prices expired and were removed. Your cards, quantities and locks remain.'); }
+  }, 1000);
+  // Local status only; this never refreshes or acquires provider prices.
+  let checkingSources = false;
+  setInterval(async () => {
+    if (checkingSources || ![...rows.values()].some(r => Object.values(r.p.cells || {}).some(c => c?.snapshot_version))) return;
+    checkingSources = true;
+    try {
+      const state = await request('/api/shopping/price-source-status/'); let removed = false;
+      for (const r of rows.values()) {
+        for (const [g, title] of columns) {
+          const guide = r.p.cells?.[g]; if (!guide?.snapshot_version) continue;
+          if (!state.versions.includes(guide.snapshot_version) || !state.sources.includes(guide.source_contract || guide.raw_record?._contract_sha256)) {
+            delete r.p.cells[g]; r.values[g] = {mode: 'none'}; r.sources[title] = 'Source removed; review current prices.';
+            const cell = r.box.querySelector(`[data-grade="${g}"]`);
+            cell?.replaceChildren(node('h4', title), node('strong', 'No price'));
+            if (cell) cell.hidden = g !== 'raw';
+            removed = true;
+          } else if (guide.conflicts) {
+            guide.conflicts = guide.conflicts.filter(c => state.sources.includes(c.source_contract));
+          }
+        }
+        updatePriceDetails(r.box, r.sources);
+      }
+      if (removed) { $('summary').replaceChildren(); invalidate(); status('A price source was removed. Your cards, quantities and locks remain.'); }
+    } catch { /* Server unavailable: existing expiry timers still apply. */ }
+    finally { checkingSources = false; }
+  }, 1000);
+  function pagination() { $('previous').disabled = busy || offset === 0; $('next').disabled = busy || offset + 40 >= total; $('previous').parentElement.hidden = total <= 40; }
+  async function addAndLock(p, quantity) {
+    if (busy) return;
+    const existed = rows.has(p.id);
+    if (!existed) addCard(p, 0, quantity);
+    const r = rows.get(p.id), wasLocked = r.lock.checked, wasWanted = r.wanted.value;
+    r.lock.checked = true; r.wanted.value = quantity; r.box.classList.add('locked'); blocked(true);
+    try { await persistLocks(); updateLot(); r.box.scrollIntoView({block:'nearest'}); status(`${p.name} locked as wanted. Set “In this lot” when it is included.`); }
+    catch (e) {
+      if (!existed) { r.box.remove(); rows.delete(p.id); }
+      else { r.lock.checked = wasLocked; r.wanted.value = wasWanted; r.box.classList.toggle('locked', wasLocked); }
+      updateLot(); status(e.message, true);
+    } finally { blocked(false); }
+  }
+  function missingPicker(items) {
+    if (!$('missing-cards')) return;
+    $('missing-picker').hidden = !missingMode;
+    $('show-missing').setAttribute('aria-pressed', String(missingMode)); $('show-all').setAttribute('aria-pressed', String(!missingMode));
+    $('catalog-scope').textContent = missingMode ? 'Choose a missing card, then its printing.' : 'Base Set through Neo Destiny · owned cards included';
+    if (missingMode) $('show-missing').textContent = `Missing (${items.length})`;
+    $('missing-count').textContent = `${items.length} missing ${items.length === 1 ? 'card' : 'cards'}`;
+    $('missing-cards').replaceChildren();
+    if (!missingMode) return;
+    for (const item of items) {
+      const option = node('option', item.label.replace(/^#\d+\s+/, '')); option.value = item.id; $('missing-cards').append(option);
+    }
+    if (!items.length) $('missing-cards').append(node('option', 'No missing cards'));
+    $('missing-cards').value = missingItem;
+  }
   async function browse(reset = true) {
     if (reset) offset = 0; const version = ++searchVersion;
     try {
-      const data = await request('/api/shopping/lot-catalog/?' + new URLSearchParams({q: $('query').value, offset: String(offset)}));
+      const data = await request('/api/shopping/lot-catalog/?' + new URLSearchParams({q: $('query').value, offset: String(offset), ...(missingMode ? {goal: $('missing-goal').value, missing_item: missingItem, pick_first: missingItem ? '0' : '1'} : {})}));
       if (version !== searchVersion) return null;
+      missingItem = data.selected_missing_item || '';
+      missingPicker(data.missing_items);
+      $('query').placeholder = 'Search cards';
       $('cards').replaceChildren(); total = data.total;
+      const choice = node('select'); choice.setAttribute('aria-label', 'Printing'); choice.id = 'printing-choice';
       for (const p of data.cards) {
+        const variant = printingVariant(p), option = node('option', `${p.name} · ${p.set_name} #${p.collector_number}${variant ? ' · ' + variant : ''}`);
+        option.value = p.id; choice.append(option);
+      }
+      const selectedCard = node('div');
+      if (data.cards.length) $('cards').append(choice, selectedCard);
+      function showPrinting(p) {
+        selectedCard.replaceChildren();
         const box = node('div'); box.className = 'card';
-        const meta = node('p', `${p.set_name} #${p.collector_number} · ${p.copy_count} owned copies`); meta.className = 'card-meta';
+        const variant = printingVariant(p);
+        const note = [variant, p.copy_count ? p.copy_count + ' owned' : ''].filter(Boolean).join(' · ');
+        const meta = node('p', note); meta.className = 'card-meta';
         const controls = node('div'); controls.className = 'catalog-actions';
-        box.append(node('h3', p.name), meta);
-        const q = field(controls, 'Quantity to add', '1', 'number'); q.min = '1'; q.max = '100000'; q.className = 'lookup-quantity';
-        const b = node('button', 'Add card'); b.type = 'button'; b.className = 'secondary';
+        if (note) box.append(meta);
+        const q = field(controls, 'Qty', '1', 'number'); q.min = '1'; q.max = '100000'; q.className = 'lookup-quantity';
+        q.setAttribute('aria-label', `Quantity for ${p.name}`);
+        const b = node('button', 'Add'); b.type = 'button'; b.className = 'secondary';
         b.onclick = () => {
           if (!Number.isInteger(Number(q.value)) || Number(q.value) < 1 || Number(q.value) > 100000) { status('Enter a whole quantity from 1 to 100,000.', true); return; }
           addCard(p, Number(q.value));
         };
-        controls.append(b); box.append(controls); $('cards').append(box);
+        const lock = node('button', rows.get(p.id)?.lock.checked ? 'Locked' : 'Lock'); lock.type = 'button'; lock.className = 'secondary'; lock.dataset.lockPrinting = p.id;
+        lock.setAttribute('aria-label', `Add and lock ${p.name} ${p.set_name} #${p.collector_number}`);
+        lock.onclick = () => {
+          if (!Number.isInteger(Number(q.value)) || Number(q.value) < 1 || Number(q.value) > 100000) { status('Enter a whole quantity from 1 to 100,000.', true); return; }
+          addAndLock(p, Number(q.value));
+        };
+        controls.append(b, lock); box.append(controls); selectedCard.append(box);
       }
-      if (!data.cards.length) { const empty = node('p', 'No matching cards. Try a name, set or collector number.'); empty.className = 'catalog-empty'; $('cards').append(empty); }
-      $('catalog-count').textContent = `${data.total} vintage ${data.total === 1 ? 'printing' : 'printings'}`; pagination(); return data;
+      choice.onchange = () => showPrinting(data.cards.find(p => p.id === choice.value));
+      if (data.cards.length) showPrinting(data.cards[0]);
+      else { const empty = node('p', 'No matching cards.'); empty.className = 'catalog-empty'; $('cards').append(empty); }
+      $('catalog-count').textContent = `${data.total} ${data.total === 1 ? 'printing' : 'printings'}`; pagination(); return data;
     } catch (e) { if (version === searchVersion) status(e.message, true); return null; }
   }
   const costs = {};
@@ -193,12 +326,19 @@
   };
   $('previous').onclick = () => { offset = Math.max(0, offset - 40); browse(false); };
   $('next').onclick = () => { offset += 40; browse(false); };
+  if ($('missing-goal')) {
+    $('missing-cards').onchange = () => { missingItem = $('missing-cards').value; $('query').value = ''; browse(); };
+    $('missing-goal').onchange = () => { missingItem = ''; $('query').value = ''; browse(); };
+    $('show-missing').onclick = () => { missingMode = true; missingItem = ''; $('query').value = ''; browse(); };
+    $('show-all').onclick = () => { missingMode = false; missingItem = ''; $('query').value = ''; browse(); };
+  }
   async function initialize() {
     blocked(true);
     try {
       const wants = JSON.parse($('wanted-cards').textContent);
+      const wantedCards = wants.length ? (await request('/api/shopping/lot-catalog/?wanted=1')).cards : [];
       for (const w of wants) {
-        const exact = await request('/api/shopping/lot-catalog/?' + new URLSearchParams({printing: w.printing_id})), p = exact.cards.find(p => p.id === w.printing_id);
+        const p = wantedCards.find(p => p.id === w.printing_id);
         if (p) addCard(p, 0, w.quantity, true, true);
         else { addCard({id: w.printing_id, name: 'Unavailable printing', set_name: 'Retained wanted identity', collector_number: 'Unknown', cells: {}}, 0, w.quantity, true, true); status('A retained wanted card has a catalog gap. Its lock remains in this session.', true); }
       }

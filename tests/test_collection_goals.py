@@ -66,6 +66,13 @@ def test_supplied_source_catalog_gaps_dark_ex_and_preserved_copies(e1):
         g = create(e1, src)
         assert (g["satisfied"], g["missing"], g["total"]) == (137, 14, 151)
         assert {i["pokemon_dex"] for i in g["progress"] if i["status"] != "owned"} == MISSING
+        with patch(
+            "pokemon_hunter.beta.broad_goals.definition",
+            side_effect=AssertionError("Shopping must not rebuild goal updates"),
+        ):
+            fast = inv.goals(e1["actor"], goal_id=g["id"], include_updates=False)[0]
+        assert fast["progress"] == g["progress"]
+        assert inv.goals(e1["member"], goal_id=g["id"], include_updates=False) == []
         assert g["unavailable"] == 151
         p = packs.project(e1["actor"], g["id"])
         assert {i["pokemon_dex"] for i in p["missing"]} == MISSING
@@ -108,6 +115,8 @@ def test_successor_filters_saved_reopen_retention_and_import(e1):
     assert packs.project(e1["actor"], first["id"])["progress"]["missing"] == 14
     second = create(e1, new_src, first)
     assert (second["satisfied"], second["missing"]) == (138, 13)
+    assert inv.goals(e1["actor"], goal_id=first["id"], include_updates=False)[0]["missing"] == 14
+    assert inv.goals(e1["actor"], goal_id=second["id"], include_updates=False)[0]["missing"] == 13
     assert inv.one(e1["actor"], "goal", first["id"]) == before
     connection.close()
     reopened = pack_research.reopen(e1["actor"], saved)

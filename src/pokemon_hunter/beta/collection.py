@@ -113,21 +113,26 @@ def exact_owned_printings(active, published_ids=None):
     }
 
 
-def goals(actor):
+def goals(actor, *, goal_id=None, include_updates=True):
     store.verified(actor)
     active = copies(actor)
     owned = {c["printing_id"] for c in active}
     available_ids = {p["id"] for p in catalog(actor)}
     published_ids = available_ids if settings.B4_ENABLED else None
     exact_owned = exact_owned_printings(active, published_ids)
-    result = store.rows("SELECT * FROM collection_goals WHERE user_id=%s ORDER BY name,id", [actor.user_id])
+    result = store.rows(
+        "SELECT * FROM collection_goals WHERE user_id=%s"
+        + (" AND id=%s" if goal_id is not None else "")
+        + " ORDER BY name,id",
+        [actor.user_id, goal_id] if goal_id is not None else [actor.user_id],
+    )
     successor_ids = {}
     for row in result:
         predecessor = json.loads(row["definition"]).get("lineage", {}).get("predecessor_id")
         successor_ids.setdefault(predecessor, []).append(row["id"])
     current_broad = (
         broad_goals.definition(catalog(actor))
-        if any(g["kind"] in collection_goals.KINDS for g in result)
+        if include_updates and any(g["kind"] in collection_goals.KINDS for g in result)
         else None
     )
     for g in result:
@@ -135,7 +140,7 @@ def goals(actor):
         definition = json.loads(g["definition"])
         if g["kind"] in collection_goals.KINDS:
             g.update(definition=definition, **broad_goals.progress(definition, active, available_ids))
-            g["coverage_update_available"] = any(
+            g["coverage_update_available"] = include_updates and any(
                 current_broad[k] != definition[k]
                 for k in ("items", "catalog_references", "eligibility_policy")
             )
@@ -143,16 +148,20 @@ def goals(actor):
                 row = collection_goals.source(actor, definition["collection_source"]["id"])
                 collection_goals.validate(definition, row)
                 current = (
-                    collection_goals.targets_definition(
-                        actor, catalog(actor), row["id"], [i["pokemon_dex"] for i in definition["items"]]
+                    (
+                        collection_goals.targets_definition(
+                            actor, catalog(actor), row["id"], [i["pokemon_dex"] for i in definition["items"]]
+                        )
+                        if g["kind"] == collection_goals.TARGET_KIND
+                        else current_broad
                     )
-                    if g["kind"] == collection_goals.TARGET_KIND
-                    else current_broad
+                    if include_updates
+                    else None
                 )
-                g["coverage_update_available"] = any(
+                g["coverage_update_available"] = include_updates and any(
                     current[k] != definition[k] for k in ("items", "catalog_references")
                 )
-                g["collection_update_available"] = any(
+                g["collection_update_available"] = include_updates and any(
                     r["source_sha256"] != row["source_sha256"] for r in collection_goals.sources(actor)
                 )
             continue

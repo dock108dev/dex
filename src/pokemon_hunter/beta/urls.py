@@ -47,6 +47,7 @@ if settings.B2_ENABLED:
         path("shopping/", shopping_views.home),
         path("shopping/legacy/", shopping_views.legacy),
         path("api/shopping/lot-catalog/", shopping_views.lot_catalog),
+        path("api/shopping/price-source-status/", shopping_views.source_status),
         path("api/shopping/wants/", shopping_views.wanted),
         path("api/shopping/lot-compare/", shopping_views.lot_compare),
         path("api/shopping/catalog/", shopping_views.catalog),

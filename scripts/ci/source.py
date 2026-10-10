@@ -11,6 +11,7 @@ DOCS = (
     "docs/CI.md",
     "docs/SSOT.md",
     "docs/local-development.md",
+    "docs/price-snapshots.md",
     "docs/operations.md",
     "docs/SECURITY.md",
     "docs/UI_DESIGN.md",

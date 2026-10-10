@@ -34,9 +34,12 @@ Paths in this table are relative to `src/pokemon_hunter/`.
 | Pack lookup and saved research | `beta/lookup.py`, `beta/packs.py`, `beta/product_lookup.py`, `beta/pack_research.py`: possible/guaranteed coverage and frozen account-local snapshots |
 | Offer age and eligibility | `beta/offer_filters.py`: original observation age and conservative evidence decisions |
 | eBay request validation/scoring | `hunt.py`, `beta/ebay_hunts.py`, `beta/goal_hunts.py`, `beta/hunt_values.py`: explicit search, frozen scope, current ownership and dated guide comparison |
+| Shared retained-reference admission | `reference_policy.py`: HTTPS provenance, finite capped USD amounts, strict variant verification for legacy guides and the 30-day date rule; used by `valuation.py`, hunts, Shopping and snapshot validation. Domain services retain edition, grade, identity and rights checks; `beta/shopping_math.py` reexports the same age policy and cap |
 | Photo jobs | `beta/scans.py`, `beta/scan_worker.py`, `beta/scan_config.py`, `beta/codex_recognition.py`: durable claims/reservations, configured provider and explicit inventory confirmation |
 | Replay refresh | `beta/refresh.py`: bounded synthetic-only replay; no live acquisition adapter |
-| Lot calculator and retained-guide admission | `beta/lot_calculator.py`: vintage account-scoped selector, session-private wants, separate included quantities, four scenarios and the preexisting-guide admission boundary |
+| Lot calculator and guide selection | `beta/lot_calculator.py`: vintage account-scoped selector, session-private wants, quantities, preparation and permanent-save admission; `beta/lot_guides.py`: shared guide cells, conflict provenance and unavailable reasons over supplied admitted records; browse/evaluate retain the same selection and historical admission boundary |
+| Private price snapshot lifecycle | `beta/price_snapshot_contract.py` owns snapshot schemas and the four scenario names; `beta/price_snapshots.py` and `beta/price_snapshot_sources.py` own independent source shards, rights, expiry/removal, fingerprints and restore exclusion. `display_current` supplies one explicit unavailable-status policy for calculator and source-status views; operator and save admission retain strict errors. Import performs no acquisition; ordinary admission requires separately reviewed private contracts |
+| Bounded metadata acquisition | `metadata_collector.py`: standalone, explicitly approved fixed TCGCSV Pokémon group request; durable consumed reservation, streaming/schema limits, worker deadline/independent Stop and private copy cleanup; no product/price collector or installation coupling |
 | Shopping input validation | `beta/shopping_inputs.py`: shared fields, text, cost and original-research input shapes; `beta/shopping.py` preserves public imports; no database/account reads in validators |
 | Shopping arithmetic | `beta/shopping_math.py`: decimal totals, partial coverage, unknown costs and per-card versus group-total scope; both calculator and original research preparation delegate to this evaluator |
 | Shopping history | `beta/shopping.py:store_payload/reopen/reevaluate`: one account, byte-integrity and supported-schema policy for old/new saves; `beta/shopping_views.py` delegates both history routes without its own decoding or reevaluation branch |
@@ -123,5 +126,10 @@ not alternate implementations of the four-scenario calculator.
 
 Shopping displays admitted retained guides; complete automatic four-grade price
 coverage is unavailable. Partial source coverage and source-specific retention
-limits remain separate from arithmetic and UI behavior. There is no general
-new-provider purge mechanism or automatic price collector.
+limits remain separate from arithmetic and UI behavior. The versioned private store has managed expiry/removal and restore exclusion;
+source-specific copy/deletion obligations still require qualification. The Desktop
+tracker records the October raw activation in the existing installation; this map
+does not requalify that runtime. No scheduled price collector is installed.
+
+See the [October 10 enforcement closeout](ssot-enforcement-2026-10-10.md) for
+current domain callers, removed execution paths, checks and retained contracts.

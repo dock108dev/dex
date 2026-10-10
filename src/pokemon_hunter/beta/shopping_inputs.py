@@ -4,9 +4,9 @@ Both saved-research preparation and the four-scenario calculator use this policy
 Catalog eligibility and authenticated writes remain in their service boundaries.
 """
 
+from pokemon_hunter import reference_policy as references
 from pokemon_hunter.security import ebay_url
 
-from . import hunt_values
 from . import shopping_math as math
 
 
@@ -119,7 +119,7 @@ def validate_request(raw):
             text(r.get("as_of"), 40)
             if not text(r.get("assumptions")):
                 raise ValueError("Manual estimate needs explicit assumptions")
-            if r.get("source_url") and not hunt_values._source(r["source_url"]):
+            if r.get("source_url") and not references.source_url(r["source_url"]):
                 raise ValueError("Unsafe estimate source URL")
     for name in math.BASES:
         basis = raw[name]

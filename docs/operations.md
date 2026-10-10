@@ -65,3 +65,49 @@ release identity or automatic publication configuration.
 
 For provider settings use [photo entry](photo-entry.md) and [eBay hunts](hunts.md).
 For original-app scheduling use the [watcher guide](legacy-watcher.md).
+
+## Snapshot retention and backups
+
+Versioned prices use the explicitly selected local root. Back up protected collection,
+goals, authentication and permitted history before updating the ordinary installation.
+**Exclude `price-snapshots/` from all backups/exports**, including its staging files and
+version fingerprints. Source-specific acquisition staging outside that managed location
+is not supported. Do not duplicate a removable package or retain its values in logs,
+reports, exports or screenshots. Immutable saves require independently reviewed
+surviving rights; otherwise current display/arithmetic can work while saving is refused.
+
+The random-version revocation registry lives in `.dex-price-revocations/` beside the
+application root and remains outside app restore. Preserve it independently; do not
+replace it with an old backup. Restored expired/revoked packages are excluded and
+managed copies removed before use. An active release without its independent registry
+or version manifest fails closed. No historical guide or existing comparison is purged.
+
+The one-second worker runs while serving; access/startup also checks expiry. These
+mechanisms qualify managed application files, not stopped-Mac deletion deadlines,
+external exports, filesystem snapshots or complete OS/browser-cache erasure. Qualify
+an actual source's copy/deletion obligations before admission; unsupported obligations
+require their own repair. Revoke/remove every affected release on a source restriction.
+[Price snapshots](price-snapshots.md) documents the current importer and operator
+commands. Installation-specific source contracts, activation and coverage are
+recorded in the adjacent Desktop `dex_next_steps.md`; earlier engineering
+qualification does not describe the installation today.
+
+V2 source records and their price fingerprints are independently removable within
+one release. Its descriptor keeps only non-price identities. Preserve the additional
+`*-sources.json` registry beside the existing version revocations. Use
+`price-remove-source --contract-sha256 DIGEST` to withdraw a source across releases;
+do not restore its old registry or price fingerprints. This does not delete permitted
+independent sources or rewrite immutable history. Restricted sources, including
+retained conflicts, cannot enter new permanent saves. The approved TCGCSV raw build
+date exception concerns reference age, not storage rights. Exact provider retention
+obligations and collector limits still require source qualification before acquisition.
+
+The separate group-metadata collector retains one private canonical metadata file
+and a noncontent publisher journal outside the existing installation. It supplies
+no price or product access. Preserve `.dex-tcgcsv-metadata/attempts.json` independently;
+never restore/reset it to renew an attempt. Source response/error bodies are not
+retained in logs, reports, exports or packages. Failure/Stop deletes managed metadata
+body copies and leaves consumption intact. Owner Stop also removes a completed
+managed metadata result. Cleanup requires a running operator/OS; interrupted
+supervisors leave consumed state and possibly a pending validated copy for cleanup
+after the self-bounded child exits. No automatic retry is permitted.

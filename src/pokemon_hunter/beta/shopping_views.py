@@ -5,9 +5,15 @@ from django.shortcuts import redirect, render
 from django.views.decorators.http import require_GET, require_POST
 
 from . import lot_calculator as lot
-from . import shopping
+from . import shopping, store
 from .collection_views import body, endpoint
 from .views import actor
+
+
+def private_json(value):
+    response = JsonResponse(value)
+    response["Cache-Control"] = "no-store, private"
+    return response
 
 
 def comparison_body(request):
@@ -33,6 +39,12 @@ def legacy(request):
 @require_GET
 def home(request):
     who = actor(request)
+    goals = sorted(
+        store.rows(
+            "SELECT id,name,kind FROM collection_goals WHERE user_id=%s", [store.verified(who).user_id]
+        ),
+        key=lambda g: (g["kind"] != "original151_collection", bool(g.get("successor_ids")), g["name"]),
+    )
     return render(
         request,
         "beta/lot_calculator.html",
@@ -40,6 +52,7 @@ def home(request):
             research_enabled=shopping.available(),
             items=shopping.listing(who),
             wants=lot.locks(who, request.session),
+            missing_goals=[dict(id=g["id"], name=g["name"]) for g in goals],
         ),
     )
 
@@ -47,13 +60,44 @@ def home(request):
 @endpoint
 @require_GET
 def lot_catalog(request):
-    cards = lot.browse(actor(request), request.GET.get("q", ""))
-    if request.GET.get("printing"):
-        cards = [p for p in cards if p["id"] == request.GET["printing"]]
+    who, goal = actor(request), request.GET.get("goal", "")
+    if request.GET.get("wanted") == "1":
+        ids = {w["printing_id"] for w in lot.locks(who, request.session)}
+        printings = [p for p in lot.catalog(who, include_goals=True) if p["id"] in ids] if ids else []
+        cards = lot.priced_cards(who, printings) if printings else []
+        return private_json(dict(cards=cards, total=len(cards), offset=0, missing_items=[]))
     offset = int(request.GET.get("offset", "0"))
     if not 0 <= offset <= 100000:
         raise ValueError("Invalid card page")
-    return JsonResponse(dict(cards=cards[offset : offset + 40], total=len(cards), offset=offset))
+    return private_json(
+        lot.browse_page(
+            who,
+            request.GET.get("q", ""),
+            goal_id=goal,
+            item_id=request.GET.get("missing_item", ""),
+            printing_id=request.GET.get("printing", ""),
+            offset=offset,
+            pick_first=request.GET.get("pick_first") == "1",
+        )
+    )
+
+
+@endpoint
+@require_GET
+def source_status(request):
+    """Non-price local status for removing revoked current-page derivatives."""
+    from . import price_snapshots
+    from .store import verified
+
+    verified(actor(request))
+    rows, status = price_snapshots.display_current()
+    return private_json(
+        dict(
+            sources=sorted({row["_contract_sha256"] for row in rows}),
+            versions=sorted({row["_snapshot_version"] for row in rows}),
+            status=status,
+        )
+    )
 
 
 @endpoint
@@ -61,7 +105,7 @@ def lot_catalog(request):
 def wanted(request):
     raw = body(request)
     shopping.fields(raw, {"wants"}, {"wants"})
-    return JsonResponse(dict(wants=lot.locks(actor(request), request.session, raw["wants"])))
+    return private_json(dict(wants=lot.locks(actor(request), request.session, raw["wants"])))
 
 
 @endpoint
@@ -74,7 +118,7 @@ def lot_compare(request):
         with shopping.transactions.atomic():
             key = shopping.store_payload(who, payload, raw.get("name", ""))
         payload["saved_url"] = f"/shopping/saved/{key}/"
-    return JsonResponse(payload)
+    return private_json(payload)
 
 
 @endpoint
@@ -87,7 +131,7 @@ def catalog(request):
     data["total"] = len(data["cards"])
     data["cards"] = data["cards"][offset : offset + 40]
     data["offset"] = offset
-    return JsonResponse(data)
+    return private_json(data)
 
 
 @endpoint
@@ -99,7 +143,7 @@ def compare(request):
         with shopping.transactions.atomic():
             key = shopping.store_payload(actor(request), payload, raw.get("name", ""))
         payload["saved_url"] = f"/shopping/saved/{key}/"
-    return JsonResponse(payload)
+    return private_json(payload)
 
 
 @endpoint

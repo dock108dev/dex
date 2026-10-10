@@ -15,6 +15,10 @@ REQUIRED_FILES = (
     "pokemon_hunter/beta/synthetic.py",
     "pokemon_hunter/beta/asgi.py",
     "pokemon_hunter/beta/lot_calculator.py",
+    "pokemon_hunter/beta/price_snapshots.py",
+    "pokemon_hunter/beta/price_snapshot_contract.py",
+    "pokemon_hunter/beta/market_identity.py",
+    "pokemon_hunter/beta/tcgcsv_snapshot.py",
     "pokemon_hunter/beta/shopping.py",
     "pokemon_hunter/beta/shopping_inputs.py",
     "pokemon_hunter/beta/shopping_math.py",
@@ -40,7 +44,16 @@ REQUIRED_FILES = (
 )
 
 
-PRIVATE_NAMES = {".env", "settings.yaml", "pokedex_251.json", "secret.key", "credentials.json"}
+PRIVATE_NAMES = {
+    ".env",
+    "settings.yaml",
+    "pokedex_251.json",
+    "secret.key",
+    "credentials.json",
+    "market_values.json",
+    "price-contracts.json",
+    "active.json",
+}
 
 
 class SmokeFailure(RuntimeError):
@@ -58,6 +71,8 @@ def inspect_wheel(wheel):
         missing = set(REQUIRED_FILES) - names
         if missing:
             raise SmokeFailure("Wheel is missing required runtime files: " + ", ".join(sorted(missing)))
+        if any("price-snapshots" in PurePosixPath(name).parts for name in names):
+            raise SmokeFailure("Wheel contains private price snapshots")
         if any(Path(name).name in PRIVATE_NAMES for name in names):
             raise SmokeFailure("Wheel contains a private state or configuration filename")
         if any(Path(name).suffix in {".db", ".sqlite3"} for name in names):
@@ -89,6 +104,8 @@ def inspect_sdist(sdist, wheel_hashes):
         relative = {str(PurePosixPath(*path.parts[1:])): member for path, member in zip(paths, files)}
         if len(relative) != len(files):
             raise SmokeFailure("Source distribution contains duplicate file names")
+        if any("price-snapshots" in PurePosixPath(name).parts for name in relative):
+            raise SmokeFailure("Source distribution contains private price snapshots")
         if any(PurePosixPath(name).name in PRIVATE_NAMES for name in relative):
             raise SmokeFailure("Source distribution contains private state or configuration")
         if any(PurePosixPath(name).suffix in {".db", ".sqlite3"} for name in relative):

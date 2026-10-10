@@ -220,14 +220,14 @@ def test_static_notes_do_not_leak_seller_names_before_evidence_is_revealed():
 
 def test_prepared_sources_reuse_guide_and_benchmark_validation(monkeypatch):
     records = prepare_records([guide(), guide("b", "20")])
-    original = hunt_values._valid
+    original = hunt_values.references.valid_record
     validations = []
 
     def counted(*args, **kwargs):
         validations.append(1)
         return original(*args, **kwargs)
 
-    monkeypatch.setattr(hunt_values, "_valid", counted)
+    monkeypatch.setattr(hunt_values.references, "valid_record", counted)
     unknown = {"title": "lot", "cards": [], "pool": "known_lots", "count": 10}
     first = compare(unknown, records)
     second = compare({**unknown, "count": 20}, records)

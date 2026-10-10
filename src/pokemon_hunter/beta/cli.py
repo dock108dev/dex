@@ -107,6 +107,20 @@ def main():
         p.add_argument("username")
         if command != "revoke":
             p.add_argument("--link-file", type=Path, required=True)
+    for action in ("price-preview", "price-validate", "price-activate"):
+        p = sub.add_parser(action)
+        p.add_argument("--file", type=Path, required=True)
+        if action == "price-activate":
+            p.add_argument(
+                "--expected-current", required=True, help="UUID or none; refuses intervening activation"
+            )
+    p = sub.add_parser("price-rollback")
+    p.add_argument("--expected-current", required=True)
+    p = sub.add_parser("price-remove")
+    p.add_argument("--version", required=True)
+    p = sub.add_parser("price-remove-source")
+    p.add_argument("--contract-sha256", required=True)
+    sub.add_parser("price-purge-expired")
     args = parser.parse_args()
     os.umask(0o077)
     if staging_config.profile() == "staging" and args.action not in {
@@ -130,6 +144,29 @@ def main():
         call_command("migrate", verbosity=0)
         stage = "collection and hunts" if args.parity else "collection" if args.b2 else "accounts"
         print(f"Isolated {stage} database initialized. Provision an isolated account before inviting anyone.")
+    elif args.action.startswith("price-"):
+        import json
+
+        from . import price_snapshots
+
+        if args.action in {"price-preview", "price-validate"}:
+            result = price_snapshots.summary(price_snapshots.preview(args.file))
+        elif args.action == "price-activate":
+            expected = None if args.expected_current == "none" else args.expected_current
+            result = price_snapshots.activate(args.file, expected)
+        elif args.action == "price-rollback":
+            result = price_snapshots.rollback(args.expected_current)
+        elif args.action == "price-remove":
+            price_snapshots.remove(args.version)
+            result = {"removed": True}
+        elif args.action == "price-remove-source":
+            price_snapshots.sources.remove_source(args.contract_sha256)
+            price_snapshots.purge_expired()
+            result = {"source_removed": True}
+        else:
+            price_snapshots.purge_expired()
+            result = {"expiry_checked": True}
+        print(json.dumps(result, sort_keys=True))
     elif args.action == "enable-replay-refresh":
         from . import refresh
 
@@ -213,10 +250,16 @@ def main():
 
         run()
     elif args.action == "serve":
+        import threading
+
         import uvicorn
 
         from .asgi import get_asgi_application
+        from .price_snapshots import expiry_worker
 
+        price_stop = threading.Event()
+        price_worker = threading.Thread(target=expiry_worker, args=(price_stop,), daemon=True)
+        price_worker.start()
         worker = None
         if (args.root / "B3_ISOLATED").is_file():
             import threading
@@ -237,6 +280,8 @@ def main():
                 log_level="warning",
             )
         finally:
+            price_stop.set()
+            price_worker.join(timeout=5)
             if worker is not None:
                 stop.set()
                 worker.join(timeout=5)

@@ -48,8 +48,8 @@ Fixtures are not the customer's collection or current prices.
 Real-card recognition accuracy, all-era variant coverage and current buying
 availability remain limited. Unknown identity, stock, shipping and coverage stay
 visible. Recognition providers and eBay require separate configuration.
-Shopping uses dated, admitted retained references; automatic price acquisition
-is unfinished. Missing values remain unpriced.
+Shopping uses dated, admitted retained references and privately activated source
+snapshots. Scheduled acquisition is unavailable. Missing values remain unpriced.
 
 ## Development
 

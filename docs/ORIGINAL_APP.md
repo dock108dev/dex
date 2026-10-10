@@ -65,11 +65,14 @@ The Overview shows ungraded and Grade 7/8/9/10 estimates for one of each owned p
 
 `config/market_values.json` holds dated USD PriceCharting guide snapshots. Grade 10 uses its PSA 10 guide; other grades are general grade scenarios. Grade 7–8 values marked * interpolate geometrically between ungraded and Grade 9 when no direct guide snapshot exists: raw × (grade9/raw)^(1/3 or 2/3). This is a rough heuristic, not observed sales or a predicted card grade. No grading or selling fees included. Records older than 30 days are excluded; partial totals disclose coverage.
 
-`scripts/refresh_values.py` is a legacy network scraper for owned-card guide tables,
-not a startup or supported automatic-pricing step. It lacks source-rights admission
-and provider-expiry purge. Do not use it without establishing the applicable
-extraction/storage permissions. Collection estimates remain separate from
-condition-qualified hunt bid calculations.
+Collection estimates and authenticated hunts share `reference_policy.py` for
+finite capped USD amounts, explicit variant verification, safe HTTPS source links
+and the 30-day date rule. Edition and grade matching remain specific to each
+projection. Unsafe, stale or incomplete evidence stays unpriced. Retained
+interpolation is labelled historical evidence; there is no interpolation or network
+refresh step in the current code. Collection estimates remain separate from
+condition-qualified hunt bid calculations. New Shopping snapshots use the reviewed
+private importer described in [development](local-development.md#private-price-snapshots).
 
 
 These records belong to the original app. The authenticated app tracks physical copies and can retain intentional duplicates; consult [the source-of-truth map](SSOT.md) before changing either store.

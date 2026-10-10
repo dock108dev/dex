@@ -10,8 +10,12 @@ from django.conf import settings
 
 from pokemon_hunter.runtime_data import root as runtime_root
 
-from . import collection, hunt_values, shopping, store
+from . import collection, price_snapshots, shopping, store
+from . import price_snapshot_contract as snapshot_rules
 from . import shopping_math as math
+from .lot_guides import cell_details as cell_details
+from .lot_guides import cells as cells
+from .lot_guides import legacy_cells as legacy_cells
 
 SETS = (
     "Base Set",
@@ -26,89 +30,140 @@ SETS = (
     "Neo Revelation",
     "Neo Destiny",
 )
-COLUMNS = ("raw", "8", "9", "10")
-# Admission is pinned to the existing approved guide bytes. New provider
-# records, even unselected alternatives, cannot enter these immutable saves.
+COLUMNS = snapshot_rules.COLUMNS
+# Historical admission remains pinned. Versioned observations have their own
+# independently reviewed private contract and permanent-save policy.
 RETAINED_SHA256 = "2d3a0867906ac5f84464ee42b618583cd0cb88818f773522420aa230d899ee20"
+PRIVATE_RETAINED_SHA256 = "72d61c466c74b8a702cee9fd744a5485633c236c0dcbfaa07c26a3fafac27b03"
 
 
-def catalog(actor, query=""):
+def catalog(actor, query="", *, include_goals=False, goal_ids=None):
     store.verified(actor)
     games = {g["id"] for g in store.rows("SELECT id FROM games WHERE game_key='pokemon'")}
-    return [p for p in collection.catalog(actor, query) if p["set_name"] in SETS and p["game_id"] in games]
+    goal_ids = (
+        goal_ids
+        if goal_ids is not None
+        else (
+            {
+                pid
+                for g in collection.goals(actor, include_updates=False)
+                for item in g["definition"]["items"]
+                for pid in item["printing_ids"]
+            }
+            if include_goals
+            else set()
+        )
+    )
+    return [
+        p
+        for p in collection.catalog(actor, query)
+        if p["game_id"] in games and (p["set_name"] in SETS or p["id"] in goal_ids)
+    ]
 
 
-def retained_records():
+def missing_choices(actor, goal_id, item_id=""):
+    """Use the account's frozen goal and its existing ownership policy unchanged."""
+    goal = next(iter(collection.goals(actor, goal_id=goal_id, include_updates=False)), None)
+    if goal is None:
+        raise ValueError("Choose one of your collection goals")
+    available = {p["id"] for p in collection.catalog(actor)}
+    items = [
+        dict(id=i["label"], label=i["label"], printing_ids=[p for p in i["printing_ids"] if p in available])
+        for i in goal["progress"]
+        if i["status"] != "owned"
+    ]
+    if item_id and not any(i["id"] == item_id for i in items):
+        raise ValueError("This card is no longer missing from your selected goal")
+    ids = {p for i in items if not item_id or i["id"] == item_id for p in i["printing_ids"]}
+    return ids, [dict(id=i["id"], label=i["label"], available=len(i["printing_ids"])) for i in items]
+
+
+def legacy_records():
     """Freeze admission to existing guide bytes; synthetic sources require a disposable marker."""
     if (settings.ROOT / "SYNTHETIC_ONLY").is_file():
         rows, _ = shopping.sources()
         return rows
-    path = runtime_root() / "config/market_values.json"
-    if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != RETAINED_SHA256:
-        return []
-    return json.loads(path.read_text())
+    for path, expected in (
+        (settings.ROOT / "parity-evidence/market_values.json", PRIVATE_RETAINED_SHA256),
+        (runtime_root() / "config/market_values.json", RETAINED_SHA256),
+    ):
+        if path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest() == expected:
+            return json.loads(path.read_text())
+    return []
 
 
-def cells(printing, records, today):
-    key = json.loads(printing["provenance"]).get("legacy_id")
-    result = {}
-    for grade in COLUMNS:
-        candidates = []
-        for row in records:
-            if not isinstance(row, dict) or row.get("card_id") != key or str(row.get("grade")) != grade:
-                continue
-            edition = printing.get("edition") or "standard"
-            reason = "eligible"
-            if row.get("edition") != edition or hunt_values._valid(row, today, guide=True) is None:
-                reason = "edition_currency_source_date_or_amount_unavailable"
-            elif grade != "raw" and (row.get("estimated") or not row.get("grader")):
-                reason = "estimated_or_unknown_graded_basis"
-            elif any(row.get(k) not in (None, printing.get(k)) for k in ("language", "finish", "variant")):
-                reason = "conflicting_printing_identity"
-            elif grade == "raw" and row.get("grader") not in {"Guide", "PSA"}:
-                reason = "unsupported_raw_basis"
-            # Generic grade fields retain the literal grader; no PSA8/9 mapping.
-            ref = dict(
-                reference_id="retained-" + shopping.digest(row),
-                kind="guide",
-                value_scope="per_card",
-                amount=row.get("value"),
-                currency=row.get("currency"),
-                as_of=row.get("as_of"),
-                source_url=row.get("source_url"),
-                grade=grade,
-                grader=row.get("grader"),
-                estimated=row.get("estimated"),
-                edition=row.get("edition"),
-                raw_record=deepcopy(row),
-                record_sha256=shopping.digest(row),
-                printing_id=printing["id"],
-                provenance="retained_guide_conditional",
-                match_status="conditional" if reason == "eligible" else "unavailable",
-                assumptions=[
-                    "Catalog fit and physical condition are conditional; generic grader is not certification."
-                ],
-                admission="preexisting_retained_guide_boundary",
-                basis_eligibility=reason,
+class SnapshotRecords(list):
+    def __init__(self, rows, status):
+        super().__init__(rows)
+        self.status = status
+
+
+def retained_records():
+    """Active private prices and intact historical guides; no fetching or relabeling."""
+    current, status = price_snapshots.display_current()
+    return SnapshotRecords(current + legacy_records(), status)
+
+
+def selector(actor, query="", *, goal_id="", item_id="", printing_id="", pick_first=False):
+    missing_ids, items = missing_choices(actor, goal_id, item_id) if goal_id else (None, [])
+    if pick_first and items and not item_id:
+        item_id = items[0]["id"]
+        # Progress is already validated; use the same frozen item's printing IDs.
+        goal = collection.one(actor, "goal", goal_id)
+        missing_ids = set(
+            next(i["printing_ids"] for i in json.loads(goal["definition"])["items"] if i["label"] == item_id)
+        )
+    printings = [
+        p
+        for p in catalog(actor, query, include_goals=bool(printing_id), goal_ids=missing_ids)
+        if (missing_ids is None or p["id"] in missing_ids) and (not printing_id or p["id"] == printing_id)
+    ]
+    if goal_id:
+        printings.sort(
+            key=lambda p: (
+                p["set_name"] not in SETS,
+                SETS.index(p["set_name"]) if p["set_name"] in SETS else len(SETS),
+                p["name"].casefold(),
+                p["collector_number"],
+                p["id"],
             )
-            ref["eligibility"] = math.eligibility(ref, today.isoformat())
-            if ref["eligibility"] == "eligible":
-                candidates.append(ref)
-        result[grade] = max(candidates, key=lambda r: r["as_of"]) if candidates else None
+        )
+    return printings, items
+
+
+def priced_cards(actor, printings):
+    today = datetime.now(shopping.TZ).date()
+    rows, copies = retained_records(), collection.copies(actor)
+    result = []
+    for p in printings:
+        values, reasons = cell_details(p, rows, today)
+        result.append(
+            dict(
+                shopping.identity(p),
+                copy_count=sum(c["printing_id"] == p["id"] for c in copies),
+                cells=values,
+                price_reasons=reasons,
+            )
+        )
     return result
 
 
-def browse(actor, query=""):
-    today = datetime.now(shopping.TZ).date()
-    rows, copies = retained_records(), collection.copies(actor)
-    return [
-        dict(
-            shopping.identity(p),
-            copy_count=sum(c["printing_id"] == p["id"] for c in copies),
-            cells=cells(p, rows, today),
-        )
-        for p in catalog(actor, query)
-    ]
+def browse(actor, query="", *, goal_id="", item_id="", printing_id=""):
+    printings, _ = selector(actor, query, goal_id=goal_id, item_id=item_id, printing_id=printing_id)
+    return priced_cards(actor, printings)
+
+
+def browse_page(actor, query="", *, goal_id="", item_id="", printing_id="", offset=0, pick_first=False):
+    printings, items = selector(
+        actor, query, goal_id=goal_id, item_id=item_id, printing_id=printing_id, pick_first=pick_first
+    )
+    return dict(
+        cards=priced_cards(actor, printings[offset : offset + 40]),
+        total=len(printings),
+        offset=offset,
+        missing_items=items,
+        selected_missing_item=item_id or (items[0]["id"] if pick_first and items else ""),
+    )
 
 
 def locks(actor, session, supplied=None):
@@ -118,7 +173,9 @@ def locks(actor, session, supplied=None):
     if supplied is not None:
         if not isinstance(supplied, list) or len(supplied) > 200:
             raise ValueError("At most 200 wanted identities")
-        ids = {p["id"] for p in catalog(actor)} | {p["printing_id"] for p in session.get(key, [])}
+        ids = {p["id"] for p in catalog(actor, include_goals=True)} | {
+            p["printing_id"] for p in session.get(key, [])
+        }
         seen = set()
         for item in supplied:
             shopping.fields(item, {"printing_id", "quantity"}, {"printing_id", "quantity"})
@@ -142,14 +199,14 @@ def prepare(actor, raw, now=None):
         raise ValueError("At most 200 card identities")
     now = now or datetime.now(shopping.TZ)
     today = now.astimezone(shopping.TZ).date()
-    entries = {p["id"]: p for p in catalog(actor)}
+    entries = {p["id"]: p for p in catalog(actor, include_goals=True)}
     records, identities, by_column, seen = retained_records(), [], {g: [] for g in COLUMNS}, set()
     selections = []
     for line in raw["cards"]:
         shopping.fields(line, {"printing_id", "quantity", "values"}, {"printing_id", "quantity", "values"})
         p = entries.get(line["printing_id"])
         if p is None or p["id"] in seen:
-            raise ValueError("Missing, non-vintage or duplicate printing")
+            raise ValueError("Missing, unsupported or duplicate printing")
         seen.add(p["id"])
         math.quantity(line["quantity"])
         shopping.fields(line["values"], COLUMNS, COLUMNS)
@@ -252,11 +309,21 @@ def admitted_hashes():
 def admit_snapshot(payload):
     """Every guide derivative/alternative inherits admission; never mutate old saves."""
     admitted = admitted_hashes()
+    versioned_rows = None
 
     def visit(value):
+        nonlocal versioned_rows
         if isinstance(value, dict):
+            if value.get("source_contract") and value.get("save_allowed") is False:
+                raise ValueError(
+                    "This source permits current display only; permanent comparison saving is unavailable"
+                )
             if value.get("kind") == "guide" and "raw_record" in value:
-                if shopping.digest(value["raw_record"]) not in admitted:
+                if "_snapshot_version" in value["raw_record"]:
+                    if versioned_rows is None:
+                        versioned_rows, _ = price_snapshots.current()
+                    price_snapshots.admit(value, versioned_rows)
+                elif shopping.digest(value["raw_record"]) not in admitted:
                     raise ValueError("New provider embedding requires surviving rights and admission")
             for child in value.values():
                 visit(child)

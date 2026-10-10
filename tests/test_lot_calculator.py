@@ -5,6 +5,7 @@ import json
 
 import pytest
 from test_b1 import env as env
+from test_b2 import apply
 from test_b2 import b2 as b2
 from test_migration import snapshot as snapshot
 from test_shopping import NOW, inputs
@@ -121,6 +122,20 @@ def test_wants_absent_units_session_isolation_and_no_storage_requirement(workspa
     assert response.status_code == 200
     assert p["id"].encode() in workspace["a"].get("/shopping/").content
     assert p["id"].encode() not in workspace["b"].get("/shopping/").content
+    wanted = workspace["a"].get("/api/shopping/lot-catalog/", {"wanted": "1"}).json()
+    assert [r["id"] for r in wanted["cards"]] == [p["id"]]
+    assert workspace["b"].get("/api/shopping/lot-catalog/", {"wanted": "1"}).json()["cards"] == []
+    second = workspace["catalog"][1]
+    assert (
+        post(
+            workspace,
+            "/api/shopping/wants/",
+            dict(wants=[dict(printing_id=p["id"], quantity=3), dict(printing_id=second["id"], quantity=1)]),
+        ).status_code
+        == 200
+    )
+    batch = workspace["a"].get("/api/shopping/lot-catalog/", {"wanted": "1"}).json()
+    assert {r["id"] for r in batch["cards"]} == {p["id"], second["id"]}
     raw = request(workspace)
     raw["cards"] = []
     payload = lot.prepare(workspace["actor"], raw, NOW)
@@ -177,6 +192,62 @@ def test_vintage_scope_guide_semantics_and_provider_admission(workspace, monkeyp
     collection.execute("UPDATE catalog_sets SET name='Prismatic Evolutions'")
     assert not lot.browse(workspace["actor"])
     assert len(collection.catalog(workspace["actor"])) == 3
+
+
+def test_missing_picker_uses_goal_progress_and_is_account_private(workspace):
+    goal = apply(
+        workspace,
+        "goal",
+        dict(
+            name="My missing cards", goal_kind="custom", printing_ids=[p["id"] for p in workspace["catalog"]]
+        ),
+    )["changes"][0]["after"]
+    before = collection.export_data(workspace["actor"])
+    response = workspace["a"].get("/api/shopping/lot-catalog/", {"goal": goal["id"]})
+    assert response.status_code == 200
+    result = response.json()
+    assert result["missing_items"]
+    assert all(p["copy_count"] == 0 for p in result["cards"])
+    assert len(result["cards"]) < len(workspace["catalog"])
+    chosen = result["missing_items"][0]
+    first = workspace["a"].get("/api/shopping/lot-catalog/", {"goal": goal["id"], "pick_first": "1"}).json()
+    assert first["selected_missing_item"] == chosen["id"]
+    assert first["total"] == 1
+    filtered = (
+        workspace["a"]
+        .get("/api/shopping/lot-catalog/", {"goal": goal["id"], "missing_item": chosen["id"]})
+        .json()
+    )
+    assert len(filtered["cards"]) == 1
+    assert workspace["b"].get("/api/shopping/lot-catalog/", {"goal": goal["id"]}).status_code == 400
+    assert (
+        workspace["a"]
+        .get("/api/shopping/lot-catalog/", {"goal": goal["id"], "missing_item": "not in goal"})
+        .status_code
+        == 400
+    )
+    assert collection.export_data(workspace["actor"]) == before
+
+
+def test_missing_goal_printing_can_be_locked_restored_and_compared_outside_vintage(workspace):
+    collection.execute("UPDATE catalog_sets SET name='Modern test set'")
+    owned = {c["printing_id"] for c in collection.copies(workspace["actor"])}
+    p = next(p for p in workspace["catalog"] if p["id"] not in owned)
+    goal = apply(
+        workspace, "goal", dict(name="One missing card", goal_kind="custom", printing_ids=[p["id"]])
+    )["changes"][0]["after"]
+    before = collection.export_data(workspace["actor"])
+    assert not lot.browse(workspace["actor"])
+    selected = lot.browse(workspace["actor"], goal_id=goal["id"])
+    assert [r["id"] for r in selected] == [p["id"]]
+    assert [r["id"] for r in lot.browse(workspace["actor"], printing_id=p["id"])] == [p["id"]]
+    response = post(workspace, "/api/shopping/wants/", dict(wants=[dict(printing_id=p["id"], quantity=1)]))
+    assert response.status_code == 200
+    raw = request(workspace)
+    raw["cards"] = [dict(printing_id=p["id"], quantity=1, values={g: dict(mode="none") for g in lot.COLUMNS})]
+    result = lot.prepare(workspace["actor"], raw, NOW)
+    assert all(s["result"]["coverage"]["priced_units"] == 0 for s in result["scenarios"].values())
+    assert collection.export_data(workspace["actor"]) == before
 
 
 @pytest.mark.parametrize(

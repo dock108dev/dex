@@ -4,10 +4,11 @@ No catalog, ownership writers, provider access or persistence in this module.
 """
 
 import re
-from datetime import date
 from decimal import ROUND_HALF_EVEN, Decimal, localcontext
 
-CAP = Decimal("1000000000000")
+from pokemon_hunter.reference_policy import MAX_VALUE as CAP
+from pokemon_hunter.reference_policy import fresh as fresh
+
 CENT = Decimal("0.01")
 BASES = ("listing_observation", "planned_bid")
 COSTS = ("shipping", "tax", "other_costs")
@@ -33,14 +34,6 @@ def money(value):
         return None
     rounded = value.quantize(CENT, rounding=ROUND_HALF_EVEN)
     return format(abs(rounded) if rounded == 0 else rounded, ".2f")
-
-
-def fresh(as_of, evaluation_date):
-    try:
-        age = (date.fromisoformat(evaluation_date) - date.fromisoformat(as_of)).days
-        return "eligible" if 0 <= age <= 30 else "future" if age < 0 else "stale"
-    except (ValueError, TypeError):
-        return "invalid_or_missing_date"
 
 
 def eligibility(ref, today):

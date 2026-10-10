@@ -91,7 +91,7 @@ availability.
 
 `/shopping/` compares explicitly included quantities with a lot price. Search the
 vintage card selector, add cards, lock wanted targets, fill in the remaining lot
-and compare. Clear lot / Next lot removes current contents and costs while keeping
+and compare. Clear lot removes current contents and costs while keeping
 locked wants. Locks belong to the signed-in session; they are not evidence of
 seller contents or owned cards. Only included quantities contribute to totals.
 
@@ -99,6 +99,20 @@ The selector covers Base Set, Jungle, Fossil, Base Set 2, Team Rocket, Gym Heroe
 Gym Challenge, Neo Genesis, Neo Discovery, Neo Revelation and Neo Destiny.
 Selectable entries depend on the installation's published catalog. Owned cards
 remain selectable; this scope does not restrict unrelated all-era browsing or goals.
+
+**Missing** opens the saved Original 151 collection goal first when
+available. Select a missing card, then its printing; change goals under **Goal**. Missing
+status uses that goal's frozen membership and existing ownership policy. These
+choices may include supported printings from other eras; classic vintage sets
+appear first. **All cards** retains the ordinary eleven-set selector.
+**Lock** adds a session wanted target with zero included in the current
+lot. **Add** adds the displayed quantity to the lot. Neither changes ownership
+or goal membership. Edition, finish and variant labels distinguish printing choices.
+
+The picker shows one printing and one quantity row at a time. Switching printings
+uses the loaded results immediately; missing-card requests omit unrelated goal-update
+reports while retaining source and ownership checks. Reopening restores wanted cards
+in one batch. Collection and goal pages retain their full update reports.
 
 Ungraded / Grade 8 / Grade 9 / Grade 10 are independent scenarios with
 quantity-aware totals. They are not added together or treated as the card's
@@ -108,8 +122,10 @@ excluded. Source, date and grader details remain available. Unknown shipping,
 tax or other costs prevent a complete delivered comparison; a known subtotal is
 shown separately. Results are dated reference differences, not profit estimates.
 
-Automatic price acquisition is unfinished. Guide admission is limited to existing
-approved records; the repository does not contain the private price snapshot.
+Automatic scheduled acquisition is not connected. An October snapshot is active; historical guide admission is preserved;
+new versioned private snapshots require separately reviewed exact source contracts.
+The repository does not contain private price snapshots.
+[Price snapshots](price-snapshots.md) describes the supported importer and source policy.
 Searching or reopening a comparison does not fetch prices. Source identity,
 grade meaning, valuation date and applicable use/storage rights must be resolved
 before connecting new data. No price-refresh schedule is provided.
@@ -121,3 +137,18 @@ The original editor at `/shopping/legacy/` remains available for per-card/group
 values and goal-based research. Both formats share account-scoped history policy;
 see [architecture](SSOT.md). Saved history requires the explicit `enable-shopping`
 operator command on collection-enabled installations; back up before enabling it.
+
+## October 2026 pricing
+
+Empty graded cells and grade totals stay hidden until eligible values exist. All
+four scenarios remain enabled. Price dates, condition/edition assumptions and
+source links are available under each card's **Price details** disclosure; the
+source record is collapsed separately.
+
+The owner's October 10 instruction authorizes free data acquisition and reversible local integration without repeated approval packets. The locally retained October integration closeout (`docs/shopping/CS-OCT2026-DATA.md`) is complete for **901 ungraded references across 909 priority printings** from the October 9 TCGCSV build. The Original 151 scope includes Dark, Light and Shining Pokémon across the eleven vintage sets; collection-completion eligibility flags do not limit pricing. The full 1,314-printing selector remains intact.
+
+The real Shopping calculator shows these source references and computes quantity totals. Exact set/card-number/product/subtype joins precede admission. Unknown physical edition/condition remains visibly conditional, while conflicting or special variants stay unavailable. No ownership or catalog metadata changed. The publisher build date is disclosed; provider valuation date remains unavailable. The existing 30-day rule, source withdrawal/expiry and separate graded rules remain intact. No permanent save rights or price backups/exports are inferred; saved Shopping storage remains disabled.
+
+Chansey Base Set #3 and Scyther Jungle #10 displayed their real October references and a full two-card total after ordinary sign-in. The installation was backed up, activated and restarted using the established private root. A verification tab preserved the owner's current lot. Owner acceptance and complete four-column pricing remain open.
+
+The next work is genuine free graded evidence and eight unmatched raw identities, listed in the private local closeout. No refresh schedule is running, and search/reopen performs no provider acquisition. Historical collector/source-review closeouts and consumed attempt journals remain preserved; their former separate-approval sequence is superseded by the owner's correction. The Desktop tracker owns current routing.
