@@ -69,7 +69,7 @@ jobs:
           report_python=(uv run --no-sync python)
         fi
         "${report_python[@]}" scripts/ci/report.py job --name "Source quality" --output reports/ci/quality/metrics.json --outcome "setup=$SETUP" --outcome "actions=$ACTIONS" --outcome "lint=$LINT" --outcome "format=$FORMAT" --outcome "node=$NODE" --outcome "source=$SOURCE"
-    - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       if: always()
       with:
         name: ci-quality-${{ github.run_id }}-${{ github.run_attempt }}
@@ -105,7 +105,7 @@ jobs:
         fi
         "${report_python[@]}" scripts/ci/report.py job --name "Behavior" --output reports/ci/behavior/metrics.json --outcome "setup=$SETUP" --outcome "tests=$TESTS" --junit reports/ci/behavior/junit.xml --coverage reports/ci/behavior/coverage.json \
           --expect-discovered-suites
-    - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       if: always()
       with:
         name: ci-behavior-${{ matrix.os }}-py${{ matrix.python }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -154,7 +154,7 @@ jobs:
           report_python=(uv run --no-sync python)
         fi
         "${report_python[@]}" scripts/ci/report.py job --name "Fresh distribution" --output reports/ci/distribution/metrics.json --outcome "setup=$SETUP" --outcome "build=$BUILD" --measurement reports/ci/distribution/smoke.json
-    - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       if: always()
       with:
         name: ci-distribution-${{ github.run_id }}-${{ github.run_attempt }}
@@ -191,7 +191,7 @@ jobs:
           report_python=(uv run --no-sync python)
         fi
         "${report_python[@]}" scripts/ci/report.py job --name "Synthetic browser journeys" --output reports/ci/browser/metrics.json --outcome "setup=$SETUP" --outcome "chromium=$CHROMIUM" --outcome "browser=$BROWSER" --measurement reports/ci/browser/report.json
-    - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       if: always()
       with:
         name: ci-browser-${{ github.run_id }}-${{ github.run_attempt }}
@@ -232,7 +232,7 @@ jobs:
           report_python=(uv run --no-sync python)
         fi
         "${report_python[@]}" scripts/ci/report.py job --name "Security and dependencies" --output reports/ci/security/metrics.json --outcome "setup=$SETUP" --outcome "gitleaks=$GITLEAKS" --outcome "security=$SECURITY" --security bandit=reports/ci/security/bandit.json --security pip-audit=reports/ci/security/pip-audit.json --security gitleaks=reports/ci/security/gitleaks.json --measurement reports/ci/security/security-status.json
-    - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       if: always()
       with:
         name: ci-security-${{ github.run_id }}-${{ github.run_attempt }}
@@ -264,7 +264,7 @@ jobs:
           --expect-job-reports "Source quality=1" --expect-job-reports "Behavior=${{ inputs.compatibility && 5 || 3 }}" \
           --expect-job-reports "Fresh distribution=1" --expect-job-reports "Synthetic browser journeys=1" --expect-job-reports "Security and dependencies=1"
         echo "result=PASS" >> "$GITHUB_OUTPUT"
-    - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       if: always()
       with:
         name: gate-${{ github.run_id }}-${{ github.run_attempt }}
