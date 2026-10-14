@@ -367,16 +367,16 @@ wheels = [
 
 [[package]]
 name = "django"
-version = "6.1.1"
+version = "6.1.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "asgiref" },
     { name = "sqlparse" },
     { name = "tzdata", marker = "sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f8/d4/8314b5bdef20832f0ac6ae3b3e4d4924e4759fa3b4af27609dd747e7a6be/django-6.1.1.tar.gz", hash = "sha256:7ab93536d8e677aa14554c56426290c69480bf2ee68d7513d4a22f57d6bfeb84", size = 11284905, upload-time = "2026-09-02T17:20:45.621Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/89/24/20d187a22ac821288b53c53b8f696019dcb0c7b4f973f052ade19392c74d/django-6.1.2.tar.gz", hash = "sha256:a1e92451ccb8b514e91bbb3b6d186d20b4030558f116b5d9de6535455ff210b7", size = 11251425, upload-time = "2026-10-06T12:53:29.622Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8d/ca/c1040a4fd15754ede7df15fd72fc2e123045b473b253ab5f5284e11c651e/django-6.1.1-py3-none-any.whl", hash = "sha256:585fb82bf15053c42cf52e67c2f1b54a032dca384759315fd6678ab1870d1d72", size = 8419512, upload-time = "2026-09-02T17:20:39.153Z" },
+    { url = "https://files.pythonhosted.org/packages/c9/83/90ff2dbfac7b519ed77620bdbb827cd2d1a83faf00d076bf95056428bce7/django-6.1.2-py3-none-any.whl", hash = "sha256:141efee6ec64d1db6db90683bf734c550102450f444fb099063b0be1bd27d991", size = 8420684, upload-time = "2026-10-06T12:53:17.381Z" },
 ]
 
 [[package]]
@@ -394,7 +394,7 @@ wheels = [
 
 [[package]]
 name = "fastapi"
-version = "0.142.2"
+version = "0.143.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "annotated-doc" },
@@ -404,9 +404,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "typing-inspection" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/56/4f/f7c30a73127e0a8bbffe788369b8359e530b01ae06e2757936fa35bc5e6d/fastapi-0.142.2.tar.gz", hash = "sha256:06366626f2e70576367714d9ab2fe8472e6c8456dba69b399f9f797ab5e92570", size = 466721, upload-time = "2026-09-30T09:51:11.277Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0b/d7/6a8753ab6c1d432dc53703c3e1b92974a94531b7d047c32bbaae461ea844/fastapi-0.143.0.tar.gz", hash = "sha256:1acffe48206a80917cf7dac21992b5c44b25384e8902bf745c1fd9dabcf6c51f", size = 468391, upload-time = "2026-10-08T12:29:46.54Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a0/b6/78aaf9141fb46742928c113f3cf6ef2259d538cb02b604b7656c1dc9883c/fastapi-0.142.2-py3-none-any.whl", hash = "sha256:bd5f4d81f1e93a88bcd77caf4dfe3c2dbffc3805407a0007e9a114c18b3a670b", size = 144409, upload-time = "2026-09-30T09:51:09.8Z" },
+    { url = "https://files.pythonhosted.org/packages/bd/f4/27e386913417ad32aae42bba48b0c0cce40e9ff2fba1a871ca2702c37324/fastapi-0.143.0-py3-none-any.whl", hash = "sha256:3e9395fd35276425b61b516a31fdd7c77fe2af83e41b4da22e30696fb1304c5d", size = 144665, upload-time = "2026-10-08T12:29:44.853Z" },
 ]
 
 [[package]]
@@ -913,7 +913,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.10,<3" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8,<10" },
     { name = "pytest-cov", marker = "extra == 'ci'", specifier = "==7.0.0" },
-    { name = "pytest-socket", marker = "extra == 'ci'", specifier = "==0.7.0" },
+    { name = "pytest-socket", marker = "extra == 'ci'", specifier = "==0.8.1" },
     { name = "pyyaml", specifier = ">=6,<7" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.11,<1" },
     { name = "shellcheck-py", marker = "extra == 'ci'", specifier = "==0.11.0.1" },
@@ -1154,14 +1154,14 @@ wheels = [
 
 [[package]]
 name = "pytest-socket"
-version = "0.7.0"
+version = "0.8.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pytest" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/05/ff/90c7e1e746baf3d62ce864c479fd53410b534818b9437413903596f81580/pytest_socket-0.7.0.tar.gz", hash = "sha256:71ab048cbbcb085c15a4423b73b619a8b35d6a307f46f78ea46be51b1b7e11b3", size = 12389, upload-time = "2024-01-28T20:17:23.177Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ba/ce/4ef7b049852c95a8727b4a7e6496f762df1ac0b47bc0320d10293f5e95ec/pytest_socket-0.8.1.tar.gz", hash = "sha256:2f57787914ad2e1308d09ce141b95c3e55741fbb4fb7b7556593a6b063e0c9c7", size = 17313, upload-time = "2026-08-19T15:16:25.653Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/19/58/5d14cb5cb59409e491ebe816c47bf81423cd03098ea92281336320ae5681/pytest_socket-0.7.0-py3-none-any.whl", hash = "sha256:7e0f4642177d55d317bbd58fc68c6bd9048d6eadb2d46a89307fa9221336ce45", size = 6754, upload-time = "2024-01-28T20:17:22.105Z" },
+    { url = "https://files.pythonhosted.org/packages/87/ef/ab507f117b3d19b54e3c9c632a99c28c3b284562ec6e02e274581d530d92/pytest_socket-0.8.1-py3-none-any.whl", hash = "sha256:f9846bed1dcd96eed459e5e14795bbaf96715cf4e827891fe70773817ecb8ed4", size = 8751, upload-time = "2026-08-19T15:16:24.426Z" },
 ]
 
 [[package]]
