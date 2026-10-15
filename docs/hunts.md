@@ -179,3 +179,70 @@ Logout, revoked authority, stale collection/goal context and late requests canno
 restore private results to another account. Existing source-status and expiry
 checks remain active. Captured saves remain immutable, and explicit current
 reevaluation creates a separate child. See [navigation and Shopping adapters](SSOT.md#navigation-and-shopping-adapters) for service ownership.
+
+
+## Recorded raw-price integration
+
+The October 10 integration record reports 901 conditional ungraded references for
+909 Original 151 priority printings across eleven vintage sets, including Dark,
+Light and Shining species independently of completion-eligibility flags. The full
+1,314-printing selector was retained; this is neither all-era coverage nor a new
+catalog restriction. The provider's October 9 publisher build supplied no grader-
+specific 8/9/10 fields. Provider valuation date stayed null and was disclosed; the
+admitted publisher-build date governed the existing 30-day rule.
+
+Exact product/subtype joins preceded admission. Physical edition/condition stayed
+conditional where unknown, and conflicting variants remained unavailable. The
+release permitted current display/arithmetic and managed private storage, without
+permanent comparison-save rights or price backups/exports; saved Shopping storage
+remained disabled. The genuine Chansey/Scyther two-card comparison was observed
+without changing collection/goals. Ninety-one affected tests and a subsequent
+46-case snapshot run passed at that integration, not at every later revision.
+
+These are dated observations, not a fresh read of today's installed prices. The
+original local closeout is `docs/shopping/CS-OCT2026-DATA.md`; private source
+contracts, consumed request journals and runtime receipts remain local. Reference
+expiry, source withdrawal and admission still decide availability on access.
+
+## Backlog
+
+This work is outside the local collection-clarity completion goal. Resume pricing
+after owner acceptance or when explicitly selected; its data/integration work is
+unfinished, rather than part of a completed collector or UI pass.
+
+- **Graded coverage — research/data integration:** find genuine permitted free
+  Grade 8/9/10 observations with exact printing, literal grader/score/currency and
+  real valuation/sale dates. No interpolation, capture-date substitution, new paid
+  service/account or invented coverage. Verify source-specific storage/removal
+  rights before integration; lack of a suitable source remains an explicit gap.
+- **Raw identity gaps — catalog/data integration:** resolve the eight entries
+  below with independently observed unique product/subtype evidence. Do not alter
+  ownership, guess a physical edition or admit conflicting variants.
+- **Supported new prices — backend/integration:** preview, validate and activate
+  only newly supported observations through the existing lifecycle, preserving
+  expiry, withdrawal, provenance, independent registries and save limits. Protect
+  the existing installation; exclude managed prices from backups.
+- **Pricing review — QA with owner acceptance:** check actual versus partial
+  coverage and add/lock/fill/compare/clear on the real installation. Keep included
+  and wanted quantities distinct; do not enable saving without surviving rights.
+- **Optional product expansion:** automatic listing research, refresh schedules,
+  broader all-era catalog publication and shared hosting/public release require
+  separately selected scope. Existing code or an old proposal does not start them.
+
+| Unresolved raw reference | Evidence still needed |
+| --- | --- |
+| Machamp — Base Set #8 | Unique matching product |
+| Dark Exeggutor — Neo Destiny #33 | Unique matching product |
+| Rocket's Mewtwo — Gym Challenge #14 | Unambiguous compatible subtype |
+| Blaine's Charizard — Gym Challenge #2 | Unambiguous compatible subtype |
+| Brock's Vulpix — Gym Challenge #37 | Unambiguous compatible subtype |
+| Rocket's Hitmonchan — Gym Heroes #11 | Unambiguous compatible subtype |
+| Misty's Psyduck — Gym Heroes #54 | Unambiguous compatible subtype |
+| Misty's Seadra — Gym Heroes #9 | Unambiguous compatible subtype |
+
+The existing instruction permits routine free source work and reversible local
+integration when this backlog is selected, subject to source access rules,
+publisher cadence and consumed-attempt accounting. It does not authorize spending,
+account creation, credential resets, destructive changes, buy/bid or publication.
+Paid API proposals and old per-step approval packets are not prerequisites for
+that bounded free-data work. No automatic refresh schedule is connected.

@@ -2,8 +2,7 @@
 
 ## Existing local installations
 
-Select the installation's private root and start it using [local development](local-
-development.md#existing-installations). The authenticated server binds to
+Select the installation's private root and start it using [local development](local-development.md#existing-installations). The authenticated server binds to
 `127.0.0.1:8011`. Restart after updating its runtime; never seed, initialize or
 bootstrap an existing installation again merely to run it.
 
@@ -126,3 +125,35 @@ and leaves consumption intact. Owner Stop also removes a completed managed metad
 result. Cleanup requires a running operator/OS; interrupted supervisors leave consumed
 state and possibly a pending validated copy for cleanup after the self-bounded child
 exits. No automatic retry is permitted.
+
+
+## Recorded local delivery
+
+The October 14 installed delivery uses the existing private root and ordinary
+loopback sign-in. Its dedicated Python 3.12.12 runtime contains the performance
+repair: browsing reads a small account/generation context and paged card results;
+full collection tools load only on explicit entry. Updating this checkout alone
+does not update that installed runtime.
+
+The recorded switch preserved all 57 protected tables/files and independent
+revocation/consumed-attempt records. The protected backup excluded managed prices;
+no schema migration, inventory mutation, replacement installation or provider
+acquisition occurred. Compatible previous runtimes remain available against the
+latest state, with the rollback rules above. A stale saved login file was not
+used to reset credentials; ordinary sign-in remained authoritative.
+
+Genuine read-only checks covered My Cards, Pokédex, species/card/copy detail,
+unknown quantity, Back/filter/scroll/focus, Add Card and contextual empty Shopping.
+No archived printings, private photos or copy/printing-policy goals were invented
+to fill unavailable genuine-state coverage. Genuine inventory mutation remains
+optional and requires an owner-selected real card. Post-repair owner acceptance
+was not recorded, and the expanded-menu issue in [interface limitations](UI_DESIGN.md#known-installed-interface-limitations)
+remains open.
+
+This is a dated delivery receipt, not a fresh process/data check or qualification
+of later source changes. Original local receipts are under
+`reports/collection-experience/CX-09/`, especially `CLOSEOUT.md`,
+`walkthrough-observations.md` and `performance/verification.json`. They are optional
+local records, not required checkout inputs. Before a customer session, verify the
+actual root, interpreter and running process using the installation's local
+configuration; never use a historical PID as process authority.

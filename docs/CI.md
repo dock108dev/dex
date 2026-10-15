@@ -204,3 +204,43 @@ provider/connection overrides. The caller must tear down its disposable server; 
 manages its ephemeral service container. Never pass a personal or production database
 URL. Real proxy/TLS deployment needs separate configuration; see
 [operations](operations.md#optional-postgresqlhttps-profile).
+
+
+## Recorded verification
+
+These retained results explain completed engineering. They apply to their original
+source/artifact and environment, not automatically to a later commit or installed
+app. Counts overlap and must not be summed. Paths below identify optional ignored
+local records; a clean checkout does not require them.
+
+| Verified behavior | Recorded result and boundary | Local record |
+| --- | --- | --- |
+| Integrated collection, card/species screens, navigation, contextual Shopping and rollback | 1,419 tests across all 77 discovered modules; source/security/browser/visual, repeat distribution and latest-state rollback checks passed. This preceded genuine activation and later maintenance. | `reports/collection-experience/CX-08/verification.json` and `acceptance-matrix.md` |
+| Installed browsing performance and lifecycle | 361 affected native cases, 20 final context/navigation cases, ten lazy-tool guards and 59 installed-browser checks; real read-only delivery/preservation recorded separately. Owner acceptance and the narrow-menu defect remained open. | `reports/collection-experience/CX-09/performance/verification.json` |
+| Shared renderer/guest-route authority | 213 affected tests and 30 final renderer cases passed; superseded renderers were removed and fallback cannot bypass current ownership or canonical routes. Source-only at verification. | `reports/ssot-enforcement-20261014/final-junit.xml` and `final-candidate.json` |
+| Presentation refinement | 164 affected tests, 32 card/21 species renderer cases and 20 rendered states passed; no owner/new-user or installed-app acceptance claimed. | `reports/interface-polish-20261014/review.html` and `after-review.json` |
+| Expanded CI implementation | 1,444 tests across 79 modules; 87.24% line / 78.99% branch coverage. Local browser, repeat distribution, PostgreSQL copied migration and security/aggregate checks passed. The container job was not run locally. This preceded the module cleanup. | `reports/ci-system-20261014/readiness.json` |
+| Module cleanup | 175 collection/catalog/SSOT cases and a separate repaired 19-case health run passed, with lint/format/compile and clean-export import/CLI checks. An initial stale test patch target failed and was repaired; this was not a fresh complete CI campaign. | `reports/repository-cleanup-20261014/readiness.json` |
+
+The October 13 dependency-maintenance record reports all seven requested updates
+merged and all seven existing CodeQL alerts fixed. Its successful
+[main run](https://github.com/dock108dev/dex/actions/runs/38505661931) qualifies
+`3750e47…`, not subsequent source. Dependency versions are maintained in
+`pyproject.toml`, `uv.lock` and pinned workflow actions, rather than a second
+version list in prose. The original closeout is local at
+`reports/dependency-updates-20261013/closeout.md`.
+
+The subsequent source and documentation changes are now committed at
+`ccb7d68603d71ec03d857b950cbd03ab96262961`; the earlier reports' “uncommitted”
+statements describe their closeout time. A read-only check on October 14 local
+time found [CodeQL successful](https://github.com/dock108dev/dex/actions/runs/38661825987)
+and [Tests still running](https://github.com/dock108dev/dex/actions/runs/38661826112)
+for this commit. This observation is not a Tests pass or an installed update;
+consult the actual run for its final result. Later documentation edits also do
+not inherit a claim that their exact bytes were tested in that run.
+
+Existing recorded failures, test-client/socket warnings and unavailable live/device
+coverage remain limitations; they were not waived by a source or workflow pass.
+For ordinary local delivery, select checks for the changed behavior and verify the
+installed package independently. Publishing another source revision requires the
+required checks on that revision; a successful old run cannot qualify it.

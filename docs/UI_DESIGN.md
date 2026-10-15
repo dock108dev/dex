@@ -6,6 +6,33 @@ comparison facts. Shared primitives live in `beta/static/glass.css`; application
 styles live in `collection.css` and `public.css`. Templates and styles are
 repository-owned and require no external design workspace.
 
+## Local-use completion requirements
+
+The agreed collection goal is a useful, owner-accepted local app: owned cards,
+catalog browsing and Pokémon pages have distinct meanings, predictable normal-page
+navigation and readable optional detail. All-era Original 151 collecting, Kanto/
+Johto views, classic eBay and Packs-to-open remain supported within indexed coverage.
+The separate Cards I own gallery is retired; My Cards is the owned-card destination.
+
+Completion requires coherent current ownership across My Cards, species and
+current missing views; unknown totals stay unknown and saved goals keep their
+frozen policies. Card variants group without merging stored printing IDs. Pokémon
+artwork, card references and private copy photos retain their separate roles;
+missing artwork cannot change status or destination. Existing collection data,
+credentials, source history, prices/retention and saved research survive updates.
+
+My Cards → card takes one click; Pokédex → species takes one, then → card takes a
+second. Advanced attributes are disclosed on demand and copy editing is at most
+two steps from its card. Back restores tab, filters, scope, page and scroll.
+Guest routes expose no private collection/source/photo data. Keyboard operation,
+320px layouts, enlarged text, error/empty/loading states and image failures must
+remain usable on the delivered app. The owner confirms the final ordinary-use
+experience; automated checks do not supply that acceptance.
+
+Complete four-grade prices, new automatic acquisition, broader catalog publication,
+shared hosting, installer/notarization and public release are outside this local
+collection goal. Retained ideas and pricing gaps are in the [Shopping backlog](hunts.md#backlog).
+
 ## Access and navigation
 
 | Capability | Signed out | Signed in |
@@ -189,3 +216,42 @@ control. On narrow screens, search comes first, then the working lot, then the
 printing picker. Unpriced results show one unavailable value and priced-unit
 coverage; costs/bid detail remains available. A successful comparison clears the
 restored-draft notice while retaining user inputs and wanted-target distinctions.
+
+
+## Known installed interface limitations
+
+The October 14 genuine walkthrough found card thumbnails overlapping the expanded
+Settings & tools menu at 320px with doubled text. No later installed observation
+closes that discrepancy. Later source presentation checks cover compact headers,
+long labels and narrow layouts but do not establish that this installed menu issue
+is repaired. Frozen-goal and current-progress labels are distinct; whether their
+repeated headings are clear remains an owner-feedback question, not an established
+new product requirement.
+
+The installed speed repair's recorded data-ready samples were 1,139ms for filtered
+My Cards and 552ms for Pokédex, after replacing the 6,150,820-byte full bootstrap
+with a 22,027-byte context. These are individual local samples, not latency
+promises. The owner called the earlier app painfully slow; no post-repair
+acceptance is recorded. See [recorded delivery](operations.md#recorded-local-delivery)
+and [verification boundaries](CI.md#recorded-verification).
+
+## Owner review of the delivered app
+
+Use the actual existing installation at its ordinary URL and sign in normally.
+Review My Cards, Card Library, Pokédex → species → Your Cards, a card and its
+optional copy details. Check that unknown quantities and missing images remain
+honest; test Back, filters and scroll with ordinary collection state. Open and
+close editing without confirming an inventory change unless a genuine card and
+change have been selected by the owner.
+
+Check Settings & tools at narrow width and enlarged text after its repair. Enter
+Shopping from a species/card, inspect its scope and return without automatic
+quantities, provider requests or collection changes. Use actual available data;
+missing private photos, archived examples or prices remain explicit gaps rather
+than simulated customer cases.
+
+The owner records whether recognition, ownership clarity, click paths, optional
+detail, navigation and perceived responsiveness are acceptable on the delivered
+version. Record a specific rejected journey if further repair is needed. Acceptance
+of this local collection experience does not imply full price coverage, real-card
+recognition accuracy, provider entitlement or public release readiness.
