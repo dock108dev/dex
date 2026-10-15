@@ -562,9 +562,7 @@ def species(actor, dex, raw=None):
 def resolve_destination(actor, key, group_id=None):
     snapshot = project(actor)
     if key.startswith(NAMESPACE) and key in snapshot["aliases"]:
-        raise collection.ReviewConflict(
-            "Card alias conflicts with the canonical group namespace; use the exact printing identifier"
-        )
+        raise collection.ReviewConflict("alias_namespace")
     if key.startswith(NAMESPACE):
         group = _group(snapshot, key)
         if group_id is not None and group_id != key:
@@ -575,11 +573,11 @@ def resolve_destination(actor, key, group_id=None):
         if not candidates:
             raise Http404("Card identity unavailable")
         if len(candidates) != 1:
-            raise collection.ReviewConflict("Card alias is ambiguous; use the exact printing identifier")
+            raise collection.ReviewConflict("alias_ambiguous")
         child = candidates[0]
         resolved_group = snapshot["printing_to_group"].get(child)
         if not resolved_group:
-            raise collection.ReviewConflict("Card identity is unresolved; review catalog evidence")
+            raise collection.ReviewConflict("identity_unresolved")
         _group(snapshot, resolved_group)
         if group_id is not None and group_id != resolved_group:
             raise Http404("Selected child does not belong to this group")
@@ -601,7 +599,7 @@ def mutation_request(actor, group_id, kind, request, selected_child=None):
     resolved = detail(actor, group_id, selected_child)
     group = resolved["group"]
     if group["identity_status"] != "resolved" or not group["assertion_id"]:
-        raise collection.ReviewConflict("Card identity is unresolved; review evidence before editing")
+        raise collection.ReviewConflict("identity_edit_unresolved")
     adapted = dict(request)
     literal = dict(
         set_name=group["set_name"],

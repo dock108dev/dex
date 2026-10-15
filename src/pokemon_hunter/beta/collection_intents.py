@@ -37,7 +37,7 @@ def resolve_identity(actor, request):
         raise ValueError("Card identity is unresolved; choose an authoritative literal card")
     row = matched[0]
     if row["identity_status"] == "conflict":
-        raise collection.ReviewConflict("Card identity conflicts with catalog evidence; review its identity")
+        raise collection.ReviewConflict("identity_conflict")
     entries = [p for p in collection.catalog(actor, include_archived=True) if p["id"] in row["printing_ids"]]
     languages = {p["language"] for p in entries}
     if language is not None and (not entries or languages != {language}):
@@ -83,11 +83,9 @@ def plan(actor, kind, request, operation_id):
                     "Total quantity must be a positive integer or null; use Remove card from collection for zero"
                 )
             if total is not None and not current["present"]:
-                raise collection.ReviewConflict("Mark this card owned before attesting its complete total")
+                raise collection.ReviewConflict("ownership_required")
             if total is not None and total < len(current["current_copy_ids"]):
-                raise collection.ReviewConflict(
-                    "Total quantity conflicts with supported current copy records; review the records or attest a complete compatible total"
-                )
+                raise collection.ReviewConflict("quantity_conflict")
             intent["established_total_quantity"] = total
         elif kind == "remove_card":
             ids = set(identity["candidate_printing_ids"])

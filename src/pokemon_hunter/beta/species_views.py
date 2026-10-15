@@ -5,12 +5,21 @@ from urllib.parse import urlencode
 from django.conf import settings
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_GET
 
 from . import collection, collection_views, public_catalog, species_projection
 from .card_group_views import private, query, return_context
 from .collection_views import endpoint
 from .views import actor
+
+
+def _redirect(target):
+    if not target.startswith("/pokedex/") or not url_has_allowed_host_and_scheme(target, allowed_hosts=set()):
+        raise ValueError("Choose a local Pokémon destination")
+    response = HttpResponseRedirect(target)
+    response["Cache-Control"] = "no-store"
+    return response
 
 
 @endpoint
@@ -65,9 +74,7 @@ def home(request, dex=None):
             context = {"return": "/pokedex/" + ("?" + urlencode(raw) if raw else "")}
             if raw.get("goal"):
                 context["goal"] = raw["goal"]
-            response = HttpResponseRedirect(f"/pokedex/{number}/?" + urlencode(context))
-            response["Cache-Control"] = "no-store"
-            return response
+            return _redirect(f"/pokedex/{number}/?" + urlencode(context))
         if dex is None:
             species_projection.list_state(raw)
         else:
@@ -77,13 +84,9 @@ def home(request, dex=None):
             normalized = {**raw, "region": region}
             if not region:
                 normalized.pop("region")
-            response = HttpResponseRedirect("/pokedex/" + ("?" + urlencode(normalized) if normalized else ""))
-            response["Cache-Control"] = "no-store"
-            return response
+            return _redirect("/pokedex/" + ("?" + urlencode(normalized) if normalized else ""))
         if dex is not None and request.path != f"/pokedex/{dex}/":
-            response = HttpResponseRedirect(f"/pokedex/{dex}/" + ("?" + urlencode(raw) if raw else ""))
-            response["Cache-Control"] = "no-store"
-            return response
+            return _redirect(f"/pokedex/{dex}/" + ("?" + urlencode(raw) if raw else ""))
         if settings.B2_ENABLED and request.user.is_authenticated:
             who = actor(request)
             if raw.get("goal"):

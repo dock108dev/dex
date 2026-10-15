@@ -23,7 +23,11 @@ def endpoint(fn):
         try:
             return fn(request, *args, **kwargs)
         except service.ReviewConflict as e:
-            return JsonResponse({"error": str(e)}, status=409)
+            failure("request_review_conflict", e)
+            return JsonResponse(
+                {"error": service.REVIEW_CONFLICT_MESSAGES.get(e.code, service.REVIEW_CONFLICT_DEFAULT)},
+                status=409,
+            )
         except service.Conflict as e:
             failure("request_conflict", e)
             return JsonResponse(

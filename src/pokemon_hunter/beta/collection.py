@@ -36,8 +36,24 @@ class Conflict(ValueError):
     pass
 
 
+REVIEW_CONFLICT_DEFAULT = "Review the card identity and current records before trying again."
+REVIEW_CONFLICT_MESSAGES = {
+    "alias_namespace": "Card alias conflicts with the canonical group namespace; use the exact printing identifier",
+    "alias_ambiguous": "Card alias is ambiguous; use the exact printing identifier",
+    "identity_unresolved": "Card identity is unresolved; review catalog evidence",
+    "identity_edit_unresolved": "Card identity is unresolved; review evidence before editing",
+    "identity_conflict": "Card identity conflicts with catalog evidence; review its identity",
+    "ownership_required": "Mark this card owned before attesting its complete total",
+    "quantity_conflict": "Total quantity conflicts with supported current copy records; review the records or attest a complete compatible total",
+}
+
+
 class ReviewConflict(Conflict):
-    """A fixed, non-payload explanation safe for the ordinary review form."""
+    """Select fixed public guidance by code; never expose arbitrary exception text."""
+
+    def __init__(self, code):
+        self.code = code
+        super().__init__(REVIEW_CONFLICT_MESSAGES.get(code, REVIEW_CONFLICT_DEFAULT))
 
 
 def initialize(db):
