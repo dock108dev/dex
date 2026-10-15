@@ -17,8 +17,8 @@
 .lot-workspace { display: grid; grid-template-columns: minmax(260px, 300px) minmax(0, 1fr); align-items: start; gap: 24px; }
 .lot-search { padding: 18px; border: 1px solid var(--border); border-radius: 14px; background: #fff; }
 .search-top>p:first-of-type { margin: 6px 0 18px; font-size: 14px; }
-.catalog-tabs { display: flex; gap: 8px; margin: 12px 0; }
-.catalog-tabs button { flex: 1; padding: 8px 10px; font-size: 14px; white-space: nowrap; }
+.catalog-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.catalog-tabs button { flex: 1; min-width: 0; max-width: 100%; padding: 8px 10px; font-size: 14px; white-space: normal; overflow-wrap: anywhere; }
 .catalog-tabs { gap: 4px; padding: 4px; background: #eeeff2; border-radius: 10px; }
 .catalog-tabs button { border-color: transparent; background: transparent; }
 .catalog-tabs [aria-pressed=true] { color: #8f1d2c; background: #fff; border-color: transparent; box-shadow: 0 1px 4px #20212612; }

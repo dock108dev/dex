@@ -23,6 +23,10 @@ from verify_cx04_package import REQUIRED as PREVIOUS_REQUIRED
 PROJECT = Path(__file__).resolve().parents[1]
 REQUIRED = (
     *PREVIOUS_REQUIRED,
+    "pokemon_hunter/beta/templates/beta/task_home.html",
+    "pokemon_hunter/beta/templates/beta/packs_index.html",
+    "pokemon_hunter/beta/packs_views.py",
+    "pokemon_hunter/beta/templates/beta/task_navigation.html",
     "pokemon_hunter/beta/navigation.py",
     "pokemon_hunter/beta/shopping_context.py",
     "pokemon_hunter/beta/static/navigation.js",
@@ -39,6 +43,7 @@ REQUIRED = (
     "pokemon_hunter/beta/templates/beta/public_species.html",
     "pokemon_hunter/beta/templates/beta/species_error.html",
     "pokemon_hunter/beta/species_projection.py",
+    "pokemon_hunter/beta/species_scope.py",
     "pokemon_hunter/beta/species_views.py",
     "pokemon_hunter/beta/templates/beta/header.html",
     "pokemon_hunter/beta/templates/beta/base.html",
@@ -108,7 +113,7 @@ options=client.get('/api/card-group-filters/?scope=owned').json()
 assert options['account_id']==owned['account_id']
 assert any(row['name']=='Retained archive' for row in options['sets'])
 assert len(image_mappings._reviewed()['species'])==251
-assert len(image_mappings._reviewed()['cards'])==1086
+assert len(image_mappings._reviewed()['cards'])==21516
 path=group['url']
 plain=client.get('/api/card-groups/'+group['id']+'/').json()
 assert plain['selected_child'] is None and plain['selected_child_image'] is None

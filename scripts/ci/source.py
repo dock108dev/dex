@@ -1,4 +1,4 @@
-"""Check shipped JavaScript and local links in the maintained reader documentation."""
+"""Check shipped JavaScript and portable links; retained reports are optional local evidence."""
 
 import re
 import subprocess
@@ -28,14 +28,8 @@ DOCS = (
 )
 
 
-def check():
-    scripts = sorted((ROOT / "src/pokemon_hunter/beta/static").glob("*.js")) + sorted(
-        (ROOT / "web").glob("*.js")
-    )
-    if not scripts:
-        raise ValueError("No supported JavaScript collected")
-    for script in scripts:
-        subprocess.run(["node", "--check", str(script)], check=True, timeout=30)
+def check_document_links():
+    """Reports are generated, ignored evidence, never prerequisites for a checkout."""
     broken = []
     for relative in DOCS:
         document = ROOT / relative
@@ -47,10 +41,24 @@ def check():
             if parsed.path.startswith("/"):
                 broken.append(f"{relative}: nonportable absolute path {target}")
                 continue
-            if not (document.parent / unquote(parsed.path)).exists():
+            destination = (document.parent / unquote(parsed.path)).resolve()
+            if destination.is_relative_to(ROOT / "reports"):
+                continue
+            if not destination.exists():
                 broken.append(f"{relative}: {target}")
     if broken:
         raise ValueError("Broken local documentation references:\n" + "\n".join(broken))
+
+
+def check():
+    scripts = sorted((ROOT / "src/pokemon_hunter/beta/static").glob("*.js")) + sorted(
+        (ROOT / "web").glob("*.js")
+    )
+    if not scripts:
+        raise ValueError("No supported JavaScript collected")
+    for script in scripts:
+        subprocess.run(["node", "--check", str(script)], check=True, timeout=30)
+    check_document_links()
     print(f"Checked {len(scripts)} JavaScript files and {len(DOCS)} maintained documents")
 
 

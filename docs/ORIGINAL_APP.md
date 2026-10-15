@@ -12,7 +12,8 @@ uv run --no-sync pokemon-hunter app --port 8766
 
 Visit [Vintage 251](http://127.0.0.1:8766). Everything saves locally. Sample hunts need no credentials. Stop the server with Ctrl-C.
 
-Existing local collections are preserved. Fresh checkouts start empty; examples never contain personal inventory. Local authenticated accounts are implemented in the app on 8011; hosted operation is deferred.
+Existing local collections are preserved. Fresh checkouts start empty; examples never contain personal inventory. The app on port 8011 provides authenticated accounts. An optional PostgreSQL/HTTPS
+profile is documented in [operations](operations.md#optional-postgresqlhttps-profile).
 
 - Browse and filter all 251 species; see every eligible vintage printing.
 - Track owned/not owned and first edition in ten sets. Dark and trainer-owned cards never fill a species slot.

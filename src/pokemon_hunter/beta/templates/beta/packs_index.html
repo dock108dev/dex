@@ -1,0 +1,8 @@
+{% extends 'beta/base.html' %}
+{% block title %}Dex · Packs to open{% endblock %}
+{% block content %}
+<h1>Packs to open</h1>
+<p>Choose a saved goal to review indexed packs and their possible coverage. Opening research does not refresh offers.</p>
+{% if goals %}<div class="task-grid">{% for goal in goals %}<section class="panel"><h2>{{ goal.name }}</h2><p>Saved goal · retained membership and policy</p><a href="/packs/?goal={{ goal.id|urlencode }}">Review packs for this goal</a></section>{% endfor %}</div>
+{% else %}<section class="panel empty"><h2>No saved goals</h2><p>Create a goal to research its missing cards, or use an independent pack lookup.</p><div class="actions"><a href="/goals/">Open Goals</a><a href="/lookup/">Pack lookup</a></div></section>{% endif %}
+{% endblock %}

@@ -71,7 +71,7 @@ assert group['reference_image']['image_url'].endswith('/base/base4/44/low.webp')
 from pokemon_hunter.beta import image_mappings
 assert image_mappings.species_artwork(251)['image_url'].endswith('/251.png')
 assert len(image_mappings._reviewed()['species'])==251
-assert len(image_mappings._reviewed()['cards'])==1086
+assert len(image_mappings._reviewed()['cards'])==21516
 plain=client.get('/api/card-groups/'+group['id']+'/').json()
 assert plain['selected_child'] is None and plain['selected_child_image'] is None
 chosen=client.get('/api/card-groups/'+group['id']+'/?child='+fixture['selected_printing']).json()

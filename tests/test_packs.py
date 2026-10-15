@@ -160,3 +160,16 @@ def test_verified_mixed_and_guaranteed_fixtures_do_not_allocate_cost(e1):
         assert any(o["per_pack"] == "USD 4.67" for offer in pr["offers"] for o in offer["observations"])
         records["offers"].clear()
         assert not packs.project(e1["actor"], g["id"])["expansions"][0]["products"][0]["offers"]
+
+
+def test_pack_front_door_chooses_account_goal_without_projection_or_writes(e1):
+    g = ready(e1)
+    before = inv.export_data(e1["actor"])
+    with patch("pokemon_hunter.beta.packs_views.project", side_effect=AssertionError("No implicit goal")):
+        page = e1["a"].get("/packs/")
+        assert page.status_code == 200
+        assert ("/packs/?goal=" + g["id"]).encode() in page.content
+        member = e1["b"].get("/packs/")
+        assert member.status_code == 200
+        assert g["id"].encode() not in member.content
+    assert inv.export_data(e1["actor"]) == before

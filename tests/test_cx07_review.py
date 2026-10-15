@@ -485,20 +485,11 @@ def test_review_primary_section_has_one_active_header_link(cx):
         links = HeaderLinks(response.content).links
         active = [link for link in links if link.get("aria-current") == "page"]
         assert len(active) == 1 and active[0]["text"].strip() == expected
-        assert next(link for link in links if "data-add-card" in link)["href"] == "/card-library/"
+        assert next(link for link in links if "data-add-card" in link)["href"] == "/add-card/"
     owner = {link["href"] for link in HeaderLinks(cx["a"].get("/cards/").content).links}
     member = {link["href"] for link in HeaderLinks(cx["b"].get("/cards/").content).links}
-    assert {
-        "/collection/",
-        "/goals/",
-        "/settings/",
-        "/lookup/",
-        "/packs/saved/",
-        "/scan/",
-        "/catalog-review/",
-        "/catalog-pipeline/",
-        "/product-review/",
-    } <= owner
+    assert {"/collection-tools/", "/settings/", "/administration/", "/add-card/"} <= owner
+    assert "/administration/" not in member
     assert "/catalog-review/" not in member
 
 
@@ -567,10 +558,52 @@ def test_review_b2_only_header_hides_disabled_specialist_routes(b2):
             "/catalog-review/",
             "/catalog-pipeline/",
         }
-        assert "/product-review/" in links
+        assert "/administration/" in links
+        assert b'href="/product-review/"' in b2["a"].get("/administration/").content
         for path in links - {"/", "#main"}:
             assert any(pattern.resolve(path.lstrip("/")) is not None for pattern in urls.urlpatterns), path
     finally:
         settings.B3_ENABLED, settings.B4_ENABLED = old
         importlib.reload(urls)
         clear_url_caches()
+
+
+def test_ux02_task_destinations_preserve_permissions_and_private_state(cx):
+    before = dump(cx)
+    for path in ("/collection-tools/", "/add-card/", "/administration/"):
+        owner = cx["a"].get(path)
+        assert owner.status_code == 200
+        assert owner["Cache-Control"] == "private, no-store"
+        assert cx["client"]().get(path).status_code == 302
+    assert cx["b"].get("/administration/").status_code == 403
+    assert cx["b"].get("/collection-tools/").status_code == 200
+    assert cx["b"].get("/add-card/").status_code == 200
+    assert b'href="/scan/"' in cx["a"].get("/add-card/").content
+    assert b'href="/catalog-pipeline/"' in cx["a"].get("/administration/").content
+    assert dump(cx) == before
+
+
+def test_ux02_legacy_routes_show_their_task_group_and_single_primary(cx):
+    before = dump(cx)
+    for path, primary, label in (
+        ("/hunt/", "Shopping", "Shopping tasks"),
+        ("/finds/", "Shopping", "Shopping tasks"),
+        ("/missing/", "Shopping", "Shopping tasks"),
+        ("/packs/", "Shopping", "Shopping tasks"),
+        ("/lookup/", "Shopping", "Shopping tasks"),
+        ("/packs/saved/", "Shopping", "Shopping tasks"),
+        ("/goals/", "My Cards", "Collection tasks"),
+        ("/collection/", "My Cards", "Collection tasks"),
+    ):
+        if path in {"/hunt/", "/missing/", "/finds/"} and not settings.PARITY_ENABLED:
+            continue
+        response = cx["a"].get(path)
+        assert response.status_code == 200, path
+        active = [link for link in HeaderLinks(response.content).links if link.get("aria-current") == "page"]
+        assert [link["text"].strip() for link in active] == [primary], path
+        assert f'aria-label="{label}"'.encode() in response.content
+    group = find(cx)
+    detail = cx["a"].get(group["url"], {"return": "/card-library/?q=Ivy&page=2"})
+    active = [link for link in HeaderLinks(detail.content).links if link.get("aria-current") == "page"]
+    assert [link["text"].strip() for link in active] == ["Card Library"]
+    assert dump(cx) == before

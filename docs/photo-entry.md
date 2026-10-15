@@ -5,6 +5,10 @@ and requires confirmation before adding a physical copy. Manual matching and
 provisional entries work when recognition fails or catalog coverage is missing.
 The model does not establish authenticity, condition, grade or value.
 
+Photo entry handles individual cards. Dense group-photo detection and multi-photo
+batch onboarding are not implemented. Recognition accuracy on real cards is
+unmeasured; always review the proposed identity before confirming.
+
 ## Provider configuration
 
 The private root's `scan-config.json` selects a provider:
@@ -74,7 +78,7 @@ Real-card accuracy remains unmeasured. Synthetic fixtures and transport controls
 are not accuracy evidence. The optional `scripts/evaluate_codex_photos.py`
 requires a labeled, consented image set; inspect its help and limits before use.
 It sends real images to the CLI provider and is separate from offline tests.
-A broader recognition benchmark and deployment qualification remain future work.
+A labeled real-photo evaluation is needed before making accuracy claims.
 
 ## Copy photo references
 

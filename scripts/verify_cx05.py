@@ -10,7 +10,6 @@ import argparse
 import hashlib
 import json
 import os
-import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -19,6 +18,7 @@ import traceback
 from pathlib import Path
 from urllib.request import urlopen
 
+from qualification_state import persisted_snapshot
 from verify_cx02 import free_port
 
 PROJECT = Path(__file__).resolve().parents[1]
@@ -91,34 +91,6 @@ def prepare(root, source, output):
     )
     output.write_text(json.dumps(fixture, indent=2) + "\n")
     connection.close()
-
-
-def persisted_snapshot(root):
-    """Complete SQLite content plus independent protected file hashes; no writes."""
-    databases = {}
-    for path in sorted(root.rglob("*.db")):
-        with sqlite3.connect(path.as_uri() + "?mode=ro", uri=True) as db:
-            schema = list(db.execute("SELECT type,name,tbl_name,sql FROM sqlite_master ORDER BY type,name"))
-            tables = {}
-            for (name,) in db.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"):
-                quoted = '"' + name.replace('"', '""') + '"'
-                rows = list(db.execute("SELECT * FROM " + quoted))
-                normalized = [
-                    [dict(blob_hex=value.hex()) if isinstance(value, bytes) else value for value in row]
-                    for row in rows
-                ]
-                tables[name] = hashlib.sha256(
-                    json.dumps(sorted(normalized, key=repr), sort_keys=True).encode()
-                ).hexdigest()
-            databases[str(path.relative_to(root))] = dict(
-                schema_sha256=hashlib.sha256(json.dumps(schema).encode()).hexdigest(), tables=tables
-            )
-    files = {
-        str(path.relative_to(root)): hashlib.sha256(path.read_bytes()).hexdigest()
-        for path in sorted(root.rglob("*"))
-        if path.is_file() and path.suffix != ".db" and not path.name.endswith(("-wal", "-shm", "-journal"))
-    }
-    return dict(databases=databases, protected_files=files)
 
 
 def exercise(url, root, output, fixture, report):
@@ -252,7 +224,7 @@ def exercise(url, root, output, fixture, report):
             passed(
                 "owned-only compact one-link tiles; unknown total omitted and established total once; no nested controls"
             )
-            for width in (1280, 320):
+            for width in (1280, 390, 320):
                 page.set_viewport_size(dict(width=width, height=900))
                 load("/cards/")
                 page.screenshot(path=str(output / f"engineering-list-{width}.png"), full_page=True)
@@ -262,14 +234,27 @@ def exercise(url, root, output, fixture, report):
                 assert page.locator("#content details[open]").count() == 0
                 expect(page.locator("#content")).to_contain_text("Quantity not recorded.")
                 assert get("/api/card-groups/" + group["id"] + "/")["selected_child"] is None
+                expect(page.locator("#card-collection-heading")).to_be_visible()
+                assert page.locator("#group-history").count() == int(
+                    bool(get("/api/card-groups/" + group["id"] + "/")["history"])
+                )
+                assert page.locator("#group-copies [data-group-copy]").count() == 0
+                if width == 1280:
+                    for key in (
+                        "#canonical-card h1",
+                        ".card-ownership",
+                        "#edit-group-card",
+                        "#card-collection-heading",
+                    ):
+                        box = page.locator(key).bounding_box()
+                        assert box["y"] + box["height"] < 900, key
                 page.screenshot(path=str(output / f"engineering-detail-default-{width}.png"), full_page=True)
                 page.locator("#group-variants > summary").click()
-                page.locator("#group-copies > summary").click()
-                page.locator("#group-details > summary").click()
+                page.locator("#group-records > summary").click()
                 page.screenshot(path=str(output / f"engineering-detail-expanded-{width}.png"), full_page=True)
                 assert page.evaluate("document.documentElement.scrollWidth<=innerWidth"), width
             passed(
-                "focused normal detail has closed labeled disclosures; wide/320px default and expanded screenshots retained"
+                "focused normal detail has visible collection summary and closed optional disclosures; wide/320px default and expanded screenshots retained"
             )
             # Explicit and archived selection never substitutes the group image.
             for child in (fixture["selected_printing"], fixture["archived_printing"]):
@@ -298,12 +283,20 @@ def exercise(url, root, output, fixture, report):
             link = page.locator(".owned-card-tile").first
             destination = link.get_attribute("href")
             assert "return=" in destination and "child=" not in destination
+            link.scroll_into_view_if_needed()
+            scroll_before = page.evaluate("Math.round(scrollY)")
+            expected_return = (
+                url + "/cards/?q=Ivysaur&sort=name&page_size=1&page=2&scroll=" + str(scroll_before)
+            )
             link.click()
+            expect(page.locator("#card-back")).to_have_attribute("href", expected_return.removeprefix(url))
             expect(page.locator("#content h1")).to_have_text("Ivysaur")
             page.reload()
             expect(page.locator("#content h1")).to_have_text("Ivysaur")
             page.locator("#card-back").click()
-            expect(page).to_have_url(url + "/cards/?q=Ivysaur&sort=name&page_size=1&page=2&scroll=0")
+            expect(page).to_have_url(expected_return)
+            expect(page.locator(".owned-card-tile").first).to_be_focused()
+            assert abs(page.evaluate("scrollY") - scroll_before) <= 1
             page.locator(".owned-card-tile").first.click()
             page.go_back()
             expect(page.locator("#cards-query")).to_have_value("Ivysaur")
@@ -445,7 +438,7 @@ def exercise(url, root, output, fixture, report):
             )
             # Add an explicitly chosen itemised child and preserve closed advanced fields.
             load(path + "?child=" + fixture["selected_printing"])
-            page.locator("#group-variants > summary").click()
+            expect(page.locator("#group-variants")).to_have_attribute("open", "")
             page.locator("#group-add-copy").click()
             assert page.locator(".copy-purchase[open],.copy-grading[open]").count() == 0
             page.locator(".copy-purchase > summary").click()
@@ -462,20 +455,25 @@ def exercise(url, root, output, fixture, report):
             result = get("/api/card-groups/" + group["id"] + "/")
             copy = result["copies"][0]
             assert copy["printing_id"] == fixture["selected_printing"]
-            page.locator("#group-copies > summary").click()
             for width in (1280, 320):
                 page.set_viewport_size(dict(width=width, height=900))
                 page.screenshot(path=str(output / f"engineering-active-copy-{width}.png"), full_page=True)
+            page.locator(".copy-actions > summary").first.click()
             report["copy_text_scaling"] = scale_text(
                 ["[data-group-copy]", "[data-group-edition]", "[data-group-remove]"]
             )
             assert page.evaluate("document.documentElement.scrollWidth<=innerWidth")
-            assert page.locator(".card-copy-heading .actions button").evaluate_all(
+            assert page.locator(".card-copy-row button").evaluate_all(
                 "(buttons)=>buttons.every(button=>button.scrollWidth<=button.clientWidth)"
             ), "Copy action text escapes its control"
             page.screenshot(path=str(output / "engineering-active-copy-320-text200.png"), full_page=True)
             restore_text()
-            page.locator("[data-group-copy]").first.click()
+            page.locator("[data-group-copy]").first.focus()
+            page.keyboard.press("Enter")
+            expect(page.locator("#editor")).to_be_visible()
+            page.keyboard.press("Escape")
+            expect(page.locator("[data-group-copy]").first).to_be_focused()
+            page.keyboard.press("Enter")
             assert page.locator(".copy-purchase[open],.copy-grading[open]").count() == 0
             for width in (1280, 320):
                 page.set_viewport_size(dict(width=width, height=900))
@@ -520,7 +518,7 @@ def exercise(url, root, output, fixture, report):
             page.locator("#group-prices > summary").click()
             expect(page.locator("#group-prices-body")).not_to_contain_text("Loading retained prices")
             expect(page.locator("#group-prices-body")).to_contain_text("No matching retained guide evidence")
-            page.locator("#group-copies > summary").click()
+            page.locator(".copy-actions > summary").first.click()
             page.locator("[data-group-edition]").first.click()
             expect(page.locator("#copy-first-edition")).to_be_disabled()
             expect(page.locator("#copy-first-edition")).not_to_be_checked()
@@ -538,7 +536,7 @@ def exercise(url, root, output, fixture, report):
                 "optional retained price/source disclosure uses existing evidence only; focused copy edition preview/undo remains reachable"
             )
             # Confirmation succeeded but response lost: do not submit another addition.
-            page.locator("#group-variants > summary").click()
+            expect(page.locator("#group-variants")).to_have_attribute("open", "")
             page.locator("#group-add-copy").click()
             page.locator("#copy-policy").select_option("allow")
             page.get_by_role("button", name="Preview addition", exact=True).click()
@@ -561,7 +559,7 @@ def exercise(url, root, output, fixture, report):
             )
             # Remove copy differs from remove-card; history and later genuine addition preserved.
             load(path)
-            page.locator("#group-copies > summary").click()
+            page.locator(".copy-actions > summary").first.click()
             page.locator("[data-group-remove]").first.click()
             confirm()
             close_review()
@@ -603,7 +601,20 @@ def exercise(url, root, output, fixture, report):
             assert scaling["after"] == [size * 2 for size in scaling["before"]], scaling
             report["text_scaling"] = scaling
             header_separated()
+            page.locator(".app-tools > summary").focus()
+            page.keyboard.press("Enter")
+            expect(page.locator(".tools-menu")).to_be_visible()
             assert page.evaluate("document.documentElement.scrollWidth<=innerWidth")
+            assert page.locator(".tools-menu a").evaluate_all(
+                "els=>els.every(el=>el.scrollWidth<=el.clientWidth)"
+            )
+            menu = page.locator(".tools-menu").bounding_box()
+            card = page.locator("#canonical-card").bounding_box()
+            assert menu["y"] + menu["height"] <= card["y"], "Narrow menu must precede card without overlap"
+            page.screenshot(path=str(output / "engineering-menu-320-text200.png"), full_page=True)
+            page.locator(".app-tools > summary").focus()
+            page.keyboard.press("Enter")
+            expect(page.locator(".app-tools > summary")).to_be_focused()
             page.screenshot(path=str(output / "engineering-detail-320-text200.png"), full_page=True)
             passed("200% text at 320px retains readable controls without horizontal page overflow")
             load("/cards/")

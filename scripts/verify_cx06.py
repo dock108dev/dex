@@ -160,7 +160,8 @@ def exercise(url, root, output, fixture, report, preserve_cards=True):
                 expect(page.locator("#dex-lookup-selection")).to_be_enabled()
                 capture("list-selection-" + str(width))
                 for summary in page.locator("#content details > summary").all():
-                    summary.click()
+                    if not summary.evaluate("e=>e.parentElement.open"):
+                        summary.click()
                 page.evaluate("scrollTo(0,0)")
                 capture("list-expanded-" + str(width))
                 page.locator("#content details").last.scroll_into_view_if_needed()
@@ -171,7 +172,8 @@ def exercise(url, root, output, fixture, report, preserve_cards=True):
                 load("/pokedex/")
                 page.get_by_role("button", name="Select", exact=True).click()
                 for summary in page.locator("#content details > summary").all():
-                    summary.click()
+                    if not summary.evaluate("e=>e.parentElement.open"):
+                        summary.click()
                 page.evaluate("scrollTo(0,0)")
                 double_text()
                 capture("list-expanded-text200-" + str(width))
@@ -196,13 +198,15 @@ def exercise(url, root, output, fixture, report, preserve_cards=True):
                 expect(page.locator(".owned-card-tile")).to_have_count(2)
                 capture("species-" + str(width))
                 for summary in page.locator("#content details > summary").all():
-                    summary.click()
+                    if not summary.evaluate("e=>e.parentElement.open"):
+                        summary.click()
                 capture("species-expanded-" + str(width))
                 load("/pokedex/2/")
                 double_text()
                 capture("species-text200-" + str(width))
                 for summary in page.locator("#content details > summary").all():
-                    summary.click()
+                    if not summary.evaluate("e=>e.parentElement.open"):
+                        summary.click()
                 page.evaluate("scrollTo(0,0)")
                 capture("species-expanded-text200-" + str(width))
                 page.locator(".owned-card-tile").first.click()

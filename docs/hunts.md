@@ -4,6 +4,15 @@ The authenticated localhost app supports explicit eBay searches with the same
 Browse client as the original app. Search results are private account-scoped
 snapshots. The app never buys or bids, and a listing never adds an owned card.
 
+## Navigation
+
+Open Shopping for the existing lot calculator, then use its task bar for eBay
+searches, Find missing cards, saved eBay finds, Packs to open, independent pack
+lookup and saved pack research. The same bar appears on direct legacy destinations.
+Packs to open asks for an existing account-owned goal when no goal was supplied.
+Opening these pages does not search eBay, refresh prices, start recognition or
+change inventory.
+
 ## Search and save
 
 Open **eBay** at `/hunt/`, or **Missing singles** at `/missing/`. Select
@@ -64,14 +73,54 @@ it is not a settled purchase price. Tax, fees and resale proceeds are not modele
 
 ## Local provider settings
 
-Use `.env.example` for `EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET` and optional
-`EBAY_DELIVERY_POSTAL_CODE`. Process environment takes precedence over the checkout's
-`.env`. App ID is the Client ID; Cert ID is the Client Secret. Select the matching
+Use [.env.example](../.env.example) for `EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET` and optional
+`EBAY_DELIVERY_POSTAL_CODE`. Nonempty server-process values take precedence over
+`.env` at `ebay_hunts.configuration_root()`, which currently returns Django
+`PROJECT`, not the private data root or working directory. In a source runtime
+this is the checkout; an installed wheel resolves a directory above its package
+(for example, the runtime's `lib/python3.12`). `config/settings.yaml` is selected
+from that same directory.
+App ID is the Client ID; Cert ID is the Client Secret. Select the matching
 `environment` in `config/settings.yaml`: the committed example uses `production`.
 Sandbox credentials and Production credentials are separate. Marketplace,
 destination and bounded search limits share the original watcher's settings model.
 The authenticated app reads only eBay credentials from `.env`; staging live hunts
 are disabled. Missing credentials disable live search; sample hunts remain available.
+
+Use the existing application's matching credential pair privately. Do not put secrets
+in command arguments, logs or chat. Refresh authenticated status to check the running
+process; another shell's configuration does not prove what the server inherited.
+Changing environment values requires a normal server restart. A configured status
+establishes credential presence, not OAuth success, access rights or remaining quota.
+
+## Discovery integration constraints
+
+The hunt reference path reads legacy parity evidence and optional
+`PROJECT/config/market_values.json`. It does not consume the private Shopping
+snapshots described below. Source identity, condition/edition compatibility, dates
+and comparison/storage rights need independent validation before connecting them.
+Removable prices and derived discounts cannot enter permanent history without
+surviving save rights. Unknown language, edition, finish and condition stay
+conditional or unpriced. Literal grader and grade are independent of generic guide
+scenarios.
+
+A hunt batch can dispatch up to eight queries across two buying options and two
+pages each, with transport retries and 401 reauthentication. Successful batches
+persist raw listings automatically. There is no durable consumed-attempt ledger
+for failed hunts or independent hunt Stop. Search is a multi-operation workflow;
+it is unsuitable as a one-request access probe. Unknown shipping is excluded from
+hunts rather than shown as an incomplete comparison.
+
+Applicable provider access, request allowance and storage/derivative rights must
+be established for the selected application. Saved history does not confer those
+rights. Consult current provider terms before live use; local credentials and
+mocked responses do not establish authorization. Reopening a save does not refresh
+its contents or renew its age.
+
+The current eBay HTTPS validator checks link safety; it does not parse item IDs
+or load pasted listings. The client supports REST-item details, but no legacy-ID
+conversion or pasted-listing route is exposed. Automated sold comparables and
+assisted listing/lot entry are unavailable.
 
 ## Production access
 
@@ -181,68 +230,15 @@ checks remain active. Captured saves remain immutable, and explicit current
 reevaluation creates a separate child. See [navigation and Shopping adapters](SSOT.md#navigation-and-shopping-adapters) for service ownership.
 
 
-## Recorded raw-price integration
+## Limits
 
-The October 10 integration record reports 901 conditional ungraded references for
-909 Original 151 priority printings across eleven vintage sets, including Dark,
-Light and Shining species independently of completion-eligibility flags. The full
-1,314-printing selector was retained; this is neither all-era coverage nor a new
-catalog restriction. The provider's October 9 publisher build supplied no grader-
-specific 8/9/10 fields. Provider valuation date stayed null and was disclosed; the
-admitted publisher-build date governed the existing 30-day rule.
+Catalog coverage, reference-price coverage and provider availability are independent.
+The calculator's vintage selector does not imply all-era pricing. Graded values need
+exact printing, literal grader/score and supported dates; missing grades are not
+interpolated. Conflicting product/subtype identities remain unpriced. Publisher-build
+dates never become provider valuation dates.
 
-Exact product/subtype joins preceded admission. Physical edition/condition stayed
-conditional where unknown, and conflicting variants remained unavailable. The
-release permitted current display/arithmetic and managed private storage, without
-permanent comparison-save rights or price backups/exports; saved Shopping storage
-remained disabled. The genuine Chansey/Scyther two-card comparison was observed
-without changing collection/goals. Ninety-one affected tests and a subsequent
-46-case snapshot run passed at that integration, not at every later revision.
-
-These are dated observations, not a fresh read of today's installed prices. The
-original local closeout is `docs/shopping/CS-OCT2026-DATA.md`; private source
-contracts, consumed request journals and runtime receipts remain local. Reference
-expiry, source withdrawal and admission still decide availability on access.
-
-## Backlog
-
-This work is outside the local collection-clarity completion goal. Resume pricing
-after owner acceptance or when explicitly selected; its data/integration work is
-unfinished, rather than part of a completed collector or UI pass.
-
-- **Graded coverage — research/data integration:** find genuine permitted free
-  Grade 8/9/10 observations with exact printing, literal grader/score/currency and
-  real valuation/sale dates. No interpolation, capture-date substitution, new paid
-  service/account or invented coverage. Verify source-specific storage/removal
-  rights before integration; lack of a suitable source remains an explicit gap.
-- **Raw identity gaps — catalog/data integration:** resolve the eight entries
-  below with independently observed unique product/subtype evidence. Do not alter
-  ownership, guess a physical edition or admit conflicting variants.
-- **Supported new prices — backend/integration:** preview, validate and activate
-  only newly supported observations through the existing lifecycle, preserving
-  expiry, withdrawal, provenance, independent registries and save limits. Protect
-  the existing installation; exclude managed prices from backups.
-- **Pricing review — QA with owner acceptance:** check actual versus partial
-  coverage and add/lock/fill/compare/clear on the real installation. Keep included
-  and wanted quantities distinct; do not enable saving without surviving rights.
-- **Optional product expansion:** automatic listing research, refresh schedules,
-  broader all-era catalog publication and shared hosting/public release require
-  separately selected scope. Existing code or an old proposal does not start them.
-
-| Unresolved raw reference | Evidence still needed |
-| --- | --- |
-| Machamp — Base Set #8 | Unique matching product |
-| Dark Exeggutor — Neo Destiny #33 | Unique matching product |
-| Rocket's Mewtwo — Gym Challenge #14 | Unambiguous compatible subtype |
-| Blaine's Charizard — Gym Challenge #2 | Unambiguous compatible subtype |
-| Brock's Vulpix — Gym Challenge #37 | Unambiguous compatible subtype |
-| Rocket's Hitmonchan — Gym Heroes #11 | Unambiguous compatible subtype |
-| Misty's Psyduck — Gym Heroes #54 | Unambiguous compatible subtype |
-| Misty's Seadra — Gym Heroes #9 | Unambiguous compatible subtype |
-
-The existing instruction permits routine free source work and reversible local
-integration when this backlog is selected, subject to source access rules,
-publisher cadence and consumed-attempt accounting. It does not authorize spending,
-account creation, credential resets, destructive changes, buy/bid or publication.
-Paid API proposals and old per-step approval packets are not prerequisites for
-that bounded free-data work. No automatic refresh schedule is connected.
+There is no scheduled price refresh, automatic listing matching, whole-lot photo
+recognition or automatic buy/bid action. Pack offers are retained observations;
+live sealed-offer acquisition is unsupported. See [catalogs and Pack lookup](catalogs.md)
+and [price snapshot operations](price-snapshots.md) for supported local inputs.

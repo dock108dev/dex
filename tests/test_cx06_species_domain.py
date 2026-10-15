@@ -43,8 +43,8 @@ def test_saved_declaration_filters_use_frozen_source_while_current_presence_chan
     before = collection.one(cx["actor"], "goal", goal["id"])
     select(cx, {3: {"Base Set 2": "✓ Venusaur #18 (Rare)"}})
     result = species.project(cx["actor"], {"goal": goal["id"], "card": "Ivysaur", "gaps": "false"})
-    assert [row["dex"] for row in result["species"]] == [2]
-    row = result["species"][0]
+    assert len(result["species"]) == 151
+    row = next(row for row in result["species"] if row["dex"] == 2)
     assert row["goal_present"] and not row["current_present"]
     assert result["scope"]["kind"] == "saved_declaration"
     assert result["progress"] == dict(satisfied=1, total=151, units="species")
@@ -65,8 +65,11 @@ def test_species_only_evidence_and_explicit_gap_filter(cx):
     )
     assert (
         species.project(cx["actor"], {"q": "#251", "card": "Unrelated", "gaps": "false"})["filtered_count"]
-        == 0
+        == 1
     )
+    scoped = species.project(cx["actor"], {"q": "#251", "card": "Unrelated", "gaps": "true"})
+    assert scoped["species"][0]["scope_status"] == "unresolved"
+    assert scoped["scoped_progress"]["satisfied"] == 0
 
 
 def test_generation_and_account_mismatch_cannot_publish(cx):

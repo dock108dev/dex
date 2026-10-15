@@ -3,6 +3,8 @@
 import csv
 import io
 import json
+from pathlib import Path
+from unittest.mock import patch
 from urllib.parse import parse_qs, urlsplit
 
 import pytest
@@ -38,38 +40,33 @@ def select_marks(b2, marks):
     return apply(b2, "owner_declaration", dict(text=text, sha256=digest(text.encode())))
 
 
-def printing(**overrides):
-    return dict(set_name="Base Set", name="Bulbasaur", collector_number="44", language="en") | overrides
+def test_retired_image_construction_and_normalized_lookup_are_absent():
+    assert not hasattr(art, "thumbnail")
+    assert not hasattr(art, "reference_for")
+    assert not hasattr(art, "SETS")
+    source = Path(art.__file__).read_text()
+    assert "assets.tcgdex.net" not in source
+    assert "normalized_name" not in source
 
 
-@pytest.mark.parametrize(
-    "set_name,name,number",
-    [
-        ("Neo Genesis", "Bulbasaur", "44"),
-        ("Base Set", "Ivysaur", "44"),
-        ("Base Set", "Bulbasaur", None),
-        ("Base Set", "Bulbasaur", "44/102"),
-        ("Base Set", "Bulbasaur", "../44"),
-    ],
-)
-def test_unresolved_or_mismatched_identity_has_no_image(set_name, name, number):
-    assert art.thumbnail(set_name, name, number, [printing()]) is None
+@pytest.mark.parametrize("allowed", [False, True])
+def test_owned_references_and_page_share_image_availability_policy(b2, allowed):
+    from pokemon_hunter.beta import image_bindings
 
-
-def test_english_reference_only_and_low_resolution():
-    assert art.thumbnail("Base Set", "Bulbasaur", "44", [printing()]) == (
-        "https://assets.tcgdex.net/en/base/base1/44/low.webp"
-    )
-    assert art.thumbnail("Base Set", "Bulbasaur", "44", [printing(language="ja")]) is None
-    assert (
-        art.thumbnail(
-            "Wizards Black Star Promos",
-            "Mew",
-            "8",
-            [printing(set_name="Wizards Black Star Promos", name="Mew", collector_number="8")],
-        )
-        == "https://assets.tcgdex.net/en/base/basep/8/low.webp"
-    )
+    with (
+        patch.object(image_bindings, "enabled", return_value=allowed) as policy,
+        patch.object(image_bindings, "catalog_images", wraps=image_bindings.catalog_images) as bind,
+    ):
+        rows = art.owned_cards(b2["actor"])
+        response = b2["a"].get("/collection/")
+        assert response.status_code == 200
+        assert ("assets.tcgdex.net" in response["Content-Security-Policy"]) is allowed
+        assert bool(rows) is allowed
+        if allowed:
+            bind.assert_called_once()
+        else:
+            bind.assert_not_called()
+        assert policy.call_count >= 2
 
 
 def test_card_detail_is_a_normal_private_page(restored):
@@ -176,10 +173,22 @@ def test_current_source_overrides_old_copies_and_splits_explicit_cards(b2):
         ],
     )
     select_marks(b2, {40: {"Jungle": "✓ Wigglytuff #16 (Rare Holo); Wigglytuff #32 (Rare)"}})
+    before = inv.export_data(b2["actor"])
     rows = art.owned_cards(b2["actor"])
     assert [(r["name"], r["number"]) for r in rows] == [("Wigglytuff", "16"), ("Wigglytuff", "32")]
     assert rows[0]["image_url"].endswith("/base/base2/16/low.webp")
-    assert rows[1]["image_url"] is None  # Not silently mapped without catalog support.
+    assert rows[1]["image_url"].endswith("/base/base2/32/low.webp")
+    # Reviewed reference art does not publish metadata, qualify a variant or
+    # turn a declaration into a physical copy/known quantity.
+    from pokemon_hunter.beta.effective_collection import project
+
+    declared = next(r for r in project(b2["actor"])["cards"] if r["number"] == "32")
+    assert declared["present"] and declared["declared"]
+    assert declared["printing_ids"] == declared["exact_printing_owned_ids"] == []
+    assert declared["identity_status"] == "card-known-variant-unresolved"
+    assert declared["recorded_copy_count"] == 0 and declared["established_total_quantity"] is None
+    assert art.reference_images(b2["member"]) == []
+    assert inv.export_data(b2["actor"]) == before
     # Even an empty selected collection must not revive older physical imports.
     select_marks(b2, {})
     assert art.owned_cards(b2["actor"]) == []

@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import re
 from urllib.parse import urlencode
 
 from django.http import Http404
@@ -64,6 +65,15 @@ def _species(row, pokemon_game_ids=None):
         return None
     value = attributes.get("pokemon_dex")
     return value if type(value) is int and value > 0 else None
+
+
+def _collector_number_key(value):
+    """Order digit runs numerically without changing literal card identities."""
+    return tuple(
+        (0, int(part)) if part.isascii() and part.isdecimal() else (1, part.casefold())
+        for part in re.split(r"([0-9]+)", value)
+        if part
+    )
 
 
 def build_groups(rows, *, pokemon_game_ids=None):
@@ -154,7 +164,7 @@ def build_groups(rows, *, pokemon_game_ids=None):
     groups.sort(
         key=lambda row: (
             row["set_name"].casefold(),
-            row["collector_number"],
+            _collector_number_key(row["collector_number"]),
             row["name"].casefold(),
             row["id"],
         )
@@ -254,6 +264,9 @@ def project(actor=None):
             exact_variant_count=len(exact),
             assertion_id=assertion["id"] if mapped else None,
         )
+        if mapped and assertion.get("owned_variant"):
+            group["owned_variant"] = assertion["owned_variant"]
+            group["owned_variant_printing_ids"] = assertion.get("owned_variant_printing_ids", [])
         if assertion and not mapped:
             group["identity_status"] = "conflict"
     if effective:
@@ -278,6 +291,11 @@ def project(actor=None):
     from . import image_bindings
 
     if actor is not None and image_bindings.enabled():
+        from . import image_mappings
+
+        for row in unresolved:
+            if row["kind"] == "unmapped-collection-card":
+                row["reference_image"] = image_mappings.declared_card_reference(row["evidence"])
         for group in built["groups"]:
             # Carry checked metadata, not thousands of eager image descriptors.
             # Only the selected page/detail binds references in _summary.
@@ -302,6 +320,8 @@ def _summary(group, private, detail=False):
         SUMMARY_FIELDS + (PRIVATE_SUMMARY if private else ()) + (PRIVATE_DETAIL if private and detail else ())
     )
     result = {field: group[field] for field in fields}
+    if private and group.get("owned_variant"):
+        result["owned_variant"] = group["owned_variant"]
     if private and "_reference_game_ids" in group:
         from . import image_mappings
 
@@ -389,9 +409,11 @@ def _list(snapshot, raw, scope=None):
     first_field = {"set": "set_name", "name": "name", "number": "collector_number"}[filters["sort"]]
     matched.sort(
         key=lambda row: (
-            row[first_field].casefold(),
+            _collector_number_key(row[first_field])
+            if first_field == "collector_number"
+            else row[first_field].casefold(),
             row["set_name"].casefold(),
-            row["collector_number"],
+            _collector_number_key(row["collector_number"]),
             row["name"].casefold(),
             row["id"],
         )
@@ -487,6 +509,8 @@ def _variant(row, group, private, metadata):
             established_total_quantity=None,
             exact_printing_owned=row["id"] in group["exact_printing_owned_ids"],
         )
+        if row["id"] in group.get("owned_variant_printing_ids", []):
+            variant["declared_variant_owned"] = True
     return variant
 
 

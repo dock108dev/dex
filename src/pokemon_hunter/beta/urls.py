@@ -46,6 +46,9 @@ if settings.B2_ENABLED:
     from . import lookup_views, navigation, packs_views, product_views, refresh_views, shopping_views
 
     urlpatterns = [
+        path("collection-tools/", navigation.task_home),
+        path("add-card/", navigation.task_home),
+        path("administration/", navigation.task_home),
         path("api/navigation/home/", navigation.validate_home),
         path("api/pokedex-species/", species_views.projection),
         path("api/card-groups/", groups.catalog),

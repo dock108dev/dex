@@ -1,5 +1,7 @@
 """Thin current/saved species reads; canonical identity and existing policies own truth."""
 
+from urllib.parse import urlencode
+
 from django.http import Http404
 
 from . import (
@@ -10,26 +12,27 @@ from . import (
     effective_collection,
     image_bindings,
     image_mappings,
-    ownership_declarations,
     public_catalog,
+    species_scope,
     store,
 )
 
-FILTERS = {"q", "region", "goal", "owned", "set", "era", "type", "rarity", "card", "gaps"}
+FILTERS = {"q", "region", "goal", "owned", "gaps"} | species_scope.KEYS
 LIST_STATE = FILTERS | {"scroll", "focus", "selecting"}
 
 
 def filters(raw):
-    if set(raw) - FILTERS:
+    if set(raw) - FILTERS or len(urlencode(raw)) > species_scope.MAX_ENCODED:
         raise ValueError("Choose supported Pokémon filters")
     values = {key: raw.get(key, "") for key in FILTERS}
     if any(
         not isinstance(value, str)
-        or len(value) > 160
+        or len(value) > (species_scope.MAX_FIELD if key in species_scope.MULTI else 160)
         or any(ord(char) < 32 or ord(char) == 127 for char in value)
-        for value in values.values()
+        for key, value in values.items()
     ):
         raise ValueError("Choose shorter Pokémon filters")
+    values.update(species_scope.validate(raw))
     values["region"] = {"all": "", "1": "kanto", "2": "johto"}.get(values["region"], values["region"])
     if values["region"] not in {"", "kanto", "johto"}:
         raise ValueError("Choose Kanto or Johto")
@@ -44,7 +47,7 @@ def filters(raw):
 
 def list_state(raw):
     """Validate UI-only fields independently of the read service's filter contract."""
-    if set(raw) - LIST_STATE:
+    if set(raw) - LIST_STATE or len(urlencode(raw)) > 1800:
         raise ValueError("Choose supported Pokédex context")
     filters({key: value for key, value in raw.items() if key in FILTERS})
     for key, minimum, maximum in (("scroll", 0, 10000000), ("focus", 1, 251)):
@@ -127,44 +130,49 @@ def project(actor, raw=None):
     pokemon_games = {row["id"] for row in store.rows("SELECT id FROM games WHERE game_key='pokemon'")}
     allowed_ids = {row["id"] for row in catalog if row["game_id"] in pokemon_games}
     cards = [row for row in cards if row["id"] in allowed_ids and row["supertype"] == "Pokémon"]
-    if goal and scope["supported"]:
-        frozen_ids = {key for item in goal["definition"]["items"] for key in item["printing_ids"]}
-        cards = [row for row in cards if row["id"] in frozen_ids]
+    dates = species_scope.release_dates()
+    languages = {row["id"]: row["language"] for row in catalog}
+    indexed = {
+        card["id"]: species_scope.metadata({**card, "language": languages[card["id"]]}, dates)
+        for card in cards
+    }
+    set_candidates = {}
+    for card in cards:
+        fact = {key: indexed[card["id"]][key] for key in ("set", "era", "release")}
+        set_candidates.setdefault(card["set_name"], {})[(card["set_id"], languages[card["id"]])] = fact
+    set_facts = {name: next(iter(rows.values())) for name, rows in set_candidates.items() if len(rows) == 1}
     by_species = {}
     for card in cards:
         if card["pokemon_dex"]:
-            by_species.setdefault(card["pokemon_dex"], []).append(
-                dict(
-                    set=card["set_id"],
-                    set_name=card["set_name"],
-                    era=card["era"],
-                    type=card["supertype"],
-                    rarity=card["rarity"],
-                    card=f"{card['name']} {card['collector_number']}",
-                )
-            )
-    # Effective declarations contribute only their retained literal metadata, never a fabricated printing.
-    sets_by_name = {}
-    for row in catalog:
-        sets_by_name.setdefault(row["set_name"], set()).add(row["set_id"])
-    declaration_rows = effective["declaration_rows"]
-    if goal and scope["kind"] == "saved_declaration":
-        source = collection_goals.source(actor, goal["definition"]["collection_source"]["id"])
-        declaration_rows = ownership_declarations.parse(source["source_text"], source["source_sha256"])
-    for row in declaration_rows:
-        set_name = row.get("source_set") or "Unknown"
-        matching_sets = sets_by_name.get(set_name, set())
-        set_id = next(iter(matching_sets)) if len(matching_sets) == 1 else set_name
-        by_species.setdefault(row["pokemon_dex"], []).append(
-            dict(
-                set=set_id,
-                set_name=set_name,
-                era="Unknown",
-                type="Pokémon",
-                rarity=row.get("declared_rarity") or "Unknown",
-                card=row.get("source_cell") if effective_collection.declared_cards(row) else "Unknown",
-            )
+            by_species.setdefault(card["pokemon_dex"], []).append(indexed[card["id"]])
+    owned_by_species, card_states = {}, {}
+    restricted = any(selected[key] for key in species_scope.KEYS)
+    for evidence in effective["cards"]:
+        if not evidence["present"]:
+            continue
+        rows = (
+            species_scope.owned_evidence(evidence, indexed, set_facts)
+            if evidence["identity_status"] != "conflict"
+            else [{}]
         )
+        state = species_scope.classify(rows, selected)
+        card_states[evidence["id"]] = state
+        owned_by_species.setdefault(evidence["pokemon_dex"], []).extend(rows)
+    # Tiles expose canonical group IDs, not internal effective assertion IDs.
+    # Use the same complete-child identity join as the authoritative card adapter.
+    assertion_states = {
+        frozenset(row["printing_ids"]): card_states[row["id"]]
+        for row in effective["cards"]
+        if row["id"] in card_states and row["printing_ids"] and row["identity_status"] != "conflict"
+    }
+    grouped = card_groups.build_groups(catalog, pokemon_game_ids=pokemon_games)
+    group_states = {
+        group["id"]: assertion_states.get(
+            frozenset(child["id"] for child in group["_children"]), "unresolved"
+        )
+        for group in grouped["groups"]
+        if frozenset(child["id"] for child in group["_children"]) in assertion_states
+    }
     registry = canonical_species.registry()
     goal_present = (
         {row["pokemon_dex"] for row in goal["progress"] if row.get("status") == "owned"}
@@ -173,37 +181,48 @@ def project(actor, raw=None):
     )
     membership = set(scope["membership"]) if scope["supported"] else set(range(1, 252))
     species = []
-    for dex in range(1, 252):
-        if dex not in membership:
-            continue
+    for dex in sorted(membership):
         current = effective["species"][str(dex)]
+        evidence = owned_by_species.get(dex, [])
+        if current["unresolved"]:
+            evidence = [*evidence, {}]
+        state = species_scope.classify(evidence, selected)
+        present = current["present"] if not restricted else state == "collected"
+        eligible = [species_scope.match(row, selected) for row in by_species.get(dex, [])]
         row = dict(
             dex=dex,
             name=registry[dex]["name"],
             region="kanto" if dex <= 151 else "johto",
             url=f"/pokedex/{dex}/",
             current_present=current["present"],
+            scoped_present=present,
+            scope_status="collected"
+            if present
+            else "unresolved"
+            if state == "unresolved" or None in eligible
+            else "no_indexed"
+            if True not in eligible
+            else "missing",
+            eligible_indexed_printings=sum(value is True for value in eligible),
             goal_present=dex in goal_present if goal and scope["supported"] else None,
             details_needed=bool(current["present"] and current["unresolved"]),
             species_quantity=None,
+            species_artwork=image_mappings.species_artwork(dex) if image_bindings.enabled() else None,
         )
-        row["species_artwork"] = image_mappings.species_artwork(dex) if image_bindings.enabled() else None
         species.append(row)
     region_species = [row for row in species if not selected["region"] or row["region"] == selected["region"]]
-    progress = dict(
-        satisfied=sum(
-            row["goal_present"] if goal and scope["supported"] else row["current_present"]
-            for row in region_species
-        ),
-        total=len(region_species),
-        units="species",
-    )
-    if goal and not scope["supported"]:
-        progress = dict(satisfied=goal["satisfied"], total=goal["total"], units=scope["units"])
-    current_progress = dict(
-        satisfied=sum(row["current_present"] for row in region_species),
-        total=len(region_species),
-        units="species",
+
+    def progress(field):
+        return dict(
+            satisfied=sum(bool(row[field]) for row in region_species),
+            total=len(region_species),
+            units="species",
+        )
+
+    original_progress = (
+        dict(satisfied=goal["satisfied"], total=goal["total"], units=scope["units"])
+        if goal
+        else progress("current_present")
     )
     query = selected["q"].strip().casefold()
     number_query = query.removeprefix("#")
@@ -215,30 +234,14 @@ def project(actor, raw=None):
             and not (number_query.isascii() and number_query.isdecimal() and int(number_query) == row["dex"])
         ):
             return False
-        present = row["goal_present"] if goal and scope["supported"] else row["current_present"]
-        if selected["owned"] == "owned" and not present or selected["owned"] == "missing" and present:
+        if (
+            selected["owned"] == "owned"
+            and not row["scoped_present"]
+            or selected["owned"] == "missing"
+            and row["scoped_present"]
+        ):
             return False
-        keys = ("set", "era", "type", "rarity", "card")
-        if not any(selected[key] for key in keys):
-            return True
-        metadata = by_species.get(row["dex"], [])
-        if not metadata:
-            return selected["gaps"] == "true"
-        return any(
-            all(
-                not selected[key]
-                or selected["gaps"] == "true"
-                and card[key] == "Unknown"
-                or key == "card"
-                and selected[key].casefold() in card[key].casefold()
-                or key == "set"
-                and selected[key] in {card["set"], card["set_name"]}
-                or key != "card"
-                and selected[key] == card[key]
-                for key in keys
-            )
-            for card in metadata
-        )
+        return True
 
     result = dict(
         public=False,
@@ -247,20 +250,29 @@ def project(actor, raw=None):
         species=[row for row in region_species if matches(row)],
         filters=selected,
         scope=scope,
-        progress=progress,
-        current_progress=current_progress,
-        sets=sorted(
-            {
-                row["set"]: dict(id=row["set"], name=row["set_name"])
-                for rows in by_species.values()
-                for row in rows
-                if row["set"] != "Unknown"
-            }.values(),
-            key=lambda row: (row["name"].casefold(), row["id"]),
+        progress=original_progress,
+        current_progress=progress("current_present"),
+        scoped_progress=progress("scoped_present"),
+        restricted=restricted,
+        scope_cards=card_states,
+        scope_groups=group_states,
+        coverage=dict(
+            indexed_printings=len(indexed),
+            dated_printings=sum(bool(r["release"]) for r in indexed.values()),
+            unknown_dates=sum(not r["release"] for r in indexed.values()),
+            eligible_species=sum(row["eligible_indexed_printings"] > 0 for row in region_species),
+            unresolved_species=sum(row["scope_status"] == "unresolved" for row in region_species),
         ),
-        eras=sorted({row["era"] for rows in by_species.values() for row in rows}),
-        types=sorted({row["type"] for rows in by_species.values() for row in rows}),
-        rarities=sorted({row["rarity"] for rows in by_species.values() for row in rows}),
+        date_basis="Retained English release dates; regional and edition release applicability unresolved. Promo-series start dates excluded. Unknown dates do not confirm dated completion.",
+        sets=sorted(
+            {card["set_id"]: dict(id=card["set_id"], name=card["set_name"]) for card in cards}.values(),
+            key=lambda r: (r["name"].casefold(), r["id"]),
+        ),
+        eras=sorted({card["era"] for card in cards}),
+        types=sorted({card["supertype"] for card in cards}),
+        rarities=sorted({card["rarity"] for card in cards}),
+        finishes=sorted({card["finish"] or "Unknown" for card in cards}),
+        years=sorted({row["release"]["start"][:4] for row in indexed.values() if row["release"]}),
     )
     result["filtered_count"] = len(result["species"])
     store.verified(actor)

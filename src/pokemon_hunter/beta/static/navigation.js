@@ -12,6 +12,7 @@
     try {
       const url=new URL(value,location.origin), group=/^\/card-groups\/dg1-[0-9a-f]{64}\/$/.test(url.pathname), species=/^\/pokedex\/([1-9][0-9]{0,2})\/$/.exec(url.pathname);
       if(url.origin!==location.origin||url.hash||!['/cards/','/card-library/','/pokedex/'].includes(url.pathname)&&!group&&!species||species&&Number(species[1])>251)return null;
+      if(window.safeSpeciesReturn&&url.pathname.startsWith('/pokedex/'))return window.safeSpeciesReturn(value);
       if([...url.searchParams].some(([field,value])=>url.searchParams.getAll(field).length!==1||/[\x00-\x1f\x7f]/.test(field+value)||value.length>(field==='return'?4096:160)))return null;
       if(group){
         if([...url.searchParams.keys()].some(field=>!['child','generation','return'].includes(field)))return null;
@@ -40,20 +41,20 @@
   function section() {
     const path=location.pathname;
     if(path.startsWith('/pokedex/'))return 'pokedex';
-    if(path.startsWith('/shopping/'))return 'shopping';
+    if(path.startsWith('/shopping/')||path.startsWith('/packs/')||path==='/lookup/'||['/hunt/','/missing/','/finds/'].includes(path))return 'shopping';
     if(path.startsWith('/card-groups/')){
       const back=safeDestination(new URLSearchParams(location.search).get('return'));
-      return back?.startsWith('/pokedex/')?'pokedex':'cards';
+      return back?.startsWith('/pokedex/')?'pokedex':back?.startsWith('/card-library/')?'library':'cards';
     }
-    return ['/cards/','/card-library/'].includes(path)?'cards':'';
+    return path==='/card-library/'?'library':['/cards/','/collection-tools/','/collection/','/goals/','/overview/'].includes(path)?'cards':'';
   }
   window.updateCollectionNavigation=()=>{
     const current=section();
     document.querySelectorAll('.app-header [data-navigation-section]').forEach(link=>{
-      link.removeAttribute('aria-current');if(link.dataset.navigationSection===current&&!(current==='cards'&&location.pathname==='/card-library/'))link.setAttribute('aria-current','page');
+      link.removeAttribute('aria-current');if(link.dataset.navigationSection===current)link.setAttribute('aria-current','page');
     });
     const libraryLink=document.querySelector('.app-header [data-navigation-tab="/card-library/"]');
-    if(location.pathname==='/card-library/')libraryLink?.setAttribute('aria-current','page');else libraryLink?.removeAttribute('aria-current');
+    if(current==='library')libraryLink?.setAttribute('aria-current','page');else libraryLink?.removeAttribute('aria-current');
     for(const path of ['/cards/','/card-library/']){
       let saved;
       try{saved=safeDestination(sessionStorage.getItem('dex-card-tab:'+actor+':'+path));}catch{/* Optional storage. */}

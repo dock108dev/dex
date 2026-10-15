@@ -11,14 +11,14 @@ const options = {account_id:'account-a',generation:5,sets:[{id:'base',name:'Base
 const list = (changes={}) => ({account_id:'account-a',generation:5,total:1,page:1,pages:1,groups:[group],unresolved:[],...changes});
 const detail = (changes={}) => ({account_id:'account-a',generation:5,group,selected_child:null,variants:[],copies:[],history:[],...changes});
 function deferred() { let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject}; }
-function setup(route,responder,{storage=new Map()}={}) {
+function setup(route,responder,{storage=new Map(),preferences=new Map()}={}) {
   const content={innerHTML:''},nodes=new Map(),calls=[],events={};
-  const element=tag=>({tagName:tag.toUpperCase(),children:[],listeners:{},append(...children){this.children.push(...children);},addEventListener(name,handler){this.listeners[name]=handler;}});
+  const element=tag=>({classList:{values:new Set(),toggle(name,on){if(on)this.values.add(name);else this.values.delete(name);},contains(name){return this.values.has(name);}},tagName:tag.toUpperCase(),children:[],listeners:{},append(...children){this.children.push(...children);},addEventListener(name,handler){this.listeners[name]=handler;}});
   const summary=element('div');
   const headerLinks=['/cards/','/card-library/'].map(path=>({dataset:path==='/cards/'?{navigationSection:'cards'}:{navigationTab:path},attrs:{},setAttribute(key,value){this.attrs[key]=value;if(key==='href')this.href='http://localhost'+value;},getAttribute(key){return this.attrs[key];}}));
-  const context={window:{},data:{effective_collection:{user_id:'account-a',generation:5},binders:[]},location:{origin:'http://localhost',href:'http://localhost'+route,pathname:route.split('?')[0],search:route.includes('?')?'?'+route.split('?')[1]:'',assign(url){context.assigned=url;},replace(url){context.replaced=url;},reload(){}},URL,URLSearchParams,Number,Set,Map,JSON,Math,Error,String,FormData:global.FormData,crypto:global.crypto,scrollY:0,scrollTo(x,y){context.restoredScroll=y;},requestAnimationFrame(fn){fn();},addEventListener(name,handler){events[name]=handler;},sessionStorage:{getItem(key){return storage.get(key)??null;},setItem(key,value){storage.set(key,value);}},document:{body:{dataset:{parity:'true'}},querySelectorAll(selector){return selector.includes('data-navigation-section')?headerLinks:[];},createElement(tag){return element(tag);},querySelector(selector){return selector==='.card-detail-summary'?summary:null;}},$:selector=>selector==='#content'?content:(nodes.get(selector)||nodes.set(selector,{}).get(selector)),esc:value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),cardImage:()=>'<span class="image-frame"></span>',photoLink:()=>'',api:async url=>{calls.push(url);return responder(url);}};
+  const context={window:{},data:{effective_collection:{user_id:'account-a',generation:5},binders:[]},location:{origin:'http://localhost',href:'http://localhost'+route,pathname:route.split('?')[0],search:route.includes('?')?'?'+route.split('?')[1]:'',assign(url){context.assigned=url;},replace(url){context.replaced=url;},reload(){}},URL,URLSearchParams,Number,Set,Map,JSON,Math,Error,String,FormData:global.FormData,crypto:global.crypto,scrollY:0,scrollTo(x,y){context.restoredScroll=y;},requestAnimationFrame(fn){fn();},addEventListener(name,handler){events[name]=handler;},localStorage:{getItem(key){return preferences.get(key)??null;},setItem(key,value){preferences.set(key,value);}},sessionStorage:{getItem(key){return storage.get(key)??null;},setItem(key,value){storage.set(key,value);}},document:{body:{dataset:{parity:'true'}},querySelectorAll(selector){return selector.includes('data-navigation-section')?headerLinks:[];},createElement(tag){return element(tag);},querySelector(selector){return ['.card-detail-summary','.card-related-links'].includes(selector)?summary:null;}},$:selector=>selector==='#content'?content:(nodes.get(selector)||nodes.set(selector,element('div')).get(selector)),esc:value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),cardImage:()=>'<span class="image-frame"></span>',photoLink:()=>'',api:async url=>{calls.push(url);return responder(url);}};
   vm.createContext(context);vm.runInContext(source,context,{filename:sourcePath});
-  return {context,content,calls,storage,events,headerLinks,render:()=>context.window.renderCardScreens(context.location.pathname)};
+  return {context,content,calls,storage,preferences,events,headerLinks,render:()=>context.window.renderCardScreens(context.location.pathname)};
 }
 const cases=[];
 async function check(name,run){await run();cases.push({name,status:'passed'});}
@@ -27,6 +27,25 @@ async function check(name,run){await run();cases.push({name,status:'passed'});}
     const t=setup('/cards/?q=Ivysaur&scroll=80',url=>url.includes('filters')?options:list());await t.render();
     const request=t.calls.find(url=>url.startsWith('/api/my-card-groups/'));
     assert(request);assert(!request.includes('scope'));assert(!request.includes('scroll'));assert(request.includes('generation=5'));assert(t.content.innerHTML.includes('Ivysaur'));assert(!t.content.innerHTML.includes('Quantity 0'));
+  });
+  await check('ownership badges and dim preference preserve all cards without collection requests',async()=>{
+    const unowned={...group,id:'unowned',present:false};
+    const t=setup('/card-library/',url=>url.includes('filters')?options:list({total:2,groups:[group,unowned]}));await t.render();
+    assert(t.content.innerHTML.includes('ownership-badge is-owned'));
+    assert(t.content.innerHTML.includes('ownership-badge is-unowned'));
+    assert(t.content.innerHTML.includes('data-owned="false"'));
+    const calls=t.calls.length,input=t.context.$('#dim-unowned'),grid=t.context.$('#card-group-list');
+    input.checked=true;input.onchange();assert(grid.classList.contains('dim-unowned'));
+    assert.equal(t.preferences.get('dex-card-dim:account-a'),'true');assert.equal(t.calls.length,calls);
+    assert(t.content.innerHTML.includes('data-group-id="unowned"'));
+    input.checked=false;input.onchange();assert(!grid.classList.contains('dim-unowned'));
+    assert.equal(t.calls.length,calls);
+    const saved=new Map([['dex-card-dim:account-a','true']]);
+    const restored=setup('/cards/',url=>url.includes('filters')?options:list(),{preferences:saved});await restored.render();
+    assert(restored.content.innerHTML.includes('id="dim-unowned" type="checkbox" checked'));
+    restored.context.data.effective_collection.user_id='account-b';
+    restored.context.location.href='http://localhost/cards/';await restored.render();
+    assert(!restored.content.innerHTML.includes('id="dim-unowned" type="checkbox" checked'));
   });
   await check('separate library, matching children and canonical null-child tile',async()=>{
     const t=setup('/card-library/?edition=first_edition',url=>url.includes('filters')?options:list({groups:[{...group,matching_child_ids:['child-2']}]}));await t.render();
@@ -66,7 +85,21 @@ async function check(name,run){await run();cases.push({name,status:'passed'});}
   await check('focused default detail, unknown quantity and closed disclosures',async()=>{
     const t=setup('/card-groups/dg1-card-a/',()=>detail());await t.render();
     assert(t.content.innerHTML.includes('Quantity not recorded.'));assert(!/<details[^>]*\sopen/.test(t.content.innerHTML));assert(t.content.innerHTML.includes('data-selected-child=""'));assert(!t.content.innerHTML.includes('dialog'));assert(t.content.innerHTML.includes('id="group-copies"'));
-    const appended=t.context.document.querySelector('.card-detail-summary').children[0].children[0];assert.equal(appended.id,'card-shopping');assert.equal(appended.textContent,'Find cards in Shopping');assert.equal(typeof appended.listeners.click,'function');
+    const appended=t.context.document.querySelector('.card-related-links').children[0];assert.equal(appended.id,'card-shopping');assert.equal(appended.textContent,'Find cards in Shopping');assert.equal(typeof appended.listeners.click,'function');
+  });
+  await check('compact hierarchy hides empty history and optional records while preserving copy identity',async()=>{
+    const copies=[{id:'private-copy',printing_id:'literal-print',condition:null,notes:'saved optional note',purchase_amount:'12.50'}];
+    const t=setup('/card-groups/dg1-card-a/',()=>detail({copies,variants:[{id:'literal-print',edition:'first',available:true}]}));await t.render();
+    const html=t.content.innerHTML;
+    assert(html.indexOf('Your collection')<html.indexOf('Card facts'));assert(html.indexOf('Card facts')<html.indexOf('Record details'));
+    assert(!html.includes('id="group-history"'));assert(!html.includes('No notes recorded'));assert(!html.includes('<dt>Purchase</dt>'));
+    assert(html.includes('Condition not recorded'));assert(html.includes('data-group-copy="private-copy"'));
+    assert(html.indexOf('Copy references')>html.indexOf('Record details'));assert(html.includes('literal-print'));
+    assert.equal((html.match(/class="reference-qualification"/g)||[]).length,1);assert(html.includes('exact edition and finish not verified'));
+  });
+  await check('relevant removed history survives only in optional records',async()=>{
+    const t=setup('/card-groups/dg1-card-a/',()=>detail({history:[{id:'removed-private',condition:'Good'}]}));await t.render();
+    assert(t.content.innerHTML.includes('id="group-history"'));assert(t.content.innerHTML.indexOf('removed-private')>t.content.innerHTML.indexOf('Record details'));
   });
   await check('explicit archived child stays selected and exact image unavailable',async()=>{
     const variant={id:'archived-child',edition:'first_edition',finish:'holo',available:false};

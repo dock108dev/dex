@@ -12,7 +12,7 @@ from pathlib import Path
 from . import canonical_species, card_groups
 
 MAPPING_FILE = Path(__file__).with_name("data") / "cx04_image_mappings.json"
-MAPPING_SHA256 = "4cfed28f200d83643ed59cda2d8283a83252798feca72db106c390c8e6f159eb"
+MAPPING_SHA256 = "3c0f45c18650dd923962f93b486a891c63505dd726d2bdca4ce144783248903d"
 GROUP_IDENTITY = (*card_groups.IDENTITY_FIELDS, "set_name", "pokemon_dex")
 
 
@@ -21,7 +21,16 @@ def _reviewed():
     raw = MAPPING_FILE.read_bytes()
     if hashlib.sha256(raw).hexdigest() != MAPPING_SHA256:
         raise ValueError("Reviewed image mapping drift; explicit mapping review required")
-    return json.loads(raw)
+    data = json.loads(raw)
+    # Keep the all-era lookup constant-time; duplicate literal identities fail closed.
+    index = {}
+    for row in data["cards"]:
+        key = tuple(
+            row[field] for field in ("set_name", "name", "language", "collector_number", "pokemon_dex")
+        )
+        index[key] = None if key in index else row
+    data["card_index"] = index
+    return data
 
 
 def _descriptor(role, identity, *, alt, precision, image_url=None, source_id=None, reason=None):
@@ -84,6 +93,11 @@ def _validated_group(group, catalog, pokemon_game_ids):
     )
 
 
+def _card_mapping(set_name, name, language, number, pokemon_dex):
+    """One literal lookup; missing and duplicate reviewed identities stay unavailable."""
+    return _reviewed()["card_index"].get((set_name, name, language, number, pokemon_dex))
+
+
 def card_group_reference(group, catalog, *, pokemon_game_ids):
     """Literal reviewed identity, independent of possession/publication/child order.
 
@@ -96,16 +110,12 @@ def card_group_reference(group, catalog, *, pokemon_game_ids):
     row = (
         None
         if validated is None
-        else next(
-            (
-                row
-                for row in _reviewed()["cards"]
-                if all(
-                    row[field] == validated[field]
-                    for field in ("set_name", "name", "language", "collector_number", "pokemon_dex")
-                )
-            ),
-            None,
+        else _card_mapping(
+            validated["set_name"],
+            validated["name"],
+            validated["language"],
+            validated["collector_number"],
+            validated["pokemon_dex"],
         )
     )
     return _descriptor(
@@ -137,4 +147,29 @@ def exact_child_artwork(group, child, catalog, *, pokemon_game_ids):
         alt="Selected variant image unavailable",
         precision="exact_child",
         reason=reason,
+    )
+
+
+def declared_card_reference(assertion):
+    """Literal reference for an internal, current declaration without catalog IDs.
+
+    This does not resolve catalog support, language, ownership or exact variants.
+    The caller must supply the account-checked effective collection assertion.
+    """
+    identity = {field: assertion.get(field) for field in ("id", "set_name", "name", "number", "pokemon_dex")}
+    row = (
+        _card_mapping(
+            identity["set_name"], identity["name"], "en", identity["number"], identity["pokemon_dex"]
+        )
+        if assertion.get("identity_status") != "conflict" and not assertion.get("conflicts")
+        else None
+    )
+    return _descriptor(
+        "card_group_reference",
+        identity,
+        alt=f"{identity['name']} · {identity['set_name']} #{identity['number']} · English card reference",
+        precision="declared_card_reference",
+        image_url=row["image_url"] if row else None,
+        source_id="tcgdex-reference" if row else None,
+        reason=None if row else "unsupported_or_conflicting_card_identity",
     )

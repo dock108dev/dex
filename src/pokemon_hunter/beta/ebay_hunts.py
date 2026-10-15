@@ -62,7 +62,7 @@ def status():
         "environment": provider.environment,
         "note": "Live eBay searches run only when you request them. Results are snapshots, with seller-text evidence only."
         if configured
-        else "Add your eBay application credentials to the local .env or server environment, then reload this page.",
+        else "Configure eBay credentials in the server environment or supported .env; restart after environment changes.",
     }
 
 

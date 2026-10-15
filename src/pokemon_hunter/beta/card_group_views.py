@@ -115,7 +115,7 @@ def return_context(value, *, list_only=False, _depth=0):
     parts = urlsplit(value)
     if parts.scheme or parts.netloc or parts.fragment:
         raise ValueError("Choose a supported local return destination")
-    pairs = parse_qsl(parts.query, keep_blank_values=True, strict_parsing=True, max_num_fields=16)
+    pairs = parse_qsl(parts.query, keep_blank_values=True, strict_parsing=True, max_num_fields=24)
     raw = dict(pairs)
     if any(ord(char) < 32 or ord(char) == 127 for key, value in pairs for char in key + value):
         raise ValueError("Choose supported return fields without control characters")

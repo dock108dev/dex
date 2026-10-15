@@ -5,6 +5,7 @@ from urllib.parse import parse_qsl, urlsplit
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
+from django.shortcuts import render
 from django.utils.crypto import salted_hmac
 from django.views.decorators.http import require_GET
 
@@ -37,7 +38,7 @@ def context(request):
     section = ""
     if path.startswith("/pokedex/"):
         section = "pokedex"
-    elif path.startswith("/shopping/"):
+    elif path.startswith(("/shopping/", "/packs/", "/lookup/")) or path in {"/hunt/", "/missing/", "/finds/"}:
         section = "shopping"
     elif path in {"/cards/", "/card-library/"} or path.startswith("/card-groups/"):
         section = "cards"
@@ -46,11 +47,35 @@ def context(request):
                 back = return_context(request.GET.get("return", "/cards/"))
                 if urlsplit(back).path.startswith("/pokedex/"):
                     section = "pokedex"
+                elif urlsplit(back).path == "/card-library/":
+                    section = "library"
             except ValueError:
                 pass
+    elif path in {"/collection-tools/", "/collection/", "/goals/", "/overview/"}:
+        section = "cards"
     elif path != "/":
         section = "tools"
+    if path == "/card-library/":
+        section = "library"
     result = {**binding(request), "navigation_section": section}
+    result.update(
+        parity=settings.PARITY_ENABLED,
+        scans=settings.B3_ENABLED,
+        expansion=settings.B4_ENABLED,
+        navigation_group=(
+            "collection"
+            if section == "cards"
+            else "shopping"
+            if section == "shopping"
+            else "settings"
+            if path in {"/settings/", "/requests/", "/catalog-coverage/"}
+            else "administration"
+            if path.startswith(
+                ("/administration/", "/catalog-review/", "/catalog-pipeline/", "/product-review/")
+            )
+            else ""
+        ),
+    )
     if request.user.is_authenticated and settings.B2_ENABLED:
         try:
             result["admin"] = store.verified(actor(request)).role == "owner"
@@ -59,11 +84,28 @@ def context(request):
     return result
 
 
+@endpoint
+@require_GET
+def task_home(request):
+    """Read-only entry points reuse existing workflows and their authorization."""
+    who = store.verified(actor(request))
+    if request.path == "/administration/" and who.role != "owner":
+        raise PermissionDenied
+    titles = {
+        "/collection-tools/": "Collection tools",
+        "/add-card/": "Add Card",
+        "/administration/": "Administration",
+    }
+    response = render(request, "beta/task_home.html", {"task_title": titles[request.path]})
+    response["Cache-Control"] = "private, no-store"
+    return response
+
+
 def authorize_destination(who, value):
     """Recheck every referenced private object in the bounded return chain."""
     value = return_context(value)
     parts = urlsplit(value)
-    raw = dict(parse_qsl(parts.query, keep_blank_values=True, strict_parsing=True, max_num_fields=16))
+    raw = dict(parse_qsl(parts.query, keep_blank_values=True, strict_parsing=True, max_num_fields=24))
     store.verified(who)
     if raw.get("goal"):
         species_projection._scope(who, raw["goal"])

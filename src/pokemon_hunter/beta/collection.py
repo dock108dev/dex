@@ -382,6 +382,7 @@ def preview(actor, kind, request, operation_id):
         "remove_card": {"set_name", "name", "number", "language"},
         "declaration_correction": {"set_name", "name", "number", "language"},
         "card_quantity": {"set_name", "name", "number", "language", "established_total_quantity"},
+        "card_defaults": {"card_ids", "quantity", "variant"},
         "source_select": {"source_id", "scope", "replacement"},
         "collection_correct": {"source_id", "pokemon_dex", "owned", "source_set", "card_text", "notes"},
         "resolve": {"id", "revision", "printing_id"},

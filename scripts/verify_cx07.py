@@ -19,6 +19,12 @@ PROJECT = Path(__file__).resolve().parents[1]
 
 
 def exercise(url, root, output, fixture, report, preserve_cards=True):
+    from verify_ux02 import exercise as ux02_exercise
+
+    ux02_exercise(url, root, output, report)
+    from verify_ux03 import exercise as ux03_exercise
+
+    ux03_exercise(url, root, output, report)
     navigation_exercise(url, root, output, fixture, report)
     from verify_cx06 import exercise as previous
 
@@ -118,6 +124,8 @@ def navigation_exercise(url, root, output, fixture, report):
             before = persisted_snapshot(root)
             n = len(posts)
             page.get_by_role("link", name="Add Card", exact=True).click()
+            expect(page.locator("main h1")).to_have_text("Add Card")
+            page.get_by_role("link", name="Browse Card Library", exact=True).click()
             expect(page.locator("#content h1")).to_contain_text("Card Library")
             assert page.locator("dialog[open]").count() == 0
             assert len(posts) == n

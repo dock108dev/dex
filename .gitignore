@@ -178,3 +178,10 @@ config/market_values.json
 # Generated audit exports/previews; authored runtime images and fixtures stay visible.
 /output/pdf/
 /tmp/pdfs/
+
+# Generated research summaries; catalog packages and provenance remain tracked.
+/config/sealed/2026-10-04/hashes.json
+/config/sealed/2026-10-04/missing-18.json
+/config/sealed/2026-10-04-151/hashes.json
+/config/sealed/2026-10-04-151/missing-18.json
+/config/sealed/2026-10-05-det1/normalization.json

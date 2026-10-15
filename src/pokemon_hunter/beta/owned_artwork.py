@@ -1,66 +1,51 @@
-"""Private, read-only identification thumbnails for owned vintage cards.
+"""Private, read-only identification thumbnails for reviewed owned cards.
 
 These are reference scans, never photographs or verification of the owner's
 copies. Fair use is the owner's selected basis, not a provider artwork license.
 No image bytes are fetched, saved, exported or added to the public catalog here.
 """
 
-import re
-
-from django.conf import settings
-
 from . import collection as collection
-from . import effective_collection, store
-from . import ownership_declarations as declarations
+from . import effective_collection, image_bindings, store
 
-# Explicit English set identities; never infer an image from species alone.
-SETS = {
-    "Base Set": ("base", "base1"),
-    "Jungle": ("base", "base2"),
-    "Fossil": ("base", "base3"),
-    "Base Set 2": ("base", "base4"),
-    "Team Rocket": ("base", "base5"),
-    "Wizards Black Star Promos": ("base", "basep"),
-    "Gym Heroes": ("gym", "gym1"),
-    "Gym Challenge": ("gym", "gym2"),
-    "Neo Genesis": ("neo", "neo1"),
-    "Neo Discovery": ("neo", "neo2"),
-    "Neo Revelation": ("neo", "neo3"),
-    "Neo Destiny": ("neo", "neo4"),
-}
-
-
-def thumbnail(set_name, name, number, catalog):
-    """Require a literal number and matching English catalog card name/set."""
-    if set_name not in SETS or not isinstance(number, str) or not re.fullmatch(r"[1-9][0-9]{0,2}", number):
-        return None
-    matches = [
-        p
-        for p in catalog
-        if p["set_name"] == set_name
-        and p["collector_number"] == number
-        and p.get("language") == "en"
-        and declarations.normalized_name(p["name"]) == declarations.normalized_name(name)
-    ]
-    if not matches:
-        return None
-    series, key = SETS[set_name]
-    return f"https://assets.tcgdex.net/en/{series}/{key}/{number}/low.webp"
+# Retain the established presentation order; image identities belong to image_mappings.
+DISPLAY_SET_ORDER = (
+    "Base Set",
+    "Jungle",
+    "Fossil",
+    "Base Set 2",
+    "Team Rocket",
+    "Wizards Black Star Promos",
+    "Gym Heroes",
+    "Gym Challenge",
+    "Neo Genesis",
+    "Neo Discovery",
+    "Neo Revelation",
+    "Neo Destiny",
+    "Plasma Storm",
+    "Mysterious Treasures",
+    "Call of Legends",
+    "Diamond & Pearl",
+    "Dark Explorers",
+    "EX Trainer Kit 2 — Minun",
+)
 
 
 def owned_cards(who, *, catalog=None, active=None, effective=None):
     """Artwork consumes the authorized current presence projection."""
     store.verified(who)
-    if getattr(settings, "STAGING", False):
+    if not image_bindings.enabled():
         return []
     if catalog is None:
         catalog = collection.catalog(who, include_archived=True)
     effective = checked_effective(who, catalog=catalog, active=active, effective=effective)
-    from .image_bindings import catalog_images
-
-    mapped = catalog_images(who, catalog)
+    mapped = image_bindings.catalog_images(who, catalog)
 
     def reference(row):
+        if not row["printing_ids"]:
+            from .image_mappings import declared_card_reference
+
+            return declared_card_reference(row)["image_url"]
         candidates = {
             mapped[key]["image_url"]
             for key in row["printing_ids"]
@@ -82,13 +67,14 @@ def owned_cards(who, *, catalog=None, active=None, effective=None):
             image_url=reference(r),
         )
         for r in effective["cards"]
-        if r["present"] and r["set_name"] in SETS
+        if r["present"]
     ]
-    order = {name: i for i, name in enumerate(SETS)}
+    order = {name: i for i, name in enumerate(DISPLAY_SET_ORDER)}
     return sorted(
         cards,
         key=lambda r: (
-            order[r["set_name"]],
+            order.get(r["set_name"], len(order)),
+            r["set_name"],
             int(r["number"]) if r["number"] and r["number"].isdigit() else 0,
             r["number"] or "",
             r["name"],
@@ -102,19 +88,6 @@ def reference_images(who, **kwargs):
         for r in owned_cards(who, **kwargs)
         if r["image_url"]
     ]
-
-
-def reference_for(set_name, name, number, images):
-    return next(
-        (
-            r
-            for r in images
-            if r["set_name"] == set_name
-            and r["number"] == number
-            and declarations.normalized_name(r["name"]) == declarations.normalized_name(name)
-        ),
-        None,
-    )
 
 
 def checked_effective(who, *, catalog=None, active=None, effective=None):

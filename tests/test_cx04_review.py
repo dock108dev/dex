@@ -240,10 +240,7 @@ def test_review_image_availability_cannot_change_ownership_totals_or_destination
                 descriptor, image_url=available, availability="reference" if available else "unavailable"
             )
 
-        with (
-            patch.object(owned_artwork, "thumbnail", return_value=available),
-            patch.object(image_mappings, "card_group_reference", side_effect=controlled_reference),
-        ):
+        with patch.object(image_mappings, "card_group_reference", side_effect=controlled_reference):
             owned_artwork.owned_cards(cx["actor"])
             assert effective_collection.project(cx["actor"]) == before
             # Image descriptors are optional additions; collection truth remains identical.

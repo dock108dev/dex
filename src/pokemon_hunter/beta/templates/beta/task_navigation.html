@@ -1,0 +1,24 @@
+{% if navigation_group %}
+<nav class="task-navigation" aria-label="{% if navigation_group == 'collection' %}Collection tasks{% elif navigation_group == 'shopping' %}Shopping tasks{% elif navigation_group == 'settings' %}Settings tasks{% else %}Administration tasks{% endif %}">
+  {% if navigation_group == 'collection' %}
+  <a href="/collection-tools/" {% if request.path == '/collection-tools/' %}aria-current="page"{% endif %}>Collection tools</a>
+  <a href="/goals/" {% if request.path == '/goals/' %}aria-current="page"{% endif %}>Goals</a>
+  <a href="/collection/" {% if request.path == '/collection/' %}aria-current="page"{% endif %}>Physical copies</a>
+  {% if parity %}<a href="/overview/" {% if request.path == '/overview/' %}aria-current="page"{% endif %}>Overview</a>{% endif %}
+  {% elif navigation_group == 'shopping' %}
+  <a href="/shopping/" {% if request.path == '/shopping/' or request.path == '/shopping/legacy/' or '/shopping/saved/' in request.path %}aria-current="page"{% endif %}>Check a lot</a>
+  <a href="/hunt/" {% if request.path == '/hunt/' %}aria-current="page"{% endif %}>{% if parity %}eBay searches{% else %}eBay guide{% endif %}</a>
+  {% if parity %}<a href="/missing/" {% if request.path == '/missing/' %}aria-current="page"{% endif %}>Find missing cards</a><a href="/finds/" {% if request.path == '/finds/' %}aria-current="page"{% endif %}>Saved eBay finds</a>{% endif %}
+  <a href="/packs/" {% if '/packs/' in request.path and not '/packs/saved/' in request.path %}aria-current="page"{% endif %}>Packs to open</a>
+  <a href="/lookup/" {% if request.path == '/lookup/' %}aria-current="page"{% endif %}>Pack lookup</a>
+  <a href="/packs/saved/" {% if '/packs/saved/' in request.path %}aria-current="page"{% endif %}>Saved pack research</a>
+  {% elif navigation_group == 'settings' %}
+  <a href="/settings/" {% if request.path == '/settings/' %}aria-current="page"{% endif %}>Import &amp; source history</a>
+  {% if expansion %}<a href="/requests/" {% if request.path == '/requests/' %}aria-current="page"{% endif %}>Catalog requests</a><a href="/catalog-coverage/" {% if request.path == '/catalog-coverage/' %}aria-current="page"{% endif %}>Catalog coverage</a>{% endif %}
+  {% elif navigation_group == 'administration' and admin %}
+  <a href="/administration/" {% if request.path == '/administration/' %}aria-current="page"{% endif %}>Administration</a>
+  {% if expansion %}<a href="/catalog-review/" {% if request.path == '/catalog-review/' %}aria-current="page"{% endif %}>Catalog review</a><a href="/catalog-pipeline/" {% if '/catalog-pipeline/' in request.path %}aria-current="page"{% endif %}>Batch review</a>{% endif %}
+  <a href="/product-review/" {% if '/product-review/' in request.path %}aria-current="page"{% endif %}>Product review</a>
+  {% endif %}
+</nav>
+{% endif %}

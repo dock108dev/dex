@@ -12,7 +12,7 @@ from django.views.decorators.http import require_GET, require_POST
 from pydantic import ValidationError
 
 from . import collection as service
-from . import store
+from . import image_bindings, store
 from .diagnostics import failure
 from .views import actor
 
@@ -87,7 +87,7 @@ def private_home(request):
             "staging": getattr(settings, "STAGING", False),
         },
     )
-    response._dex_owned_artwork = not getattr(settings, "STAGING", False)
+    response._dex_owned_artwork = image_bindings.enabled()
     return response
 
 

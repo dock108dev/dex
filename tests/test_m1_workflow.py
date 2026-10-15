@@ -171,7 +171,11 @@ def test_ordinary_routes_and_lookup_save_scope_validation(e1):
     assert e1["a"].get("/api/collection-sources/" + src["id"] + "/").status_code == 200
     assert e1["b"].get("/api/collection-sources/" + src["id"] + "/").status_code == 400
     body = e1["a"].get("/pokedex/").content
-    assert b"pokedex.js" in body and b"Pack lookup" in body
+    assert b"pokedex.js" in body and b'href="/shopping/"' in body
+    shopping = e1["a"].get("/shopping/")
+    assert shopping.status_code == 200
+    assert b'aria-label="Shopping tasks"' in shopping.content
+    assert b'href="/lookup/"' in shopping.content and b"Pack lookup" in shopping.content
 
 
 def test_reselecting_original_source_retains_changed_successor_and_undo(e1):

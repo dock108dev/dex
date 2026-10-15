@@ -392,21 +392,23 @@ def project(actor, *, catalog=None, active=None, pending=None):
                 if op:
                     s["operation_ids"].append(op["id"])
     # Journal-only card intent obeys the last source boundary for its scope.
+    from . import collection_defaults
+
     intents = {}
     for op in operations:
-        intent = op["plan"].get("card_intent")
-        if not intent or op["generation"] in invalid_generations:
+        if op["generation"] in invalid_generations:
             continue
-        identity = intent["identity"]
-        n = identity.get("pokemon_dex")
-        scope = "kanto" if n and n <= 151 else "johto" if n else None
-        source_boundary = scoped_sources.get(scope, {}).get("boundary") or boundary
-        if source_boundary and (
-            source_boundary.get("unresolved") or op["generation"] <= source_boundary["generation"]
-        ):
-            continue
-        key = _key(identity["set_name"], identity["name"], identity["number"])
-        intents.setdefault(key, []).append((op, intent))
+        for intent in collection_defaults.intents(op["plan"]):
+            identity = intent["identity"]
+            n = identity.get("pokemon_dex")
+            scope = "kanto" if n and n <= 151 else "johto" if n else None
+            source_boundary = scoped_sources.get(scope, {}).get("boundary") or boundary
+            if source_boundary and (
+                source_boundary.get("unresolved") or op["generation"] <= source_boundary["generation"]
+            ):
+                continue
+            key = _key(identity["set_name"], identity["name"], identity["number"])
+            intents.setdefault(key, []).append((op, intent))
     for key, events in intents.items():
         identity = events[0][1]["identity"]
         row = card(identity["set_name"], identity["name"], identity["number"], identity.get("pokemon_dex"))
@@ -450,7 +452,7 @@ def project(actor, *, catalog=None, active=None, pending=None):
             (
                 (op, i)
                 for op, i in reversed(events)
-                if i["kind"] in {"card_quantity", "mark_owned", "remove_card"}
+                if i["kind"] in {"card_quantity", "card_defaults", "mark_owned", "remove_card"}
             ),
             None,
         )
@@ -491,6 +493,15 @@ def project(actor, *, catalog=None, active=None, pending=None):
             )
             row["established_total_quantity"] = total if row["present"] and not changed_after else None
             row["operation_ids"].append(op["id"])
+        variant_event = next(
+            (i for _, i in reversed(events) if i["kind"] in {"card_defaults", "mark_owned", "remove_card"}),
+            None,
+        )
+        if row["present"] and variant_event and variant_event["kind"] == "card_defaults":
+            row["owned_variant"] = variant_event["owned_variant"]
+            if collection_defaults.variant_exception(row, {c["id"]: c for c in active}, by_id):
+                row["owned_variant"] = None
+            row["owned_variant_printing_ids"] = collection_defaults.variant_printing_ids(row, catalog)
         if row["established_total_quantity"] is not None and row["established_total_quantity"] < len(
             row["current_copy_ids"]
         ):

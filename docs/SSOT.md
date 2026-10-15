@@ -33,6 +33,7 @@ Paths in this table are relative to `src/pokemon_hunter/`.
 | Display card identity and canonical contracts | `beta/card_groups.py`: deterministic game/set/language/literal card groups, published catalog and checked account-private list/detail/species reads; `beta/card_group_views.py`: canonical/legacy destinations and literal mutation adapters; [group contract](card-groups.md) |
 | Current collection presence | `beta/effective_collection.py:project`: verified account-local source/card intents and later supported copy creations; nullable exhaustive card total, recorded copies and exact resolution independent |
 | Reviewed collection editing | `beta/collection_intents.py:plan/augment_plan/check_undo` through existing `collection.preview/confirm/undo`; journal-only ownership/quantity, explicit full/regional replacement, effective reviews and dependency protection |
+| Finite owner defaults | `beta/collection_defaults.py`: validated owner-only card list, quantity/normal-variant attestation and explicit-exception preservation through the existing operation journal; no copy or catalog rewrite |
 | Declaration-based ownership | `beta/ownership_declarations.py`: retained account-local source revisions separate from physical copies and the effective current projection |
 | Public catalog publication | `beta/catalog_imports.py`, `beta/sealed_catalog.py`, `beta/sealed_bridge.py`: reviewed packages, atomic publication, journaled correction/rollback; `beta/sealed_contract.py` owns strict package schemas, reexported through the existing service |
 | Catalog coverage and batch checkpoints | `beta/catalog_coverage.py`: pinned universe/alias inputs and read-only projections; `beta/catalog_pipeline.py`: assessment, reviewed checkpoints and existing publication services |
@@ -173,8 +174,13 @@ The [image contract](artwork.md) owns consumer image semantics. `beta/image_mapp
 plus pinned `beta/data/cx04_image_mappings.json` own species/group/unsupported exact-
 child mappings. `beta/image_bindings.py` owns current account/catalog/generation
 adapters and copy descriptors; `beta/scans.py: authorized_photo_rows` is shared with
-existing photo serving. `owned_artwork.py` retains compatibility references using
-checked canonical mappings and fresh projection equality. None supplies possession,
+existing photo serving. `image_bindings.enabled` owns local/staging availability for
+remote descriptors and the private collection shell's image policy. Both catalog
+groups and literal declarations use `image_mappings._card_mapping` over the same
+hash-checked index; missing or duplicate literal identities remain unavailable.
+`owned_artwork.py` retains the active parity adapter using checked canonical mappings
+and fresh projection equality. It has no URL constructor or normalized-name image
+lookup; its set order is presentation only. None supplies possession,
 totals, variant qualification or navigation identity. Remote species/card references are
 private-local only; public/staging exclusions and existing private photo lifetime rules
 remain. Card and species screens consume the same image descriptors and canonical
@@ -182,7 +188,7 @@ destinations independently of collection presence.
 
 ## Card flow and request authority
 
-B2 owns `/cards/`, `/card-library/`, canonical card detail and legacy card destinations
+The collection app owns `/cards/`, `/card-library/`, canonical card detail and legacy card destinations
 with one handler each, independently of parity. My Cards uses fixed owned groups;
 Library uses catalog groups. Full scoped filter options include owned archived sets.
 Private HTTP projections bind verified account plus checked collection generation;
@@ -212,7 +218,7 @@ effective_collection and the existing saved goal services. `beta/species_views.p
 the canonical Pokédex/species route boundary in every supported profile and the
 authenticated `/api/pokedex-species/` contract. It verifies account and checked
 generation before returning; it owns no persisted identity, ownership, schema, mutation
-or snapshot policy. Private B2 does not depend on parity valuations. Guests retain
+or snapshot policy. Private collection browsing does not depend on parity valuations. Guests retain
 published allowlisted metadata with no inferred personal status.
 
 `species-screens.js` joins that checked projection with the existing species group API
@@ -256,3 +262,42 @@ explicit confirmation. Included units, wanted units and collection quantities ar
 independent. Stale context discards price derivatives and requires reopening while
 retaining inputs; source expiry/withdrawal remains enforced. Persistence, source
 identity, ownership and financial calculation belong to the existing domain services.
+
+`navigation.py:context/task_home` supplies read-only collection, Add Card
+and owner-only administration entry pages. Shared `task_navigation.html` groups
+existing routes without granting access or becoming another workflow service.
+`packs_views.py` supplies an account-scoped goal chooser when no goal was requested;
+explicit goal projection/authorization still belongs to `packs.py`. Card Library
+retains its primary section through detail/Back. Optional card focus memory holds
+only a destination within the current account; existing response/session/generation
+checks and logout invalidation remain authoritative. Existing filter meanings and
+completion denominators are unchanged.
+
+## Pokédex scoped completion
+
+`beta/species_scope.py` owns the finite multivalue/date contract, retained-date
+identity joins, three-valued matching and owned-card evidence policy.
+`species_projection.project` consumes only verified effective current possession;
+all dimensions match one evidence record. Broad literal cards can establish common
+set/date/category/rarity facts without an itemised copy; finish requires an explicit
+owner declaration or qualified exact evidence. Unknown quantity preserves possession.
+Species-only evidence is unresolved in restricted scopes. Duplicate cards count once.
+
+Target membership comes from canonical region or the supported saved species goal's
+frozen membership. Search and ownership-display filters affect rows only. Card
+criteria never remove target species. `scoped_progress` describes current qualifying
+cards, `current_progress` overall possession, and `progress` retains the original
+goal-policy result. Unsupported printing/legacy policies stay in Goals.
+
+Single-value URLs remain supported. Multivalues use a JSON array inside the existing
+field; values are deduplicated/sorted, at most eight per dimension, 160 characters
+per value, 1,400 per field and 1,500 encoded characters for criteria, reserving room within 1,800 per list context. Fields are
+set, era (indexed series), type (catalog category), rarity, finish, released and year;
+`date_from`/`date_to` are inclusive ISO dates. OR within dimensions, AND across them.
+Invalid calendar dates, reversed ranges, repeated query keys, unsupported release
+periods, excessive inputs and unsupported contexts fail closed. No printing ID or
+saved-goal storage is rewritten. Species details inherit criteria and target region
+from their validated list return. Their card classification is keyed by canonical
+group IDs using the complete-child identity join, independently of internal
+effective assertion IDs; only current owned groups receive classifications. Card, header and Shopping return chains retain the
+same finite nesting, account/session/installation and generation checks.

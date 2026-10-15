@@ -4,10 +4,17 @@ import csv
 import io
 import json
 
-from . import collection, effective_collection, store
+from . import collection, collection_defaults, effective_collection, store
 from . import ownership_declarations as declarations
 
-KINDS = {"mark_owned", "remove_card", "card_quantity", "declaration_correction", "source_select"}
+KINDS = {
+    "mark_owned",
+    "remove_card",
+    "card_quantity",
+    "card_defaults",
+    "declaration_correction",
+    "source_select",
+}
 
 
 def source_scope(source):
@@ -52,6 +59,8 @@ def plan(actor, kind, request, operation_id):
     actor = store.verified(actor)
     if kind not in KINDS:
         raise ValueError("Unsupported collection intent")
+    if kind == "card_defaults":
+        return augment_plan(actor, kind, request, operation_id, collection_defaults.plan(actor, request))
     result = dict(creates=[], updates=[], deletes=[], errors=[], warnings=[], checklist=[])
     if kind == "source_select":
         sources = store.rows(
@@ -194,6 +203,17 @@ def augment_plan(actor, kind, request, operation_id, prepared):
             for key, r in new.items()
             if old.get(key, {}).get("established_total_quantity") != r["established_total_quantity"]
         ],
+        variant_changes=[
+            dict(
+                set_name=r["set_name"],
+                name=r["name"],
+                number=r["number"],
+                before=old.get(key, {}).get("owned_variant"),
+                after=r.get("owned_variant"),
+            )
+            for key, r in new.items()
+            if old.get(key, {}).get("owned_variant") != r.get("owned_variant")
+        ],
         affected_copy_ids=sorted(
             {
                 (c.get("before") or c.get("after") or c.get("row"))["id"]
@@ -218,8 +238,7 @@ def _scope_contains(scope, n):
 def _identities(actor, operation):
     plan = operation["plan"]
     result = []
-    if plan.get("card_intent"):
-        result.append(plan["card_intent"]["identity"])
+    result.extend(intent["identity"] for intent in collection_defaults.intents(plan))
     by_id = {p["id"]: p for p in collection.catalog(actor, include_archived=True)}
     for change in operation["changes"]:
         if change["kind"] != "copy":
@@ -264,13 +283,13 @@ def check_undo(actor, operation):
             for a in intents
             for b in newer_intents
         )
-        if operation["plan"].get("card_intent") and (
+        if collection_defaults.intents(operation["plan"]) and (
             same or (later_scope and any(_scope_contains(later_scope, i.get("pokemon_dex")) for i in intents))
         ):
             raise collection.Conflict(
                 "Newer card intent or source boundary depends on this operation; undo the dependent operation first"
             )
-        if later["plan"].get("card_intent") and same:
+        if collection_defaults.intents(later["plan"]) and same:
             raise collection.Conflict(
                 "Newer card intent depends on this copy operation; undo the dependent intent first"
             )

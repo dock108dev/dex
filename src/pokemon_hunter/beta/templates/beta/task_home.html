@@ -1,0 +1,19 @@
+{% extends 'beta/base.html' %}
+{% block title %}Dex · {{ task_title }}{% endblock %}
+{% block content %}
+<h1>{{ task_title }}</h1>
+<div class="task-grid">
+{% if request.path == '/add-card/' %}
+  <section class="panel"><h2>Choose a card</h2><p>Find a supported printing, review its variants and add it to your collection.</p><a class="button-link" href="/card-library/">Browse Card Library</a></section>
+  <section class="panel"><h2>Use a photo</h2>{% if scans %}<p>Review the photo entry options before uploading or starting recognition.</p><a class="button-link secondary" href="/scan/">Open photo entry</a>{% else %}<p>Photo entry is unavailable in this installation. Use Card Library to choose a card.</p>{% endif %}</section>
+{% elif request.path == '/collection-tools/' %}
+  <section class="panel"><h2>Collection goals</h2><p>Review saved checklists, their progress and retained versions.</p><a href="/goals/">Open Goals</a></section>
+  <section class="panel"><h2>Physical copies</h2><p>Find your itemised records, binders and copy details.</p><a href="/collection/">Open physical copies</a></section>
+  {% if parity %}<section class="panel"><h2>Collection overview</h2><p>Review your current collection summary.</p><a href="/overview/">Open overview</a></section>{% endif %}
+  <section class="panel"><h2>Import and history</h2><p>Manage imports, source history and reconciliation in Settings.</p><a href="/settings/">Open Settings</a></section>
+{% elif admin %}
+  {% if expansion %}<section class="panel"><h2>Catalog review</h2><p>Review supported catalog requests.</p><a href="/catalog-review/">Open catalog review</a></section><section class="panel"><h2>Batch review</h2><p>Review staged catalog batches before a separate publication decision.</p><a href="/catalog-pipeline/">Open batch review</a></section>{% endif %}
+  <section class="panel"><h2>Product review</h2><p>Review sealed product metadata and coverage.</p><a href="/product-review/">Open product review</a></section>
+{% endif %}
+</div>
+{% endblock %}

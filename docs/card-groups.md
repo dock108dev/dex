@@ -37,11 +37,10 @@ old identity remains unavailable until its explicit correction/mapping is review
 ## Publication, possession and unresolved evidence
 
 Private catalog scope uses the existing authenticated `collection.catalog` policy:
-B4 roots expose published children in published sets; early B2 roots retain their
-ordinary private legacy catalog. Supported other-game/language metadata retains
+Publication-enabled roots expose published children in published sets; older
+collection roots retain their ordinary private legacy catalog. Supported other-game/language metadata retains
 private catalog access. Guest scope uses `public_catalog.entries`: published
-Pokémon/en metadata only, with no catalog exposure on roots without reviewed B4
-publication. Public detail excludes archived children. Private owned scope includes
+Pokémon/en metadata only, with no catalog exposure before reviewed publication. Public detail excludes archived children. Private owned scope includes
 supported owned archived identities; private detail also preserves retained
 matching-copy identities. A selected archived child remains labelled unavailable;
 no edition is substituted. A wholly unavailable unowned/unrecorded group is 404.
@@ -87,7 +86,7 @@ collector_number,pokemon_dex,identity_status,variant_count,published_variant_cou
 catalog_available`, plus the five private summary fields above when authorized.
 `variant_count` counts all retained children in the caller's internal projection;
 `published_variant_count` counts children admitted by that caller's catalog policy
-(including legacy private availability on early B2 roots); `catalog_available`
+(including legacy private availability on older collection roots); `catalog_available`
 means at least one such child exists. Guest counts therefore include only published
 children, while authorized private counts can identify archived children separately.
 Default summaries omit child IDs, assertion IDs, copies, history and source detail.
@@ -264,3 +263,8 @@ each request, without a shared private cache. Artwork descriptors are bound only
 for a returned page/detail after filtering and pagination. Filter-option reads
 bind no images. Counts, conflict handling, archived context, exact identity and
 account/generation checks remain unchanged.
+
+Collector-number ordering compares digit runs numerically before pagination, in both
+the default set ordering and explicit Number ordering. Thus 1, 2, 9, 10, 11 and 100
+remain in that order; prefixed and suffixed numbers retain their literal identities.
+Name ordering remains alphabetical with natural collector numbers for ties.

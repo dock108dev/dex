@@ -8,7 +8,7 @@ from django.shortcuts import render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_GET
 
-from . import collection, collection_views, public_catalog, species_projection
+from . import collection, collection_views, public_catalog, species_projection, species_scope
 from .card_group_views import private, query, return_context
 from .collection_views import endpoint
 from .views import actor
@@ -56,7 +56,7 @@ def _species_context(raw):
 
 @require_GET
 def home(request, dex=None):
-    """One canonical route: authorized B2 view, published metadata for other profiles."""
+    """One canonical route: private collection view or allowlisted published metadata."""
     if dex is not None:
         species_projection.require_dex(dex)
     try:
@@ -98,6 +98,8 @@ def home(request, dex=None):
         guest_allowed = public_catalog.FILTERS | {"scroll", "focus"} if dex is None else {"scroll", "return"}
         if set(raw) - guest_allowed:
             raise ValueError("Choose supported published Pokémon filters. Sign in for collection tools.")
+        if any(raw.get(key, "").startswith("[") for key in species_scope.MULTI):
+            raise ValueError("Sign in to evaluate multiselect card scopes")
         public_raw = {key: value for key, value in raw.items() if key in public_catalog.FILTERS}
         context = public_catalog.pokedex(public_raw, dex)
         context["return_url"] = raw.get("return") or "/pokedex/"

@@ -144,3 +144,21 @@ Private totals reference one mapped literal assertion; current ownership, archiv
 records and catalog projections remain distinct. UI editing delegates to the same
 reviewed transaction helpers. For runtime updates and protected backups, follow
 [operations](operations.md).
+
+## Finite owner defaults
+
+An explicit owner correction can attest a finite list of currently owned cards with
+`card_defaults` through the existing preview/confirm/undo journal. The request lists
+current effective card IDs, quantity `1` and variant `normal`; it does not apply to
+future additions or to another account. Existing positive totals, qualified variants,
+first-edition selections and copy notes are preserved. Multiple current copies without
+an exhaustive total require an explicit total rather than silently becoming one.
+
+The attestation supplies the displayed card total and a private normal-variant ownership
+label. Known normal catalog children can show declared ownership; unknown catalog
+edition/finish fields do not become exact printing qualification. No physical copies,
+catalog records, prices or frozen goal policies are created or rewritten. Later explicit
+quantity changes override the total; copy additions/removals invalidate the exhaustive
+total under the existing policy. Later variant notes override the normal label. Removing
+and re-adding a card, or selecting a newer source, clears the prior default. Undo checks
+all affected card identities and rejects newer dependent edits or source replacements.

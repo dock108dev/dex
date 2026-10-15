@@ -3,7 +3,7 @@ from uuid import UUID
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_GET, require_POST
 
-from . import offer_filters, pack_research
+from . import collection, offer_filters, pack_research
 from .collection_views import endpoint
 from .packs import project
 from .views import actor
@@ -12,6 +12,8 @@ from .views import actor
 @endpoint
 @require_GET
 def home(request):
+    if not request.GET.get("goal"):
+        return render(request, "beta/packs_index.html", {"goals": collection.goals(actor(request))})
     context = project(
         actor(request),
         request.GET.get("goal", ""),

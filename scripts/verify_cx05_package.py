@@ -87,7 +87,7 @@ options=client.get('/api/card-group-filters/?scope=owned').json()
 assert options['account_id']==owned['account_id']
 assert any(row['name']=='Retained archive' for row in options['sets'])
 assert len(image_mappings._reviewed()['species'])==251
-assert len(image_mappings._reviewed()['cards'])==1086
+assert len(image_mappings._reviewed()['cards'])==21516
 path=group['url']
 plain=client.get('/api/card-groups/'+group['id']+'/').json()
 assert plain['selected_child'] is None and plain['selected_child_image'] is None

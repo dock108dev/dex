@@ -25,11 +25,10 @@ assets and authorized private copy photos. The [image contract](artwork.md)
 defines the four roles, pinned mappings, source restrictions and fallback behavior.
 References remain mapped independently of possession. Literal names such as Dark,
 Light and named Pokémon do not change species art or canonical identities.
-There are 251 species and 1,086 distinct card reference mappings across the twelve
-requested vintage/promo sets. All-era catalog entries remain visible without art.
+There are 251 species and 21,516 distinct card reference mappings across 202 sets. Mapping coverage and remote image availability remain independent of catalog coverage.
+Catalog entries stay visible if artwork is unavailable.
 
-All 53 Wizards promo identities retain individual date evidence and gaps; Mew #8
-has a separate external visual check. Numbering and set-wide dates do not establish
+Wizards promo identities retain individual date evidence and gaps. Numbering and set-wide dates do not establish
 through-2001 coverage. Standard set/number scans establish no edition, finish or
 physical-copy image. Source software/metadata licenses grant no artwork rights;
 the owner's selected private scope remains local, with public/staging remote
@@ -105,3 +104,27 @@ refresh tools provide synthetic replay only.
 All-era variant/distribution coverage and current purchasability remain incomplete.
 Inspect catalog gap reports and individual evidence rather than treating a missing
 match as proof that no card or product exists. Hosted operation and real-provider behavior require checks beyond synthetic tests.
+
+## Scoped release evidence
+
+Scoped completion reads the hash-checked current coverage profile and reviewed aliases through
+exact provider/language/set mappings. Its retained English dates describe that
+source's English set release; US/UK and physical-edition applicability remain
+unresolved. ISO year/month/day precision is an interval. Only fully contained
+intervals confirm dated eligibility; a boundary-spanning interval stays unresolved.
+Pokémon generation, copyright and capture time never substitute for release dates.
+
+Rolling promo-series start dates are excluded from individual-card dating. Historical
+artwork notes include some promo date/year evidence, but the active published card
+attributes and shipped exact-date join do not expose an admissible per-card release
+record; those cards remain Unknown here. Sets without a reviewed exact provider-key
+join also remain unknown. The Pokédex reports actual printing coverage separately from its stable target count.
+No acquisition or catalog publication runs. Unknown date can be selected explicitly;
+unknown records never confirm a dated criterion. A conflicting conjunction returns
+zero confirmed completion without removing targets.
+
+Sets/expansions implement pack type. Product-family membership and the pack an owned
+card came from are not inferred. Card category, rarity and literal finish choices
+use indexed values only. This catalog supplies Pokémon as its species category;
+EX/GX/V subcategories and elemental types are not established by the retained
+published attributes. Unsupported categories remain a coverage gap.

@@ -84,3 +84,12 @@ For backup exclusions, revocation preservation and deletion limits, use
 contracts and source-review records are not shipped repository inputs. Coverage
 depends on the selected installation's active release and source admission.
 No scheduled acquisition is connected.
+
+For a read-only investigation, `current` and `display_current` are unsuitable:
+their expiry/source pruning can mutate managed files. Inspect the exact call graph
+before selecting a helper; do not disable the ordinary worker to freeze state.
+Use bounded metadata reads and pure contract validators with a read-only catalog
+connection; keep private prices and contracts out of reports. Local admission does
+not establish provider freshness, seller identity or permanent-save rights. The
+legacy hunt path does not consume these private observations; see
+[Shopping discovery constraints](hunts.md#discovery-integration-constraints).
