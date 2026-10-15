@@ -62,7 +62,10 @@ def test_owned_references_and_page_share_image_availability_policy(b2, allowed):
         assert response.status_code == 200
         directives = [directive.split() for directive in response["Content-Security-Policy"].split(";")]
         image_sources = next((values[1:] for values in directives if values and values[0] == "img-src"), [])
-        assert ("https://assets.tcgdex.net" in image_sources) is allowed
+        expected_sources = (
+            ["'self'", "https://assets.tcgdex.net", "https://raw.githubusercontent.com"] if allowed else []
+        )
+        assert image_sources == expected_sources
         assert bool(rows) is allowed
         if allowed:
             bind.assert_called_once()
