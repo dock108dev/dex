@@ -1,0 +1,402 @@
+[
+  {
+    "source_path": "config/catalog-pipeline/d7-20261005/ecard1.json",
+    "source_sha256": "b2631994b59723e8557273831260eca4ac25428c22bd8a1407d036d6804cdeea",
+    "package": {
+      "schema_version": "dex-catalog-v1",
+      "game": "pokemon",
+      "provider": "tcgdex",
+      "version": "d7-99c994747cf7-v1",
+      "set_key": "ecard1",
+      "set_name": "Expedition Base Set",
+      "language": "en",
+      "aliases": [],
+      "source_url": "https://codeload.github.com/tcgdex/cards-database/tar.gz/99c994747cf7519a3e51166cc932de79a88bd4b3",
+      "source_sha256": "1431e3be180cc5c8e491e480fd78b2b721155622372591d9f82bfb8aa83a6cce",
+      "metadata_permission": "MIT; Copyright (c) 2021 TCGdex; see evidence/d7-20261005/TCGDEX_LICENSE.txt",
+      "image_permission": "not-included",
+      "coverage": "partial",
+      "expected_count": 277,
+      "cards": [
+        {
+          "external_id": "ecard1-82:49a7a9ed8f71e46d",
+          "number": "82",
+          "name": "Ivysaur",
+          "finish": "normal",
+          "variant": "{\"type\":\"normal\"}",
+          "edition": null,
+          "metadata": {
+            "pokemon_dex": 2,
+            "dex_eligible": true,
+            "supertype": "Pokémon",
+            "rarity": "Uncommon"
+          }
+        },
+        {
+          "external_id": "ecard1-82:24d19f6077bc64b1",
+          "number": "82",
+          "name": "Ivysaur",
+          "finish": "reverse",
+          "variant": "{\"type\":\"reverse\"}",
+          "edition": null,
+          "metadata": {
+            "pokemon_dex": 2,
+            "dex_eligible": true,
+            "supertype": "Pokémon",
+            "rarity": "Uncommon"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "source_path": "config/catalog-pipeline/d8-20261006/dp3.json",
+    "source_sha256": "a8c494e42cb2df1b3b436c3d950bdc9106ec76b2055869b00af4fcbf1fb58636",
+    "package": {
+      "schema_version": "dex-catalog-v1",
+      "game": "pokemon",
+      "provider": "tcgdex",
+      "version": "d8-99c994747cf7-v1",
+      "set_key": "dp3",
+      "set_name": "Secret Wonders",
+      "language": "en",
+      "aliases": [],
+      "source_url": "https://codeload.github.com/tcgdex/cards-database/tar.gz/99c994747cf7519a3e51166cc932de79a88bd4b3",
+      "source_sha256": "1431e3be180cc5c8e491e480fd78b2b721155622372591d9f82bfb8aa83a6cce",
+      "metadata_permission": "MIT; Copyright (c) 2021 TCGdex; retained evidence/d7-20261005/TCGDEX_LICENSE.txt",
+      "image_permission": "not-included",
+      "coverage": "partial",
+      "expected_count": 159,
+      "cards": [
+        {
+          "external_id": "dp3-51:49a7a9ed8f71e46d",
+          "number": "51",
+          "name": "Ivysaur",
+          "finish": "normal",
+          "variant": "{\"type\":\"normal\"}",
+          "edition": null,
+          "metadata": {
+            "pokemon_dex": 2,
+            "dex_eligible": true,
+            "supertype": "Pokémon",
+            "rarity": "Uncommon"
+          }
+        },
+        {
+          "external_id": "dp3-51:24d19f6077bc64b1",
+          "number": "51",
+          "name": "Ivysaur",
+          "finish": "reverse",
+          "variant": "{\"type\":\"reverse\"}",
+          "edition": null,
+          "metadata": {
+            "pokemon_dex": 2,
+            "dex_eligible": true,
+            "supertype": "Pokémon",
+            "rarity": "Uncommon"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "source_path": "config/catalog-pipeline/d8-20261006/ex6.json",
+    "source_sha256": "f43c96cdc8b7395f7eed7d0569b2471d2385467be7a878c73688dfedce14989e",
+    "package": {
+      "schema_version": "dex-catalog-v1",
+      "game": "pokemon",
+      "provider": "tcgdex",
+      "version": "d8-99c994747cf7-v1",
+      "set_key": "ex6",
+      "set_name": "FireRed & LeafGreen",
+      "language": "en",
+      "aliases": [],
+      "source_url": "https://codeload.github.com/tcgdex/cards-database/tar.gz/99c994747cf7519a3e51166cc932de79a88bd4b3",
+      "source_sha256": "1431e3be180cc5c8e491e480fd78b2b721155622372591d9f82bfb8aa83a6cce",
+      "metadata_permission": "MIT; Copyright (c) 2021 TCGdex; retained evidence/d7-20261005/TCGDEX_LICENSE.txt",
+      "image_permission": "not-included",
+      "coverage": "partial",
+      "expected_count": 206,
+      "cards": [
+        {
+          "external_id": "ex6-35:49a7a9ed8f71e46d",
+          "number": "35",
+          "name": "Ivysaur",
+          "finish": "normal",
+          "variant": "{\"type\":\"normal\"}",
+          "edition": null,
+          "metadata": {
+            "pokemon_dex": 2,
+            "dex_eligible": true,
+            "supertype": "Pokémon",
+            "rarity": "Uncommon"
+          }
+        },
+        {
+          "external_id": "ex6-35:4d7d4648b998fd9c",
+          "number": "35",
+          "name": "Ivysaur",
+          "finish": "reverse",
+          "variant": "{\"foil\":\"energy\",\"type\":\"reverse\"}",
+          "edition": null,
+          "metadata": {
+            "pokemon_dex": 2,
+            "dex_eligible": true,
+            "supertype": "Pokémon",
+            "rarity": "Uncommon"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "source_path": "config/catalog-pipeline/d8-20261006/sv03-5.json",
+    "source_sha256": "f2360a911c7fc881308a35c192834122fe5b9d945fa0d65e9f53774c350e2703",
+    "package": {
+      "schema_version": "dex-catalog-v1",
+      "game": "pokemon",
+      "provider": "tcgdex",
+      "version": "d8-99c994747cf7-v1",
+      "set_key": "sv03-5",
+      "set_name": "151",
+      "language": "en",
+      "aliases": [],
+      "source_url": "https://codeload.github.com/tcgdex/cards-database/tar.gz/99c994747cf7519a3e51166cc932de79a88bd4b3",
+      "source_sha256": "1431e3be180cc5c8e491e480fd78b2b721155622372591d9f82bfb8aa83a6cce",
+      "metadata_permission": "MIT; Copyright (c) 2021 TCGdex; retained evidence/d7-20261005/TCGDEX_LICENSE.txt",
+      "image_permission": "not-included",
+      "coverage": "partial",
+      "expected_count": 346,
+      "cards": [
+        {
+          "external_id": "sv03.5-002:49a7a9ed8f71e46d",
+          "number": "002",
+          "name": "Ivysaur",
+          "finish": "normal",
+          "variant": "{\"type\":\"normal\"}",
+          "edition": null,
+          "metadata": {
+            "pokemon_dex": 2,
+            "dex_eligible": true,
+            "supertype": "Pokémon",
+            "rarity": "Uncommon"
+          }
+        },
+        {
+          "external_id": "sv03.5-002:24d19f6077bc64b1",
+          "number": "002",
+          "name": "Ivysaur",
+          "finish": "reverse",
+          "variant": "{\"type\":\"reverse\"}",
+          "edition": null,
+          "metadata": {
+            "pokemon_dex": 2,
+            "dex_eligible": true,
+            "supertype": "Pokémon",
+            "rarity": "Uncommon"
+          }
+        },
+        {
+          "external_id": "sv03.5-167:6d0c671bc6311ab2",
+          "number": "167",
+          "name": "Ivysaur",
+          "finish": "holo",
+          "variant": "{\"type\":\"holo\"}",
+          "edition": null,
+          "metadata": {
+            "pokemon_dex": 2,
+            "dex_eligible": true,
+            "supertype": "Pokémon",
+            "rarity": "Illustration rare"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "source_path": "config/catalog-pipeline/d9-20261006/lc.json",
+    "source_sha256": "d5710c56e0bb3ca00cb90d0f6cbfb2993a9b433ecac73c75be323308b6ec72e8",
+    "package": {
+      "schema_version": "dex-catalog-v1",
+      "game": "pokemon",
+      "provider": "tcgdex",
+      "version": "d9-99c994747cf7-v1",
+      "set_key": "lc",
+      "set_name": "Legendary Collection",
+      "language": "en",
+      "aliases": [],
+      "source_url": "https://codeload.github.com/tcgdex/cards-database/tar.gz/99c994747cf7519a3e51166cc932de79a88bd4b3",
+      "source_sha256": "1431e3be180cc5c8e491e480fd78b2b721155622372591d9f82bfb8aa83a6cce",
+      "metadata_permission": "MIT; Copyright (c) 2021 TCGdex; retained evidence/d7-20261005/TCGDEX_LICENSE.txt",
+      "image_permission": "not-included",
+      "coverage": "partial",
+      "expected_count": 206,
+      "cards": [
+        {
+          "external_id": "lc-47:24d19f6077bc64b1",
+          "number": "47",
+          "name": "Ivysaur",
+          "finish": "reverse",
+          "variant": "{\"type\":\"reverse\"}",
+          "edition": null,
+          "metadata": {
+            "pokemon_dex": 2,
+            "dex_eligible": true,
+            "supertype": "Pokémon",
+            "rarity": "Uncommon"
+          }
+        },
+        {
+          "external_id": "lc-47:49a7a9ed8f71e46d",
+          "number": "47",
+          "name": "Ivysaur",
+          "finish": "normal",
+          "variant": "{\"type\":\"normal\"}",
+          "edition": null,
+          "metadata": {
+            "pokemon_dex": 2,
+            "dex_eligible": true,
+            "supertype": "Pokémon",
+            "rarity": "Uncommon"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "source_path": "config/catalog-pipeline/d9-20261006/me01.json",
+    "source_sha256": "fc394d499ef1787f51dba3ca04fbd95d205e8552f3d31eab130740fad0cc7781",
+    "package": {
+      "schema_version": "dex-catalog-v1",
+      "game": "pokemon",
+      "provider": "tcgdex",
+      "version": "d9-99c994747cf7-v1",
+      "set_key": "me01",
+      "set_name": "Mega Evolution",
+      "language": "en",
+      "aliases": [],
+      "source_url": "https://codeload.github.com/tcgdex/cards-database/tar.gz/99c994747cf7519a3e51166cc932de79a88bd4b3",
+      "source_sha256": "1431e3be180cc5c8e491e480fd78b2b721155622372591d9f82bfb8aa83a6cce",
+      "metadata_permission": "MIT; Copyright (c) 2021 TCGdex; retained evidence/d7-20261005/TCGDEX_LICENSE.txt",
+      "image_permission": "not-included",
+      "coverage": "partial",
+      "expected_count": 188,
+      "cards": [
+        {
+          "external_id": "me01-002:49a7a9ed8f71e46d",
+          "number": "002",
+          "name": "Ivysaur",
+          "finish": "normal",
+          "variant": "{\"type\":\"normal\"}",
+          "edition": null,
+          "metadata": {
+            "pokemon_dex": 2,
+            "dex_eligible": true,
+            "supertype": "Pokémon",
+            "rarity": "Common"
+          }
+        },
+        {
+          "external_id": "me01-002:24d19f6077bc64b1",
+          "number": "002",
+          "name": "Ivysaur",
+          "finish": "reverse",
+          "variant": "{\"type\":\"reverse\"}",
+          "edition": null,
+          "metadata": {
+            "pokemon_dex": 2,
+            "dex_eligible": true,
+            "supertype": "Pokémon",
+            "rarity": "Common"
+          }
+        },
+        {
+          "external_id": "me01-134:6d0c671bc6311ab2",
+          "number": "134",
+          "name": "Ivysaur",
+          "finish": "holo",
+          "variant": "{\"type\":\"holo\"}",
+          "edition": null,
+          "metadata": {
+            "pokemon_dex": 2,
+            "dex_eligible": true,
+            "supertype": "Pokémon",
+            "rarity": "Illustration rare"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "source_path": "config/catalog-pipeline/d9-20261006/pop2.json",
+    "source_sha256": "2a391a52a4aec92e03c1844f9f66bec412e3f5ad15a376e0af655b1ff984beb4",
+    "package": {
+      "schema_version": "dex-catalog-v1",
+      "game": "pokemon",
+      "provider": "tcgdex",
+      "version": "d9-99c994747cf7-v1",
+      "set_key": "pop2",
+      "set_name": "POP Series 2",
+      "language": "en",
+      "aliases": [],
+      "source_url": "https://codeload.github.com/tcgdex/cards-database/tar.gz/99c994747cf7519a3e51166cc932de79a88bd4b3",
+      "source_sha256": "1431e3be180cc5c8e491e480fd78b2b721155622372591d9f82bfb8aa83a6cce",
+      "metadata_permission": "MIT; Copyright (c) 2021 TCGdex; retained evidence/d7-20261005/TCGDEX_LICENSE.txt",
+      "image_permission": "not-included",
+      "coverage": "partial",
+      "expected_count": 18,
+      "cards": [
+        {
+          "external_id": "pop2-7:49a7a9ed8f71e46d",
+          "number": "7",
+          "name": "Ivysaur",
+          "finish": "normal",
+          "variant": "{\"type\":\"normal\"}",
+          "edition": null,
+          "metadata": {
+            "pokemon_dex": 2,
+            "dex_eligible": true,
+            "supertype": "Pokémon",
+            "rarity": "Uncommon"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "source_path": "config/catalog-pipeline/d9-20261006/si1.json",
+    "source_sha256": "b6f9f260c128289e219a535c6e548e860db62e58f411c4dd2d1730ea31a0d54f",
+    "package": {
+      "schema_version": "dex-catalog-v1",
+      "game": "pokemon",
+      "provider": "tcgdex",
+      "version": "d9-99c994747cf7-v1",
+      "set_key": "si1",
+      "set_name": "Southern Islands",
+      "language": "en",
+      "aliases": [],
+      "source_url": "https://codeload.github.com/tcgdex/cards-database/tar.gz/99c994747cf7519a3e51166cc932de79a88bd4b3",
+      "source_sha256": "1431e3be180cc5c8e491e480fd78b2b721155622372591d9f82bfb8aa83a6cce",
+      "metadata_permission": "MIT; Copyright (c) 2021 TCGdex; retained evidence/d7-20261005/TCGDEX_LICENSE.txt",
+      "image_permission": "not-included",
+      "coverage": "partial",
+      "expected_count": 18,
+      "cards": [
+        {
+          "external_id": "si1-5:49a7a9ed8f71e46d",
+          "number": "5",
+          "name": "Ivysaur",
+          "finish": "normal",
+          "variant": "{\"type\":\"normal\"}",
+          "edition": null,
+          "metadata": {
+            "pokemon_dex": 2,
+            "dex_eligible": true,
+            "supertype": "Pokémon",
+            "rarity": "Common"
+          }
+        }
+      ]
+    }
+  }
+]

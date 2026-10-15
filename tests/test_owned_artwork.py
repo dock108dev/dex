@@ -60,7 +60,9 @@ def test_owned_references_and_page_share_image_availability_policy(b2, allowed):
         rows = art.owned_cards(b2["actor"])
         response = b2["a"].get("/collection/")
         assert response.status_code == 200
-        assert ("assets.tcgdex.net" in response["Content-Security-Policy"]) is allowed
+        directives = [directive.split() for directive in response["Content-Security-Policy"].split(";")]
+        image_sources = next((values[1:] for values in directives if values and values[0] == "img-src"), [])
+        assert ("https://assets.tcgdex.net" in image_sources) is allowed
         assert bool(rows) is allowed
         if allowed:
             bind.assert_called_once()

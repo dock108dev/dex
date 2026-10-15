@@ -244,7 +244,7 @@ def test_every_reviewed_card_mapping_matches_pinned_retained_metadata():
         if row["set_name"] in images._reviewed()["expanded_set_names"]
     }
     for code in ("bw8", "dp2", "col1", "dp1"):
-        package = json.loads((ROOT / f"config/catalog-pipeline/d8-20261006/{code}.json").read_bytes())
+        package = json.loads((ROOT / f"tests/fixtures/retained-catalog/{code}.json").read_bytes())
         for card in package["cards"]:
             metadata = card["metadata"]
             dex = metadata.get("pokemon_dex") if metadata.get("supertype") == "Pokémon" else None

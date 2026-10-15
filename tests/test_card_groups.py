@@ -64,10 +64,9 @@ def test_retained_ivysaur_metadata_revalidated_twenty_variants_thirteen_groups()
     root = Path(__file__).parents[1] / "config/catalog-pipeline"
     retained = json.loads((root / "retained-20261004.json").read_text())
     packages = [row["package"] for row in retained["sets"]]
-    for path in sorted(root.rglob("*.json")):
-        data = json.loads(path.read_text())
-        if isinstance(data, dict) and data.get("schema_version") == "dex-catalog-v1" and "cards" in data:
-            packages.append(data)
+    packages.append(json.loads((root / "d6-20261005/gym2.json").read_text()))
+    fixture = Path(__file__).parent / "fixtures/retained-catalog/ivysaur-packages.json"
+    packages.extend(row["package"] for row in json.loads(fixture.read_text()))
     rows = []
     for package in packages:
         for card in package.get("cards", []):
