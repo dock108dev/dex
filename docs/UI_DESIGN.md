@@ -150,3 +150,24 @@ states, image failure, account isolation and actual text enlargement. The [CI br
 harness](CI.md) uses synthetic data; it does not establish native-device, screen-reader
 or human usability results. Customer walkthroughs use the existing installation and
 its actual available state.
+
+## Owner review of the installed app
+
+Use the existing installation and ordinary sign-in. Confirm My Cards and Card Library
+have distinct meanings; open Pokédex, a species, Your Cards and a card. Check ownership,
+unknown totals, artwork fallbacks, optional details, direct Edit/cancel and numeric card
+ordering. Return through filters, scopes, page, scroll and keyboard focus. Compare
+pre-2000, 2000-onward and multiset scopes while keeping the same target denominator;
+current overall and frozen goal progress must remain separately labelled.
+
+Check the expanded menu at narrow width and enlarged text. Open contextual Shopping,
+inspect its scope and return without a provider request or automatic quantity change.
+Existing copy photos, archived examples or prices may be unavailable; report that limit
+rather than supplying simulated customer data. Inventory writes require an owner-selected
+real change. A later Shopping/onboarding review also checks the newly delivered tasks
+against their completion checks.
+
+The owner accepts the ordinary-use experience or identifies a specific rejected journey,
+including perceived responsiveness. Engineering checks and sign-in assistance do not
+supply that verdict. Acceptance of local use does not establish provider entitlement,
+complete pricing, recognition accuracy or public release readiness.

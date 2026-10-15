@@ -138,3 +138,53 @@ and leaves consumption intact. Owner Stop also removes a completed managed metad
 result. Cleanup requires a running operator/OS; interrupted supervisors leave consumed
 state and possibly a pending validated copy for cleanup after the self-bounded child
 exits. No automatic retry is permitted.
+
+## Recorded local delivery
+
+The latest retained installation record is the October 14 scoped-completion delivery,
+with the compact card page, grouped navigation, card references, numeric ordering and
+explicit finite collection defaults. Genuine Safari exercised browsing and return/
+cancel flows on the existing collection. The recorded update preserved protected
+collection, goals, photos, credentials, journals and independent source registries;
+ordinary sign-in changed authentication activity only. See [verification scope](CI.md#recorded-verification)
+and the optional [local delivery record](../reports/ux-03-20261014/closeout.md).
+
+This is a dated record, not a current process check. Later interface and authority
+changes exist in source without a recorded replacement of that installed runtime.
+Before another delivery or walkthrough, verify the root, interpreter and listener
+from the installation's local instructions. Follow the runtime-update and recovery
+procedure above against the latest state. Never reuse a historical PID as authority
+or restore an old database over later activity. Owner acceptance remains unrecorded.
+
+## Existing eBay setup prerequisite
+
+The October 15 local investigation observed enabled/unconfigured/Production after
+ordinary sign-in. At least one required credential was missing; no credential value
+was inspected. The installed configuration directory was independent of the private
+root and checkout. The ordinary developer portal was signed out, so the selected
+existing application's nonsecret Production-keyset/Browse association could not be
+verified. Setup stopped before provisioning or interrupting the app. OAuth, searches,
+item details, quota requests and price acquisition were not performed. The optional
+[setup record](../reports/shop-01b-20261015/closeout.md) describes that observation;
+current readiness must be checked again before operational work.
+
+To resume the already selected setup, the owner privately opens the existing access
+record with credential fields hidden. Verify the application/environment association
+and the available access, allowance and usage facts without retrieving secret values.
+A valid keyset is not proof of every downstream workflow right.
+
+Before stopping the app, establish owner availability at a trusted private terminal,
+the supported launch context, same-runtime recovery, startup queues and a finite
+interruption window. Quiesce normally; back up protected state with the managed-price
+exclusion and independent-registry preservation above. The owner supplies the existing
+matching pair through hidden input into the ordinary server environment. Do not copy
+checkout credentials or store secret literals in arguments, logs or runtime files.
+Verify local configured status after normal startup; it does not authenticate remotely.
+
+For recovery, use the verified compatible runtime and latest same root with newly
+supplied eBay inputs omitted. Preserve current authentication and independent journals.
+Process-environment credentials need secure input again on later launches unless an
+established secret manager is separately selected. The optional [operational template](../reports/shop-01a-20261015/next-handoff.md)
+contains the original hidden-input procedure; verify its historical paths before use.
+The current search workflow still lacks an independent Stop/consumed-attempt boundary,
+so setup alone does not make it suitable for a tiny access probe.

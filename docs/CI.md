@@ -210,3 +210,42 @@ provider/connection overrides. The caller must tear down its disposable server; 
 manages its ephemeral service container. Never pass a personal or production database
 URL. Real proxy/TLS deployment needs separate configuration; see
 [operations](operations.md#optional-postgresqlhttps-profile).
+
+## Recorded verification
+
+These are dated results from retained local checks, not a fresh pass of the current
+checkout or a substitute for owner acceptance. Counts from different harnesses overlap.
+The optional local reports are ignored and are not required to use a clean checkout.
+
+The October 14 collection delivery covered the compact card page, grouped navigation,
+artwork/defaults/numeric ordering and multiselect scoped completion. The final scoped
+completion regression passed 1,515 cases with no failures, errors or skips. Installed
+engineering checks covered 59 existing browser assertions, 21 navigation layouts and
+six scoped layouts, including computed 200% text; the integrated journey covered 51
+synthetic states without provider calls. Native Safari separately observed actual
+collection browsing, scoped progress, card/Shopping returns and cancellation. Native
+screen-reader/device and owner acceptance were not established. See the retained
+[collection delivery record](../reports/ux-03-20261014/closeout.md); earlier card and
+navigation details remain in the [card record](../reports/ux-01-20261014/closeout.md)
+and [navigation record](../reports/ux-02-20261014/closeout.md).
+
+The October 15 interface refinement changed Library controls/gallery, the narrow card
+reading order and Pokédex progress/filter hierarchy. Its isolated engineering review
+covered nine layouts at 1280/390/320 CSS pixels, doubled text at 390, keyboard/cancel/
+Back behavior, empty data and unavailable/recovery states. It passed 175 focused tests
+and 59 renderer contracts. That review did not install the changes or establish
+new-user or owner acceptance. See the [interface review](../reports/interface-review-20261015/review.md).
+The source authority cleanup passed 206 focused cases; its retained native result is
+[local JUnit](../reports/ssot-enforcement-20261015/final-junit.xml). Mapping identity and
+remote-image availability remain separate.
+
+The shared read-only test fingerprint and portable documentation checker passed 13
+focused cases both in the worktree and a clean source export. The subsequent docs and
+artifact cleanup passed 78 focused eBay/catalog/checker tests, lint/format, link,
+JavaScript and whitespace checks; it removed five unused generated research reports.
+These checks did not repeat the full suite, package delivery or live provider tests.
+The earlier [maintenance closeout](../reports/repository-cleanup-20261015/closeout.md)
+predates those five removals; its statement that no artifact removal was needed is
+historical. The later source changes are now in `a48e6dd`; the older reports' statements
+that their work was uncommitted describe their recording time. No current hosted CI
+result or installation of that commit is inferred.

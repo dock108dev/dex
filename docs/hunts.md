@@ -242,3 +242,47 @@ There is no scheduled price refresh, automatic listing matching, whole-lot photo
 recognition or automatic buy/bid action. Pack offers are retained observations;
 live sealed-offer acquisition is unsupported. See [catalogs and Pack lookup](catalogs.md)
 and [price snapshot operations](price-snapshots.md) for supported local inputs.
+
+## Completed data-path investigation
+
+The October 15 source investigation established two separate reference paths: hunts
+use retained parity/project guides, while the calculator uses the managed private
+snapshot lifecycle. Both share basic reference admission, but hunts do not yet consume
+private snapshots. Seller/catalog compatibility and surviving storage rights must be
+checked before reusing `market_identity`, `lot_guides`, Shopping arithmetic and history;
+a third price store would introduce competing policy.
+
+A bounded metadata-only audit recorded 901 conditionally eligible English/USD raw
+references across eleven vintage sets, with an October 9 publisher build, October 10
+capture, null provider valuation dates and November 9 expiry. That dated finding is
+not current availability, a fresh price, exact physical condition or all-era coverage.
+The recorded contracts admitted current display/arithmetic and managed storage, without
+permanent comparison-save, backup or export rights. Do not copy the values into docs.
+See the optional [data-path investigation](../reports/shop-01-20261014/data-path-map.md)
+and [readiness findings](../reports/shop-01-20261014/readiness-coverage-matrix.md).
+
+Installed readiness was subsequently observed as unconfigured; secure setup stopped
+before any provider call. [Operations](operations.md#existing-ebay-setup-prerequisite)
+explains that access prerequisite and the supported recovery procedure. No actual
+assigned/remaining quota, successful OAuth, Browse entitlement or comparison/ranking/
+retention rights were established by these investigations.
+
+## Backlog
+
+These are optional extensions rather than prerequisites for the current local scope:
+
+- Complete graded 8/9/10 pricing from permitted observations with exact printing,
+  literal grader/score and source dates. Missing coverage must stay unpriced; no
+  interpolation or paid-service assumption.
+- Additional raw product/subtype reconciliation for Base Set Machamp #8; Neo Destiny
+  Dark Exeggutor #33; Gym Challenge Rocket's Mewtwo #14, Blaine's Charizard #2 and
+  Brock's Vulpix #37; Gym Heroes Rocket's Hitmonchan #11, Misty's Psyduck #54 and
+  Misty's Seadra #9. These are retained identity gaps, not freshly checked prices.
+- Automatic refresh schedules, unattended monitoring/alerts, sold-history integration,
+  broader catalog publication, live sealed-offer acquisition and public/hosted release.
+- Named completion views, exact pack-family/origin relationships and additional date,
+  language, physical-variant or category metadata beyond current admitted coverage.
+- Further detail-image resolution/remote availability work, described in [artwork](artwork.md#remaining-image-limits).
+
+Select and bound any of these separately. The active discovery and onboarding work
+belongs in the remaining execution plan, not this optional list.
