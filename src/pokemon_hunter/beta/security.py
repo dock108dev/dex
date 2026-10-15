@@ -4,8 +4,15 @@ from pokemon_hunter.security import BROWSER_HEADERS
 
 
 def secure_response(response):
+    private_cache = response.get("Cache-Control") == "private, no-store"
     for key, value in BROWSER_HEADERS.items():
         response[key] = value
+    if private_cache:
+        response["Cache-Control"] = "private, no-store"
+    if getattr(response, "_dex_owned_artwork", False):
+        response["Content-Security-Policy"] += (
+            "; img-src 'self' https://assets.tcgdex.net https://raw.githubusercontent.com"
+        )
     return response
 
 

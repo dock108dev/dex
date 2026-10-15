@@ -1,9 +1,13 @@
 {% extends 'beta/base.html' %}
 {% block title %}Dex · {{ selected_species.name }}{% endblock %}
 {% block content %}
-<a class="browse-return" href="/pokedex/">← All Pokémon</a>
-<div class="page-title"><div><h1><span class="species-title-number">#{{ selected_species.dex|stringformat:'03d' }}</span> {{ selected_species.name }}</h1><p class="muted">{{ selected_species.region|title }} · {{ cards|length }} indexed card{{ cards|pluralize }}</p></div><a class="button-link" href="/lookup/?targets={{ selected_species.dex }}">Look up packs</a></div>
+<a class="browse-return" href="{{ return_url|default:'/pokedex/' }}">← All Pokémon</a>
+<div class="page-title"><div><h1><span class="species-title-number">#{{ selected_species.dex|stringformat:'03d' }}</span> {{ selected_species.name }}</h1><p class="muted">{{ selected_species.region|title }}</p></div><a class="button-link" href="/lookup/?targets={{ selected_species.dex }}">Look up packs</a></div>
 {% if page_error %}<p class="error" role="alert">{{ page_error }}</p>{% endif %}
+<div class="species-artwork-placeholder image-placeholder" role="img" aria-label="Pokémon artwork unavailable for {{ selected_species.name }}">Pokémon artwork unavailable</div>
+<section class="panel"><h2>Your Cards</h2><p>Sign in to view your current collection.</p><a href="/login/?next=/pokedex/{{ selected_species.dex }}/">Sign in</a></section>
+<p><a href="/card-library/?species={{ selected_species.dex }}">Explore {{ selected_species.name }} cards</a></p>
+<details class="panel"><summary>Published catalog metadata</summary>
 {% if cards %}
 <div class="public-cards">
 {% for card in cards %}
@@ -20,4 +24,5 @@
 {% else %}
 <section class="panel empty"><h2>No cards indexed yet</h2><p>{{ selected_species.name }} belongs in the Pokédex. Its English physical card coverage is still being researched.</p><a href="/lookup/?targets={{ selected_species.dex }}">Check pack research and gaps</a></section>
 {% endif %}
+</details>
 {% endblock %}

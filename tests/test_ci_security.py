@@ -148,6 +148,9 @@ def test_worktree_scan_excludes_ignored_and_untracked_owner_state(tmp_path):
     subprocess.run(["git", "add", "--force", "private.json"], cwd=root, check=True, capture_output=True)
     (root / "scripts/ci").mkdir(parents=True)
     (root / "scripts/ci/new.py").write_text("print('new CI source')\n")
+    (root / "scripts/new-helper.cjs").write_text("console.log('new renderer contract');\n")
+    (root / "tests").mkdir()
+    (root / "tests/new-helper.cjs").write_text("console.log('new test contract');\n")
     (root / "src").mkdir()
     (root / "src/new.py").write_text("print('new app source')\n")
     (root / "src/.env").write_text("synthetic owner value")
@@ -155,9 +158,11 @@ def test_worktree_scan_excludes_ignored_and_untracked_owner_state(tmp_path):
     (root / ".github/actions/test/action.yml").write_text("name: New action\n")
     destination = tmp_path / "snapshot"
     destination.mkdir()
-    assert security.tracked_snapshot(root, destination) == 5
+    assert security.tracked_snapshot(root, destination) == 7
     assert (destination / "app.py").exists()
     assert (destination / "scripts/ci/new.py").exists()
+    assert (destination / "scripts/new-helper.cjs").exists()
+    assert (destination / "tests/new-helper.cjs").exists()
     assert (destination / "src/new.py").exists()
     assert (destination / ".github/actions/test/action.yml").exists()
     assert not (destination / "src/.env").exists()

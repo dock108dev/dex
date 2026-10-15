@@ -1,6 +1,6 @@
-FROM python:3.12-slim-trixie
+FROM python:3.12-slim-trixie@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
 RUN apt-get update && apt-get install -y --no-install-recommends postgresql-client ca-certificates && rm -rf /var/lib/apt/lists/*
-RUN pip install --no-cache-dir uv==0.9.7
+RUN pip install --no-cache-dir uv==0.9.10
 WORKDIR /app
 COPY pyproject.toml uv.lock ./
 COPY src ./src
@@ -9,7 +9,7 @@ COPY config/sealed/2026-10-04 ./config/sealed/2026-10-04
 COPY config/sealed/2026-10-04-151/package.json ./config/sealed/2026-10-04-151/package.json
 COPY config/sealed/2026-10-05-det1-e1c/package.json ./config/sealed/2026-10-05-det1-e1c/package.json
 COPY config/catalog-pipeline ./config/catalog-pipeline
-RUN uv sync --frozen --no-dev && useradd --uid 10001 --create-home dex
+RUN uv sync --locked --no-dev && useradd --uid 10001 --create-home dex
 USER dex
 ENV DEX_PROFILE=staging PYTHONUNBUFFERED=1
 CMD ["/app/.venv/bin/python", "-m", "pokemon_hunter.beta.deployment", "web"]

@@ -109,7 +109,13 @@ def run(root, base, output):
             def boundary(route):
                 parsed = urlsplit(route.request.url)
                 if parsed.scheme in {"http", "https"} and parsed.netloc != origin.netloc:
-                    external.append(route.request.url)
+                    assert route.request.resource_type == "image" and parsed.hostname in {
+                        "raw.githubusercontent.com",
+                        "assets.tcgdex.net",
+                    }, route.request.url
+                    external.append(
+                        dict(url=route.request.url, sent_to_remote=False, kind="controlled private image")
+                    )
                     route.abort()
                 else:
                     route.continue_()
@@ -144,6 +150,14 @@ def run(root, base, output):
             capture(page, width, "guest-filtered", full=True)
             page.locator(".public-species-link").focus()
             page.keyboard.press("Enter")
+            expect(page.get_by_role("heading", name="#123 Scyther", exact=True)).to_be_visible()
+            assert urlsplit(page.url).path == "/pokedex/123/"
+            expect(page.get_by_role("heading", name="Your Cards", exact=True)).to_be_visible()
+            expect(page.locator("dialog[open]")).to_have_count(0)
+            page.locator(".browse-return").click()
+            expect(page.locator("#browse-query")).to_have_value("#123")
+            expect(page.locator("#public-species-123")).to_be_focused()
+            page.locator("#public-species-123").press("Enter")
             expect(page.get_by_role("heading", name="#123 Scyther", exact=True)).to_be_visible()
             details_keyboard(page)
             capture(page, width, "guest-species", full=True)
@@ -234,15 +248,18 @@ def run(root, base, output):
             capture(page, width, "member-physical-copies")
             page.goto(base + "/pokedex/123/")
             expect(page.get_by_role("heading", name="#123 Scyther", exact=True)).to_be_visible()
-            copy_link = page.get_by_role("link", name="Add or edit a copy", exact=True).first
-            expect(copy_link).to_have_attribute("href", "/collection/")
-            expect(page.locator("main")).not_to_contain_text("Sign in to add a copy")
+            expect(page.get_by_role("heading", name="Your Cards", exact=True)).to_be_visible()
+            expect(page.locator("dialog[open]")).to_have_count(0)
+            expect(page.get_by_role("link", name="Explore Scyther cards", exact=True)).to_have_attribute(
+                "href", "/card-library/?species=123"
+            )
             capture(page, width, "member-public-species", full=True)
             data = context.request.get(base + "/api/collection/").json()
             assert len(data["copies"]) == 3 and len(data["goals"]) == 3
             page.goto(base + "/pokedex/")
             expect(page.locator("[data-dex-species]")).to_have_count(251)
             capture(page, width, "member-pokedex")
+            page.get_by_role("button", name="Select", exact=True).click()
             first_select = page.locator("[data-select-species]").first
             first_select.focus()
             page.keyboard.press("Space")
@@ -250,9 +267,13 @@ def run(root, base, output):
             first_species = page.locator("[data-dex-species]").first
             first_species.focus()
             page.keyboard.press("Enter")
-            expect(page.locator("#editor")).to_be_visible()
-            page.keyboard.press("Escape")
-            expect(first_species).to_be_focused()
+            expect(page).to_have_url(__import__("re").compile(r"/pokedex/1/\?"))
+            assert urlsplit(page.url).path == "/pokedex/1/"
+            expect(page.get_by_role("heading", name="#001 Bulbasaur", exact=True)).to_be_visible()
+            expect(page.get_by_role("heading", name="Your Cards", exact=True)).to_be_visible()
+            expect(page.locator("dialog[open]")).to_have_count(0)
+            page.get_by_role("link", name="Back to Pokédex", exact=True).click()
+            expect(page.locator("[data-dex-species]").first).to_be_focused()
             page.goto(base + "/settings/")
             expect(page.get_by_role("heading", name="Settings & data", exact=True)).to_be_visible()
             capture(page, width, "member-settings")
@@ -265,7 +286,7 @@ def run(root, base, output):
             card = page.locator("#cards .card").first
             printing_id = printing_choice.input_value()
             card.get_by_role("spinbutton").fill("2")
-            card.get_by_role("button", name="Add", exact=True).click()
+            card.get_by_role("button", name="Add to lot", exact=True).click()
             row = page.locator("#selections .selection").first
             expect(row).to_have_attribute("data-printing", printing_id)
             expect(row.get_by_label("In this lot", exact=True)).to_have_value("2")
@@ -354,7 +375,7 @@ def run(root, base, output):
         "Private collection, goals, saves or historical observations changed during read-only checks"
     )
     assert photos_before == photos_after
-    assert not external, external
+    assert all(request["sent_to_remote"] is False for request in external), external
     calls = json.loads((output.parent / "provider-calls.json").read_text())
     assert calls["calls"] == 0
     assert candidate == source_hashes(), (
@@ -369,6 +390,7 @@ def run(root, base, output):
         photos_preserved=True,
         provider_calls=0,
         external_browser_requests=0,
+        controlled_private_images=external,
         console_errors=errors,
         protected_tables=list(before),
         source_sha256=candidate,

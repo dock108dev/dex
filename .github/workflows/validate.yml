@@ -15,6 +15,7 @@ permissions:
 env:
   CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
   UV_NO_PROGRESS: '1'
+  CI_NODE_VERSION: 22.18.0
 jobs:
   quality:
     name: Source quality
@@ -46,7 +47,7 @@ jobs:
       id: node
       if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
       with:
-        node-version: 22.18.0
+        node-version: ${{ env.CI_NODE_VERSION }}
         package-manager-cache: false
     - name: Compile, JavaScript and maintained documentation
       id: source
@@ -54,6 +55,13 @@ jobs:
         uv run --no-sync python -m compileall -q src scripts
         uv run --no-sync python scripts/ci/source.py
       if: ${{ !cancelled() && steps.node.outcome == 'success' }}
+    - name: Current renderer authority and recovery contracts
+      id: renderers
+      if: ${{ !cancelled() && steps.node.outcome == 'success' }}
+      run: |-
+        node scripts/verify_cx05_races.js
+        node scripts/verify_cx06_races.js
+        node scripts/verify_cx06_source_tools.js
     - name: Required result report
       if: always()
       env:
@@ -63,12 +71,13 @@ jobs:
         FORMAT: ${{ steps.format.outcome }}
         NODE: ${{ steps.node.outcome }}
         SOURCE: ${{ steps.source.outcome }}
+        RENDERERS: ${{ steps.renderers.outcome }}
       run: |
         report_python=(python3)
         if [[ "$SETUP" == success ]]; then
           report_python=(uv run --no-sync python)
         fi
-        "${report_python[@]}" scripts/ci/report.py job --name "Source quality" --output reports/ci/quality/metrics.json --outcome "setup=$SETUP" --outcome "actions=$ACTIONS" --outcome "lint=$LINT" --outcome "format=$FORMAT" --outcome "node=$NODE" --outcome "source=$SOURCE"
+        "${report_python[@]}" scripts/ci/report.py job --name "Source quality" --output reports/ci/quality/metrics.json --outcome "setup=$SETUP" --outcome "actions=$ACTIONS" --outcome "lint=$LINT" --outcome "format=$FORMAT" --outcome "node=$NODE" --outcome "source=$SOURCE" --outcome "renderers=$RENDERERS" --tool-version "node=$(node --version)"
     - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       if: always()
       with:
@@ -79,7 +88,7 @@ jobs:
   behavior:
     name: Behavior (${{ matrix.os }}, Python ${{ matrix.python }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    timeout-minutes: 30 # Whole current suite, including copied-state setup and branch coverage.
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
@@ -88,6 +97,11 @@ jobs:
       uses: ./.github/actions/setup
       with:
         python-version: ${{ matrix.python }}
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      id: node
+      with:
+        node-version: ${{ env.CI_NODE_VERSION }}
+        package-manager-cache: false
     - name: Offline component tests and branch coverage
       id: tests
       run: |-
@@ -98,12 +112,13 @@ jobs:
       env:
         SETUP: ${{ steps.setup.outcome }}
         TESTS: ${{ steps.tests.outcome }}
+        NODE: ${{ steps.node.outcome }}
       run: |
         report_python=(python3)
         if [[ "$SETUP" == success ]]; then
           report_python=(uv run --no-sync python)
         fi
-        "${report_python[@]}" scripts/ci/report.py job --name "Behavior" --output reports/ci/behavior/metrics.json --outcome "setup=$SETUP" --outcome "tests=$TESTS" --junit reports/ci/behavior/junit.xml --coverage reports/ci/behavior/coverage.json \
+        "${report_python[@]}" scripts/ci/report.py job --name "Behavior" --output reports/ci/behavior/metrics.json --outcome "setup=$SETUP" --outcome "node=$NODE" --outcome "tests=$TESTS" --tool-version "node=$(node --version)" --junit reports/ci/behavior/junit.xml --coverage reports/ci/behavior/coverage.json \
           --expect-discovered-suites
     - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       if: always()
@@ -132,11 +147,11 @@ jobs:
     - name: Build and install in an empty environment
       id: build
       run: |
-        uv build --no-build-isolation
+        uv build --no-build-isolation --out-dir "$RUNNER_TEMP/dex-build-first"
         uv build --no-build-isolation --out-dir "$RUNNER_TEMP/dex-build-repeat"
-        wheel=(dist/*.whl)
+        wheel=("$RUNNER_TEMP/dex-build-first"/*.whl)
         repeat=("$RUNNER_TEMP/dex-build-repeat"/*.whl)
-        sdist=(dist/*.tar.gz)
+        sdist=("$RUNNER_TEMP/dex-build-first"/*.tar.gz)
         [[ ${#wheel[@]} -eq 1 && ${#repeat[@]} -eq 1 && ${#sdist[@]} -eq 1 ]]
         uv venv --python 3.12 "$RUNNER_TEMP/dex-wheel"
         uv export --locked --no-dev --no-emit-project --format requirements-txt --output-file "$RUNNER_TEMP/runtime-requirements.txt" > /dev/null
@@ -239,6 +254,53 @@ jobs:
         path: reports/ci/security/*.json
         if-no-files-found: error
         retention-days: 14
+  staging:
+    name: Staging PostgreSQL
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:17.11-bookworm@sha256:3645570cccdfa447589da9f57dd740faa29b30938e861289a5574b6ca6b03826
+        env:
+          POSTGRES_USER: dex_ci
+          POSTGRES_PASSWORD: fixture-ci-only
+          POSTGRES_DB: dex_ci_staging
+        ports:
+        - 5432/tcp
+        options: >-
+          --health-cmd "pg_isready -U dex_ci -d dex_ci_staging"
+          --health-interval 5s --health-timeout 3s --health-retries 12
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - id: setup
+      uses: ./.github/actions/setup
+      with:
+        python-version: '3.12'
+    - name: Copied migration, account access and reviewed PostgreSQL mutations
+      id: staging
+      env:
+        DEX_CI_DATABASE_URL: postgresql://dex_ci:fixture-ci-only@127.0.0.1:${{ job.services.postgres.ports['5432'] }}/dex_ci_staging
+      run: uv run --no-sync python scripts/ci/staging.py --database-url "$DEX_CI_DATABASE_URL" --output reports/ci/staging/report.json
+    - name: Required result report
+      if: always()
+      env:
+        SETUP: ${{ steps.setup.outcome }}
+        STAGING: ${{ steps.staging.outcome }}
+      run: |
+        report_python=(python3)
+        if [[ "$SETUP" == success ]]; then
+          report_python=(uv run --no-sync python)
+        fi
+        "${report_python[@]}" scripts/ci/report.py job --name "Staging PostgreSQL" --output reports/ci/staging/metrics.json --outcome "setup=$SETUP" --outcome "staging=$STAGING" --measurement reports/ci/staging/report.json
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      if: always()
+      with:
+        name: ci-staging-${{ github.run_id }}-${{ github.run_attempt }}
+        path: reports/ci/staging/
+        if-no-files-found: error
+        retention-days: 14
   gate:
     name: Required checks
     runs-on: ubuntu-24.04
@@ -259,10 +321,10 @@ jobs:
       env:
         NEEDS_JSON: ${{ toJSON(needs) }}
       run: |-
-        python3 scripts/ci/report.py aggregate --needs-json "$NEEDS_JSON" --output reports/ci/gate/metrics.json --required quality --required behavior --required distribution --required browser --required security \
+        python3 scripts/ci/report.py aggregate --needs-json "$NEEDS_JSON" --output reports/ci/gate/metrics.json --required quality --required behavior --required distribution --required browser --required security --required staging \
           --report-directory reports/ci/children \
           --expect-job-reports "Source quality=1" --expect-job-reports "Behavior=${{ inputs.compatibility && 5 || 3 }}" \
-          --expect-job-reports "Fresh distribution=1" --expect-job-reports "Synthetic browser journeys=1" --expect-job-reports "Security and dependencies=1"
+          --expect-job-reports "Staging PostgreSQL=1" --expect-job-reports "Fresh distribution=1" --expect-job-reports "Synthetic browser journeys=1" --expect-job-reports "Security and dependencies=1"
         echo "result=PASS" >> "$GITHUB_OUTPUT"
     - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       if: always()
@@ -278,5 +340,6 @@ jobs:
     - distribution
     - browser
     - security
+    - staging
     outputs:
       result: ${{ steps.result.outputs.result }}

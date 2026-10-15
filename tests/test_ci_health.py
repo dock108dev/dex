@@ -249,8 +249,45 @@ def test_gh_command_uses_argument_vector_get_and_finite_timeout(monkeypatch):
         observed.append((command, kwargs))
         return SimpleNamespace(returncode=0, stdout='{"workflow_runs":[]}', stderr="")
 
-    monkeypatch.setattr(health.subprocess, "run", process)
+    monkeypatch.setattr(health.health_sources.subprocess, "run", process)
     assert health.gh_api("owner/repo", "actions/runs", {"created": ">=timestamp"}) == {"workflow_runs": []}
     command, kwargs = observed[0]
     assert command[:4] == ["gh", "api", "--method", "GET"]
     assert kwargs["timeout"] == 25 and "shell" not in kwargs
+
+
+def test_storage_subtotal_never_becomes_total_and_cache_is_a_separate_scope(monkeypatch):
+    calls = []
+
+    def api(repo, path, fields=None):
+        calls.append((path, fields))
+        return (
+            {
+                "total_count": 101,
+                "artifacts": [
+                    {"size_in_bytes": 42, "expired": False},
+                    {"size_in_bytes": 17, "expired": True},
+                ],
+            }
+            if path == "actions/artifacts"
+            else {"active_caches_count": 3, "active_caches_size_in_bytes": 123}
+        )
+
+    monkeypatch.setattr(health, "gh_api", api)
+    result = health.repository_resources("example/repo")
+    assert result["artifacts"]["active_bytes_subtotal"] == 42
+    assert result["artifacts"]["total_active_bytes"] is None
+    assert result["cache"] == {"active_count": 3, "active_bytes": 123}
+    assert len(calls) == 2 and calls[0][1] == {"per_page": "100"}
+
+
+def test_storage_outage_and_malformed_size_remain_unavailable(monkeypatch):
+    def api(repo, path, fields=None):
+        if path == "actions/artifacts":
+            return {"total_count": 1, "artifacts": [{"size_in_bytes": -1, "expired": False}]}
+        raise health.ReportError("synthetic API outage")
+
+    monkeypatch.setattr(health, "gh_api", api)
+    result = health.repository_resources("example/repo")
+    assert result["artifacts"] is result["cache"] is None
+    assert len(result["errors"]) == 2

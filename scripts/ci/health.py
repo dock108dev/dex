@@ -4,13 +4,11 @@
 from __future__ import annotations
 
 import argparse
-import json
 import math
 import os
 import platform
 import re
 import statistics
-import subprocess
 import sys
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -20,6 +18,9 @@ try:
     from .report import ReportError, identity, link, markdown, read_json, write_result
 except ImportError:  # Direct script invocation in Actions.
     from report import ReportError, identity, link, markdown, read_json, write_result
+
+from scripts.ci import health_sources
+from scripts.ci.health_sources import gh_api as gh_api
 
 REPOSITORY = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\Z")
 CONCLUSIONS = {
@@ -46,54 +47,12 @@ def timestamp(value: Any) -> datetime | None:
     return result.astimezone(UTC) if result.tzinfo is not None else None
 
 
-def gh_api(repository: str, suffix: str, fields: dict[str, str] | None = None) -> dict[str, Any]:
-    command = ["gh", "api", "--method", "GET", f"repos/{repository}/{suffix}"]
-    for key, value in (fields or {}).items():
-        command.extend(["-f", f"{key}={value}"])
-    try:
-        response = subprocess.run(command, capture_output=True, text=True, timeout=25, check=False)
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        raise ReportError("Read-only GitHub API unavailable or timed out") from exc
-    if response.returncode:
-        # Do not retain arbitrary authentication/CLI output in report artifacts.
-        raise ReportError(f"Read-only GitHub API failed (exit {response.returncode})")
-    try:
-        data = json.loads(response.stdout)
-    except json.JSONDecodeError as exc:
-        raise ReportError("Malformed GitHub API JSON") from exc
-    if not isinstance(data, dict):
-        raise ReportError("GitHub API response must be an object")
-    return data
+def repository_resources(repository: str) -> dict[str, Any]:
+    return health_sources.repository_resources(repository, api=gh_api)
 
 
 def load_live(repository: str, now: datetime, limit: int) -> tuple[dict[str, Any], list[str]]:
-    since = (now - timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
-    payload = gh_api(
-        repository, "actions/runs", {"status": "completed", "per_page": str(limit), "created": f">={since}"}
-    )
-    runs = payload.get("workflow_runs")
-    if not isinstance(runs, list):
-        raise ReportError("GitHub run response must contain workflow_runs")
-    errors = []
-    for run in runs[:limit]:
-        if not isinstance(run, dict) or not isinstance(run.get("id"), int):
-            raise ReportError("Malformed workflow run identity")
-        attempt = run.get("run_attempt")
-        if isinstance(attempt, bool) or not isinstance(attempt, int) or attempt < 1:
-            raise ReportError("Malformed workflow run attempt")
-        try:
-            run["jobs_snapshot"] = gh_api(
-                repository, f"actions/runs/{run['id']}/attempts/{attempt}/jobs", {"per_page": "100"}
-            )
-        except ReportError as exc:
-            errors.append(f"Run {run['id']} timestamps unavailable: {exc}")
-        if attempt > 1:
-            try:
-                run["first_attempt"] = gh_api(repository, f"actions/runs/{run['id']}/attempts/1")
-            except ReportError as exc:
-                errors.append(f"Run {run['id']} first attempt unavailable: {exc}")
-    payload["workflow_runs"] = runs[:limit]
-    return payload, errors
+    return health_sources.load_live(repository, now, limit, api=gh_api)
 
 
 def duration(run: dict[str, Any]) -> tuple[float | None, str | None]:
@@ -365,6 +324,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--primary-branch", default="main")
     parser.add_argument("--limit", type=int, default=30, choices=range(1, 31))
     parser.add_argument("--snapshot", type=Path)
+    parser.add_argument(
+        "--with-resources", action="store_true", help="Two bounded repository storage metadata reads"
+    )
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--now", help="Explicit ISO timestamp for reproducible fixture validation")
     args = parser.parse_args(argv)
@@ -384,6 +346,8 @@ def main(argv: list[str] | None = None) -> int:
         record = analyze(payload, now, args.primary_branch, args.limit)
         record.update({"source": source, "repository": args.repository, "errors": errors})
         record["identity"] = identity()
+        if args.with_resources and not args.snapshot:
+            record["repository_resources"] = repository_resources(args.repository)
         record["environment"] = {
             "os": platform.system(),
             "architecture": platform.machine(),
@@ -456,9 +420,24 @@ def main(argv: list[str] | None = None) -> int:
             "Median requires 5 observations; nearest-rank p95 requires 20. REST updated_at is not a completion timestamp. "
             "Job minutes sum execution spans across parallel jobs, exclude skipped/cancelled-before-start jobs, and do not "
             "represent elapsed run time or billed minutes. The delay proxy uses first-attempt created_at to run_started_at; "
-            "it is not exact queue time. Exact queue, critical path, quota/billing, cache/artifact sizes and trend deltas "
-            "remain unavailable; reasons are retained in the metrics record."
+            "it is not exact queue time. Exact queue, critical path, quota/billing, per-run cache/artifact sizes and "
+            "trend deltas remain unavailable; reasons are retained in the metrics record."
         ]
+        if resources := record.get("repository_resources"):
+            artifact, cache = resources["artifacts"], resources["cache"]
+            summary += ["", "Repository storage metadata (not billing or per-run attribution):"]
+            if artifact:
+                summary += [
+                    f"- Artifact page: {artifact['returned_count']}/{artifact['total_count']} records; "
+                    f"active subtotal {artifact['active_bytes_subtotal']} bytes. Complete listing: "
+                    f"{artifact['complete_listing']}; total active bytes "
+                    f"{artifact['total_active_bytes'] if artifact['total_active_bytes'] is not None else 'unavailable'}."
+                ]
+            if cache:
+                summary += [
+                    f"- Active cache: {cache['active_count']} entries, {cache['active_bytes']} bytes."
+                ]
+            summary += [f"- Storage sampling limitation: {markdown(error)}" for error in resources["errors"]]
         summary += [f"- Sampling limitation: {markdown(error)}" for error in errors[:10]]
         summary += [
             "",

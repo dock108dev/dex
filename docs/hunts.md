@@ -122,8 +122,8 @@ excluded. Source, date and grader details remain available. Unknown shipping,
 tax or other costs prevent a complete delivered comparison; a known subtotal is
 shown separately. Results are dated reference differences, not profit estimates.
 
-Automatic scheduled acquisition is not connected. An October snapshot is active; historical guide admission is preserved;
-new versioned private snapshots require separately reviewed exact source contracts.
+Automatic scheduled acquisition is not connected. Legacy guide admission remains
+supported; versioned private snapshots require reviewed exact source contracts.
 The repository does not contain private price snapshots.
 [Price snapshots](price-snapshots.md) describes the supported importer and source policy.
 Searching or reopening a comparison does not fetch prices. Source identity,
@@ -138,17 +138,44 @@ values and goal-based research. Both formats share account-scoped history policy
 see [architecture](SSOT.md). Saved history requires the explicit `enable-shopping`
 operator command on collection-enabled installations; back up before enabling it.
 
-## October 2026 pricing
+## Price availability
 
 Empty graded cells and grade totals stay hidden until eligible values exist. All
 four scenarios remain enabled. Price dates, condition/edition assumptions and
 source links are available under each card's **Price details** disclosure; the
-source record is collapsed separately.
+source record is collapsed separately. Coverage depends on privately activated
+sources and is not included with the repository. A publisher build date does not
+become a provider valuation date. Exact identity conflicts remain unpriced.
 
-The owner's October 10 instruction authorizes free data acquisition and reversible local integration without repeated approval packets. The locally retained October integration closeout (`docs/shopping/CS-OCT2026-DATA.md`) is complete for **901 ungraded references across 909 priority printings** from the October 9 TCGCSV build. The Original 151 scope includes Dark, Light and Shining Pokémon across the eleven vintage sets; collection-completion eligibility flags do not limit pricing. The full 1,314-printing selector remains intact.
+Current display/arithmetic rights do not imply permanent-save or export rights.
+Saving may therefore remain disabled even when values can be compared. Graded
+coverage requires supported grade/grader evidence independently of raw references.
 
-The real Shopping calculator shows these source references and computes quantity totals. Exact set/card-number/product/subtype joins precede admission. Unknown physical edition/condition remains visibly conditional, while conflicting or special variants stay unavailable. No ownership or catalog metadata changed. The publisher build date is disclosed; provider valuation date remains unavailable. The existing 30-day rule, source withdrawal/expiry and separate graded rules remain intact. No permanent save rights or price backups/exports are inferred; saved Shopping storage remains disabled.
+## Contextual collection entry and lot drafts
 
-Chansey Base Set #3 and Scyther Jungle #10 displayed their real October references and a full two-card total after ordinary sign-in. The installation was backed up, activated and restarted using the established private root. A verification tab preserved the owner's current lot. Owner acceptance and complete four-column pricing remain open.
+Species and card Find links and Goals' Find cards for this goal carry a finite,
+server-checked scope. Fields are `species` OR `group` with optional member `child`,
+optional paired account-owned `goal` and retained `version`, checked `generation`,
+and safe `return`. Opening a current species does not adopt the first saved goal.
+The label distinguishes current collection status from retained saved-goal units.
+A group without child remains a printing-selection task; archived/unavailable or
+unsupported entries do not choose siblings or widen calculator catalog policy.
 
-The next work is genuine free graded evidence and eight unmatched raw identities, listed in the private local closeout. No refresh schedule is running, and search/reopen performs no provider acquisition. Historical collector/source-review closeouts and consumed attempt journals remain preserved; their former separate-approval sequence is superseded by the owner's correction. The Desktop tracker owns current routing.
+Explicit All cards, Missing and goal changes update the visible active picker scope
+and saved progress/policy units from the latest checked response. The original
+collection return stays separate. Loading removes old picker actions.
+
+Inputs survive collection navigation and reload within the authenticated account,
+installation and browser origin. The private per-tab draft holds only user input
+amounts/dates, listing/name, printing IDs, included/wanted quantities, lock choices
+and picker UI. No guide cells, source records or computed results are stored.
+Identities and admitted local references are reread; restored inputs require
+explicit Compare and missing references stay unpriced. Draft wanted choices that
+differ from this session are visible and require explicit confirmation; reopening
+never changes session wants automatically. Clear retains wanted targets while
+resetting included quantities and costs under the existing explicit action.
+
+Logout, revoked authority, stale collection/goal context and late requests cannot
+restore private results to another account. Existing source-status and expiry
+checks remain active. Captured saves remain immutable, and explicit current
+reevaluation creates a separate child. See [navigation and Shopping adapters](SSOT.md#navigation-and-shopping-adapters) for service ownership.

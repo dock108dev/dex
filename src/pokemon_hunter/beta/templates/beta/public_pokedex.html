@@ -8,7 +8,7 @@
 {% if page_error %}<p class="error" role="alert">{{ page_error }}</p>{% endif %}
 <form method="get" action="/pokedex/" class="public-filters" aria-label="Filter Pokémon">
   <div class="public-filter-primary">
-    <div><label for="browse-query">Find a Pokémon or card</label><input id="browse-query" type="search" name="q" value="{{ filters.q }}" placeholder="Name, number, or set"></div>
+    <div><label for="browse-query">Find a Pokémon</label><input id="browse-query" type="search" name="q" value="{{ filters.q }}" placeholder="Name or dex number"></div>
     <div><label for="browse-region">Region</label><select id="browse-region" name="region"><option value="">Kanto and Johto</option><option value="kanto" {% if filters.region == 'kanto' %}selected{% endif %}>Kanto · 001–151</option><option value="johto" {% if filters.region == 'johto' %}selected{% endif %}>Johto · 152–251</option></select></div>
     <button type="submit">Search</button>
   </div>
@@ -21,17 +21,17 @@
     </div>
   </details>
 </form>
-<div class="public-result-heading"><div><h2>{{ species|length }} Pokémon</h2><p class="muted">Card coverage is partial. “No indexed cards” means a catalog gap.</p></div>{% if filters.q or filters.region or filters.set or filters.era or filters.type %}<a href="/pokedex/">Clear filters</a>{% endif %}</div>
+<div class="public-result-heading"><div><h2>{{ species|length }} Pokémon</h2><p class="muted">Published Pokémon metadata · Sign in to view your collection.</p></div>{% if filters.q or filters.region or filters.set or filters.era or filters.type %}<a href="/pokedex/">Clear filters</a>{% endif %}</div>
 {% if species %}
 <div class="public-species-list">
   {% for item in species %}
   <article class="public-species-row">
-    <a class="public-species-link" href="/pokedex/{{ item.dex }}/"><span class="public-dex-number">#{{ item.dex|stringformat:'03d' }}</span><strong>{{ item.name }}</strong><span class="muted">{% if item.printing_count %}{{ item.printing_count }} indexed card{{ item.printing_count|pluralize }}{% else %}No indexed cards{% endif %}</span></a>
-    <a class="public-pack-link" href="/lookup/?targets={{ item.dex }}" aria-label="Look up packs for {{ item.name }}">Packs</a>
+    <a class="public-species-link" id="public-species-{{ item.dex }}" data-dex="{{ item.dex }}" href="{{ item.url }}"><span class="species-artwork-placeholder image-placeholder" role="img" aria-label="Pokémon artwork unavailable for {{ item.name }}"><span aria-hidden="true">●</span></span><span class="public-dex-number">#{{ item.dex|stringformat:'03d' }}</span><strong>{{ item.name }}</strong></a>
   </article>
   {% endfor %}
 </div>
 {% else %}
 <div class="panel empty"><h2>No matching Pokémon</h2><p>Try another name or number, or clear the card filters.</p><a href="/pokedex/">Show all 251 Pokémon</a></div>
 {% endif %}
+<script src="/collection-assets/public-species.js" defer></script>
 {% endblock %}

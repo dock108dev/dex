@@ -37,8 +37,8 @@ header{padding-top:12px;padding-bottom:12px}.brand{font-size:25px}.badge{font-si
   --border: #d0d2d6;
   --line: var(--border);
   --surface: #ffffffed;
-  --radius: 16px;
-  --control-radius: 10px;
+  --radius: 12px;
+  --control-radius: 8px;
   --shadow: 0 5px 20px #24252b08, inset 0 1px 0 #fff;
   font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--ink);
@@ -48,7 +48,7 @@ body {
   min-height: 100vh;
   color: var(--ink);
   font: inherit;
-  background: radial-gradient(ellipse at 0 0, #f9edf0, transparent 55%), #f5f5f6;
+  background: #f6f6f8;
   -webkit-font-smoothing: antialiased;
 }
 header.app-header {
@@ -56,7 +56,7 @@ header.app-header {
   border-top: 4px solid var(--accent);
   border-bottom: 1px solid #d7d8db;
   color: var(--ink);
-  background: #ffffffed;
+  background: #fff;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
@@ -231,7 +231,7 @@ dialog::backdrop { background: #25262a66; }
   header.app-header { padding: 0 16px; }
   .header-inner { position: relative; display: block; padding: 8px 0; }
   .app-header .brand { font-size: 22px; }
-  .app-header nav { gap: 2px; flex-wrap: nowrap; margin-top: 4px; }
+  .app-header nav { gap: 2px; flex-wrap: wrap; margin-top: 4px; }
   .app-header nav>a { font-size: 15px; padding: 8px 9px; }
   .app-header .header-account, .app-header .app-tools { position: absolute; right: 0; top: 8px; margin: 0; }
   .app-header .header-account { font-size: 15px; padding: 8px 12px; }
@@ -257,4 +257,69 @@ dialog::backdrop { background: #25262a66; }
 }
 @supports not (backdrop-filter:blur(1px)) {
   header.app-header, .stat, .panel, .card, .auth-card { background: #fff; }
+}
+
+/* Card references live with the existing collection rows, tiles and details. */
+.card-artwork{display:block;width:min(160px,100%);margin:0 auto 12px;text-align:center;aspect-ratio:245/337;position:relative;background:#eeecef;border-radius:6px}
+.image-frame img{display:block;width:100%;height:100%;object-fit:contain;border-radius:6px}.image-frame img[hidden]{display:none}.image-frame.unavailable::before{content:"";display:block;position:absolute;inset:20%;border:1px solid #c9c4cc;border-radius:50%}.image-frame figcaption{position:absolute;top:100%;width:100%}.image-frame:not(.compact){margin-bottom:32px}
+.card-artwork figcaption{font-size:12px;color:#635e67;margin-top:4px}
+.card-artwork.compact{width:58px;min-width:58px;margin:0}
+.species-detail{display:flex;align-items:center;gap:12px}
+.declared-artwork{display:flex;flex-wrap:wrap;gap:16px}.declared-artwork .card-artwork{margin:0 0 12px}
+.card-title-link{display:block!important;min-height:0!important;color:inherit;text-decoration:none}.card-title-link:hover h3,.card-title-link:hover h4{text-decoration:underline}
+.copy-reference{overflow-wrap:anywhere}.notice p{overflow-wrap:anywhere}#owned-card-edit,#select-source{max-width:100%}
+.species-links{display:flex;flex-wrap:wrap;gap:0 12px}.species-links a{white-space:nowrap}
+.card-detail-layout{display:grid;grid-template-columns:245px minmax(0,1fr);gap:32px;align-items:start;margin:24px 0}.card-detail-image .card-artwork{width:245px;max-width:100%}.card-detail-layout h1{margin-top:0}.card-set-number{font-size:20px}.card-copy-section{max-width:780px}.card-breadcrumbs{margin-bottom:16px}
+@media(max-width:600px){.card-detail-layout{grid-template-columns:1fr;gap:16px}.card-detail-image{max-width:245px;margin:auto}.species-links{grid-column:2/-1}}
+
+.species-artwork{display:block;position:relative;width:min(160px,100%);aspect-ratio:1;background:#eeecef;border-radius:6px;margin:0 auto 32px;text-align:center}.species-artwork.compact{width:58px;min-width:58px;margin:0}.species-artwork figcaption{font-size:12px;color:#635e67}.copy-photos .card-artwork{aspect-ratio:1}.species-detail .species-artwork{flex-shrink:0}
+
+/* One owned card per tile; optional copy and variant detail below the card. */
+.card-filter-form{margin:20px 0 16px}.card-core-filters{display:grid;grid-template-columns:minmax(180px,2fr) minmax(160px,1fr) auto;gap:12px;align-items:end}.card-core-filters label{margin-top:0}.card-core-filters input,.card-core-filters select,.card-advanced-grid input,.card-advanced-grid select{min-width:0}.card-filter-form details{margin-top:8px}.card-advanced-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 16px}.card-filter-form details>p{font-size:14px}.owned-card-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:12px 0 20px}.owned-card-tile{display:flex!important;align-items:center;gap:16px;padding:16px;border:1px solid var(--border);border-radius:12px;background:white;text-decoration:none;color:var(--ink);min-width:0}.owned-card-tile:hover{border-color:var(--accent);background:#fffafb;box-shadow:0 3px 12px #20212608}.owned-card-tile .card-artwork{flex-shrink:0;width:64px;min-width:64px}.card-tile-text{display:flex;flex-direction:column;gap:5px;min-width:0;overflow-wrap:anywhere}.card-tile-text strong{font-size:17px;line-height:1.3}.card-tile-text>span{font-size:14px;line-height:1.4;color:var(--muted)}.card-tile-text .card-tile-status{color:var(--ink)}.card-pagination{justify-content:center;color:var(--muted);gap:16px}.card-pagination a{color:var(--ink)}.card-unresolved{margin:20px 0;border-top:1px solid var(--border)}.card-unresolved ul{padding-left:22px}.card-unresolved li{margin:12px 0}.card-unresolved li p{margin:3px 0;font-size:14px}.card-detail-layout{grid-template-columns:minmax(160px,220px) minmax(0,1fr);gap:32px;max-width:850px;margin:12px 0 32px}.card-detail-image .card-artwork{width:220px;margin-top:0}.card-detail-summary{min-width:0;padding-top:4px}.card-detail-summary h1{margin:0 0 12px}.card-detail-summary p{margin:10px 0}.card-detail-summary .card-set-number{font-size:18px}.card-ownership{font-weight:650;font-size:20px}.card-detail-summary .quantity-unknown{margin-top:-4px;font-size:14px}.card-detail-summary button{margin-top:8px}.card-pokemon-link{font-size:14px}.card-disclosures{max-width:850px}.card-disclosures>details{border-top:1px solid var(--border);padding:4px 0}.card-disclosures>details>summary{font-weight:650;font-size:18px}.card-disclosures>details>p{margin:10px 0}.card-disclosures>details[open]{padding-bottom:16px}.card-variant-list{padding:0;list-style:none}.card-variant-list li{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;border-top:1px solid #e7e8eb;padding:6px 0}.card-variant-list li>span{font-size:14px}.card-copy-row{padding:14px 0;border-top:1px solid #e7e8eb}.card-copy-heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}.card-copy-heading h3{margin:0;font-size:17px}.card-copy-heading .actions{gap:8px}.card-copy-row>p{margin:8px 0}.card-facts{display:grid;grid-template-columns:minmax(100px,.5fr) minmax(0,1fr);gap:8px 20px;max-width:700px}.card-facts dt{font-weight:600}.card-facts dd{margin:0;overflow-wrap:anywhere}.card-copy-row .copy-photos{margin:8px 0}.card-copy-row .copy-photos a{display:block;max-width:220px}.card-copy-row .copy-photos .card-artwork{width:180px;margin:10px 0 32px}
+@media(max-width:1000px){.owned-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.card-core-filters{grid-template-columns:1fr}.card-core-filters>*{min-width:0}.card-core-filters button{justify-self:start}.card-advanced-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.owned-card-grid{grid-template-columns:1fr}.owned-card-tile{padding:12px;gap:12px}.card-detail-layout{grid-template-columns:1fr;gap:16px}.card-detail-image{width:170px;max-width:100%;margin:0 auto}.card-detail-image .card-artwork{width:170px;margin-bottom:28px}.card-detail-summary{padding:0}.card-detail-summary .card-set-number{font-size:17px}.card-copy-heading{align-items:start}.card-copy-heading .actions{width:100%}.card-copy-heading .actions button{flex:1;min-width:0;white-space:normal}.card-facts{grid-template-columns:1fr;gap:4px}.card-facts dd{margin-bottom:8px}.card-tabs{gap:4px}.card-tabs a{padding:9px 12px}.card-pagination{gap:12px}}
+@media(max-width:380px){.card-advanced-grid{grid-template-columns:1fr}}
+
+#canonical-card h1{overflow-wrap:anywhere}
+/* Let enlarged account controls wrap rather than cover the brand. */
+@media(max-width:650px){.app-header .header-account,.app-header .app-tools{position:static;margin-left:0}.app-header nav{width:100%;min-width:0}.app-header summary{white-space:normal;overflow-wrap:anywhere}}
+/* Enlarged text must fit copy actions and the dialog's inner grid. */
+#editor .form-grid>*{min-width:0;max-width:100%}#editor input,#editor select,#editor textarea{min-width:0;max-width:100%}#editor summary,#editor h3,#editor button{overflow-wrap:anywhere}
+@media(max-width:600px){#editor .form-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:380px){.card-copy-heading .actions{display:grid;grid-template-columns:minmax(0,1fr)}.card-copy-heading .actions button{width:100%;overflow-wrap:anywhere;flex:none}}
+
+/* Canonical Pokémon identity; selection and card metadata stay optional. */
+.cx-dex-filters{grid-template-columns:minmax(180px,2fr) minmax(140px,1fr) minmax(180px,1.5fr);align-items:end;margin:16px 0}.cx-dex-filters label{margin-top:0}.species-scope{align-self:center;min-width:0;overflow-wrap:anywhere}.species-scope p{font-size:14px;line-height:1.4}.cx-species-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.cx-species-row{display:block;padding:0;min-width:0;border-bottom:1px solid var(--border)}.cx-species-row.is-selecting{display:grid;grid-template-columns:44px minmax(0,1fr);gap:0;padding:0}.cx-species-row .cx-species-link{display:flex;gap:14px;min-height:88px;width:100%;min-width:0;padding:12px;text-decoration:none;color:var(--ink);white-space:normal;align-items:center}.cx-species-link:hover{background:#fffafb}.species-row-text{display:flex;flex-direction:column;gap:4px;min-width:0;overflow-wrap:anywhere}.species-row-text strong{font-size:17px;line-height:1.35}.species-row-text>span{font-size:14px;line-height:1.4}.species-number,.species-title-number{color:var(--muted);font-weight:normal}.species-row-text .species-goal-status{color:var(--muted);font-size:13px}.selection-toolbar>button{margin-bottom:8px}#dex-batch-actions[hidden]{display:none}.selection-policy{width:100%;font-size:14px;line-height:1.5}.species-goal-notice{border-left:3px solid var(--border);padding:10px 16px;margin:12px 0 20px}.species-goal-notice p{margin:8px 0;font-size:14px}.species-detail-heading{display:grid;grid-template-columns:120px minmax(0,1fr);gap:24px;align-items:center;max-width:900px;margin:12px 0 24px}.species-detail-heading .species-artwork{width:120px;margin:0 0 28px}.species-detail-heading h1{margin:0 0 8px;overflow-wrap:anywhere}.species-ownership{font-size:18px;font-weight:600;margin:0 0 12px}.species-catalog-link{margin:8px 0 20px}.species-details{border-top:1px solid var(--border);max-width:850px}.species-details p{font-size:14px}.browse-return{min-height:44px;display:inline-flex;align-items:center}.cx-species-row .species-select{min-width:0;align-self:stretch;margin:0}.cx-species-row .species-artwork{flex-shrink:0}.cx-dex-filters>*{min-width:0}.cx-dex-filters input,.cx-dex-filters select{min-width:0;max-width:100%}
+@media(max-width:750px){.cx-dex-filters{grid-template-columns:minmax(0,1fr)}.cx-species-list{grid-template-columns:minmax(0,1fr)}.species-detail-heading{grid-template-columns:100px minmax(0,1fr);gap:16px}.species-detail-heading .species-artwork{width:100px}.species-detail-heading h1{font-size:1.8rem}.cx-species-row .cx-species-link{padding:12px;gap:12px}.species-goal-notice{padding:8px 12px}.selection-toolbar .actions>*{white-space:normal;min-width:0;overflow-wrap:anywhere}}
+@media(max-width:380px){.species-detail-heading{grid-template-columns:minmax(0,1fr);gap:8px}.species-detail-heading>div:first-child{justify-self:center}.cx-species-row .cx-species-link{gap:10px}.selection-toolbar .actions{grid-template-columns:minmax(0,1fr)}.cx-species-row.is-selecting{grid-template-columns:36px minmax(0,1fr)}}
+
+/* Species captions take their own layout space at actual enlarged text sizes. */
+.species-detail-heading .species-artwork{aspect-ratio:auto;background:transparent;margin:0;text-align:center}
+.species-detail-heading .species-artwork img{position:static;width:100%;height:auto;aspect-ratio:1;object-fit:contain;background:#eeecef}
+.species-detail-heading .species-artwork.unavailable::before{position:static;inset:auto;width:100%;height:auto;aspect-ratio:1;border:0;border-radius:6px;background:#eeecef}
+.species-detail-heading .species-artwork figcaption{position:static;top:auto;width:100%;margin-top:6px;line-height:1.4;overflow-wrap:anywhere}
+
+.species-selected-label{font-size:14px;line-height:1.5;overflow-wrap:anywhere;margin:6px 0 12px}.species-selected-label[hidden]{display:none}
+.card-selected-label,.duplicate-policy-label{font-size:14px;line-height:1.5;overflow-wrap:anywhere;margin:6px 0 12px}
+.card-selected-label[hidden]{display:none}
+
+/* Add Card remains readable against the primary action background. */
+.app-header nav a.button-link { color: #fff; }
+.app-header nav a.button-link:hover { color: #fff; background: #94202d; }
+
+/* Collection presentation: one navigation row, compact identity and consistent surfaces. */
+.card-list-heading{justify-content:flex-start;align-items:baseline;gap:12px;margin-bottom:0}
+.card-list-heading #cards-count{margin:0;color:var(--muted);font-size:16px}
+.species-shopping-action{margin:0}
+.species-shopping-action .button-link{white-space:normal;text-align:center}
+.species-detail-heading~section[aria-labelledby="your-cards-heading"]{max-width:900px}
+#species-owned-cards{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:16px}
+#content>.browse-return{margin-bottom:4px;text-decoration:none;color:var(--muted)}
+#content>.browse-return:hover{text-decoration:underline;color:var(--accent)}
+@media(max-width:650px){#species-owned-cards{grid-template-columns:minmax(0,1fr)}.card-list-heading{margin-top:4px}.card-filter-form{margin-top:16px}}
+@media(max-width:380px){
+  .species-detail-heading>div:first-child{width:min(180px,100%)}
+  .species-detail-heading .species-artwork{width:100%;max-width:100%}
+  .species-detail-heading .species-artwork img,
+  .species-detail-heading .species-artwork.unavailable::before{width:100px;max-width:100%;margin-inline:auto}
 }

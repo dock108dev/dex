@@ -50,6 +50,9 @@ def test_presence_account_isolation_idempotency_undo_and_preservation(b2):
     assert not again["plan"]["creates"]
     inv.confirm(b2["actor"], again["id"])
     assert decl.summary(b2["actor"]) == s
+    with pytest.raises(inv.Conflict, match="confirmed selection"):
+        inv.undo(b2["actor"], op["id"])
+    inv.undo(b2["actor"], again["id"])
     inv.undo(b2["actor"], op["id"])
     assert not decl.summary(b2["actor"])["rows"]
     assert inv.export_data(b2["actor"]) == before

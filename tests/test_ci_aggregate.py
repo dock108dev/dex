@@ -181,3 +181,25 @@ def test_successful_child_outcome_cannot_hide_malformed_or_contradictory_retaine
     fixture_json(path, data)
     assert aggregate_reports(identity, children) == 1
     assert json.loads((identity / "aggregate.json").read_text())["errors"]
+
+
+def test_postgres_gate_requires_native_report_even_when_job_outcome_is_success(identity):
+    children = identity / "children"
+    path = retained_job(identity, children / "staging", name="Staging PostgreSQL")
+    arguments = [
+        "aggregate",
+        "--required",
+        "staging",
+        "--needs-json",
+        '{"staging":{"result":"success"}}',
+        "--report-directory",
+        str(children),
+        "--expect-job-reports",
+        "Staging PostgreSQL=1",
+        "--output",
+        str(identity / "aggregate.json"),
+    ]
+    assert report.main(arguments) == 0
+    path.unlink()
+    assert report.main(arguments) == 1
+    assert json.loads((identity / "aggregate.json").read_text())["errors"]

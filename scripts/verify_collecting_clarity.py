@@ -9,7 +9,7 @@ import hashlib
 import json
 from copy import deepcopy
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
 from django.conf import settings
 from django.template import Context, Engine
@@ -27,6 +27,8 @@ FILES = [
     "static/collection.js",
     "static/parity.js",
     "static/pokedex.js",
+    "static/card-screens.js",
+    "static/species-screens.js",
 ]
 OPTIONAL_FILES = ["templates/beta/header.html", "static/glass.css", "static/public.css"]
 parser = argparse.ArgumentParser(description=__doc__)
@@ -194,6 +196,60 @@ def parity_fixture():
     )
 
 
+def species_fixture(query):
+    """Explicit account/generation projection contract, independently of parity."""
+    rows = [
+        dict(
+            dex=n,
+            name=registry()[n]["name"],
+            region="kanto" if n <= 151 else "johto",
+            url=f"/pokedex/{n}/",
+            current_present=n == 25,
+            goal_present=None,
+            species_artwork=None,
+            details_needed=n == 25,
+            species_quantity=None,
+        )
+        for n in range(1, 252)
+    ]
+    q = query.get("q", [""])[0].casefold()
+    filtered = [
+        r
+        for r in rows
+        if not q
+        or q in r["name"].casefold()
+        or q.removeprefix("#").isdigit()
+        and int(q.removeprefix("#")) == r["dex"]
+    ]
+    progress = dict(satisfied=1, total=251, units="species")
+    return dict(
+        public=False,
+        account_id="synthetic-account",
+        generation=0,
+        species=filtered,
+        filters={
+            key: query.get(key, [""])[0]
+            for key in ["q", "region", "goal", "set", "era", "type", "rarity", "card", "owned", "gaps"]
+        },
+        scope=dict(
+            kind="current",
+            goal_id=None,
+            name="Current collection",
+            units="species",
+            supported=True,
+            membership=list(range(1, 252)),
+            goals_url="/goals/",
+        ),
+        progress=progress,
+        current_progress=progress,
+        sets=[],
+        eras=[],
+        types=[],
+        rarities=[],
+        filtered_count=len(filtered),
+    )
+
+
 metrics = []
 with sync_playwright() as pw:
     browser = pw.chromium.launch()
@@ -257,8 +313,37 @@ with sync_playwright() as pw:
                                 operations=[],
                                 goal_options=dict(games=[]),
                                 current_collection_source=None,
+                                effective_collection=dict(
+                                    user_id="synthetic-account", generation=0, cards=[], species={}
+                                ),
                             )
                         )
+                elif path == "/api/pokedex-species/":
+                    route.fulfill(json=species_fixture(parse_qs(urlsplit(request.url).query)))
+                elif path.startswith("/api/species/") and path.endswith("/card-groups/"):
+                    number = int(path.split("/")[3])
+                    empty = dict(
+                        account_id="synthetic-account",
+                        generation=0,
+                        scope="owned",
+                        groups=[],
+                        total=0,
+                        page=1,
+                        page_size=40,
+                        pages=0,
+                        unresolved=[],
+                    )
+                    route.fulfill(
+                        json=dict(
+                            public=False,
+                            account_id="synthetic-account",
+                            generation=0,
+                            pokemon_dex=number,
+                            owned=empty,
+                            catalog=dict(empty, scope="catalog"),
+                            unresolved=[],
+                        )
+                    )
                 elif path == "/api/parity/":
                     route.fulfill(json=parity_fixture())
                 else:
@@ -279,7 +364,7 @@ with sync_playwright() as pw:
                 expect(page.locator("[data-dex-species]")).to_have_count(251)
                 if state == "empty":
                     page.locator("#dex-search").fill("No matching species")
-                    expect(page.locator("#species-grid")).to_contain_text("No species match")
+                    expect(page.locator("#species-grid")).to_contain_text("No matching Pokémon")
             elif state == "error":
                 expect(page.locator("#content")).to_contain_text("Collection unavailable")
             elif state == "loading":
@@ -302,6 +387,7 @@ with sync_playwright() as pw:
             if args.phase == "after":
                 assert not overflow, (state, width)
                 if state == "pokedex":
+                    page.get_by_role("button", name="Select", exact=True).click()
                     lookup_button = page.locator("#dex-lookup-selection")
                     expect(lookup_button).to_be_disabled()
                     first = page.locator("[data-select-species]").first
@@ -310,8 +396,12 @@ with sync_playwright() as pw:
                     expect(lookup_button).to_be_enabled()
                     page.locator("[data-dex-species]").first.focus()
                     page.keyboard.press("Enter")
-                    expect(page.locator("#editor")).to_be_visible()
-                    page.keyboard.press("Escape")
+                    expect(page).to_have_url(__import__("re").compile(r"/pokedex/1/\?"))
+                    assert urlsplit(page.url).path == "/pokedex/1/"
+                    expect(page.get_by_role("heading", name="#001 Bulbasaur", exact=True)).to_be_visible()
+                    expect(page.get_by_role("heading", name="Your Cards", exact=True)).to_be_visible()
+                    expect(page.locator("dialog[open]")).to_have_count(0)
+                    page.get_by_role("link", name="Back to Pokédex", exact=True).click()
                     expect(page.locator("[data-dex-species]").first).to_be_focused()
                 for summary in page.locator("details > summary:visible").all():
                     opened = summary.evaluate("e=>e.parentElement.open")

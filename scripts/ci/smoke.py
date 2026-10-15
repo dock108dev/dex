@@ -221,6 +221,11 @@ def browser_smoke(python, cwd, env, root, timeout):
             "collection.css",
             "parity.js",
             "pokedex.js",
+            "collection.js",
+            "navigation.js",
+            "card-screens.js",
+            "species-screens.js",
+            "public-species.js",
             "lot_calculator.css",
             "lot_calculator.js",
             "shopping.css",
@@ -264,6 +269,18 @@ def browser_smoke(python, cwd, env, root, timeout):
         if status != 200 or not shopping.get("cards"):
             raise SmokeFailure("Installed Shopping catalog failed")
         checks += 1
+        identities = []
+        for route in ("/api/collection-context/", "/api/my-card-groups/", "/api/pokedex-species/"):
+            status, _, body = request(owner, port, route)
+            result = json.loads(body)
+            if status != 200:
+                raise SmokeFailure("Installed current collection API failed")
+            identities.append(
+                result.get("account_id") or result.get("effective_collection", {}).get("user_id")
+            )
+            checks += 1
+        if not identities[0] or len(set(identities)) != 1:
+            raise SmokeFailure("Installed collection APIs disagree on account identity")
         return {"http_assertions": checks + 2, "listener": "ephemeral loopback, ordinary CLI serve"}
     finally:
         server.terminate()

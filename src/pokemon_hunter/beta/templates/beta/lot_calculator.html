@@ -2,7 +2,7 @@
 {% block title %}Lot calculator · Dex{% endblock %}
 {% block body_class %}lot-page{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="/collection-assets/lot_calculator.css?v=20261010-compact">
+<link rel="stylesheet" href="/collection-assets/lot_calculator.css?v=20261014-cx07">
 <div class="shopping lot-calculator">
 {% if captured %}
 <div class="lot-heading">
@@ -25,10 +25,21 @@
 {% else %}
 <div class="lot-heading"><h1>Lot calculator</h1><a class="lot-help-link" href="#lot-help">How locks work</a></div>
 {{ wants|json_script:'wanted-cards' }}
+{{ shopping_context|json_script:'shopping-context' }}
+{{ shopping_binding|json_script:'shopping-binding' }}
+<section class="shopping-scope" aria-label="Shopping context">
+  <p id="context-label">{{ shopping_context.label }}</p>
+  <p id="context-current-status" class="muted" {% if shopping_context.current_present == None %}hidden{% endif %}>Your current collection: {% if shopping_context.current_present %}Collected{% else %}Not collected{% endif %}. {% if shopping_context.goal_kind %}Saved goal progress uses its retained policy and {{ shopping_context.goal_units }} units.{% endif %}</p>
+  <p id="context-goal-progress" class="muted" {% if not shopping_context.goal_progress %}hidden{% endif %}>Saved goal progress: {{ shopping_context.goal_progress.satisfied }} of {{ shopping_context.goal_progress.total }} {{ shopping_context.goal_units }} · {{ shopping_context.goal_policy }}.</p>
+  <p id="context-entry-origin" class="muted" hidden></p>
+  {% if shopping_context.return_url %}<a class="button-link secondary" id="shopping-return" href="{{ shopping_context.return_url }}">Back to collection</a>{% endif %}
+  <p id="draft-note" class="muted" hidden></p>
+  <div id="draft-wants-note" hidden><p>Draft wanted targets differ from this session. Confirm wanted targets to apply your retained choices.</p><button id="draft-wants-confirm" type="button" class="secondary">Confirm wanted targets</button></div>
+</section>
 <div class="lot-workspace">
 <section class="lot-search" aria-labelledby="search-heading">
   <div class="search-top"><h2 id="search-heading">Add cards</h2>
-  <p class="muted" id="catalog-scope" hidden></p>
+  <p class="muted" id="catalog-scope"></p>
   {% if missing_goals %}
   <div class="catalog-tabs" aria-label="Card lists">
     <button type="button" id="show-missing" class="secondary" aria-pressed="true">Missing</button>
@@ -36,7 +47,7 @@
   </div>
   <div id="missing-picker">
     <details class="goal-choice"><summary>Goal</summary><label for="missing-goal" class="sr-only">Collection goal</label>
-    <select id="missing-goal">{% for goal in missing_goals %}<option value="{{ goal.id }}">{{ goal.name }}</option>{% endfor %}</select>
+    <select id="missing-goal">{% for goal in missing_goals %}<option value="{{ goal.id }}" data-version="{{ goal.version }}" {% if shopping_context.query.goal == goal.id %}selected{% endif %}>{{ goal.name }}</option>{% endfor %}</select>
     </details>
     <p class="muted" id="missing-count" hidden></p>
     <label for="missing-cards" class="sr-only">Missing card</label><select id="missing-cards" aria-label="Missing card"></select>
@@ -64,7 +75,7 @@
   <div id="summary" class="scenarios"></div>
 </section>
   <div id="selections"></div>
-  <div id="empty-lot" class="lot-empty"><h3>No cards yet</h3></div>
+  <div id="empty-lot" class="lot-empty"><h3>Your lot is empty</h3><p>Choose a card and select Add to lot.</p></div>
 </section>
 <details class="lot-options"><summary>Listing, planned bid and delivery costs</summary>
   <div class="details-body"><label>Listing URL<input id="listing-url" type="url" placeholder="https://www.ebay.com/itm/…"></label>
@@ -92,5 +103,5 @@
 <details class="lot-options"><summary>Amount and quantity formats</summary><p>USD unsigned decimals, up to six decimal places, maximum 1,000,000,000,000. Whole quantities up to 100,000 total units. Values multiply by included quantities and round once to cents, half-even. Blank costs remain unknown; zero is explicit. Manual estimates retain their supplied date and scenario basis.</p></details>
 {% endif %}
 </div>
-<script src="/collection-assets/lot_calculator.js?v=20261010-compact" defer></script>
+<script src="/collection-assets/lot_calculator.js?v=20261014-cx07" defer></script>
 {% endblock %}

@@ -23,8 +23,16 @@ def snapshot(actor, key):
 
 
 def project(actor, data, scope):
+    store.verified(actor)
     if scope is None:
-        return data
+        # Species uses current presence. Exact-card scoring still needs supported
+        # itemised identity; broad declarations never own every candidate variant.
+        return {
+            **data,
+            "cards": {
+                k: dict(c, owned=c.get("current_copy_owned", c["owned"])) for k, c in data["cards"].items()
+            },
+        }
     definition = scope["definition"]
     policy = definition["policy"]
     allowed = {key for item in definition["items"] for key in item["printing_ids"]}
@@ -32,6 +40,7 @@ def project(actor, data, scope):
         key: item.get("pokemon_dex") for item in definition["items"] for key in item["printing_ids"]
     }
     exact_owned = service.exact_owned_printings(service.copies(actor))
+    copy_owned = {c["printing_id"] for c in service.copies(actor)}
     game_names = {game["id"]: game["name"] for game in store.rows("SELECT id,name FROM games")}
     catalog = {printing["id"]: printing for printing in data["catalog"]}
     source_cards = dict(data["cards"])
@@ -64,6 +73,7 @@ def project(actor, data, scope):
         if card["printing_id"] not in allowed:
             continue
         card = dict(card)
+        card["owned"] = card["printing_id"] in copy_owned
         card.setdefault("dex_eligible", False)
         card.setdefault("pokemon_dex", None)
         game_id = catalog[card["printing_id"]]["game_id"]

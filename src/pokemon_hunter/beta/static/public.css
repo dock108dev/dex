@@ -221,3 +221,9 @@
   .pack-page .product-coverage { gap: 8px; }
   .product-coverage dt { overflow-wrap: anywhere; }
 }
+
+/* Guest species identity uses a neutral placeholder, never remote card scans. */
+.public-species-link .species-artwork-placeholder { inline-size: 3rem; min-block-size: 3rem; font-size: 1rem; display: grid; place-items: center; padding: .25rem; border-radius: .5rem; background: var(--surface-2, #f2f4f5); color: var(--muted, #5c6470); overflow-wrap: anywhere; }
+.public-species-link { grid-template-columns: 3rem max-content minmax(0, 1fr); align-items: center; gap: .5rem; }
+.public-species-link .public-dex-number { grid-row: auto; }
+.public-page > main > .species-artwork-placeholder { inline-size: 8rem; min-block-size: 8rem; display: grid; place-items: center; padding: 1rem; background: var(--surface-2, #f2f4f5); border-radius: 1rem; margin-block: 1rem; }

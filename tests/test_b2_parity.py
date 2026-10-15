@@ -17,6 +17,29 @@ from pokemon_hunter.beta import parity
 from pokemon_hunter.collection import derive, totals
 
 
+def test_card_total_reference_agrees_with_dashboard_without_variant_allocation(restored):
+    import uuid
+
+    b = restored
+    actor = b["actor"]
+    p = next(p for p in service.catalog(actor) if json.loads(p["provenance"])["legacy_id"] == "c")
+    literal = dict(set_name=p["set_name"], name=p["name"], number=p["collector_number"])
+    for kind, request in (
+        ("mark_owned", literal),
+        ("card_quantity", {**literal, "established_total_quantity": 3}),
+    ):
+        pending = service.preview(actor, kind, request, str(uuid.uuid4()))
+        service.confirm(actor, pending["id"])
+    projected = parity.projection(actor)
+    assert projected["cards"]["c"]["card_total_quantity"] == 3
+    assert projected["cards"]["c"]["established_total_quantity"] is None
+    dashboard = b["a"].get("/api/collection/").json()["effective_collection"]
+    row = next(r for r in dashboard["cards"] if r["name"] == p["name"])
+    assert row["present"] and row["established_total_quantity"] == 3
+    assert all(r["established_total_quantity"] is None for r in dashboard["printings"].values())
+    assert all(r["established_total_quantity"] is None for r in dashboard["species"].values())
+
+
 @pytest.fixture
 def restored(b2, monkeypatch):
     from django.conf import settings
@@ -96,7 +119,8 @@ def test_projection_matches_same_snapshot_and_scope(restored, snapshot):
     assert {k: projected["totals"][k] for k in totals(original)} == totals(original)
     assert all(projected["cards"][k]["owned"] == v["owned"] for k, v in original["cards"].items())
     assert b.get("/api/parity/?user_id=owner").json()["totals"]["physical_copies"] == 0
-    assert projected["pokedex"]["2"]["dex_owned"] is False  # Named card outside Vintage
+    assert projected["pokedex"]["2"]["qualified_copy_species_owned"] is False  # Outside Vintage policy
+    assert projected["pokedex"]["2"]["dex_owned"] is True  # Current presence includes named cards
     assert projected["pokedex"]["152"]["eligible_cards"] == ["c"]
     assert projected["valuation"]["conditional"]["raw"]["subtotal"] == "30.00"
     assert projected["valuation"]["confirmed"]["raw"]["subtotal"] is None

@@ -22,6 +22,8 @@ def endpoint(fn):
     def inner(request, *args, **kwargs):
         try:
             return fn(request, *args, **kwargs)
+        except service.ReviewConflict as e:
+            return JsonResponse({"error": str(e)}, status=409)
         except service.Conflict as e:
             failure("request_conflict", e)
             return JsonResponse(
@@ -56,21 +58,22 @@ def body(request):
 
 
 @require_GET
-def home(request):
-    if not request.user.is_authenticated:
+def home(request, key=None):
+    if request.path == "/":
+        from .navigation import home as navigation_home
+
+        return navigation_home(request)
+    if not request.user.is_authenticated and request.path == "/hunt/":
         from . import public_views
 
-        if request.path in {"/", "/pokedex/"}:
-            return public_views.pokedex(request)
-        if request.path == "/hunt/":
-            return public_views.hunt(request)
+        return public_views.hunt(request)
     return private_home(request)
 
 
 @login_required
 def private_home(request):
     actor(request)
-    return render(
+    response = render(
         request,
         "beta/b2.html",
         {
@@ -80,12 +83,17 @@ def private_home(request):
             "staging": getattr(settings, "STAGING", False),
         },
     )
+    response._dex_owned_artwork = not getattr(settings, "STAGING", False)
+    return response
 
 
 @require_GET
 def asset(request, filename):
     if filename not in {
         "collection.js",
+        "navigation.js",
+        "card-screens.js",
+        "species-screens.js",
         "shopping.js",
         "lot_calculator.js",
         "lot_calculator.css",
@@ -97,12 +105,41 @@ def asset(request, filename):
         "pokedex.js",
         "glass.css",
         "public.css",
+        "public-species.js",
     }:
         raise Http404
     return HttpResponse(
         (Path(__file__).parent / "static" / filename).read_text(),
         content_type="text/javascript" if filename.endswith(".js") else "text/css",
     )
+
+
+@endpoint
+@require_GET
+def context(request):
+    """Small browsing authority; inventories and tool data load only on demand."""
+    if request.GET:
+        raise ValueError("Browsing context accepts no query fields")
+    who = actor(request)
+    generation = service.generation(who)
+    result = {
+        "context_only": True,
+        "effective_collection": {"user_id": who.user_id, "generation": generation, "cards": []},
+        "binders": service.binders(who),
+        "copies": store.rows(
+            "SELECT id,printing_id FROM owned_copies WHERE user_id=%s AND state='active' ORDER BY id",
+            [who.user_id],
+        ),
+        "goals": store.rows(
+            "SELECT id,name,version FROM collection_goals WHERE user_id=%s ORDER BY name,id", [who.user_id]
+        ),
+    }
+    store.verified(who)
+    if service.generation(who) != generation:
+        raise service.Conflict("Collection changed while loading browsing context")
+    response = JsonResponse(result)
+    response["Cache-Control"] = "private, no-store"
+    return response
 
 
 @endpoint
@@ -123,9 +160,22 @@ def dashboard(request):
         for r in collection_goals.sources(who)
     ]
     owned_ids = {c["printing_id"] for c in data["copies"]}
+    from . import image_bindings
+
+    entries = service.catalog(who, include_archived=True)
+    from .effective_collection import project
+
+    data["effective_collection"] = project(who, catalog=entries, active=data["copies"])
+    data["current_collection_source"] = data["effective_collection"]["selected_source"]
+    images = image_bindings.catalog_images(who, entries)
+    photos = image_bindings.private_copy_photos(who, [c["id"] for c in data["copies"]])
+    data["copies"] = [dict(c, photo_references=photos[c["id"]]) for c in data["copies"]]
     data["printing_details"] = {
-        p["id"]: {k: p[k] for k in ("set_name", "edition", "finish", "variant")}
-        for p in service.catalog(who, include_archived=True)
+        p["id"]: {
+            **{k: p[k] for k in ("set_name", "edition", "finish", "variant")},
+            "reference_image": images.get(p["id"]),
+        }
+        for p in entries
         if p["id"] in owned_ids
     }
     data["sets"] = store.rows(

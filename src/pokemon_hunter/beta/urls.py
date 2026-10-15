@@ -3,7 +3,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
 
 from . import collection_views as collection_assets
-from . import public_views, views
+from . import public_views, species_views, views
 
 # Choose one authoritative handler per URL; retain account-only handlers for account-only roots.
 collection_routes = views
@@ -22,7 +22,8 @@ if settings.PARITY_ENABLED:
 
 urlpatterns = [
     path("", collection_routes.home),
-    path("pokedex/<int:dex>/", public_views.pokedex),
+    path("pokedex/", species_views.home),
+    path("pokedex/<int:dex>/", species_views.home),
     path("lookup/", lookup_home),
     path("api/public/catalog/", public_views.catalog),
     path("collection-assets/<str:filename>", collection_assets.asset),
@@ -40,10 +41,25 @@ urlpatterns = [
 ]
 
 if settings.B2_ENABLED:
+    from . import card_group_views as groups
     from . import collection_views as b2
-    from . import lookup_views, packs_views, product_views, refresh_views, shopping_views
+    from . import lookup_views, navigation, packs_views, product_views, refresh_views, shopping_views
 
     urlpatterns = [
+        path("api/navigation/home/", navigation.validate_home),
+        path("api/pokedex-species/", species_views.projection),
+        path("api/card-groups/", groups.catalog),
+        path("api/card-group-filters/", groups.filters),
+        path("cards/", b2.home),
+        path("card-library/", b2.home),
+        path("cards/<str:key>/", groups.legacy),
+        path("api/my-card-groups/", groups.owned),
+        path("api/card-groups/<str:key>/", groups.detail),
+        path("api/card-groups/<str:key>/preview/", groups.preview),
+        path("api/species/<int:dex>/card-groups/", groups.species),
+        path("api/public/card-groups/", groups.public_catalog),
+        path("api/public/card-groups/<str:key>/", groups.public_detail),
+        path("card-groups/<str:key>/", groups.home),
         path("shopping/", shopping_views.home),
         path("shopping/legacy/", shopping_views.legacy),
         path("api/shopping/lot-catalog/", shopping_views.lot_catalog),
@@ -75,6 +91,7 @@ if settings.B2_ENABLED:
         path("packs/saved/<uuid:key>/remove/", packs_views.remove),
         path("settings/", b2.home),
         path("api/collection/", b2.dashboard),
+        path("api/collection-context/", b2.context),
         path("api/catalog/", b2.catalog),
         path("api/binders/", b2.binders),
         path("api/binders/<str:key>/", b2.binder),
@@ -90,15 +107,12 @@ if settings.PARITY_ENABLED:
     from . import parity_views as parity
 
     urlpatterns = [
-        *[
-            path(route + "/", b2.home)
-            for route in ("overview", "pokedex", "cards", "hunt", "missing", "finds")
-        ],
+        *[path(route + "/", b2.home) for route in ("overview", "hunt", "missing", "finds")],
         path("api/parity/", parity.projection),
         path("api/hunts/<uuid:batch>/<int:key>/reveal/<uuid:result>/", parity.reveal),
     ] + urlpatterns
 else:
-    urlpatterns = [path("pokedex/", public_views.pokedex), path("hunt/", public_views.hunt)] + urlpatterns
+    urlpatterns = [path("hunt/", public_views.hunt)] + urlpatterns
 
 if settings.B3_ENABLED:
     from . import scan_views as scans

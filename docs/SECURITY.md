@@ -105,3 +105,13 @@ dedicated validation types could better distinguish programming errors. Shutdown
 and uncertain writes retain the recovery limits described in
 [error handling](ERROR_HANDLING.md). Do not reset claims or spending reservations
 merely to retry uncertain provider work.
+
+## Private image adapters
+
+[Image adapters](artwork.md) require checked current account, authoritative
+catalog and complete current overlay equality. Local private pages permit only
+self plus the exact TCGdex/PokeAPI asset origins in one effective `img-src`.
+Public/staging remote references remain excluded. Remote tags escape alt text
+and use no-referrer. Private photo descriptors and serving share authoritative
+account/job/copy associations and lifetime checks, with private no-store preserved
+through security middleware. Rendering starts no provider attempt or collection write.

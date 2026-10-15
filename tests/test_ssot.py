@@ -46,6 +46,75 @@ def test_each_route_has_one_selected_owner(env, profile):
         clear_url_caches()
 
 
+@pytest.mark.parametrize("b2", [False, True])
+def test_guest_root_delegates_to_canonical_species_handler(env, b2):
+    from django.test import override_settings
+    from django.urls import clear_url_caches
+
+    from pokemon_hunter.beta import species_views, urls
+
+    try:
+        with override_settings(B2_ENABLED=b2, PARITY_ENABLED=False):
+            importlib.reload(urls)
+            clear_url_caches()
+            guest = env["client"]()
+            with patch.object(species_views, "home", wraps=species_views.home) as handler:
+                response = guest.get("/", {"q": "Ivysaur"})
+                assert response.status_code == 200
+                handler.assert_called_once()
+                assert b"/pokedex/2/?return=" in response.content
+                assert response["Cache-Control"] == "no-store"
+    finally:
+        importlib.reload(urls)
+        clear_url_caches()
+
+
+@pytest.mark.parametrize("b2", [False, True])
+@pytest.mark.parametrize("query", ["q=one&q=two", "account=foreign", "owned=missing", "q=%00"])
+def test_guest_root_uses_species_validation_without_catalog_fallback(env, b2, query):
+    from django.test import override_settings
+    from django.urls import clear_url_caches
+
+    from pokemon_hunter.beta import public_catalog, urls
+
+    try:
+        with override_settings(B2_ENABLED=b2, PARITY_ENABLED=False):
+            importlib.reload(urls)
+            clear_url_caches()
+            with patch.object(public_catalog, "pokedex") as read:
+                response = env["client"]().get("/?" + query)
+                assert response.status_code == 400
+                assert b'role="alert"' in response.content
+                read.assert_not_called()
+    finally:
+        importlib.reload(urls)
+        clear_url_caches()
+
+
+def test_obsolete_public_species_handler_is_absent():
+    from pokemon_hunter.beta import public_views, species_views
+
+    assert not hasattr(public_views, "pokedex")
+    assert callable(species_views.home)
+
+
+def test_authoritative_browser_renderers_and_removed_paths():
+    import subprocess
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    result = subprocess.run(
+        ["node", str(root / "tests/ssot_rendering_cases.cjs"), str(root)],
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=30,
+    )
+    report = json.loads(result.stdout)
+    assert report["passed"] == 30
+    assert report["customer_data"] is False and report["provider_calls"] == 0
+
+
 @pytest.mark.parametrize("value", [True, None, "NaN", "Infinity", -1, 2, []])
 def test_shared_policy_rejects_invalid_limits(value):
     config = dict(mode="openai", enabled=True, ceiling_usd=value, user_ceiling_usd=0.5)
@@ -279,6 +348,7 @@ def test_missing_game_does_not_silently_become_pokemon():
     with (
         patch.object(goal_hunts.service, "copies", return_value=[]),
         patch.object(goal_hunts.store, "rows", return_value=[]),
+        patch.object(goal_hunts.store, "verified"),
     ):
         with pytest.raises(ValueError, match="unavailable game"):
             goal_hunts.project(object(), data, scope)
@@ -323,6 +393,9 @@ def test_goal_and_lookup_species_membership_delegate_to_one_builder():
         patch.object(collection_goals, "latest", return_value=None),
         patch.object(lookup.store, "verified"),
         patch.object(lookup.collection, "catalog", return_value=[entry]),
+        patch.object(
+            lookup.effective_collection, "project", return_value={"species": {"250": {"present": True}}}
+        ) as presence,
         patch.object(lookup.packs, "project", return_value={}) as projector,
         patch.object(broad_goals, "species_items", wraps=broad_goals.species_items) as builder,
     ):
@@ -330,9 +403,11 @@ def test_goal_and_lookup_species_membership_delegate_to_one_builder():
         declared = collection_goals.targets_definition(object(), [entry], "source", [250])
         lookup.project(type("SyntheticActor", (), {"user_id": "account"})(), {"targets": "250"})
         assert builder.call_count == 3
+        presence.assert_called_once()
     assert declared["items"][0]["label"] == "#250 Ho-oh"
     scope = projector.call_args.kwargs["scope"]
     assert json.loads(scope["definition"])["items"][0]["label"] == "#250 Ho-Oh"
+    assert json.loads(scope["definition"])["owned_species"] == [250]
 
 
 @pytest.mark.parametrize("mode", sorted(scan_config.MODES))

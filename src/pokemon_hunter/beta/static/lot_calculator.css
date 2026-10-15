@@ -1,5 +1,5 @@
 /* Shopping workspace: Dex red, quiet surfaces and aligned independent values. */
-.lot-page main { max-width: 1340px; margin: 24px auto 0; padding: 0 28px 48px; }
+.lot-page main { max-width: 1180px; margin: 24px auto 0; padding: 0 24px 48px; }
 .lot-calculator { overflow-wrap: anywhere; }
 .lot-calculator h1 { margin: 0; }
 .lot-heading, .lot-calculator .section-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
@@ -14,12 +14,14 @@
 .lot-calculator button, .lot-calculator summary { min-height: 44px; }
 .lot-calculator button { flex-shrink: 0; }
 .lot-calculator .pricing-status { padding: 10px 14px; margin: 0 0 20px; border: 1px solid #d4c8b3; border-radius: 10px; color: #594a2e; background: #fffaf0; font-size: 14px; }
-.lot-workspace { display: grid; grid-template-columns: minmax(280px, 330px) minmax(0, 1fr); align-items: start; gap: 24px; }
-.lot-search { padding: 18px; border: 1px solid var(--border); border-radius: 14px; background: #ffffffbf; }
+.lot-workspace { display: grid; grid-template-columns: minmax(260px, 300px) minmax(0, 1fr); align-items: start; gap: 24px; }
+.lot-search { padding: 18px; border: 1px solid var(--border); border-radius: 14px; background: #fff; }
 .search-top>p:first-of-type { margin: 6px 0 18px; font-size: 14px; }
 .catalog-tabs { display: flex; gap: 8px; margin: 12px 0; }
 .catalog-tabs button { flex: 1; padding: 8px 10px; font-size: 14px; white-space: nowrap; }
-.catalog-tabs [aria-pressed=true] { color: #fff; background: #9f2336; border-color: #9f2336; }
+.catalog-tabs { gap: 4px; padding: 4px; background: #eeeff2; border-radius: 10px; }
+.catalog-tabs button { border-color: transparent; background: transparent; }
+.catalog-tabs [aria-pressed=true] { color: #8f1d2c; background: #fff; border-color: transparent; box-shadow: 0 1px 4px #20212612; }
 #missing-picker[hidden] { display: none; }
 #missing-goal { width: 100%; margin: 6px 0 10px; }
 .lot-calculator #missing-count { font-size: 14px; margin: 0 0 8px; }
@@ -36,10 +38,11 @@
 .lot-calculator .card-grid .card { padding: 16px 0; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; }
 .lot-calculator .card-grid .card h3 { margin: 0 0 3px; }
 .lot-calculator .card-meta { color: var(--muted); font-size: 14px; margin: 0 0 10px; }
-.lot-calculator .catalog-actions { display: grid; grid-template-columns: 76px minmax(0, 1fr) minmax(0, 1fr); align-items: end; gap: 8px; }
-.lot-calculator .catalog-actions label { display: block; min-width: 0; white-space: nowrap; }
+.lot-calculator .printing-selected-label { font-size: 14px; color: var(--ink); margin: 0 0 12px; line-height: 1.5; }
+.lot-calculator .catalog-actions { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; align-items: end; gap: 8px; }
+.lot-calculator .catalog-actions label { display: block; min-width: 0; flex: 0 1 5em; white-space: normal; }
 .catalog-actions input { display: block; width: 100%; min-width: 0; box-sizing: border-box; }
-.catalog-actions button { min-width: 0; padding: 8px; white-space: nowrap; }
+.catalog-actions button { flex: 1 1 auto; min-width: 0; max-width: 100%; padding: 8px; white-space: normal; overflow-wrap: anywhere; }
 .lot-calculator .lookup-quantity { max-width: 110px; }
 .pagination { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 .pagination button { padding: 8px 10px; font-size: 14px; }
@@ -119,10 +122,10 @@
 }
 @media (max-width: 760px) {
   .lot-page main { margin-top: 20px; padding: 0 16px 32px; }
-  .lot-workspace { grid-template-columns: minmax(0, 1fr); grid-template-areas: "search" "matches" "lot"; gap: 12px; }
+  .lot-workspace { grid-template-columns: minmax(0, 1fr); grid-template-areas: "search" "lot" "matches"; gap: 12px; }
   .lot-search { display: contents; }
   .search-top { grid-area: search; }
-  .search-matches { grid-area: matches; padding: 16px; border: 1px solid var(--border); border-radius: 14px; background: #ffffffbf; }
+  .search-matches { grid-area: matches; padding: 16px; border: 1px solid var(--border); border-radius: 14px; background: #fff; }
   .lot-working-area { grid-area: lot; }
   .lot-search, .lot-items { padding: 16px; }
   .lot-calculator .card-grid { grid-template-columns: minmax(0, 1fr); }
@@ -139,8 +142,23 @@
   .row-controls .lock-control { flex-basis: 100%; justify-content: end; }
   .compare-bar button { flex: 1 1 140px; }
   .scenario>strong { font-size: 22px; }
-  .selection-heading { gap: 8px; }
+  .selection-heading { gap: 8px; flex-wrap: wrap; }
+  .selection-heading>div { flex: 1 1 12rem; min-width: 0; }
+  .selection-heading .remove-card { margin-left: auto; }
   .lot-calculator .section-heading>button { font-size: 14px; padding: 8px 10px; }
 }
 
 .catalog-empty { margin-top: 16px !important; color: var(--muted); }
+
+.shopping-scope { margin: 0 0 20px; padding: 0; overflow-wrap: anywhere; font-size: 14px; color: var(--muted); }
+.shopping-scope p { margin: .35rem 0; }
+.shopping-scope .button-link { display: inline-block; margin-top: .5rem; max-width: 100%; white-space: normal; }
+
+/* Unpriced results retain the blocker once; costs and bid details stay available. */
+.scenario.unpriced{background:#f6f6f8;border-color:transparent;padding:16px}
+.scenario.unpriced .difference{display:none}
+.scenario.unpriced>strong{font-size:22px}
+.lot-calculator .scenario.unpriced .coverage-note{font-size:14px;margin-bottom:8px}
+.scenario.unpriced details{margin-top:8px}
+.lot-calculator .scenario.unpriced summary{font-size:14px}
+@media(max-width:760px){.shopping-scope{margin-bottom:16px}.lot-empty{padding:20px 12px}}

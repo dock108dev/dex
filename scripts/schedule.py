@@ -54,7 +54,7 @@ output.parent.mkdir(exist_ok=True)
 output.write_bytes(plistlib.dumps(plist))
 if args.install:
     if sys.platform != "darwin":
-        parser.error("LaunchAgent installation requires macOS; see README for cron")
+        parser.error("LaunchAgent installation requires macOS; see docs/legacy-watcher.md for cron")
     result = subprocess.run([str(python), "-m", "pokemon_hunter.main", "--root", str(root), "doctor"])
     if result.returncode:
         raise SystemExit("Daily schedule not installed: finish the missing local setup first.")

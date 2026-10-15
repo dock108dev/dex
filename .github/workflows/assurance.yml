@@ -46,9 +46,10 @@ jobs:
       with:
         persist-credentials: false
     - name: Last 30 completed runs within 30 days
+      continue-on-error: true # Advisory telemetry outage must not obscure the required CI gate.
       env:
         GH_TOKEN: ${{ github.token }}
-      run: python3 scripts/ci/health.py --repository "$GITHUB_REPOSITORY" --output reports/ci/health/metrics.json
+      run: python3 scripts/ci/health.py --repository "$GITHUB_REPOSITORY" --with-resources --output reports/ci/health/metrics.json
     - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       if: always()
       with:
@@ -59,3 +60,31 @@ jobs:
     permissions:
       contents: read
       actions: read
+  container:
+    name: Scheduled container build
+    if: ${{ github.event_name == 'schedule' || inputs.scope == 'compatibility' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Build without publishing and check installed runtime
+      id: build
+      run: |
+        docker build --pull --progress plain --file deploy/Dockerfile --tag dex-ci-candidate .
+        docker run --rm --network none --entrypoint /app/.venv/bin/python dex-ci-candidate -c "import os, django, psycopg; from pokemon_hunter.beta.canonical_species import registry; assert os.geteuid() == 10001; assert len(registry()) == 1025"
+        mkdir -p reports/ci/container
+        docker image inspect dex-ci-candidate --format '{"status":"PASS","image_bytes":{{.Size}},"image_id":"{{.Id}}","platform":"{{.Os}}/{{.Architecture}}"}' > reports/ci/container/report.json
+    - name: Container result summary
+      if: always()
+      env:
+        BUILD: ${{ steps.build.outcome }}
+      run: python3 scripts/ci/report.py job --name "Scheduled container build" --output reports/ci/container/metrics.json --outcome "build=$BUILD" --measurement reports/ci/container/report.json
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      if: always()
+      with:
+        name: container-${{ github.run_id }}-${{ github.run_attempt }}
+        path: reports/ci/container/
+        if-no-files-found: error
+        retention-days: 14

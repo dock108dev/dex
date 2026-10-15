@@ -212,7 +212,7 @@ def plan(actor, request, operation_id, entries, active):
         deletes=[],
         errors=[],
         warnings=[
-            "Presence only. Copies, quantities, physical attributes and frozen goal eligibility are unchanged. Special markers require review before printing resolution."
+            "Source selection replaces current presence and clears older total-quantity intent in the reviewed scope. Copy records, physical attributes, original source bytes and frozen goal eligibility are preserved. Special markers require review before printing resolution."
         ],
         checklist=rows,
     )

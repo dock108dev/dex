@@ -159,7 +159,8 @@ config/market_values.json
 /docs/ci-improvement-2026-10-09.md
 /docs/security-hardening-2026-10-09.md
 /docs/shopping-interface-2026-10-09.md
-/docs/ssot-enforcement-2026-10-09.md
+/docs/ssot-enforcement-*.md
+/docs/collection-experience-plan.md
 
 # Intermediate catalog exports; runtime packages and test fixtures stay tracked.
 /config/catalog-pipeline/d7-20261005/
@@ -173,3 +174,7 @@ config/market_values.json
 /config/sealed/d8-20261006/
 /config/sealed/d9-20261006/
 /config/sealed/m4-20261006/
+
+# Generated audit exports/previews; authored runtime images and fixtures stay visible.
+/output/pdf/
+/tmp/pdfs/

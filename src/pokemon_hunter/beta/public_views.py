@@ -9,18 +9,6 @@ from . import offer_filters, public_catalog
 
 
 @require_GET
-def pokedex(request, dex=None):
-    template = "beta/public_species.html" if dex is not None else "beta/public_pokedex.html"
-    try:
-        context = public_catalog.pokedex(request.GET.dict(), dex)
-    except ValueError:
-        context = public_catalog.pokedex({}, dex)
-        context["page_error"] = "Choose valid, shorter catalog filters. Sign in for collection tools."
-        return render(request, template, context, status=400)
-    return render(request, template, context)
-
-
-@require_GET
 def hunt(request):
     return render(request, "beta/public_hunt.html", dict(public=True))
 

@@ -19,6 +19,22 @@ The synthetic seed publishes packaged vintage metadata and explicit synthetic
 entries. The original app uses separate catalogs under `config/catalog/`.
 Metadata availability grants no artwork or pricing redistribution rights.
 
+The authenticated local image adapters distinguish canonical Pokémon artwork,
+card-group identification references, explicitly unavailable exact selected-child
+assets and authorized private copy photos. The [image contract](artwork.md)
+defines the four roles, pinned mappings, source restrictions and fallback behavior.
+References remain mapped independently of possession. Literal names such as Dark,
+Light and named Pokémon do not change species art or canonical identities.
+There are 251 species and 1,086 distinct card reference mappings across the twelve
+requested vintage/promo sets. All-era catalog entries remain visible without art.
+
+All 53 Wizards promo identities retain individual date evidence and gaps; Mew #8
+has a separate external visual check. Numbering and set-wide dates do not establish
+through-2001 coverage. Standard set/number scans establish no edition, finish or
+physical-copy image. Source software/metadata licenses grant no artwork rights;
+the owner's selected private scope remains local, with public/staging remote
+reference exclusions and no bundled/exported image bytes.
+
 ## Collection and goals
 
 Pokédex provides region, ownership, indexed set/era, card name/number, card type

@@ -52,6 +52,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "pokemon_hunter.beta.security.profile_context",
+                "pokemon_hunter.beta.navigation.context",
             ]
         },
     }

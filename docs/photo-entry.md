@@ -75,3 +75,12 @@ are not accuracy evidence. The optional `scripts/evaluate_codex_photos.py`
 requires a labeled, consented image set; inspect its help and limits before use.
 It sends real images to the CLI provider and is separate from offline tests.
 A broader recognition benchmark and deployment qualification remain future work.
+
+## Copy photo references
+
+Copy descriptors use the actual authorized scan-job/copy/photo association,
+shared with photo serving. Imported/provisional JSON, arbitrary paths and URLs
+cannot grant photo access. Removed copies, expired unconfirmed jobs, absent bytes
+and revoked/foreign accounts have no available photo. Undo after cleanup cannot
+reconstruct deleted bytes. Display performs read-only local serving, with private
+no-store and no recognition/provider attempt. See [image roles](artwork.md).

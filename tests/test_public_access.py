@@ -49,7 +49,7 @@ def test_early_root_guest_registry_browse_uses_no_private_data_or_network(env):
         assert guest.get("/pokedex/252/").status_code == 404
         assert guest.get("/api/public/catalog/").json()["printings"] == []
     assert not any(table in sql for sql in queries for table in PRIVATE_TABLES)
-    assert b"0 indexed cards" in guest.get("/pokedex/123/").content
+    assert b"No cards indexed yet" in guest.get("/pokedex/123/").content
     for asset in ("glass.css", "collection.css", "public.css"):
         assert guest.get("/collection-assets/" + asset).status_code == 200
     assert guest.get("/collection-assets/secret.key").status_code == 404

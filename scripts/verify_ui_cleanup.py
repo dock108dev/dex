@@ -56,6 +56,21 @@ collection = dict(
     printing_details={"p1": printing},
     vintage_251=dict(total=1),
     operations=[],
+    effective_collection=dict(
+        user_id="synthetic-account",
+        generation=0,
+        cards=[
+            dict(
+                set_name="Base Set",
+                name="Pikachu",
+                number="58",
+                present=True,
+                established_total_quantity=None,
+                recorded_copy_count=3,
+            )
+        ],
+        species={},
+    ),
 )
 scenario = dict(priced=0, owned=3, subtotal=None, total=None, estimated=0)
 parity = dict(
@@ -184,6 +199,45 @@ with sync_playwright() as pw:
                         value = {**collection, "copies": [] if state == "empty" else copies}
                     elif path == "/api/parity/":
                         value = parity
+                    elif path == "/api/card-group-filters/":
+                        value = dict(
+                            account_id="synthetic-account",
+                            generation=0,
+                            scope="owned",
+                            sets=collection["sets"],
+                            languages=["en"],
+                            editions=[],
+                            finishes=[],
+                            variants=[],
+                        )
+                    elif path in {"/api/my-card-groups/", "/api/card-groups/"}:
+                        from urllib.parse import parse_qs, urlsplit
+
+                        query = parse_qs(urlsplit(request.request.url).query)
+                        groups = (
+                            []
+                            if query.get("q") == ["No synthetic match"]
+                            else [
+                                dict(
+                                    id="dg1-synthetic-pikachu",
+                                    name="Pikachu",
+                                    set_name="Base Set",
+                                    collector_number="58",
+                                    present=True,
+                                    established_total_quantity=None,
+                                )
+                            ]
+                        )
+                        value = dict(
+                            account_id="synthetic-account",
+                            generation=0,
+                            scope="owned",
+                            groups=groups,
+                            total=len(groups),
+                            page=1,
+                            pages=1 if groups else 0,
+                            unresolved=[],
+                        )
                     elif path == "/api/catalog/":
                         value = {"printings": [printing]}
                     elif path == "/api/scans/":
@@ -247,18 +301,28 @@ with sync_playwright() as pw:
             elif state in {"collection", "empty"}:
                 page.locator("#copies").wait_for()
             elif state in {"cards", "cards-empty"}:
-                page.locator("#parity-cards").wait_for()
-                if state == "cards-empty":
-                    page.locator("#cards-query").fill("No synthetic match")
-                    assert "No matching printings" in page.locator("#parity-cards").inner_text()
-                assert page.locator("#cards-prev").is_disabled()
-                assert page.locator("#cards-next").is_disabled()
+                if args.phase == "after":
+                    page.locator("#cards-count").wait_for()
+                    assert page.locator(".owned-card-tile").count() == 1
+                    if state == "cards-empty":
+                        page.locator("#cards-query").fill("No synthetic match")
+                        page.get_by_role("button", name="Search cards", exact=True).click()
+                        page.get_by_role("heading", name="No matching cards", exact=True).wait_for()
+                        assert page.locator(".owned-card-tile").count() == 0
+                    assert page.locator(".card-pagination").count() <= 1
+                else:
+                    page.locator("#parity-cards").wait_for()
+                    if state == "cards-empty":
+                        page.locator("#cards-query").fill("No synthetic match")
+                        assert "No matching printings" in page.locator("#parity-cards").inner_text()
+                    assert page.locator("#cards-prev").is_disabled()
+                    assert page.locator("#cards-next").is_disabled()
             elif state == "overview":
                 page.get_by_role("heading", name="Overview", exact=True).wait_for()
             assert not errors, errors
             assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), state
             measures = page.evaluate(
-                """() => ({height:document.documentElement.scrollHeight, mainTop:document.querySelector('main').getBoundingClientRect().top, cardTop:document.querySelector('#parity-cards .card')?.getBoundingClientRect().top ?? null, huntLinkTop:document.querySelector('main a[href="/hunt/"]')?.getBoundingClientRect().top ?? null, actionTop:(document.querySelector('#add-copy')||document.querySelector('#upload button:last-child')||document.querySelector('#show-add'))?.getBoundingClientRect().top ?? null})"""
+                """() => ({height:document.documentElement.scrollHeight, mainTop:document.querySelector('main').getBoundingClientRect().top, cardTop:document.querySelector('.owned-card-tile,#parity-cards .card')?.getBoundingClientRect().top ?? null, huntLinkTop:document.querySelector('main a[href="/hunt/"]')?.getBoundingClientRect().top ?? null, actionTop:(document.querySelector('#add-copy')||document.querySelector('#upload button:last-child')||document.querySelector('#show-add'))?.getBoundingClientRect().top ?? null})"""
             )
             metrics.append(dict(phase=args.phase, width=viewport["width"], state=state, **measures))
             page.screenshot(

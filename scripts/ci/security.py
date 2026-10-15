@@ -133,8 +133,21 @@ def tracked_snapshot(root: Path, destination: Path) -> int:
     names = {name for name in listed.decode().split("\0") if name}
     # Include authored source before commit, restricted to known code/fixture trees and formats.
     # No enumeration of profiles, reports, evidence, photos, or other owner-state trees.
-    extensions = {".py", ".html", ".js", ".css", ".yml", ".yaml", ".toml", ".json", ".txt"}
-    for directory in ("src", "web", "scripts/ci", ".github", "tests"):
+    extensions = {
+        ".py",
+        ".html",
+        ".js",
+        ".cjs",
+        ".css",
+        ".sh",
+        ".md",
+        ".yml",
+        ".yaml",
+        ".toml",
+        ".json",
+        ".txt",
+    }
+    for directory in ("src", "web", "scripts", "docs", ".github", "tests"):
         names.update(
             str(path.relative_to(root))
             for path in (root / directory).glob("**/*")

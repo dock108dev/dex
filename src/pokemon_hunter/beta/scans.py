@@ -96,6 +96,26 @@ def normalized(upload):
         ) from None
 
 
+def authorized_photo_rows(actor, key=None, *, content=False):
+    """Shared serving/descriptor policy, with actual bytes and account associations."""
+    actor = store.verified(actor)
+    columns = "p.id,j.copy_id" + (",p.content" if content else "")
+    sql = (
+        "SELECT " + columns + " FROM scan_photos p JOIN scan_jobs j ON j.id=p.job_id "
+        "WHERE p.user_id=%s AND j.user_id=%s AND LENGTH(p.content)>0 "
+        "AND (j.operation_id IS NOT NULL OR j.created>=%s) "
+        "AND (j.copy_id IS NULL OR EXISTS (SELECT 1 FROM owned_copies c "
+        "WHERE c.id=j.copy_id AND c.user_id=%s AND c.state='active'))"
+    )
+    params = [actor.user_id, actor.user_id, time.time() - 7 * 86400, actor.user_id]
+    if key is not None:
+        sql += " AND p.id=%s"
+        params.append(str(key))
+    result = store.rows(sql + " ORDER BY p.id", params)
+    store.verified(actor)
+    return result
+
+
 def job(actor, key):
     store.verified(actor)
     found = store.rows("SELECT * FROM scan_jobs WHERE id=%s AND user_id=%s", [key, actor.user_id])

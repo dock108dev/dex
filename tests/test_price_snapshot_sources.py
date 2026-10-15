@@ -174,6 +174,25 @@ def test_multisource_integrity_and_interrupted_activation_preserve_current(setup
         prices.current()
 
 
+def status_payload(response, setup):
+    from pokemon_hunter.beta.navigation import binding
+
+    data = response.json()
+    assert set(data) == {"sources", "versions", "status", "account_id", "authority"}
+    account = setup["actor"].user_id
+    expected_binding = binding(response.wsgi_request)["navigation_binding"]
+    assert len(expected_binding) == 64 and int(expected_binding, 16) >= 0
+    assert response.wsgi_request.session.session_key not in expected_binding
+    assert data["account_id"] == account
+    assert data["authority"] == dict(
+        account_id=account,
+        generation=collection.generation(setup["actor"]),
+        binding=expected_binding,
+    )
+    # Only non-price status and explicit request authority may be returned.
+    return {key: data[key] for key in ("sources", "versions", "status")}
+
+
 def test_source_status_is_authenticated_nonprice_and_tracks_independent_removal(setup):
     value = multi_package(setup, restricted=False)
     prices.activate(stage(value), None, now=NOW)
@@ -181,12 +200,11 @@ def test_source_status_is_authenticated_nonprice_and_tracks_independent_removal(
     response = setup["a"].get(url)
     assert response.status_code == 200
     assert "no-store" in response["Cache-Control"]
-    data = response.json()
-    assert set(data) == {"sources", "versions", "status"}
+    data = status_payload(response, setup)
     assert len(data["sources"]) == 2
     digest = rules.digest(value["contracts"]["fixture-graded"]["contract"])
     prices.sources.remove_source(digest)
-    assert len(setup["a"].get(url).json()["sources"]) == 1
+    assert len(status_payload(setup["a"].get(url), setup)["sources"]) == 1
     setup["a"].logout()
     assert setup["a"].get(url).status_code == 302
 
@@ -203,7 +221,7 @@ def test_current_page_callers_share_snapshot_error_policy(setup, monkeypatch):
     assert records.status == "invalid_snapshot"
     response = setup["a"].get("/api/shopping/price-source-status/")
     assert response.status_code == 200
-    assert response.json() == dict(sources=[], versions=[], status="invalid_snapshot")
+    assert status_payload(response, setup) == dict(sources=[], versions=[], status="invalid_snapshot")
     assert len(calls) == 2
 
 

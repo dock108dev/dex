@@ -52,9 +52,9 @@ class InviteView(RedeemView):
 @require_GET
 def home(request):
     if not request.user.is_authenticated:
-        from .public_views import pokedex
+        from .species_views import home as species_home
 
-        return pokedex(request)
+        return species_home(request)
     return private_home(request)
 
 

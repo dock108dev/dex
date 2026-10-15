@@ -16,7 +16,7 @@ installed immutable `dex-price-release-v2` descriptor contains only release/sour
 identity; price records are separate owner-only source shards. Source seals are
 removed with their prices, without rewriting another source's bytes.
 
-The October 10 owner decision allows **only TCGCSV raw** fields to declare
+**Only TCGCSV raw** fields may declare
 `date_basis: publisher_build`, `valuation_date_field: null` and
 `reference_date_field: last-updated.txt`. Those rows retain `as_of: null`, an
 aware `publisher_built_at` and its UTC date in `reference_as_of`. The 30-day
@@ -28,12 +28,12 @@ After source review and acquisition within the owner's current authorization,
 preview and validate before activation. Set `DEX_APP_ROOT` using
 [existing-installation startup](local-development.md#existing-installations); use
 that root without initialization. These examples are operator writes, not checks
-to run as part of routine source cleanup:
+to run as part of ordinary testing:
 
 ```sh
-uv run --no-sync python -m pokemon_hunter.beta.cli --root "$DEX_APP_ROOT" price-preview --file "$DEX_APP_ROOT/price-snapshots/staging/release.json"
-uv run --no-sync python -m pokemon_hunter.beta.cli --root "$DEX_APP_ROOT" price-validate --file "$DEX_APP_ROOT/price-snapshots/staging/release.json"
-uv run --no-sync python -m pokemon_hunter.beta.cli --root "$DEX_APP_ROOT" price-activate --file "$DEX_APP_ROOT/price-snapshots/staging/release.json" --expected-current none
+"$DEX_APP_PYTHON" -I -m pokemon_hunter.beta.cli --root "$DEX_APP_ROOT" price-preview --file "$DEX_APP_ROOT/price-snapshots/staging/release.json"
+"$DEX_APP_PYTHON" -I -m pokemon_hunter.beta.cli --root "$DEX_APP_ROOT" price-validate --file "$DEX_APP_ROOT/price-snapshots/staging/release.json"
+"$DEX_APP_PYTHON" -I -m pokemon_hunter.beta.cli --root "$DEX_APP_ROOT" price-activate --file "$DEX_APP_ROOT/price-snapshots/staging/release.json" --expected-current none
 ```
 
 Use the current release UUID instead of `none` for subsequent activations. Activation
@@ -81,7 +81,6 @@ uv run --no-sync pytest -q --disable-socket --allow-unix-socket tests/test_price
 
 For backup exclusions, revocation preservation and deletion limits, use
 [operations](operations.md#snapshot-retention-and-backups). Private snapshots,
-contracts and historical source-review packets are not shipped repository inputs.
-The adjacent Desktop `dex_next_steps.md` owns installation-specific activation,
-coverage and owner acceptance; historical engineering closeouts do not establish
-current runtime state. No scheduled acquisition is connected.
+contracts and source-review records are not shipped repository inputs. Coverage
+depends on the selected installation's active release and source admission.
+No scheduled acquisition is connected.

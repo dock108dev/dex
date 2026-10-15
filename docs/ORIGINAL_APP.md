@@ -63,7 +63,7 @@ The original `run`, `doctor`, and `status` commands remain available. They read 
 
 The Overview shows ungraded and Grade 7/8/9/10 estimates for one of each owned printing. My cards shows individual estimates. First-edition values follow the checkbox; Base Set 2 and promos do not offer that checkbox. Duplicate quantities are not tracked.
 
-`config/market_values.json` holds dated USD PriceCharting guide snapshots. Grade 10 uses its PSA 10 guide; other grades are general grade scenarios. Grade 7–8 values marked * interpolate geometrically between ungraded and Grade 9 when no direct guide snapshot exists: raw × (grade9/raw)^(1/3 or 2/3). This is a rough heuristic, not observed sales or a predicted card grade. No grading or selling fees included. Records older than 30 days are excluded; partial totals disclose coverage.
+`config/market_values.json` holds dated USD PriceCharting guide snapshots. Grade 10 uses its PSA 10 guide; other grades are general grade scenarios. Grade 7–8 values marked * may be retained historical geometric estimates from ungraded and Grade 9 references. The app displays their estimated status but does not generate new interpolations or fetch replacements. These estimates are not observed sales or predicted card grades. No grading or selling fees included. Records older than 30 days are excluded; partial totals disclose coverage.
 
 Collection estimates and authenticated hunts share `reference_policy.py` for
 finite capped USD amounts, explicit variant verification, safe HTTPS source links

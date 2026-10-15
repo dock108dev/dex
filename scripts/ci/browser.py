@@ -16,6 +16,11 @@ from unittest.mock import patch
 
 PROJECT = Path(__file__).resolve().parents[2]
 
+if not __package__:
+    sys.path.insert(0, str(PROJECT))
+
+from scripts.ci.collection_journey import exercise as collection_journey  # noqa: E402
+
 
 def browser_cache():
     """Preserve installed browser binaries when isolating the child's HOME."""
@@ -81,6 +86,7 @@ def prepare_journey(root):
 
 def run(output):
     output.mkdir(parents=True, exist_ok=True)
+    (output / "report.json").write_text(json.dumps({"status": "FAIL", "checks": []}) + "\n")
     started = time.monotonic()
     with tempfile.TemporaryDirectory(prefix="dex-ci-browser-") as temporary:
         temporary = Path(temporary)
@@ -164,6 +170,7 @@ def run(output):
                     timeout=180,
                 )
                 report = json.loads((captures / "report.json").read_text())
+                report["checks"] = collection_journey(base, root, captures)
                 report["status"] = report["result"]
                 report["duration_seconds"] = round(time.monotonic() - started, 3)
                 report["state_count"] = len(report["states"])
@@ -179,6 +186,10 @@ def run(output):
                 if (temporary / "captures").exists():
                     for capture in (temporary / "captures").glob("*.png"):
                         (output / capture.name).write_bytes(capture.read_bytes())
+                    for name in ("report.json", "consumer-report.json"):
+                        native = temporary / "captures" / name
+                        if native.exists():
+                            (output / ("native-" + name)).write_bytes(native.read_bytes())
 
 
 if __name__ == "__main__":
@@ -201,4 +212,12 @@ if __name__ == "__main__":
         ):
             prepare_journey(args.prepare_root.resolve())
     else:
-        run(args.output.resolve())
+        try:
+            run(args.output.resolve())
+        except Exception as error:
+            path = args.output.resolve() / "report.json"
+            report = json.loads(path.read_text()) if path.exists() else {}
+            report.update(status="FAIL", failure=type(error).__name__)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps(report, indent=2) + "\n")
+            raise SystemExit(1) from None

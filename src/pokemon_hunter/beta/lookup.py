@@ -4,7 +4,7 @@ import json
 
 from pokemon_hunter.migration import digest, encode
 
-from . import broad_goals, collection, packs, store
+from . import broad_goals, collection, effective_collection, packs, store
 from . import collection_goals as goals
 
 FIELDS = {"goal", "targets", "scope", "printing"}
@@ -55,7 +55,7 @@ def project(actor, raw, filters=None, expansion=""):
     source = (
         goals.source(actor, definition["collection_source"]["id"])
         if definition and "collection_source" in definition
-        else goals.latest(actor)
+        else None
     )
     if source:
         d = goals.targets_definition(actor, entries, source["id"], numbers)
@@ -99,6 +99,11 @@ def project(actor, raw, filters=None, expansion=""):
             d["owned_species"] = sorted(set(numbers).intersection(owned))
             d["eligibility_policy"] = goals.TARGET_POLICY
             d.pop("collection_source", None)
+    if definition is None:
+        effective = effective_collection.project(actor)
+        d["owned_species"] = [n for n in numbers if effective["species"][str(n)]["present"]]
+        d["eligibility_policy"] = goals.TARGET_POLICY
+        d["ownership_basis"] = "effective-current-collection"
     if raw["printing"]:
         for i in d["items"]:
             i["printing_ids"] = [p for p in i["printing_ids"] if p == raw["printing"]]
@@ -120,5 +125,6 @@ def project(actor, raw, filters=None, expansion=""):
         lookup_request=raw,
         source_goal_id=goal["id"] if goal else None,
         source_goal_version=goal["version"] if goal else None,
+        ownership_basis="saved-goal-policy" if goal else "effective-current-collection",
     )
     return result

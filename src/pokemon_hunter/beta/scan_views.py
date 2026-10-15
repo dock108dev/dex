@@ -1,5 +1,3 @@
-import time
-
 from django.conf import settings
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render
@@ -61,16 +59,8 @@ def mutate(request, key, action):
 @require_GET
 def photo(request, key):
     who = actor(request)
-    found = store.rows(
-        "SELECT p.content,j.copy_id,j.created,j.operation_id FROM scan_photos p JOIN scan_jobs j ON j.id=p.job_id WHERE p.id=%s AND p.user_id=%s",
-        [str(key), who.user_id],
-    )
-    if not found or (not found[0]["operation_id"] and found[0]["created"] < time.time() - 7 * 86400):
-        raise Http404
-    if found[0]["copy_id"] and not store.rows(
-        "SELECT id FROM owned_copies WHERE id=%s AND user_id=%s AND state='active'",
-        [found[0]["copy_id"], who.user_id],
-    ):
+    found = scans.authorized_photo_rows(who, key, content=True)
+    if not found:
         raise Http404
     response = HttpResponse(bytes(found[0]["content"]), content_type="image/jpeg")
     response["Cache-Control"] = "private, no-store"

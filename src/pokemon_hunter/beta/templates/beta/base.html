@@ -6,9 +6,10 @@
   <title>{% block title %}Dex · Pokémon collection{% endblock %}</title>
   <link rel="stylesheet" href="/collection-assets/glass.css">
   <link rel="stylesheet" href="/collection-assets/collection.css">
+  {% if request.user.is_authenticated and collection_enabled %}<script src="/collection-assets/navigation.js" defer></script>{% endif %}
   {% if public %}<link rel="stylesheet" href="/collection-assets/public.css">{% endif %}
 </head>
-<body class="{% block body_class %}{{ body_class|default:'public-page' }}{% endblock %}">
+<body data-navigation-account="{{ navigation_account_id }}" data-navigation-binding="{{ navigation_binding }}" class="{% block body_class %}{{ body_class|default:'public-page' }}{% endblock %}">
   <a class="skip" href="#main">Skip to content</a>
   {% include 'beta/header.html' %}
   <main id="main">{% block content %}{% endblock %}</main>

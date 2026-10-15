@@ -18,7 +18,7 @@ from pokemon_hunter.migration import encode
 from pokemon_hunter.valuation import valuation_records
 
 from . import collection as service
-from . import ebay_hunts, goal_hunts, hunt_values, store
+from . import ebay_hunts, effective_collection, goal_hunts, hunt_values, store
 from . import transactions as transaction
 from .diagnostics import failure
 
@@ -59,8 +59,22 @@ def projection(actor):
     from .catalog_pipeline import indexed_eras
 
     eras = indexed_eras()
+    printing_ids = {p["id"] for p in catalog}
+    alias_ids = {}
+    for p in catalog:
+        alias_ids.setdefault(p["id"], set()).add(p["id"])
+        alias_ids.setdefault("catalog-" + p["id"], set()).add(p["id"])
+    for p in catalog:
+        alias = json.loads(p["provenance"]).get("legacy_id")
+        if alias:
+            alias_ids.setdefault(alias, set()).add(p["id"])
+    ambiguous_aliases = {key: sorted(ids) for key, ids in alias_ids.items() if len(ids) > 1}
     for p in catalog:
         legacy = json.loads(p["provenance"]).get("legacy_id")
+        if legacy in ambiguous_aliases or (
+            legacy and (legacy.startswith(("catalog-", "dg1-")) or legacy in printing_ids)
+        ):
+            legacy = None
         if not legacy:
             legacy = "catalog-" + p["id"]
         copies = by_printing.get(p["id"], [])
@@ -87,23 +101,54 @@ def projection(actor):
     data = derive({"cards": cards, "pokedex": dex})
     data["totals"] = {**totals(data), "physical_copies": len(active)}
     data["catalog"] = catalog
+    data["ambiguous_card_aliases"] = ambiguous_aliases
     data["valuation"] = estimates(active, catalog)
+    effective = effective_collection.project(actor, catalog=catalog, active=active)
+    data["effective_collection"] = effective
+    assertions = {row["id"]: row for row in effective["cards"]}
+    for card in data["cards"].values():
+        presence = effective["printings"][card["printing_id"]]
+        card.update(
+            effective_card_present=presence["present"],
+            established_total_quantity=presence["established_total_quantity"],
+            card_total_quantity=assertions[presence["card_ids"][0]]["established_total_quantity"],
+            recorded_copy_count=presence["recorded_copy_count"],
+            current_copy_owned=bool(presence["current_copy_ids"]),
+            exact_printing_owned=presence["exact_printing_owned"],
+            effective_identity_status=presence["identity_status"],
+        )
     from .ownership_declarations import summary
 
     declaration = summary(actor)
-    from .collection_goals import latest
+    declared_rows = [dict(row) for row in effective["declaration_rows"]]
+    from . import image_bindings, image_mappings
+    from .owned_artwork import reference_images
 
-    declared_rows = declaration["rows"] + declaration["gen2"]["rows"]
-    has_declaration = bool(latest(actor)) or bool(declared_rows)
+    images = reference_images(actor, catalog=catalog, active=active, effective=effective)
+    card_images = image_bindings.catalog_images(actor, catalog)
+    for card in data["cards"].values():
+        card["reference_image"] = card_images.get(card["printing_id"])
+    present_species = {int(n) for n, s in effective["species"].items() if s["present"]}
     data["owner_collection"] = dict(
-        kanto=declaration["species"],
-        johto=declaration["gen2"]["species"],
-        total=declaration["species"] + declaration["gen2"]["species"],
-        active=has_declaration,
+        kanto=len(present_species.intersection(range(1, 152))),
+        johto=len(present_species.intersection(range(152, 252))),
+        total=len(present_species),
+        active=effective["has_selected_source"],
+        basis="effective-current-collection",
     )
     for key, item in data["pokedex"].items():
+        item["artwork"] = image_mappings.species_artwork(int(key)) if image_bindings.enabled() else None
         item["declared_cards"] = [r for r in declared_rows if r["pokemon_dex"] == int(key)]
-        item["collection_owned"] = bool(item["declared_cards"]) if has_declaration else item["dex_owned"]
+        item["reference_images"] = [r for r in images if r["pokemon_dex"] == int(key)]
+        for row in item["declared_cards"]:
+            row["reference_images"] = [
+                r for r in item["reference_images"] if r["set_name"] == row["set_name"]
+            ]
+        item["qualified_copy_species_owned"] = item["dex_owned"]
+        item["effective_species_present"] = effective["species"][key]["present"]
+        item["collection_owned"] = item["effective_species_present"]
+        item["dex_owned"] = item["effective_species_present"]
+    data["ownership_declaration"] = declaration
     return data
 
 
