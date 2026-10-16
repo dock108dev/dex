@@ -644,6 +644,47 @@ def test_http_flow_csrf_binding_and_other_account(photos):
     assert c.get("/collection-assets/photo_batches.css").status_code == 200
 
 
+@pytest.mark.parametrize(
+    ("exception_type", "status", "message"),
+    [
+        (ValueError, 400, "Check the photo review fields"),
+        (TypeError, 400, "Check the photo review fields"),
+        (inv.Conflict, 409, "Photo batch changed or is unavailable. Reload before editing."),
+    ],
+)
+def test_http_errors_never_expose_exception_text(photos, monkeypatch, exception_type, status, message):
+    import re
+
+    c = photos["a"]
+    page = c.get("/add-photos/")
+    binding = re.search(r'data-navigation-binding="([a-f0-9]+)"', page.content.decode())[1]
+    provider_calls = []
+    private_detail = "synthetic-private-photo-path-and-provider-credential"
+
+    def fail_create(*args, **kwargs):
+        raise exception_type(private_detail)
+
+    def recognize(*args, **kwargs):
+        provider_calls.append(1)
+        raise AssertionError("Error handling must not dispatch recognition")
+
+    monkeypatch.setattr(batches, "create", fail_create)
+    monkeypatch.setattr(cli, "recognize_batch", recognize)
+    response = c.post(
+        "/api/photo-batches/create/",
+        json.dumps(dict(id=str(uuid.uuid4()))),
+        content_type="application/json",
+        HTTP_X_CSRFTOKEN=c.cookies["dex_b1_csrf"].value,
+        HTTP_X_DEX_BINDING=binding,
+    )
+    assert response.status_code == status
+    assert response.json() == {"error": message}
+    assert private_detail.encode() not in response.content
+    assert response["Cache-Control"] == "private, no-store"
+    assert response["X-Content-Type-Options"] == "nosniff"
+    assert provider_calls == []
+
+
 @pytest.mark.parametrize("kind", ["animated", "pixels", "small", "bytes", "format"])
 def test_source_limits(photos, kind):
     from django.core.files.uploadedfile import SimpleUploadedFile

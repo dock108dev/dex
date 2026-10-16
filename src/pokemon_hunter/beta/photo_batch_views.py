@@ -32,18 +32,17 @@ def endpoint(fn):
             response = (
                 value if isinstance(value, HttpResponse) else JsonResponse(dict(value, binding=binding))
             )
-        except collection.Conflict as exc:
-            response = JsonResponse(dict(error=str(exc)), status=409)
+        except collection.Conflict:
+            response = JsonResponse(
+                dict(error="Photo batch changed or is unavailable. Reload before editing."), status=409
+            )
         except ValidationError:
             response = JsonResponse(
                 dict(error="Use finite in-bounds crop geometry and supported fields"), status=400
             )
-        except (ValueError, TypeError) as exc:
-            # Validation errors are fixed application messages; provider text is never included.
-            response = JsonResponse(
-                dict(error=str(exc) if isinstance(exc, ValueError) else "Check the photo review fields"),
-                status=400,
-            )
+        except (ValueError, TypeError):
+            # Exception text can include private inputs or downstream implementation details.
+            response = JsonResponse(dict(error="Check the photo review fields"), status=400)
         response["Cache-Control"] = "private, no-store"
         response["X-Content-Type-Options"] = "nosniff"
         return response

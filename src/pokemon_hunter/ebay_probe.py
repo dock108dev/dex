@@ -28,12 +28,13 @@ from .ebay import EbayError
 
 QUERY = "Pokemon Base Set Chansey 3"
 BASE = "https://api.ebay.com"
-OAUTH = BASE + "/identity/v1/oauth2/token"
+# Public endpoint and response-size metadata, never credential/token values.
+AUTHORIZATION_ENDPOINT_URL = BASE + "/identity/v1/oauth2/token"
 BROWSE = BASE + "/buy/browse/v1/item_summary/search"
 SCOPE = "https://api.ebay.com/oauth/api_scope"
 DUMMY = ("offline-client", "offline-secret")
 BODY_LIMIT = 2 * 1024 * 1024
-OAUTH_LIMIT = 64 * 1024
+AUTHORIZATION_RESPONSE_LIMIT_BYTES = 64 * 1024
 CHUNK_LIMIT = 64 * 1024
 POLL = 0.02
 CLEANUP_SECONDS = 1.0
@@ -79,7 +80,7 @@ class Envelope:
             "country": self.country,
             "postal_code": None,
             "query": QUERY,
-            "oauth_url": OAUTH,
+            "oauth_url": AUTHORIZATION_ENDPOINT_URL,
             "browse_url": BROWSE,
             "buying_option": "FIXED_PRICE",
             "limit": 5,
@@ -87,7 +88,7 @@ class Envelope:
             "request_seconds": 30,
             "overall_seconds": 75,
             "browse_bytes": BODY_LIMIT,
-            "oauth_bytes": OAUTH_LIMIT,
+            "oauth_bytes": AUTHORIZATION_RESPONSE_LIMIT_BYTES,
             "max_attempts": 2,
             "redirects": False,
             "retries": 0,
@@ -114,7 +115,7 @@ def request_for(stage, envelope, timeout):
         return Request(
             stage,
             "POST",
-            OAUTH,
+            AUTHORIZATION_ENDPOINT_URL,
             headers=(("Content-Type", "application/x-www-form-urlencoded"),),
             data=(("grant_type", "client_credentials"), ("scope", SCOPE)),
             timeout=timeout,
@@ -519,7 +520,9 @@ def _worker(
             if code != 200:
                 connection.send(("result", "redirect" if 300 <= code < 400 else "http_error", code, None))
                 return  # Error bodies are never read, even for OAuth.
-            payload = bounded_json(response, OAUTH_LIMIT if stage == "oauth" else BODY_LIMIT, parser)
+            payload = bounded_json(
+                response, AUTHORIZATION_RESPONSE_LIMIT_BYTES if stage == "oauth" else BODY_LIMIT, parser
+            )
             response.close()
             response = None
             if not isinstance(payload, dict) or payload.get("errors"):

@@ -260,7 +260,9 @@ def test_browse_schema_and_excess(authority, tmp_path, body):
     assert run(authority, tmp_path, fake_args={"browse": body})["outcome"] == "invalid_schema"
 
 
-@pytest.mark.parametrize("stage,limit", [("oauth", probe.OAUTH_LIMIT), ("browse", probe.BODY_LIMIT)])
+@pytest.mark.parametrize(
+    "stage,limit", [("oauth", probe.AUTHORIZATION_RESPONSE_LIMIT_BYTES), ("browse", probe.BODY_LIMIT)]
+)
 def test_decoded_body_limit_before_parser(authority, tmp_path, stage, limit):
     def parser(body):
         if len(body) > limit:

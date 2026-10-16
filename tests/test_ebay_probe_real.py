@@ -195,7 +195,7 @@ def test_exact_wire_requests_and_no_continuation(monkeypatch):
         first = transport.dispatch(
             probe.request_for("oauth", real.ENV, 1), credentials=probe.DUMMY, token=None
         )
-        assert probe.bounded_json(first, probe.OAUTH_LIMIT)["access_token"] == TOKEN
+        assert probe.bounded_json(first, probe.AUTHORIZATION_RESPONSE_LIMIT_BYTES)["access_token"] == TOKEN
         second = transport.dispatch(probe.request_for("browse", real.ENV, 1), credentials=None, token=TOKEN)
         assert len(probe.bounded_json(second, probe.BODY_LIMIT)["itemSummaries"]) == 1
         with pytest.raises(probe.ProbeError):
@@ -227,8 +227,8 @@ def test_production_transport_options_no_ambient(monkeypatch):
     [
         {"method": "PUT"},
         {"url": "https://api.sandbox.ebay.com/identity/v1/oauth2/token"},
-        {"url": probe.OAUTH + "?x=1"},
-        {"url": probe.OAUTH + "/"},
+        {"url": probe.AUTHORIZATION_ENDPOINT_URL + "?x=1"},
+        {"url": probe.AUTHORIZATION_ENDPOINT_URL + "/"},
         {"params": (("q", "other"),)},
         {"follow_redirects": True},
         {"headers": (("Host", "bad.invalid"),)},
@@ -269,7 +269,9 @@ def test_failure_no_retries_auth_redirect_or_body_read(authority, code, stage):
     assert stages == (["oauth"] if stage == "oauth" else ["oauth", "browse"])
 
 
-@pytest.mark.parametrize("stage,limit", [("oauth", probe.OAUTH_LIMIT), ("browse", probe.BODY_LIMIT)])
+@pytest.mark.parametrize(
+    "stage,limit", [("oauth", probe.AUTHORIZATION_RESPONSE_LIMIT_BYTES), ("browse", probe.BODY_LIMIT)]
+)
 @pytest.mark.parametrize("encoding", ["identity", "gzip", "deflate"])
 def test_overflow_before_parser(authority, stage, limit, encoding):
     def parser(body):
@@ -297,7 +299,10 @@ def test_overflow_before_parser(authority, stage, limit, encoding):
 def test_bad_encoding(raw, encoding):
     response = httpx.Response(200, headers={"content-encoding": encoding}, stream=Stream(raw, split=1))
     with pytest.raises(probe.BodyError):
-        probe.bounded_json(real.StreamedResponse(response, probe.OAUTH_LIMIT), probe.OAUTH_LIMIT)
+        probe.bounded_json(
+            real.StreamedResponse(response, probe.AUTHORIZATION_RESPONSE_LIMIT_BYTES),
+            probe.AUTHORIZATION_RESPONSE_LIMIT_BYTES,
+        )
 
 
 @pytest.mark.parametrize("encoding", ["gzip", "deflate"])
@@ -617,10 +622,15 @@ def test_concurrent_execution_admits_one(authority):
 
 def test_oversized_compressed_wire_even_without_output():
     # A gzip header with a long bounded optional name yields no decoded data.
-    raw = b"\x1f\x8b\x08\x08" + b"\0" * 6 + b"a" * (probe.OAUTH_LIMIT + real.WIRE_EXTRA)
+    raw = (
+        b"\x1f\x8b\x08\x08" + b"\0" * 6 + b"a" * (probe.AUTHORIZATION_RESPONSE_LIMIT_BYTES + real.WIRE_EXTRA)
+    )
     response = httpx.Response(200, headers={"content-encoding": "gzip"}, stream=Stream(raw))
     with pytest.raises(probe.BodyError, match="body_limit"):
-        probe.bounded_json(real.StreamedResponse(response, probe.OAUTH_LIMIT), probe.OAUTH_LIMIT)
+        probe.bounded_json(
+            real.StreamedResponse(response, probe.AUTHORIZATION_RESPONSE_LIMIT_BYTES),
+            probe.AUTHORIZATION_RESPONSE_LIMIT_BYTES,
+        )
 
 
 def test_private_input_timeout_cannot_send():
@@ -742,7 +752,7 @@ os.write(1,b'PRIVATE_INPUT_OK\\n')
         process.wait(timeout=2)
 
 
-def test_worker_logging_does_not_retain_secret(authority):
+def test_worker_logging_does_not_write_to_inherited_handler(authority):
     import logging
 
     log = authority.path.parent / "inherited-log"
@@ -752,7 +762,10 @@ def test_worker_logging_does_not_retain_secret(authority):
     logger.setLevel(logging.DEBUG)
 
     def parser(body):
-        logger.critical(SECRET + TOKEN + BODY)
+        # Prove the entire inherited logging path is disabled without routing
+        # even synthetic credentials to a logger.
+        assert not logger.isEnabledFor(logging.CRITICAL)
+        logger.critical("worker logging suppression check")
         return probe.decode_json(body)
 
     try:
@@ -761,6 +774,24 @@ def test_worker_logging_does_not_retain_secret(authority):
     finally:
         logger.removeHandler(handler)
         handler.close()
+
+
+def test_binding_cli_never_reads_credentials_or_issues_authority(monkeypatch, capsys):
+    def forbidden(*args, **kwargs):
+        raise AssertionError("binding read credentials or accessed private authority")
+
+    monkeypatch.setattr(real, "RealJournal", forbidden)
+    monkeypatch.setattr(real, "hidden_credentials", forbidden)
+    monkeypatch.setattr(real, "check_private_context", forbidden)
+
+    assert real.main(["binding"]) == 0
+    output = capsys.readouterr()
+    binding = json.loads(output.out)
+    assert binding == real.ENV.binding()
+    assert binding["oauth_url"] == "https://api.ebay.com/identity/v1/oauth2/token"
+    assert binding["oauth_bytes"] == 65536
+    assert output.err == ""
+    assert all(value not in output.out for value in (SECRET, CLIENT, TOKEN, BODY))
 
 
 def test_owned_cleanup_never_uses_blocking_join():

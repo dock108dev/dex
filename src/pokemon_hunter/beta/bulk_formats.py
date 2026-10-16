@@ -3,7 +3,6 @@
 import csv
 import io
 import json
-import re
 
 from pokemon_hunter.migration import digest, encode
 
@@ -12,6 +11,8 @@ from .collection_imports import FIELDS
 SCHEMA = "dex-onboarding-v1"
 LIMIT = 2000
 MAX_BYTES = 1_500_000
+# Retain Python's ordinary endpoint limit even when its process setting is disabled.
+_MAX_RANGE_DIGITS = 4300
 ACTIONS = {"add_copies", "set_total", "mark_owned"}
 COLUMNS = (
     "schema",
@@ -54,9 +55,13 @@ DEFAULT_FIELDS = {
 def positive(value):
     if type(value) is int:
         value = str(value)
-    if not isinstance(value, str) or not re.fullmatch(r"[0-9]+", value) or not 1 <= int(value) <= LIMIT:
+    if not isinstance(value, str) or not _ascii_integer(value):
         raise ValueError("Use a whole number from 1 to 2,000")
-    return int(value)
+    significant = value.lstrip("0") or "0"
+    # Bound conversion before int(): an untrusted quantity can contain many digits.
+    if len(significant) > len(str(LIMIT)) or not 1 <= int(significant) <= LIMIT:
+        raise ValueError("Use a whole number from 1 to 2,000")
+    return int(significant)
 
 
 def parse_csv(text):
@@ -118,12 +123,46 @@ def export_rows(rows):
     return stream.getvalue()
 
 
+def _ascii_integer(value):
+    return bool(value) and value.isascii() and value.isdecimal()
+
+
+def _paste_token(token):
+    """Read one token in a single pass, without backtracking on pasted text."""
+    if token.startswith('"'):
+        end = token.find('"', 1)
+        if end <= 1 or "\r" in token[1:end]:
+            raise ValueError("Use literal numbers or ascending integer ranges: 1-3 x2, 8")
+        number, quoted = token[1:end], True
+        offset = end + 1
+    else:
+        offset = 0
+        while offset < len(token) and not token[offset].isspace() and token[offset] not in '"x':
+            offset += 1
+        if not offset:
+            raise ValueError("Use literal numbers or ascending integer ranges: 1-3 x2, 8")
+        number, quoted = token[:offset], False
+    while offset < len(token) and token[offset].isspace():
+        offset += 1
+    if offset == len(token):
+        return number, None, quoted
+    if token[offset] != "x":
+        raise ValueError("Use literal numbers or ascending integer ranges: 1-3 x2, 8")
+    offset += 1
+    while offset < len(token) and token[offset].isspace():
+        offset += 1
+    quantity = token[offset:]
+    if quantity != "unknown" and not _ascii_integer(quantity):
+        raise ValueError("Use literal numbers or ascending integer ranges: 1-3 x2, 8")
+    return number, quantity, quoted
+
+
 def parse_paste(text, defaults):
     if not isinstance(text, str) or len(text.encode()) > MAX_BYTES:
         raise ValueError("Paste is too large")
     rows = []
     # Quotes force literal numbers; delimiters within quotes are not number syntax.
-    tokens = re.split(r"[,;\n]", text)
+    tokens = text.replace(";", ",").replace("\n", ",").split(",")
     if len(tokens) > LIMIT:
         raise ValueError("At most 2,000 source tokens")
     occurrences = {}
@@ -133,12 +172,7 @@ def parse_paste(text, defaults):
             if len(tokens) == 1:
                 return []
             raise ValueError("Empty number token; use 1-3 x2, 8, 10 x3")
-        match = re.fullmatch(r'("[^"\r\n]+"|[^\s"x]+)(?:\s*x\s*([0-9]+|unknown))?', token)
-        if not match:
-            raise ValueError("Use literal numbers or ascending integer ranges: 1-3 x2, 8")
-        number, quantity = match.groups()
-        quoted = number.startswith('"')
-        number = number[1:-1] if quoted else number
+        number, quantity, quoted = _paste_token(token)
         action = defaults.get("action", "add_copies")
         if action == "mark_owned" and quantity is not None:
             raise ValueError("Mark owned does not accept quantities")
@@ -150,13 +184,20 @@ def parse_paste(text, defaults):
             positive(quantity)
         numbers = [number]
         if not quoted and "-" in number:
-            limits = re.fullmatch(r"([0-9]+)-([0-9]+)", number)
-            if not limits or int(limits[1]) > int(limits[2]):
+            start_text, _, end_text = number.partition("-")
+            if not _ascii_integer(start_text) or not _ascii_integer(end_text):
                 raise ValueError("Only ascending ASCII integer ranges; quote hyphenated literal numbers")
-            start, end = int(limits[1]), int(limits[2])
+            if max(len(start_text), len(end_text)) > _MAX_RANGE_DIGITS:
+                raise ValueError("Integer range endpoints are too long")
+            try:
+                start, end = int(start_text), int(end_text)
+            except ValueError:
+                raise ValueError("Integer range endpoints are too long") from None
+            if start > end:
+                raise ValueError("Only ascending ASCII integer ranges; quote hyphenated literal numbers")
             if end - start + len(rows) + 1 > LIMIT:
                 raise ValueError("Range exceeds 2,000 normalized rows")
-            width = len(limits[1]) if limits[1].startswith("0") else 0
+            width = len(start_text) if start_text.startswith("0") else 0
             numbers = [str(n).zfill(width) for n in range(start, end + 1)]
         for n in numbers:
             occurrences[n] = occurrences.get(n, 0) + 1

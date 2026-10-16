@@ -402,7 +402,10 @@ class RealTransport:
         if wire.url.scheme != "https" or wire.url.host != "api.ebay.com" or wire.url.port not in (None, 443):
             raise probe.ProbeError("unexpected_request")
         response = self.client.send(wire, stream=True, auth=None, follow_redirects=False)
-        return StreamedResponse(response, probe.OAUTH_LIMIT if request.stage == "oauth" else probe.BODY_LIMIT)
+        return StreamedResponse(
+            response,
+            probe.AUTHORIZATION_RESPONSE_LIMIT_BYTES if request.stage == "oauth" else probe.BODY_LIMIT,
+        )
 
     def close(self):
         self.reader = None
