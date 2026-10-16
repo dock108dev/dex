@@ -1,9 +1,32 @@
 # Shopping and eBay discovery
 
+## One visual Pokémon, card and eBay search
+
+Shopping starts with local catalog search. Broad Hypno, Alakazam and Gengar names
+show Pokémon artwork, current collection context and matching-card counts. Choosing
+a Pokémon reveals card references. Detailed names, sets and collector numbers show
+matching card scans with readable set/number labels. Multiple plausible cards and
+exact printings remain explicit choices; a group never chooses its first child.
+Unavailable images retain visible results and an honest fallback. Reference scans
+are separate from exact printing images, private copy photos and seller photographs.
+
+All supported sets and quick Base Set / Base Set 2 / Jungle / Fossil / Team Rocket
+buttons refine local results and the submitted provider query. Ordinary `base` and
+`base 2` aliases remain independent. A typed phrase cannot bypass the selected set.
+Fractional numbers may use the numerator to find plausible references; the UI asks
+for the full numbering/set to be checked and does not establish exact identity.
+Local browsing stays useful when provider access is unavailable.
+
+The checked context from Pokédex, species, Library, card and goal pages opens this
+merged search. Query, set, current/frozen ownership scope, optional exact child,
+filters, scroll and focus survive validated Back navigation. Only finite user UI
+choices and opaque result handles enter URLs; provider content/values do not.
+The secondary manual calculator retains its existing user-input drafts independently.
+
 ## Navigation
 
-Open **Shopping** at `/shopping/` for **Find deals**, **Find missing cards** and
-**Check a listing/lot**. Assisted checks are at `/shopping/check/`; the manual
+Open **Shopping** at `/shopping/` for visual local search, **Find deals**,
+**Find missing cards** and **Check a listing/lot**. Assisted checks are at `/shopping/check/`; the manual
 calculator is at `/shopping/calculator/`. Contextual collection links retain their checked printing selector and Back destination.
 Saved research and Packs remain reachable. Opening any of these pages does not
 request provider data, refresh prices or change collection/goals.
@@ -13,11 +36,15 @@ request provider data, refresh prices or change collection/goals.
 **Find deals** generates searches from the supported catalog and includes owned
 cards. It needs neither a goal nor manual card entry. An optional USD spending
 budget, search phrase, set and Kanto/Johto scope narrow the search. Discovery uses
-fixed-price singles, with vintage comparison coverage; other catalog cards may be
-unpriced.
+singles, loose mixed lots and supported auctions. Choose Singles / Mixed lots /
+Both and Ending soon / Best match. English/vintage uses search words; US marketplace,
+US listing location and US delivery use supported official fields. Language and
+manufactured-year facets are not guessed. The supplied 1995/1999/2001 web choices
+never become a continuous date rule or change collection membership. Vintage retained
+reference coverage and all-era catalog browsing remain independent.
 
-**Find missing cards** explicitly selects current collection or a frozen goal.
-Current collection offers exact-printing or species policy. A selected goal retains
+**Find missing cards** defaults to **Current collection · Original 151 · species**.
+Current collection also offers exact-printing policy; a frozen goal is optional. A selected goal retains
 its captured membership and ownership policy. Broad ownership declarations do not
 establish every edition/finish. Search is read-only for inventory and goals.
 
@@ -87,8 +114,11 @@ path. Seller/catalog compatibility and source rights are checked independently;
 conditional arithmetic does not establish a verified physical identity.
 
 Arbitrary seller URLs, shorteners and sold data are unsupported. Discovery makes
-no purchase, bid or inventory mutation. Both acquisition paths support fixed-price
-listings; auction loading and mixed-lot discovery are unavailable. Manual cost
+no purchase, bid or inventory mutation. Both acquisition paths support fixed-price and auction buying options, including
+mixed options. Loose mixed lots are eligible candidates without receiving a
+misleading single-card reference. Sealed, mystery, random, curated and other
+unsupported products remain excluded. Imperfect identity can remain a visibly
+uncertain discovery candidate independently of reference-price applicability. Manual cost
 entry remains available and never places a bid or establishes a final purchase price.
 
 ## Check a listing/lot
@@ -101,15 +131,22 @@ getItem/getItemByLegacyId operations run. No seller page is fetched.
 
 Loading opens a preview and keeps your existing review. **Use these details** explicitly
 replaces its contents/costs; **Keep my review** discards the preview. Available title,
-asking price/currency, shipping and condition claims are proposed. Listing stock,
+current bid or asking amount/currency, shipping and condition claims are proposed.
+Buy-now amounts and the owner's planned manual bid remain separately labelled.
+Opening a revealed discovery offer transfers its checked temporary summary and
+original expiry without another provider operation. Extra official details require
+**Load additional official details**; manual URL/ID entry remains available. Listing stock,
 eBay lot units and seller-stated card count are separate. Proposed ambiguous printings
-have zero included. Correct the cards, quantities and value basis, and expand condition,
-grader and printing claims when needed. Find cards locally adds/corrects catalog choices.
+have zero included. Review leads with **Ungraded** and reference images. Include, remove or correct
+proposed cards and quantities; expand optional printing/condition/grader details
+when needed. Ambiguous or conflicting proposals remain unconfirmed. A selected
+search printing stays visible as a target and does not establish seller contents. Find cards locally adds/corrects catalog choices.
 Manual/in-person entry is available without any provider request; the independent manual
 calculator and saved research remain in the final disclosure.
 
 **Compare reviewed lot** invokes the existing admitted-reference calculator and Shopping
-arithmetic. The whole-lot asking price is counted once. Only included card quantities
+arithmetic. The whole-lot observed amount is counted once, with current auction bid and
+buy-now asking amount kept distinct from the owner's optional planned manual bid. Only included card quantities
 receive applicable values; unrecognized cards receive none. Blank remainder quantity
 means unknown, while zero explicitly states all contents are identified. Partial contents
 or pricing produce only a priced subtotal. Blank shipping/tax/other costs and foreign
@@ -207,7 +244,7 @@ server-checked scope. Fields are `species` OR `group` with optional member `chil
 optional paired account-owned `goal` and retained `version`, checked `generation`,
 and safe `return`. Opening a current species does not adopt the first saved goal.
 The label distinguishes current collection status from retained saved-goal units.
-A group without child remains a printing-selection task; archived/unavailable or
+A group without child keeps its card-reference scope and optional printing choice; archived/unavailable or
 unsupported entries do not choose siblings or widen calculator catalog policy.
 
 Explicit All cards, Missing and goal changes update the visible active picker scope

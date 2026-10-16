@@ -27,7 +27,17 @@ class Transport:
             follow_redirects=False,
         )
 
-    async def request(self, stage, *, timeout, credentials=None, token=None, query=None, identifier=None):
+    async def request(
+        self,
+        stage,
+        *,
+        timeout,
+        credentials=None,
+        token=None,
+        query=None,
+        identifier=None,
+        search_options=None,
+    ):
         headers = {"Accept": "application/json", "Accept-Encoding": "identity"}
         if stage == "oauth":
             pair = ":".join(credentials).encode()
@@ -41,11 +51,20 @@ class Transport:
             method, path, data = "GET", "/buy/browse/v1/item_summary/search", None
             params = {
                 "q": query,
-                "filter": "buyingOptions:{FIXED_PRICE},deliveryCountry:US",
+                "filter": "buyingOptions:{FIXED_PRICE|AUCTION},deliveryCountry:US,itemLocationCountry:US",
                 "limit": 20,
                 "offset": 0,
                 "fieldgroups": "EXTENDED",
             }
+            if stage == "browse":
+                options = search_options or {}
+                if set(options) - {"sort"} or options.get("sort", "ending_soonest") not in {
+                    "best_match",
+                    "ending_soonest",
+                }:
+                    raise ValueError("Choose supported provider search options")
+                if options.get("sort", "ending_soonest") == "ending_soonest":
+                    params["sort"] = "endingSoonest"
             if stage != "browse":
                 from .listing_details import parse_identifier
 

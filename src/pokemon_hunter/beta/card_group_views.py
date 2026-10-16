@@ -164,6 +164,12 @@ def return_context(value, *, list_only=False, _depth=0):
         card_groups._filters(raw, {"public": False})
     elif not list_only and parts.path == "/goals/" and not raw:
         pass
+    elif not list_only and parts.path == "/shopping/":
+        from . import discovery_catalog
+
+        discovery_catalog.validate_page(raw)
+        if "return" in raw:
+            return_context(raw["return"], _depth=_depth + 1)
     else:
         raise ValueError("Choose My Cards, Card Library or Pokédex as the return destination")
     return value

@@ -17,6 +17,7 @@ from pokemon_hunter.security import ebay_url
 
 from . import collection, image_bindings, lot_calculator, lot_guides, market_identity, shopping, store
 from . import shopping_math as math
+from .discovery_search import canonical_query, product_kind
 
 _GRADERS = r"PSA|BGS|CGC|SGC"
 _LANGUAGES = {
@@ -162,6 +163,7 @@ def _matches(candidates, clues):
     # Reuse the established set/name/number matcher, independent of legacy scoring.
     # Cheap normalization narrows the all-era catalog before compiling literal
     # matching expressions; it cannot establish a match by itself.
+    clues = {**clues, "text": canonical_query(clues["text"])}
     folded = " ".join(clues["text"].casefold().split())
     candidates = [
         p
@@ -192,6 +194,14 @@ def _matches(candidates, clues):
             proposed.append(p)
     fitting = [p for p in proposed if not _identity_conflicts(p, clues)]
     return fitting or proposed
+
+
+def _approx_matches(candidates, clues):
+    """Name-only seller clues are useful choices, never exact-price evidence."""
+    text = canonical_query(clues["text"])
+    return [
+        p for p in candidates if re.search(r"(?<![\w'’])" + re.escape(p["name"]) + r"(?![\w'’])", text, re.I)
+    ]
 
 
 def _identity(printing, clues, artwork=None):
@@ -261,15 +271,17 @@ def _reference(ref):
     )
 
 
-def _arithmetic(price, shipping, ref, today):
+def _arithmetic(price, shipping, ref, today, *, auction=False):
     def cost(value):
         return dict(amount=value, currency="USD", status="known" if value is not None else "unknown")
 
-    basis = dict(cost(price), price_kind="fixed_price", date=today.isoformat())
+    basis = dict(
+        cost(price), price_kind="current_bid" if auction else "current_asking_price", date=today.isoformat()
+    )
     data = dict(
         evaluation_date=today.isoformat(),
         listing_observation=basis,
-        planned_bid=basis,
+        planned_bid=dict(cost(None), price_kind="personal_planned_bid", date=today.isoformat()),
         delivery_cost_inputs={
             key: dict(shipping=cost(shipping), tax=cost("0"), other_costs=cost("0")) for key in math.BASES
         },
@@ -287,7 +299,7 @@ def _arithmetic(price, shipping, ref, today):
 
 
 def compare(actor, raw_rows, candidates, *, now=None):
-    """Compare supplied fixed-price summaries, with no provider calls or saves.
+    """Project supplied single/loose-lot summaries without calls or saves.
 
     Candidates must be internally scoped, authorized catalog rows. Additional
     ownership annotations are ignored; discovery does not require missing cards.
@@ -312,9 +324,15 @@ def compare(actor, raw_rows, candidates, *, now=None):
             continue
         seen.add(item_id)
         clues = _clues(raw)
+        kind = product_kind(clues["text"])
+        if kind == "unsupported":
+            continue
         matched = _matches(printings, clues)
-        p = matched[0] if len(matched) == 1 else None
-        auction = "AUCTION" in raw.get("buyingOptions", [])
+        approximate = matched or _approx_matches(printings, clues)
+        p = matched[0] if len(matched) == 1 and kind == "single" else None
+        options = raw.get("buyingOptions", [])
+        options = options if isinstance(options, list) and all(isinstance(o, str) for o in options) else []
+        auction = "AUCTION" in options
         price = provider_money(raw.get("currentBidPrice") if auction else raw.get("price"), "USD")
         shipping = provider_shipping(raw, "USD")
         # Shopping owns decimal admission and rounding, including upper bounds.
@@ -323,14 +341,28 @@ def compare(actor, raw_rows, candidates, *, now=None):
             shipping = math.money(math.amount(format(shipping, "f"))) if shipping is not None else None
         except ValueError:
             price, shipping = None, None
-        delivered, _ = _arithmetic(price, shipping, None, today)
+        buy_now = provider_money(raw.get("price"), "USD") if "FIXED_PRICE" in options else None
+        try:
+            buy_now = math.money(math.amount(format(buy_now, "f"))) if buy_now is not None else None
+        except ValueError:
+            buy_now = None
+        delivered, _ = _arithmetic(price, shipping, None, today, auction=auction)
         row = dict(
             item_id=item_id,
             title=str(raw.get("title") or ""),
             item_url=ebay_url(raw.get("itemWebUrl")),
-            label="Single-card candidate",
+            label="Loose mixed-lot candidate" if kind == "mixed_lot" else "Single-card candidate",
+            discovery_kind=kind,
             proposed_identity=_identity(p, clues, artwork.get(p["id"])) if p else None,
+            identity_candidates=[_identity(c, clues, artwork.get(c["id"])) for c in approximate[:40]],
+            identity_candidates_total=len(approximate),
+            discovery_eligibility="candidate",
+            reference_eligibility="unpriced",
             listing_price=price,
+            current_bid=price if auction else None,
+            buy_now_price=buy_now,
+            buying_options=[o for o in ("AUCTION", "FIXED_PRICE", "BEST_OFFER") if o in options],
+            ends_at=raw.get("itemEndDate") if isinstance(raw.get("itemEndDate"), str) else None,
             shipping=shipping,
             delivered_total=delivered,
             currency="USD",
@@ -348,12 +380,12 @@ def compare(actor, raw_rows, candidates, *, now=None):
             issues += _identity_conflicts(p, clues)
         if len(matched) > 1:
             issues.append("Multiple catalog printings match; edition or finish needs review")
-        if "FIXED_PRICE" not in raw.get("buyingOptions", []) or "AUCTION" in raw.get("buyingOptions", []):
+        if not {"FIXED_PRICE", "AUCTION"}.intersection(options):
+            issues.append("No supported fixed-price or auction buying option was supplied")
+        if kind == "mixed_lot":
             issues.append(
-                "Only fixed-price singles are comparable; an auction current bid is not a final price"
+                "Loose mixed-lot contents need review; one card reference cannot value the whole lot"
             )
-        if re.search(r"\b(?:lot|binder|collection|mystery|repack|random)\b", clues["text"], re.I):
-            issues.append("Seller text does not establish one identified single card")
         count = extract_count(clues["text"]).denominator
         if (
             count is not None
@@ -396,8 +428,14 @@ def compare(actor, raw_rows, candidates, *, now=None):
                         or bool(ref.get("conflicts"))
                     )
                     row["reference"] = _reference(ref)
-                    row["delivered_total"], row["comparison"] = _arithmetic(price, shipping, ref, today)
-                    row["classification"] = "conditional" if conditional else "comparable"
+                    row["reference_eligibility"] = "conditional" if conditional else "eligible"
+                    row["delivered_total"], comparison = _arithmetic(
+                        price, shipping, ref, today, auction=auction
+                    )
+                    # A current bid is neither a final cost nor an owner bid. An
+                    # admitted dated reference may be shown without a bargain rank.
+                    row["comparison"] = dict(_NO_COMPARISON) if auction else comparison
+                    row["classification"] = "conditional" if conditional or auction else "comparable"
                     row["reason"] = (
                         "Generic grade scenario; this reference does not establish a matching "
                         + clues["grader"]
@@ -421,6 +459,11 @@ def compare(actor, raw_rows, candidates, *, now=None):
                         row["basis"] += " Generic grade scenario, not an exact slab match."
                     elif clues["graded"]:
                         row["basis"] += " Literal grader and grade match; certification remains unverified."
+        if auction:
+            row["reason"] += "; current bid is not the final purchase price or your planned bid"
+            row["basis"] += " Auction bid may change; any buy-now amount is a separate offer."
+        if approximate and not matched:
+            row["reason"] += "; approximate name match only, choose and confirm contents in review"
         result.append(row)
 
     def rank(row):

@@ -97,10 +97,13 @@ def validate_response(identifier, raw):
         for r in raw.get("estimatedAvailabilities", [])
     ):
         raise ValueError("This listing is unavailable.")
-    if "FIXED_PRICE" not in raw.get("buyingOptions", []) or "AUCTION" in raw.get("buyingOptions", []):
-        raise ValueError(
-            "Only fixed-price listing details are supported. Use manual entry for an auction observation."
-        )
+    options = raw.get("buyingOptions", [])
+    if (
+        not isinstance(options, list)
+        or not all(isinstance(option, str) for option in options)
+        or not {"FIXED_PRICE", "AUCTION"}.intersection(options)
+    ):
+        raise ValueError("This listing has no supported fixed-price or auction buying option.")
     return returned
 
 
@@ -116,6 +119,25 @@ def _money(value):
     except (ValueError, TypeError):
         amount = None
     return dict(amount=amount, currency=value["currency"])
+
+
+def prices(raw):
+    """Keep an auction observation separate from the optional buy-now amount.
+
+    Browse's ``price`` is never used as a fallback for a missing current bid.
+    Neither amount establishes a winning bid or final purchase cost.
+    """
+    options = raw.get("buyingOptions", [])
+    auction = "AUCTION" in options
+    buy_now = _money(raw.get("price")) if "FIXED_PRICE" in options else _money(None)
+    bid = _money(raw.get("currentBidPrice")) if auction else _money(None)
+    return dict(
+        buying_options=[option for option in ("AUCTION", "FIXED_PRICE") if option in options],
+        current_bid=bid,
+        buy_now=buy_now,
+        price=bid if auction else buy_now,
+        price_kind="current_bid" if auction else "current_asking_price",
+    )
 
 
 def details(identifier, raw):
@@ -194,7 +216,7 @@ def details(identifier, raw):
         item_url=f"https://www.ebay.com/itm/{parsed['legacy']}"
         + (f"?var={parsed['variation']}" if parsed["variation"] != "0" else ""),
         title=_text(raw.get("title")),
-        price=_money(raw.get("price")),
+        **prices(raw),
         shipping=shipping,
         condition=condition[:1000].strip(),
         aspects=aspects,

@@ -114,6 +114,13 @@ def authorize_destination(who, value):
         check_generation(raw, result)
         if result.get("public") is not False:
             raise ValueError("This collection destination is unavailable")
+    if parts.path == "/shopping/":
+        from . import shopping_context
+
+        shopping_context.resolve(
+            who,
+            {key: value for key, value in raw.items() if key in shopping_context.FIELDS and key != "return"},
+        )
     if "return" in raw:
         authorize_destination(who, raw["return"])
     return value
@@ -138,7 +145,7 @@ def validate_home(request):
     """Read-only reauthorization before reopening optional remembered UI context."""
     raw = query(request, {"destination"})
     value = raw.get("destination", "/cards/")
-    if urlsplit(value).path == "/goals/":
+    if urlsplit(value).path in {"/goals/", "/shopping/"}:
         raise ValueError("Choose a card or Pokémon home destination")
     destination = authorize_destination(actor(request), value)
     bound = binding(request)

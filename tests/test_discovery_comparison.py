@@ -180,7 +180,8 @@ def test_duplicates_ambiguous_singles_and_unsupported_prices_are_readable(setup)
     auction = compare(
         setup, listing(p, buyingOptions=["AUCTION"], currentBidPrice=dict(value="0.50", currency="USD"))
     )
-    assert auction["classification"] == "unpriced" and auction["reference"] is None
+    assert auction["classification"] == "conditional" and auction["reference"]
+    assert auction["comparison"]["below_reference"] is None
     assert "current bid" in auction["reason"]
 
 
@@ -263,11 +264,58 @@ def test_service_candidate_projection_preserves_authoritative_catalog_identity(s
     assert len(rows) == 1
 
 
-@pytest.mark.parametrize("claim", ["2 cards", "x4", "4x", "Choose your card", "Complete Set"])
+@pytest.mark.parametrize("claim", ["2 cards", "x4", "4x"])
 def test_multiples_and_selectable_offers_never_use_single_reference(setup, claim):
     _, p = active(setup)
     row = compare(setup, listing(p, title=listing(p)["title"] + " " + claim))
     assert row["classification"] == "unpriced" and row["reference"] is None
+
+
+@pytest.mark.parametrize(
+    "claim", ["Choose your card", "Complete Set", "Sealed Booster", "Mystery", "Curated", "Random", "Repack"]
+)
+def test_unsupported_products_are_excluded_from_discovery(setup, claim):
+    _, p = active(setup)
+    assert (
+        discovery.compare(setup["actor"], [listing(p, title=listing(p)["title"] + " " + claim)], [p], now=NOW)
+        == []
+    )
+
+
+def test_loose_lot_and_imperfect_title_are_useful_without_single_reference(setup):
+    _, p = active(setup)
+    row = compare(setup, listing(p, title=f"{p['name']} vintage loose mixed lot 10 cards"))
+    assert row["discovery_kind"] == "mixed_lot"
+    assert row["discovery_eligibility"] == "candidate"
+    assert row["proposed_identity"] is None and row["reference"] is None
+    assert p["id"] in {c["printing_id"] for c in row["identity_candidates"]}
+    assert all(c["verified"] is False for c in row["identity_candidates"])
+    assert "approximate name match" in row["reason"]
+
+
+def test_mixed_auction_buy_now_and_bid_remain_separate(setup):
+    _, p = active(setup)
+    row = compare(
+        setup,
+        listing(
+            p,
+            buyingOptions=["AUCTION", "FIXED_PRICE"],
+            currentBidPrice=dict(value="0.50", currency="USD"),
+            price=dict(value="20.00", currency="USD"),
+        ),
+    )
+    assert row["current_bid"] == row["listing_price"] == "0.50"
+    assert row["buy_now_price"] == "20.00" and row["price_kind"] == "current_bid"
+    assert row["reference"] and row["comparison"]["below_reference"] is None
+    assert row["comparison"]["reference_minus_delivered_total"] is None
+    assert "not the final purchase price" in row["reason"]
+
+
+def test_auction_without_bid_does_not_substitute_buy_now(setup):
+    _, p = active(setup)
+    row = compare(setup, listing(p, buyingOptions=["AUCTION", "FIXED_PRICE"], currentBidPrice=None))
+    assert row["listing_price"] is None and row["current_bid"] is None
+    assert row["buy_now_price"] == "1.00" and row["delivered_total"] is None
 
 
 def test_base_set_two_cannot_match_base_set_even_with_uuid_catalog_set_id(setup):

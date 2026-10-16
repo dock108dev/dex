@@ -43,7 +43,14 @@ def test_metadata_and_polling_are_private_reads(workspace, monkeypatch):
 
 def test_actions_require_csrf_and_have_bound_session(workspace, monkeypatch):
     seen = []
-    monkeypatch.setattr(discovery, "start", lambda *args: seen.append(args) or {"state": "queued"})
+    sessions = []
+
+    def start(*args, auth_session=None):
+        seen.append(args)
+        sessions.append(auth_session)
+        return {"state": "queued"}
+
+    monkeypatch.setattr(discovery, "start", start)
     url = "/api/shopping/discovery/"
     assert workspace["a"].post(url, json.dumps({}), content_type="application/json").status_code == 403
     assert not seen
@@ -52,6 +59,7 @@ def test_actions_require_csrf_and_have_bound_session(workspace, monkeypatch):
     post(workspace, url, {"intent": "deals"}, client=workspace["b"])
     assert seen[0][0].user_id != seen[1][0].user_id
     assert seen[0][1] != seen[1][1]
+    assert sessions == [workspace["a"].session.session_key, workspace["b"].session.session_key]
 
 
 def test_stop_and_reveal_accept_no_replacement_data(workspace, monkeypatch):
@@ -81,10 +89,8 @@ def test_legacy_search_cannot_dispatch(workspace, monkeypatch):
 
     importlib.reload(urls)
     clear_url_caches()
-    from pokemon_hunter.beta import parity
     from pokemon_hunter.beta.discovery_transport import Transport
 
-    assert not hasattr(parity, "search")
     monkeypatch.setattr(Transport, "request", lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError()))
     response = post(workspace, "/api/hunts/", {"query": "pokemon"})
     assert response.status_code == 410

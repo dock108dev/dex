@@ -73,7 +73,17 @@ def exercise(url, root, output):
 
             started = time.monotonic()
             page.locator("#species-shopping").click()
-            expect(page.locator("#context-label")).to_contain_text("Finding cards")
+            expect(page.locator(".discovery-context")).to_contain_text("Finding cards")
+            expect(page.locator("#catalog-cards [data-group]").first).to_be_visible()
+            expect(page.locator("#discovery-query")).not_to_have_value("")
+            page.locator("#shopping-back").click()
+            expect(page.locator("#your-cards-heading")).to_be_visible()
+            page.locator("#species-shopping").click()
+            expect(page.locator("#catalog-cards [data-group]").first).to_be_visible()
+            passed("contextual visual Shopping preserves selected Pokémon and collection Back", started)
+
+            started = time.monotonic()
+            page.get_by_role("link", name="Manual calculator", exact=True).click()
             expect(page.locator("#cards")).not_to_have_attribute("aria-busy", "true")
             if page.locator("#show-all").count():
                 page.locator("#show-all").click()
@@ -84,7 +94,7 @@ def exercise(url, root, output):
             page.locator("#comparison button[value=compare]").click()
             expect(page.locator("#results")).to_be_visible()
             capture("consumer-shopping")
-            passed("contextual Shopping entry, local picker and explicit comparison", started)
+            passed("secondary manual calculator, local picker and explicit comparison", started)
 
             started = time.monotonic()
             for width in (390, 320):

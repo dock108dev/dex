@@ -48,6 +48,8 @@ Paths are relative to `src/pokemon_hunter/`.
 | Private price lifecycle | `beta/price_snapshot_contract.py`, `beta/price_snapshots.py`, `beta/price_snapshot_sources.py` |
 | Finite Shopping acquisition | `beta/discovery.py`, `beta/discovery_transport.py`, `beta/listing_check.py` |
 | Listing identifiers and response projection | `beta/listing_details.py`; `listing_check.py` retains compatible public imports |
+| Visual local Shopping search | `beta/discovery_catalog.py`, using checked card groups, current/frozen collection scope and image bindings |
+| Captured provider query and product eligibility | `beta/discovery_search.py`; no ownership or reference-value authority |
 | Discovery applicability and result order | `beta/discovery_comparison.py:compare`; `beta/goal_hunts.py` supplies collection/goal scope |
 | Provider settings and historical hunt projections | `config.py`, `beta/ebay_hunts.py:configuration/status`, `hunt.py`, `beta/hunt_values.py` |
 | Manual bulk drafts and replay identity | `beta/bulk_input.py`, `beta/collection_drafts.py`, `beta/bulk_views.py`, with collection mutation authority |
@@ -145,7 +147,7 @@ policy. [Scoped release evidence](catalogs.md#scoped-release-evidence) defines d
 
 ## Shopping discovery
 
-[Shopping](hunts.md) defines Search/Stop/Next, fixed-price support, reveal, temporary
+[Shopping](hunts.md) defines visual local search, Search/Stop/Next, singles/loose lots/auctions, reveal, temporary
 results and acquisition ceilings. `discovery_comparison.compare` owns applicability
 and sorting; response projection preserves that order. Authenticated `/api/hunts/`
 POST returns 410; historical schemas and read/reveal routes remain supported.

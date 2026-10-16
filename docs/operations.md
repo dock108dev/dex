@@ -114,7 +114,10 @@ supervisors may leave a pending validated copy for cleanup after the bounded chi
 ## Shopping discovery
 
 Search, Next and assisted Load are explicit finite actions with independent Stop.
-Opening, reveal, filtering, correction and comparison do not acquire provider data.
+Opening, local typing/search, set changes, reveal, filtering, correction and comparison
+do not acquire provider data. Discovery-to-review transfers only a checked temporary
+summary under its original account/session and expiry; additional detail loading
+remains explicit. Stop or expiry invalidates that origin.
 The old `/api/hunts/` POST returns 410 directing callers to Shopping; historical reads
 remain available. Request ceilings and source policies are documented in [Shopping](hunts.md).
 

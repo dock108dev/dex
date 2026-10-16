@@ -111,18 +111,19 @@ def test_deals_include_owned_without_goal_and_query_dedup(discovery):
     assert any(r["id"] == "p1" and r["owned"] for r in rows)
     assert len(d.query_plan(rows + rows)) == 6
     assert d.query_plan(rows, "custom singles") == ["custom singles"]
-    assert all("Pokemon Base Set" in q for q in d.query_plan(rows))
+    assert all("Pokemon" in q and "Base Set" in q for q in d.query_plan(rows))
 
 
 def test_missing_current_printings_species_and_frozen_scope(discovery):
     def ids(choices):
         return {r["id"] for r in d._candidate_data(discovery.actor, d.Choices(**choices), None)}
 
-    assert ids({"intent": "missing"}) == {"p2", "p3", "p4", "p5", "p6"}
+    assert ids({"intent": "missing", "missing_basis": "printing"}) == {"p2", "p3", "p4", "p5", "p6"}
+    assert ids({"intent": "missing"}) == {"p3", "p4", "p5", "p6"}
     assert ids({"intent": "missing", "missing_basis": "species"}) == {"p3", "p4", "p5", "p6"}
     # Broad declaration presence never establishes an exact printing.
     discovery.data["cards"]["p2"]["owned"] = True
-    assert "p2" in ids({"intent": "missing"})
+    assert "p2" in ids({"intent": "missing", "missing_basis": "printing"})
     scope = dict(name="Frozen", version=2, definition={"policy": "exact"})
 
     def scoped(who, data, frozen):
@@ -555,10 +556,215 @@ def test_exact_transport_country_only_20_no_paging_or_redirect():
     assert request.headers["x-ebay-c-marketplace-id"] == "EBAY_US"
     assert dict(request.url.params) == {
         "q": "Pokemon Base Set Abra 43",
-        "filter": "buyingOptions:{FIXED_PRICE},deliveryCountry:US",
+        "filter": "buyingOptions:{FIXED_PRICE|AUCTION},deliveryCountry:US,itemLocationCountry:US",
         "limit": "20",
         "offset": "0",
         "fieldgroups": "EXTENDED",
+        "sort": "endingSoonest",
     }
     assert "x-ebay-c-enduserctx" not in request.headers
     assert all(v <= 30 for v in request.extensions["timeout"].values())
+
+
+def test_selected_set_typed_query_and_captured_provider_choices_reach_wire(discovery):
+    FakeTransport.calls = []
+    discovery.monkeypatch.setattr(d, "Transport", FakeTransport)
+
+    class Immediate:
+        def __init__(self, target, args, **kwargs):
+            self.target, self.args = target, args
+
+        def start(self):
+            self.target(*self.args)
+
+    discovery.monkeypatch.setattr(d, "threading", SimpleNamespace(Thread=Immediate))
+    result = d.start(
+        discovery.actor,
+        "session",
+        {
+            "query": "Abra base 2",
+            "set_id": "base_set",
+            "product_type": "mixed_lots",
+            "sort": "ending_soonest",
+            "english_vintage": True,
+        },
+    )
+    assert result["state"] == "complete"
+    browse = next(kwargs for stage, kwargs in FakeTransport.calls if stage == "browse")
+    assert browse["query"] == "Abra Base Set lot English"
+    assert "2" not in browse["query"]
+    assert browse["search_options"] == {"sort": "ending_soonest"}
+    assert result["choices"]["product_type"] == "mixed_lots"
+
+
+def test_current_missing_defaults_kanto_species_but_explicit_goal_remains_unrestricted(discovery):
+    current = d.Choices(intent="missing")
+    assert current.focus == "kanto" and current.missing_basis == "species"
+    frozen = d.Choices(intent="missing", goal_id="saved")
+    assert frozen.focus == "all"
+    assert d.Choices(intent="deals").focus == "all"
+
+
+def test_species_and_checked_group_keep_explicit_child_without_picking_sibling(discovery):
+    from pokemon_hunter.beta import card_groups
+
+    assert [p["id"] for p in d._candidate_data(discovery.actor, d.Choices(species=1), None)] == ["p1"]
+    calls = []
+
+    def detail(actor, group, selected_child=None):
+        calls.append((group, selected_child))
+        return {"variants": [{"id": "p1", "available": True}, {"id": "p2", "available": True}]}
+
+    discovery.monkeypatch.setattr(card_groups, "detail", detail)
+    group = "dg1-" + "a" * 64
+    assert len(d._candidate_data(discovery.actor, d.Choices(group_id=group), None)) == 2
+    assert [
+        p["id"] for p in d._candidate_data(discovery.actor, d.Choices(group_id=group, printing_id="p2"), None)
+    ] == ["p2"]
+    assert calls == [(group, None), (group, "p2")]
+    with pytest.raises(ValueError, match="checked card group"):
+        d.Choices(printing_id="p1")
+
+
+def test_generation_and_goal_version_fail_before_provider_dispatch(discovery):
+    from pokemon_hunter.beta import collection
+
+    discovery.monkeypatch.setattr(collection, "generation", lambda who: 7)
+    with pytest.raises(collection.Conflict, match="Collection changed"):
+        d.start(discovery.actor, "session", {"generation": 6})
+    discovery.monkeypatch.setattr(collection, "one", lambda *args: {"version": "a" * 64})
+    with pytest.raises(collection.Conflict, match="Saved goal changed"):
+        d.start(
+            discovery.actor,
+            "session",
+            {
+                "intent": "missing",
+                "goal_id": "saved",
+                "goal_version": "b" * 64,
+            },
+        )
+
+
+def test_review_summary_lease_requires_reveal_and_original_session_expiry(discovery):
+    from pokemon_hunter.beta import discovery_comparison
+
+    run = run_for(discovery)
+    run.state = "complete"
+    run.raws = [{"itemId": "v1|123456789012|0", "title": "PRIVATE SUMMARY"}]
+    d._runs[run.id] = run
+    discovery.monkeypatch.setattr(
+        discovery_comparison,
+        "compare",
+        lambda *args: [
+            {"item_id": run.raws[0]["itemId"], "title": "PRIVATE SUMMARY"},
+        ],
+    )
+    result_id = d.status(discovery.actor, "session", run.id)["results"][0]["id"]
+    with pytest.raises(Http404):
+        d.review_candidate(discovery.actor, "session", run.id, result_id)
+    d.reveal(discovery.actor, "session", run.id, result_id)
+    lease = d.review_candidate(discovery.actor, "session", run.id, result_id)
+    assert lease["raw"]["title"] == "PRIVATE SUMMARY" and lease["created"] == run.created
+    assert lease["selected_target"] is None
+    lease["raw"]["title"] = "modified"
+    assert run.raws[0]["title"] == "PRIVATE SUMMARY"
+    with pytest.raises(Http404):
+        d.review_candidate(discovery.actor, "another-session", run.id, result_id)
+    run.created -= d.EPHEMERAL_SECONDS
+    with pytest.raises(Http404):
+        d.review_candidate(discovery.actor, "session", run.id, result_id)
+    assert run.raws == []
+
+
+def test_review_lease_preserves_checked_exact_target_and_separate_auction_amounts(discovery):
+    from pokemon_hunter.beta import card_groups, discovery_comparison, shopping
+
+    group = "dg1-" + "a" * 64
+    discovery.monkeypatch.setattr(
+        card_groups,
+        "detail",
+        lambda *args, **kwargs: {
+            "variants": [{"id": "p1", "available": True}, {"id": "p2", "available": True}],
+        },
+    )
+    discovery.monkeypatch.setattr(d, "Transport", lambda: pytest.fail("Review must not acquire"))
+    run = run_for(discovery, choices=d.Choices(group_id=group, printing_id="p2"))
+    run.state = "complete"
+    run.raws = [
+        {
+            "itemId": "v1|123456789012|0",
+            "title": "PRIVATE AUCTION SUMMARY",
+            "buyingOptions": ["AUCTION", "FIXED_PRICE"],
+            "currentBidPrice": {"value": "2.00", "currency": "USD"},
+            "price": {"value": "20.00", "currency": "USD"},
+        }
+    ]
+    d._runs[run.id] = run
+    discovery.monkeypatch.setattr(
+        discovery_comparison,
+        "compare",
+        lambda *args: [
+            {"item_id": run.raws[0]["itemId"], "title": "PRIVATE AUCTION SUMMARY"},
+        ],
+    )
+    result_id = d.status(discovery.actor, "session", run.id)["results"][0]["id"]
+    d.reveal(discovery.actor, "session", run.id, result_id)
+    lease = d.review_candidate(discovery.actor, "session", run.id, result_id)
+    assert lease["selected_target"] == shopping.identity(discovery.data["catalog"][1])
+    assert lease["raw"]["currentBidPrice"]["value"] == "2.00"
+    assert lease["raw"]["price"]["value"] == "20.00"
+    assert "reference" not in lease["result"] and not ledger(discovery).exists()
+    d.stop(discovery.actor, "session", run.id)
+    with pytest.raises(Http404):
+        d.review_candidate(discovery.actor, "session", run.id, result_id)
+
+
+def test_product_filter_and_ending_soon_order_are_local_and_keep_unpriced(discovery):
+    from pokemon_hunter.beta import discovery_comparison
+
+    run = run_for(discovery, choices=d.Choices(product_type="mixed_lots", sort="ending_soonest"))
+    run.state = "complete"
+    run.raws = [{"itemId": "lot-early"}, {"itemId": "single"}, {"itemId": "lot-late"}]
+    d._runs[run.id] = run
+    discovery.monkeypatch.setattr(
+        discovery_comparison,
+        "compare",
+        lambda *args: [
+            {"item_id": key, "discovery_kind": kind, "classification": "unpriced"}
+            for key, kind in (("lot-late", "mixed_lot"), ("single", "single"), ("lot-early", "mixed_lot"))
+        ],
+    )
+    rows = d.status(discovery.actor, "session", run.id)["results"]
+    assert len(rows) == 2 and all(row["classification"] == "unpriced" for row in rows)
+    early = hashlib.sha256((run.id + "\0lot-early").encode()).hexdigest()[:24]
+    assert rows[0]["id"] == early
+
+
+def test_revoked_login_after_response_prevents_discovery_publication(discovery):
+    from django.core.exceptions import PermissionDenied
+
+    revoked, checks = [], []
+
+    class RevokedAtResponse(FakeTransport):
+        calls = []
+
+        async def request(self, stage, **kwargs):
+            result = await super().request(stage, **kwargs)
+            if stage == "browse":
+                revoked.append(True)
+            return result
+
+    def authorize(actor, session=None):
+        checks.append(session)
+        if revoked:
+            raise PermissionDenied
+
+    discovery.monkeypatch.setattr(d, "Transport", RevokedAtResponse)
+    discovery.monkeypatch.setattr(d, "_authorize", authorize)
+    run = run_for(discovery)
+    run.auth_session = "real-django-session-key"
+    d._worker(run, discovery.actor, ("fixture-client", "secret"))
+    assert run.state == "failed" and run.raws == []
+    assert checks == [run.auth_session] * 3
+    assert [stage for stage, _ in RevokedAtResponse.calls] == ["oauth", "browse"]
+    assert run.counts["total"] == 2

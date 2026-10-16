@@ -22,9 +22,10 @@ from typing import Literal
 from django.conf import settings
 from django.db import close_old_connections
 from django.http import Http404
-from pydantic import BaseModel, Field, StrictInt, field_validator
+from pydantic import BaseModel, Field, StrictBool, StrictInt, field_validator, model_validator
 
 from . import ebay_hunts, goal_hunts, parity, store
+from .discovery_search import submitted_query
 from .discovery_transport import ProviderFailure, Transport
 
 MAX_OAUTH = 1
@@ -52,18 +53,38 @@ class Choices(BaseModel):
     model_config = {"extra": "forbid"}
 
     intent: Literal["deals", "missing"] = "deals"
-    missing_basis: Literal["printing", "species"] = "printing"
+    missing_basis: Literal["printing", "species"] = "species"
     goal_id: str | None = Field(default=None, min_length=1, max_length=64)
     focus: Literal["all", "kanto", "johto", "rares", "bulk"] = "all"
     budget: Decimal | None = Field(default=None, ge=0, le=10000)
     query: str = Field(default="", max_length=200)
     set_id: str | None = Field(default=None, min_length=1, max_length=100)
+    species: StrictInt | None = Field(default=None, ge=1, le=251)
+    group_id: str | None = Field(default=None, pattern=r"^dg1-[0-9a-f]{64}$")
+    printing_id: str | None = Field(default=None, min_length=1, max_length=160)
+    goal_version: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+    generation: StrictInt | None = Field(default=None, ge=0, le=10**18)
+    product_type: Literal["singles", "mixed_lots", "both"] = "both"
+    sort: Literal["best_match", "ending_soonest"] = "ending_soonest"
+    english_vintage: StrictBool = True
     browse_requests: StrictInt = Field(default=1, ge=1, le=MAX_BROWSE)
 
     @field_validator("query")
     @classmethod
     def trim(cls, value):
         return value.strip()
+
+    @model_validator(mode="after")
+    def checked_context(self):
+        if self.species is not None and self.group_id is not None:
+            raise ValueError("Choose a Pokémon or a card group")
+        if self.printing_id is not None and self.group_id is None:
+            raise ValueError("An exact printing requires its checked card group")
+        if self.goal_version and not self.goal_id:
+            raise ValueError("A saved version requires its goal")
+        if self.intent == "missing" and not self.goal_id and "focus" not in self.model_fields_set:
+            self.focus = "kanto"
+        return self
 
 
 @dataclass
@@ -106,8 +127,21 @@ def _owner(actor, session_key):
 
 
 def _candidate_data(actor, choices, scope):
+    _context_current(actor, choices)
     data = goal_hunts.project(actor, parity.projection(actor), scope)
     cards = list(data["cards"].values())
+    if choices.species is not None:
+        cards = [c for c in cards if c.get("pokemon_dex") == choices.species]
+    if choices.group_id:
+        from . import card_groups
+
+        detail = card_groups.detail(actor, choices.group_id, selected_child=choices.printing_id)
+        allowed = {
+            c["id"]
+            for c in detail["variants"]
+            if c["available"] and (choices.printing_id is None or c["id"] == choices.printing_id)
+        }
+        cards = [c for c in cards if c["printing_id"] in allowed]
     if choices.set_id:
         cards = [c for c in cards if choices.set_id in (c["set_id"], c["set"])]
     if choices.focus in ("kanto", "johto"):
@@ -149,12 +183,32 @@ def _candidate_data(actor, choices, scope):
     return candidates
 
 
-def query_plan(candidates, query=""):
+def _context_current(actor, choices):
+    from . import collection
+
+    if choices.generation is not None and collection.generation(actor) != choices.generation:
+        raise collection.Conflict("Collection changed; reopen Shopping from your collection")
+    if choices.goal_version:
+        if collection.one(actor, "goal", choices.goal_id)["version"] != choices.goal_version:
+            raise collection.Conflict("Saved goal changed; reopen it from Goals")
+
+
+def query_plan(candidates, query="", *, set_name=None, product_type="both", english_vintage=False):
     if query:
-        return [query]
+        return [
+            submitted_query(
+                query, set_name=set_name, product_type=product_type, english_vintage=english_vintage
+            )
+        ]
     return list(
         dict.fromkeys(
-            f"Pokemon {c['set_name']} {c['name']} {c['collector_number']}"[:200] for c in candidates
+            submitted_query(
+                f"Pokemon {c['name']} {c['collector_number']}",
+                set_name=set_name or c["set_name"],
+                product_type=product_type,
+                english_vintage=english_vintage,
+            )
+            for c in candidates
         )
     )
 
@@ -167,6 +221,7 @@ def metadata(actor):
         "provider": ebay_hunts.status(),
         "defaults": Choices().model_dump(mode="json"),
         "sets": [{"id": key, "name": name} for key, name in sorted(sets.items(), key=lambda pair: pair[1])],
+        "search_intent_note": "English/vintage uses search words; US item location and delivery are API filters. The example's 1995/1999/2001 choices are not applied as unverified year filters or a year range.",
     }
 
 
@@ -305,9 +360,20 @@ def status(actor, session_key, run_id):
 
     candidates = _candidate_data(actor, run.choices, run.scope)
     rows = compare(actor, raws, candidates)
+    if run.choices.sort == "ending_soonest":
+        positions = {str(raw.get("itemId")): i for i, raw in enumerate(raws)}
+        rows.sort(key=lambda row: positions.get(str(row.get("item_id")), len(positions)))
     visible = []
     for row in rows:
         row = dict(row)
+        kind = row.get("discovery_kind", "single")
+        if (
+            run.choices.product_type == "singles"
+            and kind == "mixed_lot"
+            or run.choices.product_type == "mixed_lots"
+            and kind == "single"
+        ):
+            continue
         item_id = str(row.pop("item_id", ""))
         handle = hashlib.sha256((run.id + "\0" + item_id).encode()).hexdigest()[:24]
         row["id"], row["revealed"] = handle, handle in revealed
@@ -315,6 +381,7 @@ def status(actor, session_key, run_id):
             for key in ("title", "item_url", "url", "shortDescription"):
                 row.pop(key, None)
             row["proposed_identity"] = None
+            row["identity_candidates"] = []
             if row.get("reference"):
                 row["reference"] = {**row["reference"], "source_url": None}
                 row["reference"]["conflicts"] = [
@@ -331,8 +398,8 @@ def status(actor, session_key, run_id):
             result["results"] = visible
     if not result["results"] and run.state == "complete":
         result["limitation"] = (
-            "No summaries in this batch matched the selected cards and budget with an admitted comparison. "
-            "Unknown shipping and ambiguous identity can limit comparisons; Next results searches the next captured catalog choice."
+            "No supported summaries in this batch matched the selected product and budget choices. "
+            "Imperfect identities can remain unpriced candidates; Next results searches the next captured catalog choice."
         )
     return result
 
@@ -347,6 +414,57 @@ def reveal(actor, session_key, run_id, result_id):
     return status(actor, session_key, run_id)
 
 
+def review_candidate(actor, session_key, run_id, result_id):
+    """Lease one explicitly revealed summary to review without any new request.
+
+    Only a checked opaque handle travels in navigation. The caller must preserve
+    the original expiry and recheck this lease before exposing provider content.
+    """
+    run = _lookup(actor, session_key, run_id)
+    current = status(actor, session_key, run_id)
+    row = next((r for r in current["results"] if r["id"] == result_id and r.get("revealed")), None)
+    if row is None:
+        raise Http404
+    selected_target = None
+    if run.choices.printing_id:
+        from .shopping import identity
+
+        printing = next(
+            (p for p in _candidate_data(actor, run.choices, run.scope) if p["id"] == run.choices.printing_id),
+            None,
+        )
+        if printing is None:
+            raise Http404
+        selected_target = identity(printing)
+    with run.lock:
+        if run.cancel.is_set() or run.state not in {"complete", "failed"}:
+            raise Http404
+        raw = next(
+            (
+                r
+                for r in run.raws
+                if hashlib.sha256((run.id + "\0" + str(r.get("itemId", ""))).encode()).hexdigest()[:24]
+                == result_id
+            ),
+            None,
+        )
+        if raw is None:
+            raise Http404
+        return {
+            "raw": deepcopy(raw),
+            "choices": run.choices.model_dump(mode="json"),
+            "scope": deepcopy(run.scope),
+            "scope_label": _scope_label(run),
+            "selected_target": selected_target,
+            "created": run.created,
+            "expires_in_seconds": current["expires_in_seconds"],
+            "result": {
+                key: deepcopy(row.get(key))
+                for key in ("identity_candidates", "discovery_kind", "proposed_identity")
+            },
+        }
+
+
 def stop(actor, session_key, run_id):
     run = _lookup(actor, session_key, run_id)
     with run.lock:
@@ -358,7 +476,7 @@ def stop(actor, session_key, run_id):
         return _summary(run)
 
 
-def start(actor, session_key, raw):
+def start(actor, session_key, raw, *, auth_session=None):
     owner = _owner(actor, session_key)
     if not isinstance(raw, dict):
         raise ValueError("Choose search options")
@@ -376,6 +494,7 @@ def start(actor, session_key, raw):
                 previous.choices,
                 deepcopy(previous.scope),
                 list(previous.queries),
+                auth_session=previous.auth_session,
                 offset=previous.offset,
                 raws=deepcopy(previous.raws),
                 seen=set(previous.seen),
@@ -388,7 +507,23 @@ def start(actor, session_key, raw):
             raise ValueError("Use Find missing cards to search a frozen goal")
         scope = goal_hunts.snapshot(actor, choices.goal_id)
         candidates = _candidate_data(actor, choices, scope)
-        run = Run(str(uuid.uuid4()), owner, choices, scope, query_plan(candidates, choices.query))
+        set_name = next((c["set_name"] for c in candidates), None) if choices.set_id else None
+        run = Run(
+            str(uuid.uuid4()),
+            owner,
+            choices,
+            scope,
+            query_plan(
+                candidates,
+                choices.query,
+                set_name=set_name,
+                product_type=choices.product_type,
+                english_vintage=choices.english_vintage,
+            )
+            if candidates
+            else [],
+            auth_session=auth_session,
+        )
     # Validate the one saved Production configuration locally before a worker is
     # admitted. Country/postal choices are fixed by the transport, not old YAML.
     provider, values = ebay_hunts.configuration()
@@ -442,6 +577,7 @@ def _authorize(actor, session_key=None):
 async def _dispatch(run, transport, stage, deadline, *, actor=None, **kwargs):
     _check_acquisition(run)
     if actor is not None:
+        await asyncio.to_thread(_context_current, actor, run.choices)
         if run.auth_session is not None:
             await asyncio.to_thread(_authorize, actor, run.auth_session)
         else:
@@ -552,7 +688,14 @@ async def _acquire(run, credentials, actor=None):
         additions = []
         for query in remaining_queries:
             payload = await _dispatch(
-                run, transport, "browse", deadline, token=token, query=query, actor=actor
+                run,
+                transport,
+                "browse",
+                deadline,
+                token=token,
+                query=query,
+                actor=actor,
+                search_options={"sort": run.choices.sort},
             )
             rows = payload.get("itemSummaries", [])
             if (
@@ -576,7 +719,11 @@ async def _acquire(run, credentials, actor=None):
         await asyncio.wait_for(transport.close(), timeout=0.5)
     _check_acquisition(run)
     if actor is not None:
-        await asyncio.to_thread(_authorize, actor)
+        await asyncio.to_thread(_context_current, actor, run.choices)
+        if run.auth_session is not None:
+            await asyncio.to_thread(_authorize, actor, run.auth_session)
+        else:
+            await asyncio.to_thread(_authorize, actor)
     with run.lock:
         _check_acquisition(run)
         run.raws.extend(additions)

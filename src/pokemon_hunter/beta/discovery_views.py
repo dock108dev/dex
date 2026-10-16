@@ -1,13 +1,23 @@
 """Private explicit discovery actions; reads, reveal and Stop never acquire listings."""
 
 import json
-import uuid
 
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
-from . import discovery, image_bindings, navigation, shopping_views, store
+from . import (
+    canonical_species,
+    card_groups,
+    discovery,
+    discovery_catalog,
+    image_bindings,
+    navigation,
+    shopping_context,
+    shopping_views,
+    store,
+)
+from .card_group_views import query
 from .collection_views import body, endpoint
 
 
@@ -33,18 +43,41 @@ def goals(who):
 @endpoint
 @require_GET
 def home(request):
-    # Existing collection entry links retain their checked selector and return context.
-    if request.GET and set(request.GET) != {"run_id"}:
-        return shopping_views.home(request)
-    if "run_id" in request.GET:
-        if len(request.GET.getlist("run_id")) != 1:
-            raise ValueError("Choose one discovery run")
-        uuid.UUID(request.GET["run_id"])
     who, _ = principal(request)
-    response = render(request, "beta/discovery.html", {"discovery_goals": goals(who)})
+    raw = discovery_catalog.validate_page(query(request, discovery_catalog.PAGE_FIELDS))
+    context = shopping_context.resolve(
+        who, {key: value for key, value in raw.items() if key in shopping_context.FIELDS}
+    )
+    initial = dict(raw)
+    if context.get("species") and "q" not in initial:
+        initial["q"] = canonical_species.registry()[context["species"]]["name"]
+    if context.get("group"):
+        group = card_groups.detail(who, context["group"], selected_child=context.get("child"))["group"]
+        initial.setdefault("q", group["name"] + " " + group["collector_number"])
+        initial.setdefault("set_id", group["set_name"])
+    if context["kind"] in {"goal", "missing"}:
+        initial["intent"] = "missing"
+    response = render(
+        request,
+        "beta/discovery.html",
+        {
+            "discovery_goals": goals(who),
+            "shopping_context": shopping_context.finish(who, context),
+            "discovery_initial": initial,
+        },
+    )
     response["Cache-Control"] = "private, no-store"
     response._dex_owned_artwork = image_bindings.enabled()
     return response
+
+
+@endpoint
+@require_GET
+def catalog(request):
+    who, _ = principal(request)
+    return shopping_views.private_json(
+        discovery_catalog.search(who, query(request, discovery_catalog.CATALOG_FIELDS)), request
+    )
 
 
 @endpoint
@@ -53,7 +86,7 @@ def searches(request):
     who, session = principal(request)
     try:
         if request.method == "POST":
-            value = discovery.start(who, session, body(request))
+            value = discovery.start(who, session, body(request), auth_session=request.session.session_key)
         elif request.GET:
             if set(request.GET) != {"run_id"} or len(request.GET.getlist("run_id")) != 1:
                 raise ValueError("Choose one discovery run")

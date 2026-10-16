@@ -115,7 +115,7 @@ def raw(**changes):
         dict(primaryItemGroup={"itemGroupId": ITEM}),
         dict(itemEndDate="2000-01-01T00:00:00Z"),
         dict(itemEndDate="bad"),
-        dict(buyingOptions=["AUCTION"]),
+        dict(buyingOptions=["CLASSIFIED_AD"]),
         dict(estimatedAvailabilities=[dict(estimatedAvailabilityStatus="OUT_OF_STOCK")]),
     ],
 )
@@ -532,3 +532,169 @@ def test_signed_out_worker_session_is_rejected(workspace):
     Session.objects.filter(session_key=key).delete()
     with pytest.raises(PermissionDenied):
         d._authorize(workspace["actor"], key)
+
+
+@pytest.mark.parametrize("options", [["AUCTION"], ["AUCTION", "FIXED_PRICE"]])
+def test_auction_and_mixed_buying_options_keep_amount_meanings(options):
+    value = c.details(
+        ITEM,
+        raw(buyingOptions=options, currentBidPrice=dict(value="4.25", currency="USD")),
+    )
+    assert value["price_kind"] == "current_bid"
+    assert value["current_bid"] == value["price"] == dict(amount="4.25", currency="USD")
+    assert value["buy_now"]["amount"] == ("3.50" if "FIXED_PRICE" in options else None)
+    assert "final_cost" not in value
+
+
+def test_missing_bid_does_not_adopt_asking_price_or_zero():
+    value = c.details(ITEM, raw(buyingOptions=["AUCTION", "FIXED_PRICE"]))
+    assert value["price"] == dict(amount=None, currency=None)
+    assert value["buy_now"] == dict(amount="3.50", currency="USD")
+
+
+def test_review_current_bid_and_planned_bid_are_independent_whole_lot_amounts(setup, monkeypatch):
+    _, p = active(setup)
+    collection.execute("UPDATE catalog_sets SET name='Base Set'")
+    monkeypatch.setattr(c, "datetime", SimpleNamespace(now=lambda tz: NOW))
+    value = review_value(
+        p,
+        price="3",
+        planned_bid="4",
+        price_kind="current_bid",
+        unknown_contents=0,
+        shipping="0",
+        tax="0",
+        other_costs="0",
+    )
+    result = c.compare(setup["actor"], value)["scenarios"]["raw"]["result"]
+    observed, planned = (result["comparisons"][key] for key in ("listing_observation", "planned_bid"))
+    assert observed["price_kind"] == "current_bid" and observed["full_delivered_cost"] == "3.00"
+    assert planned["price_kind"] == "personal_planned_bid" and planned["full_delivered_cost"] == "4.00"
+    assert result["coverage"]["selected_units"] == 2 and result["full_lot_total"] == "5.10"
+    value["shipping"] = ""
+    result = c.compare(setup["actor"], value)["scenarios"]["raw"]["result"]
+    assert all(item["full_delivered_cost"] is None for item in result["comparisons"].values())
+
+
+def test_listing_catalog_exposes_checked_images_without_reference_values(workspace):
+    data = c.catalog(workspace["actor"], workspace["catalog"][0]["name"])
+    assert data["cards"] and all("artwork" in row for row in data["cards"])
+    assert all(
+        not {"cells", "references", "amount", "source_contract"}.intersection(row) for row in data["cards"]
+    )
+    restored = c.catalog(workspace["actor"], restore={workspace["catalog"][0]["id"]})
+    assert len(restored["cards"]) == 1
+
+
+def test_discovery_handoff_preserves_original_lease_and_local_only_projection(workspace, monkeypatch):
+    import uuid
+
+    from django.http import Http404
+
+    actor = workspace["actor"]
+    p = workspace["catalog"][0]
+    c._reviews.clear()
+    origin = dict(run_id=str(uuid.uuid4()), result_id="a" * 24)
+    created = time.monotonic() - 200
+    available = [True]
+    calls = []
+
+    def source(who, session, run_id, result_id):
+        calls.append((who, session, run_id, result_id))
+        if not available[0] or session != "session":
+            raise Http404
+        return dict(
+            raw=raw(title=f"Lot of 12 {p['name']}"),
+            choices=dict(intent="deals"),
+            scope=None,
+            created=created,
+            expires_in_seconds=1600,
+            result=dict(identity_candidates=[dict(printing_id=p["id"])]),
+        )
+
+    monkeypatch.setattr(d, "review_candidate", source)
+    monkeypatch.setattr(c, "start", lambda *args: pytest.fail("No detail operation on handoff"))
+    preview = c.candidate(actor, "session", **origin)
+    assert preview["listing"]["discovery_origin"] == origin
+    assert preview["listing"]["proposals"][0]["quantity"] == 0
+    assert "artwork" in preview["listing"]["proposals"][0]
+    opened = c.review(actor, "session")
+    value = review_value(p, discovery_origin=origin)
+    kept = c.review(actor, "session", value, opened["lease"])
+    assert 1598 <= kept["expires_in_seconds"] <= 1600
+    assert kept["review"]["discovery_origin"] == origin
+    available[0] = False
+    with pytest.raises(ValueError, match="expired or was stopped"):
+        c.review(actor, "session")
+    assert c.review(actor, "session")["review"] is None
+    assert calls
+
+
+def test_handoff_catalog_endpoints_are_bound_and_do_not_acquire(workspace, monkeypatch):
+    client = workspace["a"]
+    monkeypatch.setattr(c, "start", lambda *args: pytest.fail("No hidden provider request"))
+    response = client.get("/api/shopping/listing/catalog/?q=" + workspace["catalog"][0]["name"])
+    assert response.status_code == 200 and "no-store" in response["Cache-Control"]
+    assert response.json()["cards"][0]["id"]
+    assert client.get("/api/shopping/listing/catalog/?q=Abra&q=Hypno").status_code == 400
+    assert client.get("/api/shopping/listing/candidate/?item_id=unchecked").status_code == 400
+    assert client.get("/shopping/check/?discovery_run=unchecked").status_code == 400
+    assert client.get("/shopping/check/?return=https://evil.test/").status_code == 400
+
+
+@pytest.mark.parametrize("suffix", ["2 cards", "x2", "2x", "bundle", "mixed", "bulk"])
+def test_multiple_card_seller_claims_never_become_one_confirmed_card(workspace, monkeypatch, suffix):
+    p = c.lot.catalog(workspace["actor"], include_current=True)[0]
+    monkeypatch.setattr(c.dc, "_matches", lambda entries, clues: [p])
+    value = c._proposals(workspace["actor"], c.details(ITEM, raw(title=f"Abra Base Set 43 {suffix}")))
+    assert len(value["proposals"]) == 1 and value["proposals"][0]["quantity"] == 0
+    assert value["unknown_contents"] is None
+
+
+def test_structured_card_count_and_checked_mixed_lot_remain_unconfirmed(workspace, monkeypatch):
+    import uuid
+
+    actor = workspace["actor"]
+    p = c.lot.catalog(actor, include_current=True)[0]
+    monkeypatch.setattr(c.dc, "_matches", lambda entries, clues: [p])
+    value = c._proposals(
+        actor, c.details(ITEM, raw(localizedAspects=[dict(name="Number of Cards", value="2")]))
+    )
+    assert value["proposals"][0]["quantity"] == 0 and value["unknown_contents"] == 2
+    source = dict(
+        raw=raw(),
+        choices=dict(intent="deals"),
+        scope=None,
+        created=time.monotonic(),
+        expires_in_seconds=1800,
+        result=dict(discovery_kind="mixed_lot"),
+    )
+    monkeypatch.setattr(d, "review_candidate", lambda *args, **kwargs: source)
+    candidate = c.candidate(actor, "session", str(uuid.uuid4()), "a" * 24)["listing"]
+    assert candidate["proposals"][0]["quantity"] == 0 and candidate["unknown_contents"] is None
+
+
+def test_checked_exact_target_survives_conflicting_sibling_contents(workspace, monkeypatch):
+    import uuid
+
+    actor = workspace["actor"]
+    target, sibling = c.lot.catalog(actor, include_current=True)[:2]
+    monkeypatch.setattr(c.dc, "_matches", lambda entries, clues: [sibling])
+    source = dict(
+        raw=raw(),
+        choices=dict(intent="deals", printing_id=target["id"]),
+        scope=None,
+        created=time.monotonic(),
+        expires_in_seconds=1800,
+        scope_label="Catalog discovery, including cards already owned",
+        selected_target=shopping.identity(target),
+        result=dict(discovery_kind="single", identity_candidates=[dict(printing_id=target["id"])]),
+    )
+    monkeypatch.setattr(d, "review_candidate", lambda *args, **kwargs: source)
+    candidate = c.candidate(actor, "session", str(uuid.uuid4()), "a" * 24)
+    proposals = candidate["listing"]["proposals"]
+    assert {row["id"] for row in proposals} == {target["id"], sibling["id"]}
+    assert all(row["quantity"] == 0 for row in proposals)
+    assert candidate["listing"]["unknown_contents"] is None
+    assert candidate["context"]["selected_target"] == shopping.identity(target)
+    assert candidate["context"]["choices"]["printing_id"] == target["id"]

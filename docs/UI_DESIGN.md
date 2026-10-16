@@ -16,7 +16,9 @@ Ordinary card browsing and detail use the main navigation without a duplicate
 collection task bar; collection tools remain in Menu. My Cards also offers a direct
 Add many cards shortcut.
 
-Shopping offers Find deals, Find missing cards and Check a listing/lot, with links
+Shopping leads with one image-led local search, quick set choices, Find deals and
+Find missing cards. Explicit eBay search supports singles, loose mixed lots and
+auctions. Check a listing/lot remains available, with links
 to the lot calculator, retained saved finds, Packs to open, independent Pack lookup
 and saved pack research. Classic hunt/missing pages direct new searches to Shopping;
 they do not offer retired live/sample or continuation actions. Packs
@@ -107,13 +109,25 @@ navigation and reload. These are current views; named-view persistence is unavai
 
 ## Shopping
 
-Species, card and goal Find links carry a server-checked context. A group without
-an explicit child requires a printing choice. Archived or unsupported targets remain
-unavailable. Entry never fills quantities, changes collection/goals, searches, compares
-or saves automatically. Current possession and frozen goal policy remain distinct.
+Broad Pokémon names show Pokémon artwork and current collection context. Choosing
+a Pokémon reveals card references; detailed name/set/number searches show card scans
+and leave plausible printings as choices. All supported sets and quick set buttons
+apply locally and to the submitted eBay phrase. Images never depict seller contents.
+Local edits and Back never acquire listings.
 
-The calculator keeps search beside the working lot and four independent grade
-scenarios. On narrow screens search comes first, then the lot, then matching cards.
+Species, card and goal Find links carry a server-checked context. A group without
+an explicit child stays at card-reference scope until a printing is deliberately
+selected. Archived or unsupported targets remain unavailable. Entry opens the merged
+visual search; quantities, provider search, comparison and saving remain explicit.
+Current possession and frozen goal policy remain distinct.
+
+The compact assisted review leads with Ungraded and included quantities. Printing,
+condition, grading and cost corrections are optional disclosures. Current auction
+bids, buy-now asking prices, planned manual bids and final purchase costs remain
+distinct. Unknown contents or reference coverage produce a priced subtotal.
+
+The secondary manual calculator keeps search beside the working lot and four
+independent grade scenarios. On narrow screens search comes first, then the lot, then matching cards.
 Search submission moves to matches; grade values use two columns. Compare is primary;
 add, clear and history use quieter treatment. Full selected printing names wrap below
 native controls.

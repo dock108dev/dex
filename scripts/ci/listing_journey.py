@@ -1,7 +1,7 @@
 """Listing browser contracts over disposable state and mocked seller details."""
 
 import json
-from urllib.parse import urlsplit
+from urllib.parse import urlencode, urlsplit
 
 
 def exercise(page, base, output):
@@ -23,6 +23,10 @@ def exercise(page, base, output):
         item_url="https://www.ebay.com/itm/123456789012",
         title="<script>window.SHOP03_BAD=true</script> Engineering long seller title with card details and unknown lot contents",
         price=dict(amount="3.00", currency="USD"),
+        price_kind="current_bid",
+        buying_options=["AUCTION", "FIXED_PRICE"],
+        current_bid=dict(amount="3.00", currency="USD"),
+        buy_now=dict(amount="9.00", currency="USD"),
         shipping=dict(amount=None, currency=None),
         seller_lot_size=12,
         api_lot_size="1",
@@ -64,6 +68,17 @@ def exercise(page, base, output):
                 value["listing"] = listing
             route.fulfill(status=200, json=value)
             return
+        if path == "/api/shopping/listing/candidate/":
+            route.fulfill(
+                status=200,
+                json=dict(
+                    listing=dict(listing, discovery_origin=dict(run_id=run_id, result_id="a" * 24)),
+                    expires_in_seconds=1500,
+                    context=dict(choices=dict(intent="deals"), scope=None),
+                    authority=authority,
+                ),
+            )
+            return
         if path.endswith("/stop/"):
             stops.append(req.post_data_json)
             route.fulfill(status=200, json=dict(state="stopped", authority=authority))
@@ -73,11 +88,13 @@ def exercise(page, base, output):
             # Replay has no provider worker. Strip only its nonexistent origin;
             # actual review validation, retention and comparison stay server-owned.
             data["review"]["detail_run"] = None
+            data["review"]["discovery_origin"] = None
             route.continue_(post_data=json.dumps(data))
             return
         if path == "/api/shopping/listing/compare/":
             data = req.post_data_json
             data["review"]["detail_run"] = None
+            data["review"]["discovery_origin"] = None
             compares.append(data)
             route.continue_(post_data=json.dumps(data))
             return
@@ -95,6 +112,19 @@ def exercise(page, base, output):
         )
 
     try:
+        destination = "/shopping/?" + urlencode(dict(q="Abra", focus="offer-" + "a" * 24, scroll="37"))
+        page.goto(
+            base
+            + "/shopping/check/?"
+            + urlencode(dict(discovery_run=run_id, item_id="a" * 24, **{"return": destination}))
+        )
+        expect(page.locator("#listing-preview")).to_be_visible()
+        expect(page.locator("#listing-identifier")).to_have_value(listing["item_id"])
+        expect(page.locator("#check-back")).to_have_attribute("href", destination)
+        assert not loads
+        assert "Separate buy-now" in page.locator("#listing-details").inner_text()
+        page.locator("#discard-listing").click()
+        passed("revealed temporary summary and checked return arrive without an eBay detail request")
         page.get_by_text("Listing reference, tax and other costs", exact=True).click()
         page.locator("#review-title").fill("My reviewed edits")
         page.locator("#review-price").fill("7.25")
@@ -110,15 +140,24 @@ def exercise(page, base, output):
         page.locator("#load-listing").click()
         page.locator("#use-listing").click()
         expect(page.locator("#review-price")).to_have_value("3.00")
+        expect(page.locator("#review-price-kind")).to_have_value("current_bid")
+        expect(page.locator("#review-buy-now")).to_contain_text("9.00")
+        assert "Ungraded" in page.locator("#review-cards summary").first.inner_text()
+        assert "Reference image unavailable" in page.locator("#review-cards").inner_text()
         expect(page.locator("#review-shipping")).to_have_value("")
         q = page.get_by_label("Cards inside this one lot", exact=True)
         expect(q).to_have_value("0")
         q.fill("2")
+        expect(page.locator("#review-unknown")).to_have_value("10")
+        page.locator("#review-planned_bid").fill("4")
         page.locator("#review-unknown").fill("10")
         page.locator("#check-compare").click()
         expect(page.locator("#check-results")).to_be_visible()
         assert compares[-1]["review"]["cards"][0]["quantity"] == 2
         assert compares[-1]["review"]["price"] == "3.00"
+        assert compares[-1]["review"]["price_kind"] == "current_bid"
+        assert compares[-1]["review"]["planned_bid"] == "4"
+        assert compares[-1]["review"]["cards"][0]["grade"] == "raw"
         assert compares[-1]["review"]["unknown_contents"] == 10
         assert "incomplete" in page.locator("#check-results").inner_text()
         passed(
@@ -146,7 +185,7 @@ def exercise(page, base, output):
         passed("provider failure preserves review and local card search makes no provider calls")
         page.locator("#listing-check").get_by_role("link", name="Shopping", exact=True).click()
         expect(page.locator("#discovery-form")).to_be_visible()
-        page.locator(".discovery-intents").get_by_role("link", name="Check a listing/lot", exact=True).click()
+        page.locator(".discovery-links").get_by_role("link", name="Check a listing/lot", exact=True).click()
         expect(page.locator("#review-title")).to_have_value("Corrected retained title")
         expect(page.locator("#check-results")).not_to_be_visible()
         assert len(loads) == 3
@@ -175,6 +214,21 @@ def exercise(page, base, output):
             '() => !Object.keys(localStorage).some(k=>k.includes("listing")) && !Object.keys(sessionStorage).some(k=>k.includes("listing"))'
         )
         passed("Stop suppresses late listing publication and no assisted content enters browser storage")
+        mode[0] = "success"
+        listing["price"] = dict(amount=None, currency=None)
+        listing["current_bid"] = dict(amount=None, currency=None)
+        listing["shipping"] = dict(amount="0.50", currency="USD")
+        page.locator("#load-listing").click()
+        expect(page.locator("#listing-preview")).to_be_visible()
+        page.locator("#use-listing").click()
+        expect(page.locator("#review-price")).to_have_value("")
+        expect(page.locator("#review-currency")).to_have_value("USD")
+        expect(page.locator("#review-shipping")).to_have_value("0.50")
+        expect(page.locator("#review-buy-now")).to_contain_text("9.00")
+        assert len(loads) == 5
+        passed(
+            "unknown auction bid remains blank while known USD shipping carries forward independently of buy-now asking price"
+        )
         return checks
     finally:
         page.unroute("**/api/shopping/listing/**", boundary)

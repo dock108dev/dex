@@ -5,6 +5,7 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 
 from . import discovery_views, navigation, shopping, shopping_views
 from . import listing_check as checks
+from .card_group_views import query
 from .collection_views import body, endpoint
 
 
@@ -12,13 +13,54 @@ from .collection_views import body, endpoint
 @require_GET
 def home(request):
     who, _ = discovery_views.principal(request)
+    raw = query(request, {"discovery_run", "item_id", "return"})
+    if bool(raw.get("discovery_run")) != bool(raw.get("item_id")):
+        raise ValueError("Choose one checked temporary offer.")
+    back = navigation.authorize_destination(who, raw["return"]) if raw.get("return") else "/shopping/"
     response = render(
         request,
         "beta/listing_check.html",
-        dict(shopping_binding=navigation.binding(request)["navigation_binding"], account_id=who.user_id),
+        dict(
+            shopping_binding=navigation.binding(request)["navigation_binding"],
+            account_id=who.user_id,
+            listing_entry={key: raw[key] for key in ("discovery_run", "item_id") if key in raw},
+            listing_return=back,
+        ),
     )
     response["Cache-Control"] = "private, no-store"
     return response
+
+
+@endpoint
+@require_GET
+def candidate(request):
+    who, session = discovery_views.principal(request)
+    raw = query(request, {"discovery_run", "item_id"})
+    if set(raw) != {"discovery_run", "item_id"}:
+        raise ValueError("Choose one checked temporary offer.")
+    return shopping_views.private_json(
+        checks.candidate(who, session, raw["discovery_run"], raw["item_id"]), request
+    )
+
+
+@endpoint
+@require_GET
+def catalog(request):
+    who, _ = discovery_views.principal(request)
+    if "restore" in request.GET:
+        keys = request.GET.getlist("restore")
+        if set(request.GET) != {"restore"} or len(keys) > 200 or len(keys) != len(set(keys)):
+            raise ValueError("Choose a bounded card restore.")
+        if any(not key or len(key) > 160 for key in keys):
+            raise ValueError("Choose supported card identities.")
+        value = checks.catalog(who, restore=keys)
+    else:
+        raw = query(request, {"q"})
+        term = raw.get("q", "")
+        if len(term) > 160 or any(ord(char) < 32 or ord(char) == 127 for char in term):
+            raise ValueError("Use a bounded local card search.")
+        value = checks.catalog(who, term)
+    return shopping_views.private_json(value, request)
 
 
 @endpoint
