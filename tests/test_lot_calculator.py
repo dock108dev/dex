@@ -120,8 +120,8 @@ def test_wants_absent_units_session_isolation_and_no_storage_requirement(workspa
     before = collection.export_data(workspace["actor"])
     response = post(workspace, "/api/shopping/wants/", dict(wants=[dict(printing_id=p["id"], quantity=3)]))
     assert response.status_code == 200
-    assert p["id"].encode() in workspace["a"].get("/shopping/").content
-    assert p["id"].encode() not in workspace["b"].get("/shopping/").content
+    assert p["id"].encode() in workspace["a"].get("/shopping/calculator/").content
+    assert p["id"].encode() not in workspace["b"].get("/shopping/calculator/").content
     wanted = workspace["a"].get("/api/shopping/lot-catalog/", {"wanted": "1"}).json()
     assert [r["id"] for r in wanted["cards"]] == [p["id"]]
     assert workspace["b"].get("/api/shopping/lot-catalog/", {"wanted": "1"}).json()["cards"] == []
@@ -144,7 +144,7 @@ def test_wants_absent_units_session_isolation_and_no_storage_requirement(workspa
         for s in payload["scenarios"].values()
     )
     collection.execute("DROP TABLE saved_shopping_comparisons")
-    assert workspace["a"].get("/shopping/").status_code == 200
+    assert workspace["a"].get("/shopping/calculator/").status_code == 200
     assert (
         post(
             workspace, "/api/shopping/wants/", dict(wants=[dict(printing_id=p["id"], quantity=3)])

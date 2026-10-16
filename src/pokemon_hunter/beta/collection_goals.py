@@ -31,10 +31,8 @@ SOURCE_FIELDS = {"id", "user_id", "source_sha256", "source_text", "revision"}
 
 def full_source(row):
     declarations.parse(row["source_text"], row["source_sha256"])
-    return next(csv.reader(io.StringIO(row["source_text"].lstrip("\ufeff")))) in [
-        declarations.FULL_HEADERS,
-        declarations.PHOTO_HEADERS,
-    ]
+    header = next(csv.reader(io.StringIO(row["source_text"].lstrip("\ufeff"))))
+    return declarations.header_scope(header) == "full251"
 
 
 def sources(actor):

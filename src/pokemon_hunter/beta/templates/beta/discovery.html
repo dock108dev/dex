@@ -1,0 +1,47 @@
+{% extends 'beta/base.html' %}
+{% block title %}Shopping · Dex{% endblock %}
+{% block body_class %}discovery-page{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="/collection-assets/discovery.css?v=20261015-shop02">
+<div class="discovery" id="discovery">
+  <div class="discovery-heading">
+    <div><h1>Shopping</h1><p class="muted">Discover singles with the references already in Dex.</p></div>
+    <div class="discovery-links"><a href="/shopping/legacy/">Saved research</a><a href="/packs/">Packs</a></div>
+  </div>
+  <form id="discovery-form">
+    {% csrf_token %}
+    <div class="discovery-intents" aria-label="Shopping task">
+      <button type="button" id="find-deals" aria-pressed="true">Find deals</button>
+      <button type="button" id="find-missing" aria-pressed="false">Find missing cards</button>
+      <a href="/shopping/check/">Check a listing/lot</a>
+    </div>
+    <p id="intent-description" class="intent-description">Search supported cards automatically, including cards you already own. No goal needed.</p>
+    <div class="discovery-controls">
+      <label for="discovery-focus">Card scope<select id="discovery-focus" name="focus"><option value="all">Vintage singles · all supported</option><option value="kanto">Kanto · 1–151</option><option value="johto">Johto · 152–251</option><option value="rares">Rare cards</option><option value="bulk">Common and uncommon cards</option></select></label>
+      <label for="discovery-budget">Spending budget, USD <span class="optional">optional</span><input id="discovery-budget" name="budget" type="number" min="0" max="10000" step="0.01" placeholder="Any budget"><span class="field-help">Delivered price before tax. Unknown shipping stays unknown.</span></label>
+    </div>
+    <div id="missing-controls" class="discovery-controls" hidden>
+      <label for="discovery-goal">Missing from<select id="discovery-goal" name="goal_id"><option value="">My current collection</option></select></label>
+      <label id="missing-basis-label" for="discovery-missing-basis">Ownership basis<select id="discovery-missing-basis" name="missing_basis"><option value="printing">Missing exact printings</option><option value="species">Missing Pokémon species</option></select></label>
+      <p id="missing-policy" class="field-help full"></p>
+    </div>
+    <details class="discovery-options"><summary>Search words and set</summary><div class="discovery-controls">
+      <label for="discovery-query">Search words <span class="optional">optional</span><input id="discovery-query" name="query" type="search" maxlength="200" placeholder="Blank uses catalog suggestions"></label>
+      <label for="discovery-set">Set <span class="optional">optional</span><select id="discovery-set" name="set_id"><option value="">All supported sets</option></select></label>
+    </div></details>
+    <div class="discovery-actions"><button id="discovery-search" type="submit" disabled>Search</button><button id="discovery-stop" type="button" class="secondary" disabled>Stop</button><span class="field-help">Fixed-price singles · eBay US · US delivery</span></div>
+    <p id="discovery-status" role="status" aria-live="polite" tabindex="-1">Loading search options…</p>
+  </form>
+  <section id="discovery-results" aria-labelledby="discovery-results-title" hidden>
+    <div class="discovery-results-heading"><div><h2 id="discovery-results-title">Results</h2><p id="discovery-scope" class="muted"></p></div></div>
+    <p id="discovery-limitation" class="discovery-note"></p>
+    <div class="discovery-filters"><label for="discovery-filter">Show<select id="discovery-filter"><option value="all">All results</option><option value="below">Comparable · below reference</option><option value="conditional">Conditional comparisons</option><option value="unpriced">Unpriced or ambiguous</option></select></label><p id="discovery-shown" class="field-help" role="status"></p></div>
+    <div id="discovery-cards" class="discovery-cards"></div>
+    <div class="discovery-actions"><button id="discovery-next" type="button" class="secondary" disabled>Next results</button><span id="discovery-next-note" class="field-help"></span></div>
+    <p class="field-help">Seller text proposes a card identity. Confirm the card, edition, finish and condition before deciding. Searching never changes your collection or goals.</p>
+  </section>
+  <details class="discovery-help"><summary>About these comparisons</summary><p>Search uses a small batch of fixed-price listings. References keep their original dates; Dex does not refresh guide prices here. A reference may depend on an unconfirmed condition or edition. A generic grade scenario does not verify a slab.</p><p>Shipping is separate from the listing price. A delivered total is shown only when shipping is known. Results may be temporary when source permissions do not allow saving. Reopening, revealing sellers and filtering do not search eBay.</p></details>
+  <noscript><p class="discovery-note">Enable JavaScript to search for singles. The <a href="/shopping/calculator/">listing/lot calculator</a> remains available.</p></noscript>
+</div>
+<script src="/collection-assets/discovery.js?v=20261015-shop02" defer></script>
+{% endblock %}

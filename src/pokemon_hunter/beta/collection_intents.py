@@ -19,13 +19,10 @@ KINDS = {
 
 def source_scope(source):
     header = next(csv.reader(io.StringIO(source["source_text"].lstrip("\ufeff"))))
-    if header in (declarations.FULL_HEADERS, declarations.PHOTO_HEADERS):
-        return "full251"
-    rows = declarations.parse(source["source_text"], source["source_sha256"])
-    if rows:
-        return rows[0]["source_scope"]
-    # Even an empty declaration has an authoritative header scope.
-    return "johto" if header == declarations.GEN2_HEADERS else "kanto"
+    scope = declarations.header_scope(header)
+    if scope != "full251":
+        declarations.parse(source["source_text"], source["source_sha256"])
+    return scope
 
 
 def resolve_identity(actor, request):
@@ -97,9 +94,11 @@ def plan(actor, kind, request, operation_id):
                 raise collection.ReviewConflict("quantity_conflict")
             intent["established_total_quantity"] = total
         elif kind == "remove_card":
+            from .copy_identity import matches
+
             ids = set(identity["candidate_printing_ids"])
             for copy in collection.copies(actor):
-                if copy.get("printing_id") in ids:
+                if matches(copy, ids, identity):
                     copy = collection.one(actor, "copy", copy["id"])
                     result["updates"].append(
                         dict(
@@ -169,6 +168,20 @@ def augment_plan(actor, kind, request, operation_id, prepared):
     after = effective_collection.project(actor, pending=pending)
     old = {r["id"]: r for r in before["cards"]}
     new = {r["id"]: r for r in after["cards"]}
+    if prepared.get("bulk"):
+        by_literal = {(r["set_name"], r["name"], r["number"]): r for r in after["cards"]}
+        for row in prepared["bulk"]["rows"]:
+            identity = row.get("identity")
+            if identity:
+                result = by_literal.get(tuple(identity[k] for k in ("set_name", "name", "number")))
+                if result:
+                    row["resulting"] = dict(
+                        present=result["present"],
+                        established_total_quantity=result["established_total_quantity"],
+                        recorded_copy_count=result["recorded_copy_count"],
+                        current_copy_count=len(result["current_copy_ids"]),
+                        exact_variant_count=len(result["exact_printing_owned_ids"]),
+                    )
     if prepared.get("source_preview"):
         before_owned = {int(n) for n, row in before["species"].items() if row["present"]}
         after_owned = {int(n) for n, row in after["species"].items() if row["present"]}
@@ -245,6 +258,12 @@ def _identities(actor, operation):
             continue
         for image in (change.get("before"), change.get("after")):
             p = by_id.get(image.get("printing_id")) if image else None
+            if image and not p:
+                from .copy_identity import binding
+
+                bound = binding(image, operation if operation["kind"] == "bulk" else None)
+                if bound:
+                    result.append(bound["identity"])
             if p:
                 result.append(
                     dict(
@@ -283,6 +302,12 @@ def check_undo(actor, operation):
             for a in intents
             for b in newer_intents
         )
+        if operation["kind"] == "bulk" and (
+            same or (later_scope and any(_scope_contains(later_scope, i.get("pokemon_dex")) for i in intents))
+        ):
+            raise collection.Conflict(
+                "Newer card or source work depends on this batch; undo dependent work first"
+            )
         if collection_defaults.intents(operation["plan"]) and (
             same or (later_scope and any(_scope_contains(later_scope, i.get("pokemon_dex")) for i in intents))
         ):

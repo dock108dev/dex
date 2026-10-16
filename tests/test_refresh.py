@@ -33,10 +33,13 @@ def replay(e1, monkeypatch):
     with (
         patch("httpx.Client.send", side_effect=AssertionError("No acquisition")) as http,
         patch("httpx.AsyncClient.send", side_effect=AssertionError("No acquisition")) as async_http,
-        patch("pokemon_hunter.beta.ebay_hunts.search", side_effect=AssertionError("No acquisition")) as ebay,
+        patch(
+            "pokemon_hunter.beta.discovery_transport.Transport.request",
+            side_effect=AssertionError("No acquisition"),
+        ) as provider,
     ):
         yield e1
-        assert http.call_count == async_http.call_count == ebay.call_count == 0
+        assert http.call_count == async_http.call_count == provider.call_count == 0
 
 
 def run(e, sources, timeout=2):

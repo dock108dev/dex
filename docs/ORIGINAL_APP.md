@@ -1,8 +1,11 @@
 # Original local app
 
-These commands run the original app, not the authenticated app on port 8011. Run them from the repository root. The initializer only creates missing files; it does not overwrite existing state. It
-reads each example before creating its destination, so a missing example leaves
-no empty state placeholder. Existing installations need only the final launch command.
+The original FastAPI app uses separate ownership and hunt storage from authenticated
+Dex. Use the [main setup](../README.md) for accounts and physical-copy tracking.
+
+## Run locally
+
+Run from the repository root:
 
 ```sh
 uv sync --locked --extra dev
@@ -10,70 +13,70 @@ uv run --no-sync python scripts/init_local.py
 uv run --no-sync pokemon-hunter app --port 8766
 ```
 
-Visit [Vintage 251](http://127.0.0.1:8766). Everything saves locally. Sample hunts need no credentials. Stop the server with Ctrl-C.
+Open [Vintage 251](http://127.0.0.1:8766). Stop with Ctrl-C. The initializer creates
+only missing state files from examples, without overwriting an existing collection.
+Existing installations need only the final launch command. Samples are synthetic and
+require no credentials.
 
-Existing local collections are preserved. Fresh checkouts start empty; examples never contain personal inventory. The app on port 8011 provides authenticated accounts. An optional PostgreSQL/HTTPS
-profile is documented in [operations](operations.md#optional-postgresqlhttps-profile).
-
-- Browse and filter all 251 species; see every eligible vintage printing.
-- Track owned/not owned and first edition in ten sets. Dark and trainer-owned cards never fill a species slot.
-- Hunt known lots, mystery/repacks, or missing singles without seeing identities until reveal.
-- Filter by focus and delivered budget; revisit saved hunts with spoilers hidden.
-- Export the authoritative collection JSON from the sidebar.
-
-The pinned vintage catalog includes eligible printings for all 251 species, with Neo Revelation and Neo Destiny included.
+The app browses species #001–251 and eligible vintage printings, tracks exact-card
+ownership/first edition, exports collection JSON, and supports spoiler-controlled
+known lots, missing singles and mystery/repack research. Duplicate physical quantities
+are not tracked. Dark and trainer-owned variants do not fill a species slot.
 
 ## Original-app data and local files
 
-The app accepts only real loopback clients using `127.0.0.1` or `localhost` and a
-matching Origin when present; test hostnames and forwarded headers are rejected.
-It has no login boundary against other local processes. Keep it off LAN/public
-listeners and use the authenticated app for account isolation.
-
-New initialized state and hunt databases are owner-readable/writable only (0600).
-Saving collection changes replaces the collection using a unique private temporary
-file. A failed replacement leaves the original and a private `.tmp` file for
-inspection. Symlinked collection-write and hunt-database destinations are refused.
-Existing databases, exports and backups still need their own permission review;
-review their existing permissions when backing up.
-
 | File | Purpose |
-|---|---|
-| `config/pokedex_251.json` | Authoritative exact cards, ownership, first edition, derived species index |
-| `config/catalog/` | Ten pinned historical set catalogs and source manifest |
+| --- | --- |
+| `config/pokedex_251.json` | Exact cards, ownership, first edition and derived species index |
+| `config/catalog/` | Pinned historical set catalogs and source manifest |
 | `config/hunt.json` | Search pools, bounded coverage and scoring weights |
 | `config/raw_values.json` | Sourced raw LP/NM prices, when configured |
-| `data/collection_hunts.db` | Local search history, including separate sample/live labels |
+| `config/market_values.json` | Dated collection guide records, when configured |
+| `data/collection_hunts.db` | Private search history with sample/live labels |
 
-Preserve the collection JSON and history database when backing up. Updating ownership recomputes species ownership immediately. The species-only CLI redirects edits to exact cards, avoiding two competing ownership sources.
+Back up the collection JSON and hunt database. Species ownership is derived from exact
+cards; the CLI directs edits to the app rather than maintaining a second ownership source.
+The [watcher](legacy-watcher.md) reads the same exact-card state for its separate digests.
+Authenticated Dex never synchronizes these stores automatically.
+
+Only loopback clients using `127.0.0.1` or `localhost` with matching Origin are accepted;
+forwarded headers and test hostnames are rejected. There is no login boundary against
+other local processes. Use authenticated Dex for account isolation.
+
+New state and hunt databases are created with mode 0600. Collection writes use a unique
+private temporary file and atomic replacement. Failed replacement preserves the original
+and may leave a `.tmp` file for inspection. Symlinked collection-write and hunt-database
+destinations are refused. Preserve existing permissions in backup and recovery.
 
 ## Live eBay
 
-Add your eBay application credentials locally using `.env.example`, then restart the app and choose **Live eBay**. The existing official Browse client is reused. Credentials stay on the server. Never paste secrets into chat. The authenticated local app also uses these eBay settings for its own explicit searches and private saved hunts; see [eBay hunts](hunts.md). The two apps retain separate ownership and hunt history.
+Configure credentials locally using [.env.example](../.env.example), restart and choose
+**Live eBay**. Credentials remain server-side. The official Browse client is reused;
+searches are bounded, and longer query plans offer an explicit next batch. Prices include
+known shipping and exclude tax. Seller-text evidence does not establish exact contents,
+authenticity or current availability. The app does not buy, bid, scrape listing HTML or
+analyze seller photos.
 
-Live searches are bounded and report coverage; next-batch search is available for longer query plans. Prices include known shipping and exclude tax. Check the revealed seller page for current availability. The app never buys or bids.
+Unknown contents and unavailable prices stay unknown. Bid/value estimates require sourced
+LP/NM records and enough identity, count and condition evidence. Samples are synthetic
+examples rather than buying recommendations.
 
-The original lot watcher uses explicit seller text, not photos. Unknown lot contents remain unknown. No automatic raw market-price feed is connected, so value and recommended-bid estimates stay unavailable unless sourced LP/NM records and enough inventory/condition evidence exist. Sample results are synthetic examples, not purchase recommendations.
-
-
-## Earlier watcher
-
-The original `run`, `doctor`, and `status` commands remain available. They read species ownership from the exact-card file, but their historical broader set filter and bulk-lot digest behavior remain separate from the app. **The old digest reveals listing titles.** See [legacy watcher documentation](legacy-watcher.md) for its original behavior; its species-edit instructions are superseded by exact-card editing in the app.
+Authenticated Dex uses the shared configuration reader for its separate finite
+[Shopping](hunts.md) flow. Its new listing results are temporary; this original app retains
+its own private search snapshots. An optional authenticated PostgreSQL/HTTPS profile is
+described in [operations](operations.md#optional-postgresqlhttps-profile).
 
 ## Original-app collection estimates
 
-The Overview shows ungraded and Grade 7/8/9/10 estimates for one of each owned printing. My cards shows individual estimates. First-edition values follow the checkbox; Base Set 2 and promos do not offer that checkbox. Duplicate quantities are not tracked.
+Overview and My cards show dated ungraded and Grade 7/8/9/10 guide scenarios for one of
+each owned printing. First-edition guide selection follows the checkbox; Base Set 2 and
+promos have no first-edition checkbox. Grade 10 uses the PSA 10 guide; other grades are
+general scenarios. Retained Grade 7–8 geometric estimates are explicitly labeled and
+are not regenerated. No scenario establishes a card's grade or observed sale value.
+Grading and selling fees are excluded; duplicate quantities are not included.
 
-`config/market_values.json` holds dated USD PriceCharting guide snapshots. Grade 10 uses its PSA 10 guide; other grades are general grade scenarios. Grade 7–8 values marked * may be retained historical geometric estimates from ungraded and Grade 9 references. The app displays their estimated status but does not generate new interpolations or fetch replacements. These estimates are not observed sales or predicted card grades. No grading or selling fees included. Records older than 30 days are excluded; partial totals disclose coverage.
-
-Collection estimates and authenticated hunts share `reference_policy.py` for
-finite capped USD amounts, explicit variant verification, safe HTTPS source links
-and the 30-day date rule. Edition and grade matching remain specific to each
-projection. Unsafe, stale or incomplete evidence stays unpriced. Retained
-interpolation is labelled historical evidence; there is no interpolation or network
-refresh step in the current code. Collection estimates remain separate from
-condition-qualified hunt bid calculations. New Shopping snapshots use the reviewed
-private importer described in [development](local-development.md#private-price-snapshots).
-
-
-These records belong to the original app. The authenticated app tracks physical copies and can retain intentional duplicates; consult [the source-of-truth map](SSOT.md) before changing either store.
+Records older than 30 days are excluded, and incomplete totals disclose coverage.
+`reference_policy.py` shares finite capped USD, safe HTTPS provenance, variant-verification
+and date rules with authenticated research. Edition/grade eligibility remains specific
+to each projection. Unsafe, stale or incomplete records stay unpriced. New managed
+Shopping snapshots use the [private importer](local-development.md#private-price-snapshots).

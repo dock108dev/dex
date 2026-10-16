@@ -15,7 +15,7 @@ from . import (
     store,
 )
 
-FIELDS = {"species", "group", "child", "goal", "version", "generation", "return"}
+FIELDS = {"species", "group", "child", "goal", "version", "generation", "return", "missing"}
 
 
 def resolve(who, raw, *, legacy_goal=False):
@@ -32,6 +32,10 @@ def resolve(who, raw, *, legacy_goal=False):
         raise ValueError("Choose bounded Shopping context")
     if "species" in raw and "group" in raw or "child" in raw and "group" not in raw:
         raise ValueError("Choose a species or a card group with an optional explicit printing")
+    if "missing" in raw and (
+        raw["missing"] != "species" or set(raw).intersection({"goal", "version", "species", "group", "child"})
+    ):
+        raise ValueError("Choose current missing species or a saved goal")
     if "version" in raw and not raw.get("goal"):
         raise ValueError("A retained version requires its saved goal")
     if raw.get("goal") and "version" not in raw and not legacy_goal:
@@ -65,6 +69,8 @@ def resolve(who, raw, *, legacy_goal=False):
         from .navigation import authorize_destination
 
         authorize_destination(who, raw["return"])
+    if raw.get("missing"):
+        result.update(kind="missing", label="Current collection · Original 151")
     goal = None
     if raw.get("goal"):
         try:
@@ -138,8 +144,15 @@ def catalog(who, context, query="", *, printing="", offset=0):
     """Select only admitted local printings, independently of ownership and quantities."""
     raw = context["query"]
     goal_id = raw.get("goal", "")
-    if context["kind"] == "goal":
-        return lot_calculator.browse_page(who, query, goal_id=goal_id, printing_id=printing, offset=offset)
+    if context["kind"] in {"goal", "missing"}:
+        return lot_calculator.browse_page(
+            who,
+            query,
+            goal_id=goal_id,
+            printing_id=printing,
+            offset=offset,
+            current_missing=context["kind"] == "missing",
+        )
     entries = lot_calculator.catalog(
         who, query, include_goals=bool(goal_id), goal_ids=None if goal_id else set()
     )

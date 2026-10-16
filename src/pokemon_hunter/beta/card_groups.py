@@ -251,6 +251,8 @@ def project(actor=None):
         recorded = sorted(
             {copy["id"] for child_id in child_ids for copy in copies_by_printing.get(child_id, [])}
         )
+        if mapped:
+            recorded = sorted(set(assertion["recorded_copy_ids"]))
         current = sorted(set(assertion["current_copy_ids"])) if mapped else []
         exact = sorted(child_ids.intersection(assertion["exact_printing_owned_ids"])) if mapped else []
         group.update(
@@ -282,8 +284,12 @@ def project(actor=None):
                 if encoded not in seen:
                     seen.add(encoded)
                     unresolved.append(dict(kind="unresolved-species-mark", evidence=declaration))
+        bound_recorded_ids = {cid for g in built["groups"] for cid in g.get("recorded_copy_ids", [])}
         for copy in active:
-            if copy.get("printing_id") not in built["printing_to_group"]:
+            if (
+                copy.get("printing_id") not in built["printing_to_group"]
+                and copy["id"] not in bound_recorded_ids
+            ):
                 unresolved.append(dict(kind="unmapped-collection-copy", evidence=copy))
         unresolved.extend(
             dict(kind="effective-collection-conflict", evidence=row) for row in effective["conflicts"]
@@ -537,7 +543,7 @@ def detail(actor, group_id, selected_child=None):
     if not snapshot["public"]:
         child_ids = {row["id"] for row in children}
         result.update(
-            copies=[row for row in snapshot["active"] if row.get("printing_id") in child_ids],
+            copies=[row for row in snapshot["active"] if row["id"] in group["recorded_copy_ids"]],
             history=store.rows(
                 "SELECT * FROM owned_copies WHERE user_id=%s AND state<>'active' ORDER BY id", [actor.user_id]
             ),
@@ -548,7 +554,13 @@ def detail(actor, group_id, selected_child=None):
                 or child_ids.intersection(row.get("printing_ids", []))
             ],
         )
-        result["history"] = [row for row in result["history"] if row.get("printing_id") in child_ids]
+        from .copy_identity import matches
+
+        literal = dict(set_name=group["set_name"], name=group["name"], number=group["collector_number"])
+        result["history"] = [row for row in result["history"] if matches(row, child_ids, literal)]
+        result["copies"] = [
+            dict(row, display_identity=literal) if not row["printing_id"] else row for row in result["copies"]
+        ]
         from . import image_bindings, image_mappings
 
         game_ids = {row["id"] for row in store.rows("SELECT id FROM games WHERE game_key='pokemon'")}

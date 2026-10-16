@@ -54,20 +54,27 @@ def available():
     return "ownership_declarations" in connection.introspection.table_names()
 
 
+def header_scope(headers):
+    """Classify an exact retained declaration schema; body/hash validation stays in parse."""
+    for supported, scope in (
+        (HEADERS, "kanto"),
+        (GEN2_HEADERS, "johto"),
+        (FULL_HEADERS, "full251"),
+        (PHOTO_HEADERS, "full251"),
+    ):
+        if headers == supported:
+            return scope
+    raise ValueError("Unsupported collection declaration columns")
+
+
 def parse(text, sha256):
     if not isinstance(text, str) or len(text.encode()) > 100_000 or digest(text.encode()) != sha256:
         raise ValueError("Declaration source bytes/hash mismatch or oversized input")
     reader = csv.DictReader(io.StringIO(text.lstrip("\ufeff"), newline=""))
-    full = reader.fieldnames in [FULL_HEADERS, PHOTO_HEADERS]
+    scope = header_scope(reader.fieldnames)
+    full = scope == "full251"
     card_columns = [k for k in (reader.fieldnames or [])[3 if full else 2 :] if k != "Ownership notes"]
-    if full:
-        lower, upper = 1, 251
-    elif reader.fieldnames == HEADERS:
-        lower, upper = 1, 151
-    elif reader.fieldnames == GEN2_HEADERS:
-        lower, upper = 152, 251
-    else:
-        raise ValueError("Unsupported collection declaration columns")
+    lower, upper = {"full251": (1, 251), "kanto": (1, 151), "johto": (152, 251)}[scope]
     names = registry()
     result, seen = [], set()
     for row in reader:
@@ -110,7 +117,7 @@ def parse(text, sha256):
                         marker=marker,
                         source_cell=cell,
                         ownership_notes=row.get("Ownership notes", ""),
-                        source_scope="full251" if full else "kanto" if lower == 1 else "johto",
+                        source_scope=scope,
                         declared_card_name=detail[1] if detail else None,
                         declared_card_number=detail[2] if detail else None,
                         declared_rarity=detail[3] if detail else None,

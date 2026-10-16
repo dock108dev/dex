@@ -1,4 +1,4 @@
-"""M1 independent targets, ordinary maintenance, frozen research and isolation."""
+"""Independent Shopping targets, maintenance, frozen research and account isolation."""
 
 import importlib
 import json

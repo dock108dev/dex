@@ -219,6 +219,8 @@ def browser_smoke(python, cwd, env, root, timeout):
             "glass.css",
             "public.css",
             "collection.css",
+            "collection-base.css",
+            "collection-browse.css",
             "parity.js",
             "pokedex.js",
             "collection.js",
@@ -230,6 +232,8 @@ def browser_smoke(python, cwd, env, root, timeout):
             "lot_calculator.js",
             "shopping.css",
             "shopping.js",
+            "discovery.css",
+            "discovery.js",
         ):
             status, headers, body = request(guest, port, "/collection-assets/" + asset)
             expected_type = "text/javascript" if asset.endswith(".js") else "text/css"

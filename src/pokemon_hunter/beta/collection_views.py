@@ -16,8 +16,10 @@ from . import image_bindings, store
 from .diagnostics import failure
 from .views import actor
 
+BROWSING_ERROR = "Invalid browsing filters or return link. Go back or open My Cards at /cards/."
 
-def endpoint(fn):
+
+def endpoint(fn, *, browsing=False):
     @wraps(fn)
     def inner(request, *args, **kwargs):
         try:
@@ -44,9 +46,18 @@ def endpoint(fn):
             return JsonResponse({"error": "Invalid request field types"}, status=400)
         except ValueError as e:
             failure("request_value_error", e)
+            if browsing:
+                response = JsonResponse({"error": BROWSING_ERROR, "recovery_url": "/cards/"}, status=400)
+                response["Cache-Control"] = "private, no-store"
+                return response
             return JsonResponse({"error": "Invalid request. Check the fields and import format."}, status=400)
 
     return login_required(inner)
+
+
+def browsing_endpoint(fn):
+    """Opt-in read-only browsing guidance; mutation/import contracts stay unchanged."""
+    return endpoint(fn, browsing=True)
 
 
 def body(request):
@@ -95,14 +106,24 @@ def private_home(request):
 def asset(request, filename):
     if filename not in {
         "collection.js",
+        "bulk_entry.js",
+        "bulk_entry.css",
+        "photo_batches.js",
+        "photo_batches.css",
         "navigation.js",
         "card-screens.js",
         "species-screens.js",
         "shopping.js",
+        "listing_check.js",
+        "listing_check.css",
+        "discovery.js",
+        "discovery.css",
         "lot_calculator.js",
         "lot_calculator.css",
         "shopping.css",
         "collection.css",
+        "collection-base.css",
+        "collection-browse.css",
         "parity.js",
         "scans.js",
         "catalog.js",
@@ -118,7 +139,7 @@ def asset(request, filename):
     )
 
 
-@endpoint
+@browsing_endpoint
 @require_GET
 def context(request):
     """Small browsing authority; inventories and tool data load only on demand."""
@@ -173,7 +194,24 @@ def dashboard(request):
     data["current_collection_source"] = data["effective_collection"]["selected_source"]
     images = image_bindings.catalog_images(who, entries)
     photos = image_bindings.private_copy_photos(who, [c["id"] for c in data["copies"]])
-    data["copies"] = [dict(c, photo_references=photos[c["id"]]) for c in data["copies"]]
+    display_identities = {
+        cid: {k: row[k] for k in ("set_name", "name", "number")}
+        for row in data["effective_collection"]["cards"]
+        if row["identity_status"] != "conflict"
+        for cid in row["recorded_copy_ids"]
+    }
+    data["copies"] = [
+        dict(
+            c,
+            photo_references=photos[c["id"]],
+            **(
+                {"display_identity": display_identities[c["id"]]}
+                if not c["printing_id"] and c["id"] in display_identities
+                else {}
+            ),
+        )
+        for c in data["copies"]
+    ]
     data["printing_details"] = {
         p["id"]: {
             **{k: p[k] for k in ("set_name", "edition", "finish", "variant")},

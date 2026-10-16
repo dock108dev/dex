@@ -51,7 +51,7 @@ def run(root, output, port=8011):
     with (
         patch("httpx.Client.send", prohibited),
         patch("httpx.AsyncClient.send", prohibited),
-        patch("pokemon_hunter.beta.ebay_hunts.search", prohibited),
+        patch("pokemon_hunter.beta.discovery_transport.Transport.request", prohibited),
         patch("urllib.request.urlopen", prohibited),
     ):
         uvicorn.run(

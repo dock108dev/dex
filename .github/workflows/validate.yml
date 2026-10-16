@@ -15,7 +15,6 @@ permissions:
 env:
   CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
   UV_NO_PROGRESS: '1'
-  CI_NODE_VERSION: 22.18.0
 jobs:
   quality:
     name: Source quality
@@ -47,7 +46,7 @@ jobs:
       id: node
       if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
       with:
-        node-version: ${{ env.CI_NODE_VERSION }}
+        node-version-file: .nvmrc
         package-manager-cache: false
     - name: Compile, JavaScript and maintained documentation
       id: source
@@ -100,7 +99,7 @@ jobs:
     - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       id: node
       with:
-        node-version: ${{ env.CI_NODE_VERSION }}
+        node-version-file: .nvmrc
         package-manager-cache: false
     - name: Offline component tests and branch coverage
       id: tests

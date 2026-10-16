@@ -1,0 +1,21 @@
+#photo-entry {max-width:72rem;margin:auto;color:#242329;overflow-wrap:anywhere}
+#photo-entry .photo-heading {background:#f6f6f8;padding:1rem;border-radius:.6rem}
+#photo-entry h1 {color:#242329}
+#photo-entry p {color:#454049;line-height:1.55}
+#photo-entry a {color:#a92232;text-decoration:underline}
+#photo-entry :focus-visible {outline:3px solid #416ec8;outline-offset:3px}
+#photo-entry .photo-panel {background:#fff;border:1px solid #bcb8bf;border-radius:.6rem;margin:1rem 0;padding:1rem}
+#photo-entry button,#photo-entry input,#photo-entry select,#photo-entry textarea {font:inherit;max-width:100%;box-sizing:border-box}
+#photo-entry button {white-space:normal;min-height:2.75rem;margin:.4rem .3rem .4rem 0}
+#photo-entry label {display:block;margin:.55rem 0}
+#photo-entry input:not([type=checkbox]),#photo-entry select,#photo-entry textarea {display:block;width:100%}
+#photo-entry input[type=checkbox] {width:1.3em;height:1.3em;vertical-align:middle}
+#photo-entry .photo-source {position:relative;max-width:42rem;margin:1rem 0}
+#photo-entry .photo-source > img {display:block;width:100%;height:auto}
+#photo-entry .photo-outline {position:absolute;border:3px solid #ffdf00;box-sizing:border-box;color:#fff;background:transparent;pointer-events:none}
+#photo-entry .photo-outline span {background:#242329;color:#fff;padding:0 .25em}
+#photo-entry .photo-crop {border-top:2px solid #bcb8bf;margin-top:1rem;padding-top:.5rem}
+#photo-entry .photo-crop img {max-width:10rem;max-height:14rem;width:auto;height:auto}
+#photo-entry .photo-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,10rem),1fr));gap:.7rem}
+#photo-entry [hidden] {display:none!important}
+@media(max-width:400px){#photo-entry .photo-panel {padding:.65rem}#photo-entry button {width:100%}}

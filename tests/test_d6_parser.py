@@ -1,4 +1,4 @@
-"""D6 static-literal parsing rejects execution and preserves canonical source data."""
+"""Static-literal parsing rejects execution and preserves canonical source data."""
 
 import importlib.util
 from pathlib import Path

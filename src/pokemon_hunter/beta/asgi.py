@@ -4,6 +4,7 @@ from django.conf import settings
 
 from pokemon_hunter.security import BROWSER_HEADERS
 
+BULK_BODY_LIMIT = 32_000_000  # JSON expansion of at most 2,000 independently validated manual rows.
 SCAN_BODY_LIMIT = 16_100_000  # Two 8 MB photos plus multipart overhead.
 
 
@@ -18,6 +19,21 @@ class BoundedBodyApplication:
         limit = settings.DATA_UPLOAD_MAX_MEMORY_SIZE
         if settings.B3_ENABLED and scope["path"] == "/api/scans/" and scope["method"] == "POST":
             limit = SCAN_BODY_LIMIT
+
+        if (
+            getattr(settings, "B2_ENABLED", False)
+            and scope["path"] in {"/api/bulk/save/", "/api/bulk/parse/"}
+            and scope["method"] == "POST"
+        ):
+            limit = BULK_BODY_LIMIT
+
+        if (
+            getattr(settings, "B3_ENABLED", False)
+            and scope["path"].startswith("/api/photo-batches/")
+            and scope["path"].endswith(("/upload/", "/retake/"))
+            and scope["method"] == "POST"
+        ):
+            limit = 8_100_000
 
         lengths = [value for key, value in scope.get("headers", []) if key.lower() == b"content-length"]
         if lengths:

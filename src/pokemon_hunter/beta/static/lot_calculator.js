@@ -301,6 +301,7 @@
     $('catalog-scope').hidden = false;
     $('catalog-scope').textContent = active.kind === 'goal'
       ? `${active.label} · Missing targets from retained membership. Choose a card, then its printing.`
+      : active.kind === 'missing' ? 'Missing Pokémon from your current collection. Choose a card, then its printing.'
       : active.kind === 'all' ? 'Owned cards remain selectable.'
       : `${active.label} · Choose a printing before adding to this lot.`;
   }
@@ -313,7 +314,10 @@
     $('catalog-scope').hidden = false; $('catalog-scope').textContent = 'Loading cards…';
     $('previous').disabled = true; $('next').disabled = true;
     try {
-      const params = new URLSearchParams({q: $('query').value, offset: String(offset), generation: String(context.generation), ...(contextual ? context.query : missingMode ? {goal: $('missing-goal').value, version: $('missing-goal').selectedOptions[0].dataset.version, missing_item: missingItem, pick_first: missingItem ? '0' : '1'} : {})});
+      const missingScope = $('missing-goal')?.value
+        ? {goal: $('missing-goal').value, version: $('missing-goal').selectedOptions[0].dataset.version}
+        : {missing: 'species'};
+      const params = new URLSearchParams({q: $('query').value, offset: String(offset), generation: String(context.generation), ...(contextual ? context.query : missingMode ? {...missingScope, missing_item: missingItem, pick_first: missingItem ? '0' : '1'} : {})});
       if (contextual && chosenPrinting) params.set('printing', chosenPrinting);
       const data = await request('/api/shopping/lot-catalog/?' + params);
       if (version !== searchVersion) return null;
@@ -427,7 +431,7 @@
   // Only user-authored inputs are serialized. Price cells, source records and
   // comparison derivatives never enter browser storage, even when saving is disabled.
   function draft() {
-    return {schema: 'dex-shopping-inputs-v1', account: context.account_id,
+    return {schema: 'dex-shopping-inputs-v2', account: context.account_id,
       rows: [...rows.values()].map(r => ({id: r.p.id, included: r.q.value, wanted: r.wanted.value, locked: r.lock.checked})),
       costs: Object.fromEntries(Object.entries(costs).map(([key, f]) => [key, {amount: f.amount.value, date: f.date.value, components: Object.fromEntries(Object.entries(f.components).map(([name, a]) => [name, a.value]))}])),
       listing: $('listing-url').value, name: $('comparison-name').value,
@@ -444,7 +448,7 @@
       const d = JSON.parse(sessionStorage.getItem(draftKey));
       const keys = (object, allowed) => object && typeof object === 'object' && !Array.isArray(object) && Object.keys(object).every(key => allowed.includes(key));
       const text = (value, max = 4096) => typeof value === 'string' && value.length <= max && !/[\x00-\x1f\x7f]/.test(value);
-      if (!keys(d, ['schema','account','rows','costs','listing','name','ui']) || d.schema !== 'dex-shopping-inputs-v1' || d.account !== context.account_id || !Array.isArray(d.rows) || d.rows.length > 200 || new Set(d.rows.map(r => r.id)).size !== d.rows.length || !text(d.listing) || !text(d.name, 160)) throw Error();
+      if (!keys(d, ['schema','account','rows','costs','listing','name','ui']) || !['dex-shopping-inputs-v1','dex-shopping-inputs-v2'].includes(d.schema) || d.account !== context.account_id || !Array.isArray(d.rows) || d.rows.length > 200 || new Set(d.rows.map(r => r.id)).size !== d.rows.length || !text(d.listing) || !text(d.name, 160)) throw Error();
       for (const r of d.rows) if (!keys(r, ['id','included','wanted','locked']) || !text(r.id, 160) || !r.id || !text(r.included, 6) || !text(r.wanted, 6) || !/^\d+$/.test(r.included) || !/^\d+$/.test(r.wanted) || Number(r.included) > 100000 || Number(r.wanted) < 1 || Number(r.wanted) > 100000 || typeof r.locked !== 'boolean') throw Error();
       if (!keys(d.costs, ['listing_observation','planned_bid'])) throw Error();
       for (const key of Object.keys(costs)) {
@@ -488,7 +492,9 @@
         // A deliberate incoming target wins over a retained picker. Lot rows remain independent.
         if (!contextual && context.kind === 'all') {
           $('query').value = saved.ui.query; missingMode = saved.ui.missing && Boolean($('missing-goal'));
-          if ($('missing-goal') && [...$('missing-goal').options].some(o => o.value === saved.ui.goal)) { $('missing-goal').value = saved.ui.goal; missingItem = saved.ui.item; }
+          // Preserve old lot inputs while replacing the former automatic saved-goal picker.
+          if (saved.schema === 'dex-shopping-inputs-v1' && saved.ui.missing) { $('missing-goal').value = ''; missingItem = ''; }
+          else if ($('missing-goal') && [...$('missing-goal').options].some(o => o.value === saved.ui.goal)) { $('missing-goal').value = saved.ui.goal; missingItem = saved.ui.item; }
           else missingMode = false;
         }
         $('draft-note').hidden = false; $('draft-note').textContent = 'Draft restored. Compare to update totals; unavailable references stay unpriced.';

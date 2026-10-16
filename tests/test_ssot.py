@@ -177,11 +177,15 @@ def test_copy_import_uses_policy_before_opening_database(env):
         connect.assert_not_called()
 
 
-def test_no_unused_sample_entry_point():
-    from pokemon_hunter.beta import parity
+def test_no_retired_authenticated_hunt_acquisition_entry_point():
+    from pokemon_hunter.beta import ebay_hunts, parity
 
-    assert not hasattr(parity, "sample")
-    assert callable(parity.search)  # Explicit demo/live requests use the same service.
+    for name in ("sample", "search", "save_hunt"):
+        assert not hasattr(parity, name)
+    for name in ("search", "MAX_QUERIES", "MAX_PAGES"):
+        assert not hasattr(ebay_hunts, name)
+    with pytest.raises(ValueError, match="Unsupported parity evidence"):
+        parity.evidence("demo_hunts.json", None)
 
 
 def test_provider_readers_share_settings_and_do_not_export_secrets(tmp_path, monkeypatch):
@@ -217,7 +221,7 @@ def test_provider_readers_share_settings_and_do_not_export_secrets(tmp_path, mon
         "EBAY_DELIVERY_POSTAL_CODE": "07740",
     }
     assert os.environ == before
-    assert provider.search.max_pages == 2 and provider.delivery_postal_code == "07740"
+    assert provider.search.max_pages == 5 and provider.delivery_postal_code == "07740"
     with patch.object(config, "load_settings", wraps=config.load_settings) as policy:
         settings, _, queries = config.load_config(tmp_path)
         policy.assert_called_once_with(tmp_path)
@@ -486,19 +490,25 @@ def test_parity_initialization_does_not_create_obsolete_species_sidecar(tmp_path
     from pokemon_hunter.migration import import_snapshot
 
     (snapshot / "config/hunt.json").write_text('{"synthetic":true}')
+    (snapshot / "config/demo_hunts.json").write_text("[]")
     copied = tmp_path / "synthetic.copied.sqlite3"
     import_snapshot(snapshot, copied)
     root = tmp_path / "new-root"
     cli.initialize(root, copied, parity=True)
     evidence = root / "parity-evidence"
     assert not (evidence / "species.json").exists()
+    assert not (evidence / "demo_hunts.json").exists()
     assert json.loads((evidence / "hunt.json").read_text()) == {"synthetic": True}
     # Historical archival bytes remain in storage; removing the writer is not erasure.
     with sqlite3.connect(root / "inventory.db") as db:
         row = db.execute(
             "SELECT content FROM private_archives WHERE path='config/pokedex_251.json'"
         ).fetchone()
+        demo = db.execute(
+            "SELECT content FROM private_archives WHERE path='config/demo_hunts.json'"
+        ).fetchone()
     assert bytes(row[0]) == (snapshot / "config/pokedex_251.json").read_bytes()
+    assert bytes(demo[0]) == (snapshot / "config/demo_hunts.json").read_bytes()
 
 
 def test_filtered_and_vintage_species_goals_use_shared_builder():

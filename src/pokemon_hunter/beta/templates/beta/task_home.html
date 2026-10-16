@@ -2,10 +2,12 @@
 {% block title %}Dex · {{ task_title }}{% endblock %}
 {% block content %}
 <h1>{{ task_title }}</h1>
-<div class="task-grid">
+<div class="task-grid{% if request.path == '/add-card/' %} add-card-options{% endif %}">
 {% if request.path == '/add-card/' %}
-  <section class="panel"><h2>Choose a card</h2><p>Find a supported printing, review its variants and add it to your collection.</p><a class="button-link" href="/card-library/">Browse Card Library</a></section>
-  <section class="panel"><h2>Use a photo</h2>{% if scans %}<p>Review the photo entry options before uploading or starting recognition.</p><a class="button-link secondary" href="/scan/">Open photo entry</a>{% else %}<p>Photo entry is unavailable in this installation. Use Card Library to choose a card.</p>{% endif %}</section>
+  <link rel="stylesheet" href="/collection-assets/bulk_entry.css">
+  <section class="panel"><h2>Add many cards</h2><p>Choose from a set, paste card numbers or upload a CSV. Review the batch before adding it.</p><a class="button-link" href="/add-many/">Add many cards</a></section>
+  <section class="panel"><h2>Choose one card</h2><p>Find a card in the library, then choose its variant and copy details.</p><a class="button-link secondary" href="/card-library/">Browse Card Library</a></section>
+  <section class="panel add-card-photo"><div><h2>Add from a photo</h2>{% if scans %}<p>Upload and review a card photo before adding it.</p>{% else %}<p>Photo entry is unavailable in this installation. Choose a card from the library instead.</p>{% endif %}</div>{% if scans %}<a href="/scan/">Open photo entry</a>{% endif %}</section>
 {% elif request.path == '/collection-tools/' %}
   <section class="panel"><h2>Collection goals</h2><p>Review saved checklists, their progress and retained versions.</p><a href="/goals/">Open Goals</a></section>
   <section class="panel"><h2>Physical copies</h2><p>Find your itemised records, binders and copy details.</p><a href="/collection/">Open physical copies</a></section>

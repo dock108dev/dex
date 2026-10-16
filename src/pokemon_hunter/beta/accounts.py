@@ -103,3 +103,6 @@ def revoke(user):
     user.save(update_fields=["is_active", "password"])
     with connection.cursor() as c:
         c.execute("UPDATE users SET state='revoked' WHERE auth_subject=%s", [str(user.pk)])
+    from .collection_drafts import purge_revoked
+
+    purge_revoked()

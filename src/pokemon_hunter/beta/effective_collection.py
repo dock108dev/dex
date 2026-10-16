@@ -16,7 +16,7 @@ from . import collection, collection_goals, store
 from . import ownership_declarations as declarations
 
 SELECTION_KINDS = {"owner_declaration", "collection_correct", "source_select"}
-ADDITION_KINDS = {"add", "set", "photo", "import"}
+ADDITION_KINDS = {"add", "set", "photo", "import", "bulk"}
 CARD_PART = re.compile(r"(?:✓(?:D|EX)? )?([^;#()]+) #([A-Za-z0-9-]+) \(([^()]+)\)")
 
 
@@ -107,6 +107,13 @@ def project(actor, *, catalog=None, active=None, pending=None):
             + [{**c, "after": None} for c in pending["plan"].get("deletes", [])]
         )
         history = [op for op in history if op["id"] != pending["id"]] + [pending]
+    from .copy_identity import binding
+
+    history_by_id = {op["id"]: op for op in history}
+
+    def admitted_binding(image):
+        return binding(image, history_by_id.get(image.get("batch_id")), history=True)
+
     operations = [op for op in history if op["state"] == "confirmed"]
     excluded_creation_ids = {
         change["row"]["id"]
@@ -339,8 +346,9 @@ def project(actor, *, catalog=None, active=None, pending=None):
         p = by_id.get(copy.get("printing_id"))
         op = creation.get(copy["id"])
         identity = _json(copy.get("provisional_identity"), {})
-        # Provisional JSON is retained free text, not a reviewed species link.
-        n = species_number(p) if p else None
+        bound = binding(copy, op) if not p else None
+        literal = bound["identity"] if bound else None
+        n = species_number(p) if p else literal.get("pokemon_dex") if literal else None
         scope = "kanto" if n is not None and n <= 151 else "johto" if n else None
         copy_boundary = scoped_sources.get(scope, {}).get("boundary") or boundary
         admitted = copy_boundary is None or (
@@ -353,17 +361,26 @@ def project(actor, *, catalog=None, active=None, pending=None):
         if excluded_creation:
             admitted = False
             conflicts.append(dict(kind="copy-with-unconfirmed-creation", copy_id=copy["id"]))
-        if p:
-            row = card(p["set_name"], p["name"], p["collector_number"], n)
+        if p or literal:
+            row = (
+                card(p["set_name"], p["name"], p["collector_number"], n)
+                if p
+                else card(literal["set_name"], literal["name"], literal["number"], n)
+            )
             row["recorded_copy_ids"].append(copy["id"])
             # Matching inherited records can describe the source's known card.
             current = not excluded_creation and (
-                admitted or (baseline_valid and row["declared"] and p["id"] in row["printing_ids"])
+                admitted
+                or (
+                    baseline_valid
+                    and row["declared"]
+                    and (literal is not None or p["id"] in row["printing_ids"])
+                )
             )
             if current:
                 row["present"] = True
                 row["current_copy_ids"].append(copy["id"])
-                if p["id"] in qualified and not identity.get("unresolved_fields"):
+                if p and p["id"] in qualified and not identity.get("unresolved_fields"):
                     row["exact_printing_owned_ids"].append(p["id"])
                 if op:
                     row["operation_ids"].append(op["id"])
@@ -465,15 +482,11 @@ def project(actor, *, catalog=None, active=None, pending=None):
                 and type(later["generation"]) is int
                 and later["generation"] > op["generation"]
                 and (
-                    (
-                        later["kind"] in {"mark_owned", "remove_card"}
-                        and later["plan"].get("card_intent")
-                        and _key(
-                            later["plan"]["card_intent"]["identity"]["set_name"],
-                            later["plan"]["card_intent"]["identity"]["name"],
-                            later["plan"]["card_intent"]["identity"]["number"],
-                        )
+                    any(
+                        i["kind"] in {"mark_owned", "remove_card"}
+                        and _key(i["identity"]["set_name"], i["identity"]["name"], i["identity"]["number"])
                         == key
+                        for i in collection_defaults.intents(later["plan"])
                     )
                     or any(
                         c["kind"] == "copy"
@@ -483,7 +496,20 @@ def project(actor, *, catalog=None, active=None, pending=None):
                             or c["before"].get("state") != c["after"].get("state")
                         )
                         and any(
-                            image and image.get("printing_id") in row["printing_ids"]
+                            image
+                            and (
+                                image.get("printing_id") in row["printing_ids"]
+                                or (
+                                    admitted_binding(image)
+                                    and _key(
+                                        **{
+                                            k: admitted_binding(image)["identity"][k]
+                                            for k in ("set_name", "name", "number")
+                                        }
+                                    )
+                                    == key
+                                )
+                            )
                             for image in (c.get("before"), c.get("after"))
                         )
                         for c in later["changes"]

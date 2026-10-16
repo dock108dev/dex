@@ -211,7 +211,10 @@ def test_projection_save_old_new_compatibility_and_no_acquisition(e1):
     protected = collection.export_data(e1["actor"])
     with (
         patch("httpx.Client.send", side_effect=AssertionError("No acquisition")),
-        patch("pokemon_hunter.beta.ebay_hunts.search", side_effect=AssertionError("No acquisition")),
+        patch(
+            "pokemon_hunter.beta.discovery_transport.Transport.request",
+            side_effect=AssertionError("No acquisition"),
+        ),
     ):
         filters = dict(stock="out-of-stock", age="all", max_price="28", currency="USD", sort="price")
         context = packs.project(e1["actor"], g["id"], "123", "tcgdex:en:sv03.5", filters=filters)

@@ -1,0 +1,60 @@
+{% extends 'beta/base.html' %}
+{% block title %}Add many cards · Dex{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="/collection-assets/bulk_entry.css">
+<div id="bulk-entry">
+<div class="bulk-page-heading"><h1>Add many cards</h1><a href="/add-card/">Back to Add Card</a></div>
+{% if not bulk_available %}<p role="alert">Adding many cards is unavailable in this installation. Your collection is unchanged. <a href="/card-library/">Choose a card from the library</a>.</p>{% else %}
+<form id="bulk-csrf">{% csrf_token %}</form>
+<p id="bulk-status" role="status" aria-live="polite" tabindex="-1">Loading supported catalog…</p>
+<div class="bulk-session-bar">
+  <details id="bulk-saved-panel" hidden><summary>Saved drafts <span id="bulk-saved-count"></span></summary><div id="bulk-saved"></div></details>
+  <div id="bulk-current-tools" class="bulk-actions" hidden><button id="bulk-recover" type="button">Check saved result</button><button id="bulk-cancel" type="button">Cancel draft</button></div>
+  <details id="bulk-batch-options" hidden><summary>Another physical batch</summary><p>Use a separate batch only for different physical cards. Reuploading the same input reopens its draft or receipt.</p><button id="bulk-new" type="button">Start a separate physical batch</button></details>
+  <details id="bulk-draft-record" hidden><summary>Draft record details</summary><div id="bulk-draft-record-body"></div></details>
+</div>
+<div class="bulk-workspace">
+<section id="bulk-tray-panel" class="bulk-panel" aria-label="Selection tray">
+  <div class="bulk-section-heading"><h2>Your batch</h2><span id="bulk-draft-state"></span></div>
+  <p id="bulk-count" aria-live="polite">No cards selected</p>
+  <div class="bulk-actions bulk-main-actions"><button id="bulk-review" type="button" aria-describedby="bulk-review-help" disabled>Review batch</button><button id="bulk-save" type="button" disabled>Save draft</button></div>
+  <p id="bulk-review-help" class="bulk-help">Choose cards to begin. Your collection changes only after review and confirmation.</p>
+  <details id="bulk-selected-details" open hidden><summary>Selected rows and options</summary>
+    <div class="bulk-actions"><button type="button" id="bulk-check-all">Check all rows</button><button type="button" id="bulk-clear-checked">Clear checks</button></div>
+    <div id="bulk-checked-actions" hidden><p id="bulk-checked-count"></p><div class="bulk-actions"><button type="button" id="bulk-unknown">Keep variants unknown</button><button type="button" id="bulk-different">Different physical copies</button><button type="button" id="bulk-apply-selected">Apply visible defaults</button><button type="button" id="bulk-exclude">Exclude rows</button><button type="button" id="bulk-include">Include rows</button></div></div>
+    <div id="bulk-tray"></div>
+    <div class="bulk-actions bulk-pagination"><button type="button" id="bulk-tray-prev">Previous draft rows</button><span id="bulk-tray-page"></span><button type="button" id="bulk-tray-next">Next draft rows</button></div>
+  </details>
+  <details id="bulk-lot-details"><summary>Whole-lot purchase details</summary><p class="bulk-help">Recorded once for the lot; never divided between cards.</p><div class="bulk-controls"><label>Lot amount<input id="bulk-lot-amount" inputmode="decimal"></label><label>Lot currency<input id="bulk-lot-currency" maxlength="3"></label><label>Lot date<input id="bulk-lot-date" type="date"></label></div></details>
+</section>
+<section id="bulk-editor" class="bulk-panel">
+  <div class="bulk-section-heading"><h2>Choose cards</h2></div>
+  <nav aria-label="Input method" class="bulk-input-method"><button type="button" data-input="checklist" aria-pressed="true" aria-controls="bulk-checklist">Set checklist</button><button type="button" data-input="paste" aria-pressed="false" aria-controls="bulk-paste">Paste numbers</button><button type="button" data-input="csv" aria-pressed="false" aria-controls="bulk-csv">Upload CSV</button></nav>
+  <div class="bulk-controls bulk-context"><label>Set<select id="bulk-set"></select></label><label>Language<select id="bulk-language"></select></label><label>Game<select id="bulk-game"></select></label></div>
+  <div class="bulk-controls bulk-row-defaults"><label>Action for new rows<select id="bulk-action"><option value="add_copies">Add physical copies</option><option value="set_total">Record card totals</option><option value="mark_owned">Mark cards owned</option></select></label><label id="bulk-quantity-label">Copies of each card<input id="bulk-quantity" inputmode="numeric" value="1"></label></div>
+  <p id="bulk-meaning" class="bulk-help">Creates individual copy records. Complete card totals stay Unknown.</p>
+  <details id="bulk-default-fields"><summary>Copy defaults: condition, binder and purchase details</summary><p class="bulk-help">Blank means Unknown. Existing rows keep their choices; check rows in Your batch to apply these defaults.</p><div id="bulk-defaults" class="bulk-controls"></div></details>
+  <div id="bulk-checklist">
+    <div class="bulk-catalog-toolbar"><label>Search this set<input id="bulk-search" type="search" placeholder="Card name or number"></label><div class="bulk-actions"><button type="button" id="bulk-all">Select all matching</button><button type="button" id="bulk-range">Select checked range</button></div></div>
+    <p class="bulk-help">For a range, check its first and last card, then select the range. Selections stay in your batch when you change sets or search.</p>
+    <div id="bulk-catalog-rows"></div>
+    <div class="bulk-actions bulk-pagination"><button type="button" id="bulk-prev">Previous</button><span id="bulk-page"></span><button type="button" id="bulk-next">Next</button></div>
+  </div>
+  <div id="bulk-paste" hidden><label>Card numbers or ranges<textarea id="bulk-paste-text" rows="4" placeholder="1-3 x2, 8, 10 x3"></textarea></label><p class="bulk-help">Add copies: 1-3 x2. Totals: 8 x5 or 8 xunknown. Mark owned: 1-3. Put quotes around literal hyphenated numbers.</p><button id="bulk-parse-paste" type="button">Add numbers to batch</button></div>
+  <div id="bulk-csv" hidden><div class="bulk-template-links"><a href="/api/bulk/template/" download>Download CSV template</a><a id="bulk-set-template" href="/api/bulk/template/" download>Download this set’s checklist</a></div><p class="bulk-help">Use the template for one or more sets. Rows may override defaults. Maximum 1.5 MB and 2,000 rows.</p><label>CSV file (UTF-8)<input id="bulk-file" type="file" accept=".csv,text/csv"></label><button id="bulk-parse-csv" type="button">Load CSV draft</button></div>
+</section>
+</div>
+<section id="bulk-review-panel" class="bulk-panel" hidden tabindex="-1">
+  <div class="bulk-section-heading"><h2>Review your batch</h2><button type="button" id="bulk-back-edit">Back to entries</button></div>
+  <div id="bulk-review-summary"></div>
+  <div class="bulk-confirm-bar"><button id="bulk-confirm" type="button" aria-describedby="bulk-confirm-help" disabled>Confirm batch</button><p id="bulk-confirm-help">Check the changes below before confirming.</p></div>
+  <div id="bulk-review-rows"></div>
+  <div class="bulk-actions bulk-pagination"><button id="bulk-review-prev" type="button">Previous review rows</button><span id="bulk-review-page"></span><button id="bulk-review-next" type="button">Next review rows</button></div>
+  <details><summary>Batch record details</summary><div id="bulk-review-record"></div></details>
+</section>
+<section id="bulk-receipt" class="bulk-panel" hidden tabindex="-1"><h2>Batch saved</h2><div id="bulk-receipt-body"></div><button id="bulk-undo" type="button">Undo this whole batch</button></section>
+<dialog id="bulk-drawer" aria-labelledby="bulk-drawer-title"><form method="dialog"><button aria-label="Close row exceptions">Close</button></form><h2 id="bulk-drawer-title">Edit card</h2><p id="bulk-row-record" class="bulk-help"></p><div id="bulk-row-fields" class="bulk-controls"></div><button type="button" id="bulk-row-save">Save row changes</button></dialog>
+<script src="/collection-assets/bulk_entry.js" defer></script>
+{% endif %}
+</div>
+{% endblock %}

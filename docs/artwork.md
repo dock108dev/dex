@@ -38,11 +38,11 @@ effective local private `img-src` permits self, `assets.tcgdex.net` and
 security middleware. Outbound image URLs contain canonical asset IDs only.
 Showing a private photo invokes no recognition/provider attempt or inventory write.
 
-The owner-selected private reference scope is preserved; neither software nor
-metadata licenses establish artwork redistribution permission. No image bytes
-are bundled/exported, public scan catalog, account, paid workaround or acquisition
-schedule is added. The [catalog](catalogs.md) remains all-era where indexed;
-unavailable art never removes a card.
+Reference descriptors are limited to authenticated local use. Software and metadata
+licenses do not establish artwork redistribution permission. No image bytes are
+bundled or exported, and there is no public scan catalog or acquisition schedule.
+The [catalog](catalogs.md) remains all-era where indexed; unavailable art never removes
+a card.
 
 All 53 promo metadata identities retain per-card date evidence. Two early
 release histories have secondary date reports plus first-party PSA year
@@ -83,22 +83,13 @@ signed-in account and browser origin. It filters only unowned image color/opacit
 hover and keyboard focus reveal full color. Cards, labels, links, catalog scope,
 counts and collection state remain unchanged. Unchecking restores full color.
 
-## Remaining image limits
+## Image availability limits
 
-The retained all-era mapping and list badges/grey preference were included in the
-October 14 local collection delivery. A dated audit mapped all 4,275 then-indexed
-card groups across 68 sets, and bounded checks confirmed selected owned and gallery
-assets. Those counts describe the audited catalog, not all existing Pokémon cards
-or a successful load of every mapped URL. See the optional [image delivery record](../reports/collection-images-20261014/delivery.json)
-and [bounded follow-up findings](../reports/collection-images-20261014/overnight-research.json).
+Mapping counts describe retained identity bindings, not complete Pokémon card
+coverage or successful loads of every remote URL. Remote availability and detail
+sharpness can vary; the interface must retain an honest unavailable state.
 
-EX Trainer Kit 2 — Minun Vulpix #7 had a null provider image; an alternate source
-returned 403. It remains unavailable. Do not fabricate a substitute or retry the
-denied route merely to fill the gap. Broad remote availability and detail-image
-sharpness were not exhaustively verified. Improving resolution needs exact same-card
-binding, bounded availability checks and a fallback; it does not authorize collecting
-or redistributing image bytes.
-
-The original overnight continuation ended at 08:00 America/New_York on October 15.
-It is not an ongoing acquisition instruction. Further improvements are optional
-[backlog](hunts.md#backlog) work; honest missing-image states remain supported behavior.
+EX Trainer Kit 2 — Minun Vulpix #7 has no retained provider image. A substitute
+must match that exact card identity and its source permissions. An unavailable
+asset does not authorize bypassing a denied route or collecting image bytes.
+Higher-resolution references require the same identity binding and fallback policy.

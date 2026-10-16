@@ -41,13 +41,31 @@ urlpatterns = [
 ]
 
 if settings.B2_ENABLED:
+    from . import (
+        bulk_views,
+        discovery_views,
+        listing_views,
+        lookup_views,
+        navigation,
+        packs_views,
+        product_views,
+        refresh_views,
+        shopping_views,
+    )
     from . import card_group_views as groups
     from . import collection_views as b2
-    from . import lookup_views, navigation, packs_views, product_views, refresh_views, shopping_views
 
     urlpatterns = [
         path("collection-tools/", navigation.task_home),
         path("add-card/", navigation.task_home),
+        path("add-many/", bulk_views.home),
+        path("api/bulk/catalog/", bulk_views.catalog),
+        path("api/bulk/template/", bulk_views.template),
+        path("api/bulk/drafts/", bulk_views.drafts),
+        path("api/bulk/save/", bulk_views.save),
+        path("api/bulk/parse/", bulk_views.parse),
+        path("api/bulk/drafts/<uuid:key>/", bulk_views.detail),
+        path("api/bulk/drafts/<uuid:key>/<str:action>/", bulk_views.action),
         path("administration/", navigation.task_home),
         path("api/navigation/home/", navigation.validate_home),
         path("api/pokedex-species/", species_views.projection),
@@ -63,7 +81,16 @@ if settings.B2_ENABLED:
         path("api/public/card-groups/", groups.public_catalog),
         path("api/public/card-groups/<str:key>/", groups.public_detail),
         path("card-groups/<str:key>/", groups.home),
-        path("shopping/", shopping_views.home),
+        path("shopping/", discovery_views.home),
+        path("shopping/calculator/", shopping_views.home),
+        path("shopping/check/", listing_views.home),
+        path("api/shopping/listing/", listing_views.loads),
+        path("api/shopping/listing/<uuid:run>/stop/", listing_views.stop),
+        path("api/shopping/listing/review/", listing_views.review),
+        path("api/shopping/listing/compare/", listing_views.compare),
+        path("api/shopping/discovery/", discovery_views.searches),
+        path("api/shopping/discovery/<uuid:run>/stop/", discovery_views.stop),
+        path("api/shopping/discovery/<uuid:run>/reveal/<str:result>/", discovery_views.reveal),
         path("shopping/legacy/", shopping_views.legacy),
         path("api/shopping/lot-catalog/", shopping_views.lot_catalog),
         path("api/shopping/price-source-status/", shopping_views.source_status),
@@ -118,9 +145,18 @@ else:
     urlpatterns = [path("hunt/", public_views.hunt)] + urlpatterns
 
 if settings.B3_ENABLED:
+    from . import photo_batch_views as photo_batches
     from . import scan_views as scans
 
     urlpatterns = [
+        path("add-photos/", photo_batches.home),
+        path("api/photo-batches/", photo_batches.listed),
+        path("api/photo-batches/create/", photo_batches.create),
+        path("api/photo-batches/<uuid:key>/", photo_batches.detail),
+        path("api/photo-batches/<uuid:key>/upload/", photo_batches.upload),
+        path("api/photo-batches/<uuid:key>/retake/", photo_batches.retake),
+        path("api/photo-batches/<uuid:key>/photos/<uuid:pid>/", photo_batches.original),
+        path("api/photo-batches/<uuid:key>/<str:action>/", photo_batches.action),
         path("scan/", scans.home),
         path("api/scans/", scans.jobs),
         path("api/scans/<uuid:key>/", scans.detail),

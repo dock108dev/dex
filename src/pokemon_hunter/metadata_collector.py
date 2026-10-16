@@ -46,7 +46,8 @@ CEILINGS = dict(
     spending_usd=0,
 )
 PLAN = "tcgcsv-pokemon-groups-first-v1"
-OWNER_ROOT = Path("/Users/michaelfuscoletti/dex-private/b2-parity-20260928/review-local")
+# Keep the compatibility location: the independent journal is durable request accounting.
+OWNER_ROOT = Path.home() / "dex-private" / "b2-parity-20260928" / "review-local"
 LEDGER = OWNER_ROOT.parents[1] / ".dex-tcgcsv-metadata" / "attempts.json"
 
 

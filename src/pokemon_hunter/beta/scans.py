@@ -113,6 +113,9 @@ def authorized_photo_rows(actor, key=None, *, content=False):
         params.append(str(key))
     result = store.rows(sql + " ORDER BY p.id", params)
     store.verified(actor)
+    from . import photo_batches
+
+    result += photo_batches.authorized_photo_rows(actor, key, content)
     return result
 
 
@@ -148,13 +151,14 @@ def create(actor, key, uploads, fixture="valid"):
         raise ValueError("Invalid simulation")
     if len(uploads) not in (1, 2):
         raise ValueError("Choose one front and at most one back or close-up")
-    recent = store.rows(
-        "SELECT count(*) AS n FROM scan_jobs WHERE user_id=%s AND created>%s",
-        [actor.user_id, time.time() - 86400],
-    )[0]["n"]
-    if recent >= 20:
+    from . import photo_batches
+
+    recent = photo_batches.recent_admissions(actor)
+    if recent + len(uploads) > 20:
         raise ValueError("Daily limit of 20 photo entries reached")
     images = [normalized(u) for u in uploads]
+    if photo_batches.available():
+        photo_batches.append("single_admit", job_id=key, user_id=actor.user_id, count=len(images))
     inventory.execute(
         "INSERT INTO scan_jobs(id,user_id,state,mode,fixture,created,version,model) VALUES(%s,%s,'queued',%s,%s,%s,%s,%s)",
         [
@@ -284,6 +288,14 @@ def process_one(stop=None):
         if not pending:
             return False
         row = pending[0]
+        from . import photo_batches
+
+        if (
+            row["mode"] == "codex_cli"
+            and photo_batches.available()
+            and store.rows("SELECT id FROM scan_batch_stages WHERE state='processing'")
+        ):
+            return False
         if row["mode"] == "codex_cli" and store.rows(
             "SELECT id FROM scan_jobs WHERE mode='codex_cli' AND state='processing'"
         ):

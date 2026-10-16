@@ -25,13 +25,13 @@ assets and authorized private copy photos. The [image contract](artwork.md)
 defines the four roles, pinned mappings, source restrictions and fallback behavior.
 References remain mapped independently of possession. Literal names such as Dark,
 Light and named Pokémon do not change species art or canonical identities.
-There are 251 species and 21,516 distinct card reference mappings across 202 sets. Mapping coverage and remote image availability remain independent of catalog coverage.
+Mapping coverage and remote image availability remain independent of catalog coverage.
 Catalog entries stay visible if artwork is unavailable.
 
-Wizards promo identities retain individual date evidence and gaps. Numbering and set-wide dates do not establish
-through-2001 coverage. Standard set/number scans establish no edition, finish or
+Wizards promo identities retain individual date evidence and gaps. Numbering and
+set-wide dates do not establish through-2001 coverage. Standard set/number scans establish no edition, finish or
 physical-copy image. Source software/metadata licenses grant no artwork rights;
-the owner's selected private scope remains local, with public/staging remote
+private reference use remains local, with public/staging remote
 reference exclusions and no bundled/exported image bytes.
 
 ## Collection and goals
@@ -103,7 +103,8 @@ refresh tools provide synthetic replay only.
 
 All-era variant/distribution coverage and current purchasability remain incomplete.
 Inspect catalog gap reports and individual evidence rather than treating a missing
-match as proof that no card or product exists. Hosted operation and real-provider behavior require checks beyond synthetic tests.
+match as proof that no card or product exists. A catalog match alone does not
+establish current provider availability.
 
 ## Scoped release evidence
 
@@ -114,11 +115,11 @@ unresolved. ISO year/month/day precision is an interval. Only fully contained
 intervals confirm dated eligibility; a boundary-spanning interval stays unresolved.
 Pokémon generation, copyright and capture time never substitute for release dates.
 
-Rolling promo-series start dates are excluded from individual-card dating. Historical
-artwork notes include some promo date/year evidence, but the active published card
-attributes and shipped exact-date join do not expose an admissible per-card release
-record; those cards remain Unknown here. Sets without a reviewed exact provider-key
-join also remain unknown. The Pokédex reports actual printing coverage separately from its stable target count.
+Rolling promo-series start dates are excluded from individual-card dating. Published
+card attributes and exact-date joins may lack an admissible per-card release record;
+those cards remain Unknown. Sets without a reviewed exact provider-key join also
+remain unknown. The Pokédex reports printing coverage separately from its stable
+target count.
 No acquisition or catalog publication runs. Unknown date can be selected explicitly;
 unknown records never confirm a dated criterion. A conflicting conjunction returns
 zero confirmed completion without removing targets.
@@ -128,3 +129,34 @@ card came from are not inferred. Card category, rarity and literal finish choice
 use indexed values only. This catalog supplies Pokémon as its species category;
 EX/GX/V subcategories and elemental types are not established by the retained
 published attributes. Unsupported categories remain a coverage gap.
+
+## Catalog choices during entry
+
+Manual and photo-assisted entry read the published catalog through
+`collection_catalog.catalog_entries` and `card_groups.build_groups`. Artwork mappings
+and retained source enumeration do not publish a set or make a printing selectable.
+A missing provider-key mapping is an identity or coverage gap, not proof that the
+physical set does not exist. Supplied variants do not enlarge a numbered checklist.
+
+Entry uses exact set names and uniquely retained `catalog_sets.aliases` or external
+set mappings within the chosen game and language. Collector numbers match exactly
+first, then use bounded padding and prefix-before-slash aliases; denominators remain
+part of the retained literal identity. Current child combinations, catalog hashes and
+binder state are captured in the review and rechecked at confirmation. Entry never
+publishes or corrects catalog metadata.
+
+| Dimension | Entry rule |
+| --- | --- |
+| Language and game | Offer only supported published combinations. Trainer and Energy cards can be physical records but never add Pokémon species completion. |
+| Edition | Offer exact editions only on compatible children. Unknown edition does not imply unlimited, and an absent first-edition stamp does not establish another edition. |
+| Finish | Retain literal identities such as `normal`, `nonfoil`, `reverse` and `reverse-holo`, even when friendly labels overlap. A set-wide holo switch cannot describe every card. |
+| Variant | Use the actual supported combinations per printing. Opaque identifiers and unspecified variants do not establish physical characteristics or distribution. |
+| Not applicable | Standard first-edition selection is unavailable for Base Set 2 and Wizards Black Star Promos. Null catalog fields remain Unknown; they do not create other exclusions. Copy-only fields do not apply to broad ownership or total actions. |
+| Physical origin | Set membership, stamps and distribution metadata do not establish which pack an owned card came from. |
+
+Per-printing distinctions remain necessary. Numbered holo and non-holo cards are
+separate identities; rarity alone cannot fill missing finish metadata. A card with
+multiple holo or stamped children needs an explicit supported combination. Literal
+numbers such as `001/165` retain their denominators. Missing metadata stays explicit
+through [reviewed collection entry](effective-collection.md) and
+[photo entry](photo-entry.md); entry grants no artwork or pricing redistribution rights.

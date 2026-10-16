@@ -42,7 +42,7 @@ function setOptions(all=false) { return `${all?'<option value="">All supported s
 function binderOptions(selected) { return `<option value="">No binder</option>${data.binders.map(b=>`<option value="${esc(b.id)}" ${b.id===selected?'selected':''}>${esc(b.name)}</option>`).join('')}`; }
 function field(key,label,value='',type='text') { return `<div><label for="${key}">${label}</label><input id="${key}" name="${key}" type="${type}" value="${esc(value)}" ${key==='purchase_amount'?'inputmode="decimal"':''}></div>`; }
 function unknown(p) { return (p.unresolved_fields || []).join(', ') || 'None'; }
-function cardName(c) { try {return JSON.parse(c.attributes||'{}').name||'Unidentified card';} catch {return 'Unidentified card';} }
+function cardName(c) { try {return JSON.parse(c.attributes||'{}').name||c.display_identity?.name||'Unidentified card';} catch {return 'Unidentified card';} }
 function openDialog(id) { const dialog=$(id); if (!dialog.open) dialog.showModal(); dialog.scrollTop=0; }
 function editCollectionCard(identity, groupContext=null, currentCard=null) {
   const row=currentCard||data.effective_collection.cards.find(c=>c.set_name===identity.set_name&&c.name===identity.name&&c.number===identity.number&&(!identity.language||!c.language||c.language===identity.language));

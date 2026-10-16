@@ -106,7 +106,7 @@ def exercise(url, root, output, report):
                 ("/card-library/?q=Ivy", "#cards-count"),
                 ("/pokedex/?region=kanto&owned=owned", "#species-grid"),
                 ("/pokedex/2/", "#species-owned-cards"),
-                ("/shopping/", "#lot-price"),
+                ("/shopping/calculator/", "#lot-price"),
                 ("/collection-tools/", "main h1"),
                 ("/add-card/", "main h1"),
             ]:

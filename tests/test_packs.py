@@ -36,7 +36,10 @@ def test_retained_union_identity_offers_and_read_only_ui(e1):
     now = cat.instant("2026-10-07T00:00:00+00:00")
     with (
         patch("httpx.Client.send", side_effect=AssertionError("Zero network")),
-        patch("pokemon_hunter.beta.ebay_hunts.search", side_effect=AssertionError("Zero provider")),
+        patch(
+            "pokemon_hunter.beta.discovery_transport.Transport.request",
+            side_effect=AssertionError("Zero provider"),
+        ),
     ):
         p = packs.project(e1["actor"], g["id"], now=now)
         assert len(p["expansions"]) == 1

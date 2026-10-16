@@ -12,9 +12,14 @@ opens Collection tools, Settings, authorized Administration and Sign out. Collec
 tools contains Goals, physical copies and Overview. Settings contains import/source
 maintenance and available catalog requests/coverage. Administration rechecks roles.
 Add Card offers catalog selection or available photo entry without starting a job.
+Ordinary card browsing and detail use the main navigation without a duplicate
+collection task bar; collection tools remain in Menu. My Cards also offers a direct
+Add many cards shortcut.
 
-Shopping's task bar links the lot calculator, eBay searches, missing-card search,
-saved finds, Packs to open, independent Pack lookup and saved pack research. Packs
+Shopping offers Find deals, Find missing cards and Check a listing/lot, with links
+to the lot calculator, retained saved finds, Packs to open, independent Pack lookup
+and saved pack research. Classic hunt/missing pages direct new searches to Shopping;
+they do not offer retired live/sample or continuation actions. Packs
 to open asks for an account-owned goal when none was supplied. Following navigation
 does not search a provider, refresh prices, start recognition or change inventory.
 
@@ -43,6 +48,9 @@ Card Library and My Cards use a neutral canvas, aligned controls and restrained 
 emphasis. Images retain a fixed area and honest fallback. Ownership badges remain
 readable independently of artwork. Optional grey unowned artwork is a local visual
 preference; hover/focus restores color and never changes collection state.
+This preference appears in Card Library, where unowned cards are present. Owned-card
+counts and catalog counts use distinct labels. Unavailable artwork uses a quiet card
+outline and an explicit unavailable label instead of an implied image.
 
 Card detail leads with name, set/number, ownership, known quantity and Add/Edit.
 On narrow screens these facts and actions precede artwork. Show the reference-image
@@ -125,6 +133,22 @@ Pack lookup puts target coverage before products and dated offers. Possible pull
 and guaranteed contents remain separate. Unknown costs or old stock observations do
 not become current purchase evidence. Full reasons and history stay in disclosures.
 
+## Adding many cards
+
+Add Card offers batch entry and single-card selection as clear choices; existing
+photo entry is secondary. Manual bulk leads with input method, Set and action. Keep
+one emphasized Review action in the batch summary beside the desktop checklist and
+before the long list on narrow screens. Selected rows and their Edit actions remain
+directly visible. Preserve selections across searches and sets without nested scrolling.
+
+Draft recovery, cancellation, separate physical batches and checked-row tools appear
+only in their relevant states. Review separates rows and actual effects; internal IDs,
+revision and generation stay in record details. Unknown totals, copy evidence, excluded
+rows and row errors retain their meaning. Confirmation still applies exactly the
+reviewed batch. A failed catalog load leaves selection unavailable with focused recovery;
+an in-flight action locks conflicting edits. Close/Escape and Save return focus to
+their respective originating or saved-row controls.
+
 ## Interaction and accessibility
 
 Ordinary browsing uses pages; focused editing and confirmation may use dialogs.
@@ -141,6 +165,10 @@ text, controls and identifiers must wrap without covering content or scrolling s
 Respect reduced motion/transparency and provide opaque fallbacks.
 
 Loading removes old actions; errors retain inputs and focus an actionable message.
+Invalid card-browsing filters or return links give fixed browsing guidance and a safe
+My Cards recovery destination (`/cards/`), without import instructions or submitted
+values. Existing JSON responses remain JSON; rendered errors retain Back to cards.
+Actual imports and mutations keep their existing format/review guidance.
 Empty/unavailable states explain the limit and a supported next action. Guide dates,
 unknown attributes and missing images remain explicit without repeating full policy
 text throughout the page.
@@ -151,23 +179,16 @@ harness](CI.md) uses synthetic data; it does not establish native-device, screen
 or human usability results. Customer walkthroughs use the existing installation and
 its actual available state.
 
-## Owner review of the installed app
+## Design checks
 
-Use the existing installation and ordinary sign-in. Confirm My Cards and Card Library
-have distinct meanings; open Pokédex, a species, Your Cards and a card. Check ownership,
-unknown totals, artwork fallbacks, optional details, direct Edit/cancel and numeric card
-ordering. Return through filters, scopes, page, scroll and keyboard focus. Compare
-pre-2000, 2000-onward and multiset scopes while keeping the same target denominator;
-current overall and frozen goal progress must remain separately labelled.
+Review representative first-use, populated, unavailable and failure states at matching
+viewport sizes. Check My Cards versus Card Library, species and card detail, ownership,
+unknown totals, artwork fallbacks, direct editing and cancellation. Return through
+filters, scopes, page position and keyboard focus. Date and multiset scopes must retain
+the selected denominator and distinguish current overall from frozen-goal progress.
 
-Check the expanded menu at narrow width and enlarged text. Open contextual Shopping,
-inspect its scope and return without a provider request or automatic quantity change.
-Existing copy photos, archived examples or prices may be unavailable; report that limit
-rather than supplying simulated customer data. Inventory writes require an owner-selected
-real change. A later Shopping/onboarding review also checks the newly delivered tasks
-against their completion checks.
-
-The owner accepts the ordinary-use experience or identifies a specific rejected journey,
-including perceived responsiveness. Engineering checks and sign-in assistance do not
-supply that verdict. Acceptance of local use does not establish provider entitlement,
-complete pricing, recognition accuracy or public release readiness.
+Use isolated synthetic state for engineering previews and the existing installation
+for customer walkthroughs. Keep missing photos, archived examples and prices explicit;
+never substitute fabricated customer data. Inventory changes require an intentional
+user action. Technical checks do not establish human usability, recognition accuracy,
+provider entitlement or release readiness.

@@ -277,7 +277,7 @@ def run(root, base, output):
             page.goto(base + "/settings/")
             expect(page.get_by_role("heading", name="Settings & data", exact=True)).to_be_visible()
             capture(page, width, "member-settings")
-            page.goto(base + "/shopping/")
+            page.goto(base + "/shopping/calculator/")
             expect(page.get_by_role("heading", name="Lot calculator", exact=True)).to_be_visible()
             printing_choice = page.get_by_role("combobox", name="Printing", exact=True)
             expect(printing_choice).to_be_enabled()

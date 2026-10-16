@@ -48,8 +48,11 @@ The supported Django local, staging and synthetic-browser launchers use
 before Django buffers them or runs middleware/views. Ordinary requests use
 `DATA_UPLOAD_MAX_MEMORY_SIZE` (16,384 bytes for account-only roots; 2,000,000 for
 collection/staging roots). Enabled `POST /api/scans/` allows 16,100,000 bytes,
-including multipart overhead; each photo still has its separate 8,000,000-byte
-validation limit. Oversized bodies return a fixed 413 and close Django's temporary
+including multipart overhead. Photo-batch upload/retake requests allow 8,100,000
+bytes; each photo has a separate 8,000,000-byte validation limit. Bulk save/parse
+requests allow 32,000,000 bytes for JSON expansion, while parsed text remains
+limited to 1.5 MB and manual drafts to 2,000 rows. These larger allowances apply
+only to their enabled POST endpoints. Oversized bodies return a fixed 413 and close Django's temporary
 spool; invalid/duplicate Content-Length values return 400. Limits apply without
 Content-Length and cannot be bypassed by understating it. Custom launchers that
 call Django's factory directly bypass this guard. This is a per-request size bound,
@@ -66,7 +69,7 @@ returns fixed 422 schema errors and exposes only its dedicated ownership-validat
 messages as 400. JSON mutation parsers require `application/json` (charset
 parameters are permitted); other media types fail before mutations or provider
 construction. Body-free original-app reveal operations remain supported.
-Search `demo` controls require actual JSON booleans and continuation offsets require
+The original app's search `demo` controls require JSON booleans and continuation offsets require
 integers, excluding booleans, strings and fractional values. Saved requests already
 use normalized booleans/integers; this does not reinterpret stored hunt state.
 Both Shopping comparison routes also require a JSON boolean for optional `save`.

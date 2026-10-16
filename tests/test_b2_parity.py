@@ -1,4 +1,4 @@
-"""Synthetic parity, uncertain prices, safe edition operations and hostile spoiler checks."""
+"""Synthetic parity and historical hunt compatibility; no HTTP acquisition path."""
 
 import importlib
 import json
@@ -7,6 +7,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+from hunt_history_helpers import demo_rows, seed_history
 from test_b1 import env as env
 from test_b2 import apply, post, preview
 from test_b2 import b2 as b2
@@ -184,8 +185,9 @@ def test_value_freshness_unknowns_and_no_variant_fallback(restored):
 def test_hunts_reveal_reopen_rescore_and_cross_account(restored):
     a, b = restored["a"], restored["b"]
     with patch("pokemon_hunter.ebay.EbayClient", side_effect=AssertionError("NO LIVE CALL")):
-        assert post(a, "/api/hunts/", {"demo": False}).status_code == 400
-        found = post(a, "/api/hunts/", dict(pool="known_lots", focus="all", budget="100", demo=True)).json()
+        with pytest.raises(ValueError, match="explicitly supplied"):
+            seed_history(a, {"demo": False})
+        found = seed_history(a, dict(pool="known_lots", focus="all", budget="100", demo=True))
     route = f"/api/hunts/{found['batch']}/{found['id']}/"
     assert len(found["results"]) == 1
     result = found["results"][0]
@@ -233,7 +235,7 @@ def test_hunts_reveal_reopen_rescore_and_cross_account(restored):
     assert post(anon, reveal, {}).status_code == 302
     assert a.post(reveal, "{}", content_type="application/json").status_code == 403
     # Both directions: an owner role never bypasses the member's private boundary.
-    other = post(b, "/api/hunts/", dict(pool="known_lots", focus="all", budget="100", demo=True)).json()
+    other = seed_history(b, dict(pool="known_lots", focus="all", budget="100", demo=True))
     other_route = f"/api/hunts/{other['batch']}/{other['id']}/"
     assert a.get(other_route).status_code == 404
     assert post(a, other_route + "reveal/" + other["results"][0]["id"] + "/", {}).status_code == 404
@@ -253,9 +255,8 @@ def test_hunts_reveal_reopen_rescore_and_cross_account(restored):
     ],
 )
 def test_sample_filters_and_query_plan(restored, pool, focus, budget):
-    result = post(restored["a"], "/api/hunts/", dict(pool=pool, focus=focus, budget=budget, demo=True))
-    assert result.status_code == 200, result.content
-    for row in result.json()["results"]:
+    result = seed_history(restored["a"], dict(pool=pool, focus=focus, budget=budget, demo=True))
+    for row in result["results"]:
         assert row["pool"] == pool and float(row["delivered"]) <= float(budget)
 
 
@@ -263,8 +264,8 @@ def test_saved_live_replay_has_no_provider_calls(restored):
     from pokemon_hunter.migration import encode
 
     a = restored["a"]
-    sample = post(a, "/api/hunts/", {"pool": "known_lots", "demo": True}).json()
-    raw = parity.evidence("demo_hunts.json", [])
+    sample = seed_history(a, {"pool": "known_lots", "demo": True})
+    raw = demo_rows()
     raw[0]["title"] = "Test Missing 3/100 lot of 30 Pokemon cards"
     raw[0]["condition"] = "Lightly Played"
     service.execute(
@@ -301,9 +302,10 @@ def test_authenticated_hunts_use_shared_projection_and_schema(restored):
     from pokemon_hunter import hunt
 
     client = restored["a"]
-    assert post(client, "/api/hunts/", {"unsupported": True}).status_code == 400
+    with pytest.raises(ValueError):
+        seed_history(client, {"unsupported": True})
     with patch.object(hunt, "project_results", wraps=hunt.project_results) as shared:
-        found = post(client, "/api/hunts/", {"demo": True, "budget": "100"}).json()
+        found = seed_history(client, {"demo": True, "budget": "100"})
         route = f"/api/hunts/{found['batch']}/{found['id']}/"
         assert client.get(route).status_code == 200
         assert post(client, route + "reveal/" + found["results"][0]["id"] + "/", {}).status_code == 200

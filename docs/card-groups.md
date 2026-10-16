@@ -128,12 +128,15 @@ name/set/collector-number text. Other metadata filters are literal equality.
 Integer text accepts decimal ASCII digits, including leading zeros. Empty optional
 pagination/species values use defaults; malformed or out-of-range values reject.
 
-Variant filters include a group once if a eligible child matches. Such rows add
+Variant filters include a group once if an eligible child matches. Such rows add
 `matching_child_ids`; group possession, total and counts remain complete and
 unchanged. Catalog filters match only catalog-available children; owned filters can
-match retained archived children. Sorting is lexicographic, with primary selected
-field case-folded, then case-folded set name, literal collector number, case-folded
-name and stable group ID tie-break. Numbers are not numerically normalized.
+match retained archived children. Set and Name sorting compare text case-insensitively.
+Collector-number ordering compares digit runs numerically before pagination, both
+within sets and for explicit Number ordering: 1, 2, 9, 10, 11, 100. Prefixed,
+suffixed and zero-padded numbers retain their literal identities. After the selected
+sort field, ties use case-folded set name, natural collector number, case-folded card
+name and stable group ID.
 
 List/detail agree for unchanged metadata at the checked collection generation.
 Consumers can supply the list generation on subsequent private list/detail reads;
@@ -263,8 +266,3 @@ each request, without a shared private cache. Artwork descriptors are bound only
 for a returned page/detail after filtering and pagination. Filter-option reads
 bind no images. Counts, conflict handling, archived context, exact identity and
 account/generation checks remain unchanged.
-
-Collector-number ordering compares digit runs numerically before pagination, in both
-the default set ordering and explicit Number ordering. Thus 1, 2, 9, 10, 11 and 100
-remain in that order; prefixed and suffixed numbers retain their literal identities.
-Name ordering remains alphabetical with natural collector numbers for ties.

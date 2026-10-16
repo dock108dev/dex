@@ -1,7 +1,7 @@
 # Dex
 
 A local Pokémon collection app for browsing species #001–251, tracking physical
-cards, building collecting goals, researching packs and saving eBay searches.
+cards, building collecting goals, researching packs and checking eBay listings.
 It supports personal collections and invited accounts on the same local installation.
 The Python distribution and command-line tool are named `pokemon-hunter`.
 
@@ -13,7 +13,8 @@ never buys, bids or treats a listing as proof of ownership.
 - Python 3.12 or later and [uv](https://docs.astral.sh/uv/).
 - macOS or Linux for the local application. Windows process handling is unsupported.
 - Port 8011 for the ordinary local server; reuse an already running installation.
-- Node.js for JavaScript checks; Playwright and other CI tools are optional for focused work.
+- Node.js 24 (see `.nvmrc`) for JavaScript checks. Playwright and other CI tools
+  are optional for focused work.
 
 ## Quickstart: existing installation
 
@@ -44,8 +45,9 @@ before changes; never reseed an existing installation.
   or printing goals with explicit progress policies.
 - Private photo entry, manual matching and optional configured recognition.
 - Reviewed catalog publication, product contents and dated seller observations.
-- Explicit eBay searches, delivered-price/guide comparisons and saved results with
-  identities hidden until reveal.
+- Explicit Shopping searches, assisted listing checks and delivered-price/reference
+  comparisons, with discovery identities hidden until reveal. New results are
+  temporary; existing saved hunt research remains available.
 - Vintage Shopping lots with separate included quantities and wanted targets,
   four independent guide-value scenarios and rights-permitted saved comparisons.
 
@@ -71,7 +73,7 @@ See [development](docs/local-development.md), [CI](docs/CI.md),
 [architecture](docs/SSOT.md), [security](docs/SECURITY.md),
 [recovery](docs/ERROR_HANDLING.md), [UI](docs/UI_DESIGN.md),
 [catalogs and packs](docs/catalogs.md), [photo entry](docs/photo-entry.md) and
-[eBay hunts](docs/hunts.md).
+[Shopping and eBay](docs/hunts.md).
 
 The [original FastAPI app](docs/ORIGINAL_APP.md) and [lot watcher](docs/legacy-watcher.md)
 use separate storage. Git excludes local collection data and is not a backup.

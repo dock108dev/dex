@@ -33,6 +33,11 @@ def wheel(tmp_path, *, omit=None, extra=None):
     "missing",
     [
         "static/public.css",
+        "static/collection-base.css",
+        "static/collection-browse.css",
+        "bulk_formats.py",
+        "photo_batch_images.py",
+        "listing_details.py",
         "asgi.py",
         "static/lot_calculator.js",
         "templates/beta/lot_calculator.html",

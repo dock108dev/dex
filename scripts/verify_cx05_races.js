@@ -26,7 +26,7 @@ async function check(name,run){await run();cases.push({name,status:'passed'});}
   await check('owned fixed endpoint and UI parameters excluded',async()=>{
     const t=setup('/cards/?q=Ivysaur&scroll=80',url=>url.includes('filters')?options:list());await t.render();
     const request=t.calls.find(url=>url.startsWith('/api/my-card-groups/'));
-    assert(request);assert(!request.includes('scope'));assert(!request.includes('scroll'));assert(request.includes('generation=5'));assert(t.content.innerHTML.includes('Ivysaur'));assert(!t.content.innerHTML.includes('Quantity 0'));
+    assert(request);assert(!request.includes('scope'));assert(!request.includes('scroll'));assert(request.includes('generation=5'));assert(t.content.innerHTML.includes('Ivysaur'));assert(!t.content.innerHTML.includes('Quantity 0'));assert(t.content.innerHTML.includes('id="cards-add-many"'));assert(t.content.innerHTML.includes('href="/add-many/"'));assert(!t.content.innerHTML.includes('id="dim-unowned"'));
   });
   await check('ownership badges and dim preference preserve all cards without collection requests',async()=>{
     const unowned={...group,id:'unowned',present:false};
@@ -41,10 +41,10 @@ async function check(name,run){await run();cases.push({name,status:'passed'});}
     input.checked=false;input.onchange();assert(!grid.classList.contains('dim-unowned'));
     assert.equal(t.calls.length,calls);
     const saved=new Map([['dex-card-dim:account-a','true']]);
-    const restored=setup('/cards/',url=>url.includes('filters')?options:list(),{preferences:saved});await restored.render();
+    const restored=setup('/card-library/',url=>url.includes('filters')?options:list(),{preferences:saved});await restored.render();
     assert(restored.content.innerHTML.includes('id="dim-unowned" type="checkbox" checked'));
     restored.context.data.effective_collection.user_id='account-b';
-    restored.context.location.href='http://localhost/cards/';await restored.render();
+    restored.context.location.href='http://localhost/card-library/';await restored.render();
     assert(!restored.content.innerHTML.includes('id="dim-unowned" type="checkbox" checked'));
   });
   await check('separate library, matching children and canonical null-child tile',async()=>{
@@ -86,6 +86,19 @@ async function check(name,run){await run();cases.push({name,status:'passed'});}
     const t=setup('/card-groups/dg1-card-a/',()=>detail());await t.render();
     assert(t.content.innerHTML.includes('Quantity not recorded.'));assert(!/<details[^>]*\sopen/.test(t.content.innerHTML));assert(t.content.innerHTML.includes('data-selected-child=""'));assert(!t.content.innerHTML.includes('dialog'));assert(t.content.innerHTML.includes('id="group-copies"'));
     const appended=t.context.document.querySelector('.card-related-links').children[0];assert.equal(appended.id,'card-shopping');assert.equal(appended.textContent,'Find cards in Shopping');assert.equal(typeof appended.listeners.click,'function');
+  });
+  await check('empty detail explains only current ownership and available actions',async()=>{
+    const owned=setup('/card-groups/dg1-card-a/',()=>detail());await owned.render();
+    assert(owned.content.innerHTML.includes('Owned without individual copy records.'));
+    assert(!owned.content.innerHTML.includes('Choose a variant below to record a physical copy.'));
+    const unowned=setup('/card-groups/dg1-card-a/',()=>detail({group:{...group,present:false},variants:[{id:'available',available:true}]}));await unowned.render();
+    assert(unowned.content.innerHTML.includes('No individual copies recorded. Use Add to collection to record ownership.'));
+    assert(unowned.content.innerHTML.includes('Choose a variant below to add a physical copy.'));
+    assert(!unowned.content.innerHTML.includes('Your ownership is recorded separately'));
+    const unresolved=setup('/card-groups/dg1-card-a/',()=>detail({group:{...group,present:false,identity_status:'unresolved'}}));await unresolved.render();
+    assert(unresolved.content.innerHTML.includes('Card identity needs review'));
+    assert(!unresolved.content.innerHTML.includes('Use Add to collection'));
+    assert(!unresolved.content.innerHTML.includes('Choose a variant below to add a physical copy.'));
   });
   await check('compact hierarchy hides empty history and optional records while preserving copy identity',async()=>{
     const copies=[{id:'private-copy',printing_id:'literal-print',condition:null,notes:'saved optional note',purchase_amount:'12.50'}];

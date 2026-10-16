@@ -4,6 +4,7 @@ import copy
 import json
 from unittest.mock import patch
 
+from hunt_history_helpers import seed_historical_hunt
 from test_b1 import env as env
 from test_b2 import apply, post, preview
 from test_b2 import b2 as b2
@@ -159,7 +160,10 @@ def test_growth_stale_review_successor_cancel_and_retained_hunt_scope(e1):
     assert preview(e1, "goal_remove", dict(id=g["id"], revision=0)).status_code == 409
     assert post(e1["a"], f"/api/operations/{fresh['id']}/undo/", {}).status_code == 409
     # A saved scope projects current account copies without redirecting to the successor.
-    with patch("pokemon_hunter.beta.ebay_hunts.search", side_effect=AssertionError("No provider call")):
+    with patch(
+        "pokemon_hunter.beta.discovery_transport.Transport.request",
+        side_effect=AssertionError("No provider call"),
+    ):
         projected = goal_hunts.project(e1["actor"], parity.projection(e1["actor"]), scope)
     allowed = {p for i in scope["definition"]["items"] for p in i["printing_ids"]}
     assert {c["printing_id"] for c in projected["cards"].values()} == allowed
@@ -244,8 +248,11 @@ def test_saved_hunt_reopen_freezes_goal_version_and_no_provider(e1, monkeypatch)
     special(e1)
     apply(e1, "goal", REQ)
     first = goal(e1)
-    with patch("pokemon_hunter.beta.ebay_hunts.search", side_effect=AssertionError("No provider calls")):
-        saved = parity.search(e1["actor"], dict(demo=True, goal_id=first["id"], intent="missing"))
+    with patch(
+        "pokemon_hunter.beta.discovery_transport.Transport.request",
+        side_effect=AssertionError("No provider calls"),
+    ):
+        saved = seed_historical_hunt(e1["actor"], dict(demo=True, goal_id=first["id"], intent="missing"))
         before = store.resource(e1["actor"], "hunts", (saved["batch"], 1))
         captured = json.loads(before["coverage"])
         assert captured["goal_scope"]["version"] == first["version"]

@@ -53,7 +53,6 @@ def initialize(root, source=None, b2=False, parity=False):
                 "market_values.json",
                 "raw_values.json",
                 "hunt.json",
-                "demo_hunts.json",
             ):
                 row = db.execute(
                     "SELECT content FROM private_archives WHERE path=? ORDER BY rowid LIMIT 1",
@@ -99,6 +98,10 @@ def main():
         "enable-catalog",
         "enable-pack-research",
         "enable-shopping",
+        "enable-bulk",
+        "enable-photo-batches",
+        "photo-batch-cleanup",
+        "bulk-cleanup",
         "enable-replay-refresh",
     ):
         sub.add_parser(command)
@@ -174,6 +177,30 @@ def main():
             raise ValueError("Disposable synthetic state required")
         refresh.initialize()
         print("Additive replay refresh migration complete; live acquisition unavailable")
+    elif args.action == "bulk-cleanup":
+        from .collection_drafts import purge_expired, purge_revoked, require_schema
+
+        require_schema()
+        purge_expired()
+        purge_revoked()
+        print("Expired/revoked mutable bulk input cleared; operation and replay history retained")
+    elif args.action == "enable-photo-batches":
+        from .photo_batches import initialize as migrate_photos
+
+        migrate_photos()
+        print("Additive local photo batch migration complete")
+    elif args.action == "photo-batch-cleanup":
+        from .photo_batches import cleanup as cleanup_photos
+
+        cleanup_photos()
+        print("Photo expiry/revocation/tombstones reapplied; attempts preserved")
+    elif args.action == "enable-bulk":
+        from .collection_drafts import initialize as migrate_bulk
+
+        if not settings.B2_ENABLED:
+            raise ValueError("Collection-enabled state required")
+        migrate_bulk()
+        print("Additive manual-bulk draft and replay migration complete")
     elif args.action == "enable-shopping":
         from .shopping import initialize as migrate_shopping
 

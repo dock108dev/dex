@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 
 from . import card_groups, collection, collection_views, store
-from .collection_views import body, endpoint
+from .collection_views import body, browsing_endpoint, endpoint
 from .views import actor
 
 
@@ -27,14 +27,14 @@ def private(response, who=None):
     return result
 
 
-@endpoint
+@browsing_endpoint
 @require_GET
 def catalog(request):
     who = actor(request)
     return private(card_groups.list_groups(who, query(request)), who)
 
 
-@endpoint
+@browsing_endpoint
 @require_GET
 def owned(request):
     raw = query(request)
@@ -44,14 +44,14 @@ def owned(request):
     return private(card_groups.list_groups(who, {**raw, "scope": "owned"}), who)
 
 
-@endpoint
+@browsing_endpoint
 @require_GET
 def filters(request):
     who = actor(request)
     return private(card_groups.filter_options(who, query(request, {"scope", "generation"})), who)
 
 
-@endpoint
+@browsing_endpoint
 @require_GET
 def detail(request, key):
     raw = query(request, {"child", "generation"})
@@ -70,7 +70,7 @@ def check_generation(raw, result):
             raise collection.Conflict("Collection changed; reload")
 
 
-@endpoint
+@browsing_endpoint
 @require_GET
 def species(request, dex):
     who = actor(request)
@@ -79,7 +79,7 @@ def species(request, dex):
     )
 
 
-@endpoint
+@browsing_endpoint
 @require_GET
 def legacy(request, key):
     query(request, set())
@@ -89,7 +89,7 @@ def legacy(request, key):
     return response
 
 
-@endpoint
+@browsing_endpoint
 @require_GET
 def home(request, key):
     raw = query(request, {"child", "generation", "return"})

@@ -419,6 +419,7 @@ def preview(actor, kind, request, operation_id):
         },
         "goal_remove": {"id", "revision"},
         "import": {"format", "text", "duplicate_policy"},
+        "bulk": {"draft_id", "revision", "input_hash"},
     }
     if kind not in allowed or set(request) - allowed[kind]:
         raise ValueError("Unsupported operation fields")
@@ -515,6 +516,13 @@ def confirm(actor, key):
         "UPDATE collection_operations SET state='confirmed',changes=%s WHERE id=%s AND user_id=%s",
         [encode(changes), key, actor.user_id],
     )
+    if op["kind"] == "bulk":
+        from .collection_drafts import finish
+
+        finish(actor, op)
+    from .photo_batches import revoke_inactive_crops
+
+    revoke_inactive_crops()
     bump(actor)
     return operation(actor, key)
 
@@ -597,5 +605,8 @@ def undo(actor, key):
     execute(
         "UPDATE collection_operations SET state='undone' WHERE id=%s AND user_id=%s", [key, actor.user_id]
     )
+    from .photo_batches import revoke_inactive_crops
+
+    revoke_inactive_crops()
     bump(actor)
     return operation(actor, key)

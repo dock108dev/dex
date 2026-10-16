@@ -1,7 +1,7 @@
 # Private price snapshots
 
 Versioned Shopping prices live under the existing private root's `price-snapshots/`,
-with no network acquisition in the importer. Stage one owner-only package in
+with no network acquisition in the importer. Place an owner-only package in
 `price-snapshots/staging/`. The contract and observation schemas are owned by
 `beta/price_snapshot_contract.py`; lifecycle operations belong to `beta/price_snapshots.py`.
 Ordinary roots require the exact independently reviewed contract digest in private
@@ -56,7 +56,7 @@ ID; competing eligible observations remain separately identified, without averag
 Every saved reference and conflict needs its own surviving save rights. Current
 pages check local source status each second; saved history performs no such refresh.
 
-## Module boundaries and focused checks
+## Module boundaries and tests
 
 `beta/lot_guides.py` projects legacy and private observations into cells, conflict
 provenance and unavailable reasons. It takes admitted records explicitly; it does
@@ -89,7 +89,7 @@ For a read-only investigation, `current` and `display_current` are unsuitable:
 their expiry/source pruning can mutate managed files. Inspect the exact call graph
 before selecting a helper; do not disable the ordinary worker to freeze state.
 Use bounded metadata reads and pure contract validators with a read-only catalog
-connection; keep private prices and contracts out of reports. Local admission does
+connection; keep private prices and contracts out of shared output. Local admission does
 not establish provider freshness, seller identity or permanent-save rights. The
 legacy hunt path does not consume these private observations; see
 [Shopping discovery constraints](hunts.md#discovery-integration-constraints).

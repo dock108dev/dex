@@ -11,7 +11,7 @@ from django.views.decorators.http import require_GET
 
 from . import card_groups, collection_views, species_projection, store
 from .card_group_views import check_generation, query, return_context
-from .collection_views import endpoint
+from .collection_views import browsing_endpoint
 from .views import actor
 
 
@@ -84,7 +84,7 @@ def context(request):
     return result
 
 
-@endpoint
+@browsing_endpoint
 @require_GET
 def task_home(request):
     """Read-only entry points reuse existing workflows and their authorization."""
@@ -132,7 +132,7 @@ def home(request):
     return response
 
 
-@endpoint
+@browsing_endpoint
 @require_GET
 def validate_home(request):
     """Read-only reauthorization before reopening optional remembered UI context."""

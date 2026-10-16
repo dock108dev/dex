@@ -1,136 +1,159 @@
 # Original lot watcher
 
-This is the original watcher, with separate storage from the authenticated beta.
-For the current product and setup, start at the [repository README](../README.md).
+The watcher searches eBay's official Browse API for inexpensive English Kanto/Johto-era
+bulk lots. It uses the configured destination and collection gaps, then writes a bounded
+digest of qualifying listings. Digests reveal listing titles. It never buys or bids.
+For the authenticated collection app, use the [main setup](../README.md).
 
-A small daily eBay watcher for inexpensive English Kanto/Johto-era bulk lots. It searches eBay's official Browse API, uses the configured shipping destination and collection gaps, and saves up to five qualifying listings in one digest. It never buys or bids.
+## Offline demo
 
-## Ready now
-
-- 15 overlapping searches, each run separately for auctions and fixed-price listings.
-- Ownership is derived from exact-card records in `config/pokedex_251.json`.
-- Exact decimal money, conservative card counts, set aliases, mixed-era warnings, bulk-product filtering, and optional description enrichment.
-- SQLite observations, persistent deduplication, auction ending reminders, retryable notifications, and optional macOS daily scheduling.
-- Offline demo and automated tests; no credentials required for either.
-
-**Live setup is incomplete until you add eBay application credentials.** The default delivery destination is local report files; optional macOS notifications and an HTTPS webhook are supported.
-
-## Try the offline demo
-
-From this project folder:
+From the repository root:
 
 ```sh
 uv sync --locked --extra dev
-uv run python scripts/init_local.py
-uv run pokemon-hunter run --fixture tests/fixtures/demo.json
-open reports/demo/latest.txt
+uv run --no-sync python scripts/init_local.py
+uv run --no-sync pokemon-hunter run --fixture tests/fixtures/demo.json
 ```
 
-The demo is synthetic, uses the fixture's fixed observation time, writes `data/demo.db` and `reports/demo/`, and never calls eBay or notification webhooks. Its expected first result is **3 hits from 5 unique listings**. Repeating the command is silent because those items have already been alerted. To replay from fresh history, use a new demo database filename:
+Read `reports/demo/latest.txt`. The synthetic fixture uses a fixed observation time,
+`data/demo.db` and `reports/demo/`; it does not call eBay or notification webhooks.
+Repeating an already-alerted fixture is silent. To keep a separate demo history:
 
 ```sh
-uv run pokemon-hunter run --fixture tests/fixtures/demo.json --db data/demo-second.db
+uv run --no-sync pokemon-hunter run --fixture tests/fixtures/demo.json --db data/demo-second.db
 ```
 
-## Enable live use
+Fixture database names must contain `demo`. The initializer creates missing files
+without overwriting existing state.
 
-1. Obtain production application keys from your [eBay Developer account](https://developer.ebay.com/api-docs/static/oauth-credentials.html). Production and sandbox keys are separate. Your application must have access to the Browse API; a local setup check cannot establish API access.
-2. Copy `.env.example` to `.env`, restrict its permissions, and fill in `EBAY_CLIENT_ID` and `EBAY_CLIENT_SECRET` locally:
+## Live configuration
 
-   ```sh
-   cp .env.example .env
-   chmod 600 .env
-   ```
-
-   The file uses simple `KEY=value` entries. It is read as data, never executed. Existing environment values take precedence. Keep secrets out of source control and chat.
-3. Check settings and make the first live run:
-
-   ```sh
-   uv run pokemon-hunter doctor
-   uv run pokemon-hunter run
-   uv run pokemon-hunter status
-   ```
-
-   Qualifying hits appear in `reports/live/latest.txt` and a dated digest. With no hits, no report or notification is created. `latest.txt` remains the last digest; use `status` to check the latest run, including a zero-hit day. Errors return a nonzero exit code and are recorded as failed runs, never reported as an empty successful search.
-4. Install the daily schedule after `doctor` passes:
+1. Configure production keys from your [eBay Developer account](https://developer.ebay.com/api-docs/static/oauth-credentials.html).
+   Production and sandbox credentials are distinct; Browse API access is required.
+2. Create a private `.env` from [.env.example](../.env.example) if one is not already
+   configured. Fill `EBAY_CLIENT_ID` and `EBAY_CLIENT_SECRET` locally. Restrict the file
+   to mode 0600. Simple `KEY=value` entries are read as data; process environment values
+   take precedence. Never put credentials in arguments, chat or source control.
+3. Configure delivery ZIP and search bounds in `config/settings.yaml` or the supported
+   environment values, then inspect local readiness:
 
    ```sh
-   .venv/bin/python scripts/schedule.py --install
+   uv run --no-sync pokemon-hunter doctor
    ```
 
-   This runs at **08:00 local time** in your macOS login session. Change with `--hour 9 --minute 30`. The Mac must be available; this is a daily snapshot, not auction sniping. Installation refuses missing credentials or ZIP. The generated plist contains paths, not credentials. To remove it:
+   This checks local setup without a provider request. It does not prove remote access
+   or remaining quota. An explicit live run acquires provider data:
 
    ```sh
-   .venv/bin/python scripts/schedule.py --remove
+   uv run --no-sync pokemon-hunter run
+   uv run --no-sync pokemon-hunter status
    ```
 
-   Logs: `data/daily.log` and `data/daily-error.log`. SQLite lives in `data/pokemon.db`; preserve this file to preserve alert history. Only one run per database can execute at a time. Notifications and search failure retries happen on the next run; no hidden polling loop.
+Qualifying hits create `reports/live/latest.txt` and a dated digest. No-hit runs create
+no report or notification; `latest.txt` remains the last digest. Use `status` for the
+latest run, including zero-hit days. Failures return nonzero status and remain failed
+rather than appearing as successful empty searches.
 
-For another Unix host, use cron with the persistent project directory (replace the absolute path):
+## Scheduling
 
-```cron
-0 8 * * * /absolute/path/dex/.venv/bin/python -m pokemon_hunter.main --root /absolute/path/dex run >> /absolute/path/dex/data/daily.log 2>> /absolute/path/dex/data/daily-error.log
+The macOS scheduler installs a LaunchAgent after checking `doctor`:
+
+```sh
+.venv/bin/python scripts/schedule.py --install --hour 8 --minute 0
 ```
 
-GitHub Actions validates source, tests, synthetic UI, distributions and security; it does not run the watcher. Daily execution uses local persistent SQLite, avoiding ephemeral CI runners losing deduplication history.
+It runs at 08:00 local time in the login session; the Mac must be available. The plist
+contains paths, not credentials. Inspect `data/daily.log` and `data/daily-error.log`.
+Remove the schedule with:
+
+```sh
+.venv/bin/python scripts/schedule.py --remove
+```
+
+Removal does not confirm an in-flight watcher stopped. On another Unix host, configure
+a persistent scheduler to invoke the checkout's interpreter with
+`-m pokemon_hunter.main --root ROOT run`; use the existing absolute checkout location
+for `ROOT`. CI does not run live searches. Preserve `data/pokemon.db` for deduplication
+and alert history. Only one run per database executes at once; failed delivery is
+reconsidered on the next run, without a hidden polling loop.
 
 ## Notifications
 
-The default is local text digests. To add a macOS banner, set `alerts.macos_notification: true` in `config/settings.yaml`; allow notifications for the executing application if macOS requests it. The banner gives the hit count and report path.
+The default destination is local text files. Enable `alerts.macos_notification` in
+`config/settings.yaml` for a hit-count/report-path banner. The executing application
+may need macOS notification permission.
 
-To deliver elsewhere, set `POKEMON_HUNTER_WEBHOOK_URL` in `.env` to an HTTPS endpoint accepting JSON `{"text": "digest"}`. The endpoint receives listing data and your collection totals. Failed delivery leaves the digest pending and does not mark listings alerted. The next run rechecks current prices and eligibility before retrying. A retry uses the same `Idempotency-Key`; exactly-once external delivery requires the endpoint to honor it. A timeout after remote acceptance can otherwise cause a duplicate. Local files are replaced atomically.
+`POKEMON_HUNTER_WEBHOOK_URL` selects an HTTPS endpoint accepting JSON `{"text":"digest"}`.
+It receives listing data and collection totals. Failure preserves pending delivery.
+The next run rechecks current prices/eligibility and uses the same `Idempotency-Key`.
+Exactly-once delivery requires the endpoint to honor that key; a lost response after
+acceptance can otherwise cause duplicates. Local digest files use atomic replacement.
 
 ## Rules and configuration
 
-The watcher retains a bulk-alert contract with mystery/repack exclusions. For
-spoiler-controlled hunts, use the collection app. Watcher digests reveal titles.
+The initializer copies these values from `config/settings.example.yaml`:
 
-| Setting | Default |
+| Setting | Example configuration |
 | --- | --- |
-| Delivery / currency | US / no ZIP configured / USD only |
-| Buy It Now delivered per card | ≤ $2.00 |
-| Auction current delivered per card | ≤ $1.00 |
-| Minimum count | 25 cards |
-| Maximum BIN purchase | $120 delivered |
-| Maximum auction purchase | $150 delivered |
-| Minimum alert priority / digest limit | MEDIUM / 5 hits |
-| Auction repeat | Ending within 24h once, or ≥20% delivered-price change; at least 20h since prior alert |
+| Delivery / currency | US / ZIP required / USD |
+| Fixed-price delivered cost per card | At most $2.00 |
+| Auction current delivered cost per card | At most $1.00 |
+| Minimum stated cards | 25 |
+| Maximum fixed-price / auction purchase | $120 / $150 delivered |
+| Minimum priority / digest limit | Medium / 5 |
+| Auction repeat | Ending within 24 hours once, or at least 20% delivered-price change; at least 20 hours since the prior alert |
 
-Defaults come from `config/settings.example.yaml` and `models.Settings`; your local
-`config/settings.yaml` may override them. Set the delivery ZIP there or through
-`EBAY_DELIVERY_POSTAL_CODE` before comparing destination-dependent shipping.
-Purchase caps may be `null`. Sales tax is excluded. Auction maximum bid is `min(count × threshold, purchase cap) − shipping`, floored at zero and rounded down to cents. Unknown prices/shipping, unsupported currencies, and unknown auction end times cannot qualify. A dual auction/BIN listing uses auction economics and gets only one canonical item record.
+Local settings are authoritative. When omitted, the model defaults for per-card limits
+are $1.00/$0.50 and purchase caps are $60/$75. Purchase caps may be null. Sales tax is
+excluded. Auction maximum bid is `min(count × threshold, purchase cap) − shipping`,
+floored at zero and rounded down to cents. Unknown prices/shipping, unsupported
+currencies and unknown auction end times cannot qualify. Dual auction/fixed-price
+listings use auction economics and one canonical item record.
 
-The parser handles `100+`, `90–100`, comma-separated counts, `lot of 72`, and common/uncommon wording. It never sums unrelated quantities or multiplies pack counts. Explicitly separated Pokémon quantities take precedence; stated trainers/energy are conservatively excluded when included in the total. Unknown species composition stays labeled as unknown. Conflicting counts, selectable quantities, accessories, sealed packs, complete sets, mystery/curated products, and tiny lots are withheld.
+The count parser recognizes explicit counts, ranges, `100+`, `lot of 72` and common/
+uncommon wording. It does not sum unrelated quantities or multiply pack counts.
+Explicit Pokémon quantities take precedence; stated trainers/energy are conservatively
+excluded where possible. Unknown species composition remains labeled. Conflicting
+counts, selectable quantities, accessories, sealed packs, complete sets, mystery/curated
+products and tiny lots are withheld.
 
-`config/sets.yaml` contains the 15 eligible English sets and a configurable later-era exclusion dictionary. `pure` means **only eligible set names detected in seller text**, not verified purity. The later-set dictionary is deliberately finite: absence of a match cannot prove absence of modern cards. Vague WOTC/Neo text is `probably_pure`. Mixed lots use the total stated-card denominator, label that uncertainty, and need to be especially cheap and Neo-related to reach MEDIUM. Unknown vintage composition remains lower confidence. Keyword negations and unusual seller phrasing can cause conservative false negatives.
+`config/sets.yaml` defines eligible sets and later-era exclusions. `pure` means only
+eligible set names were detected in seller text, not verified physical purity. The
+later-era dictionary is finite; an absent match cannot establish vintage-only contents.
+Vague WOTC/Neo claims remain probable rather than verified. Mixed lots use the total
+stated-card denominator and receive lower confidence.
 
-Price thresholds gate alerts independently of ranking. Generation gaps influence the collection heuristic. Rocket/Gym is penalized for Dark/owner-named variants. Played/damaged, no duplicates, and certain composition claims get small ranking bonuses; “unsearched” is neutral. At the price threshold a pure listing can still qualify even with a zero price-efficiency score.
+Price thresholds gate alerts independently of ranking. Collection gaps influence a
+species/set heuristic, not expected missing-species yield. No photo recognition is
+performed. Edit exact-card ownership through the [original app](ORIGINAL_APP.md);
+`pokemon-hunter pokedex` reads the derived summary. Settings baseline counts do not
+override the current collection.
 
-This is a **generation/set heuristic**, not an estimate of how many missing species a lot contains. The watcher does not perform photo recognition or estimate expected new species from unknown lot contents.
+## Coverage and troubleshooting
 
-## Collection updates
+`config/searches.yaml` controls query strings. The example configuration requests two
+pages of 100 newly listed results per query/purchase type and enriches at most 30
+promising or vintage results with descriptions. Limits and API warnings remain in run
+notes/stderr. Search keywords are not evidence about a listing's sets, and absence from
+a bounded search does not establish expiry.
 
-Edit exact-card ownership through the original app. The watcher derives species
-ownership from those records; it does not write species-only ownership. Inspect
-the current summary with `uv run pokemon-hunter pokedex`. Historical baseline
-counts in settings do not override the current collection.
+A failed search/detail request aborts notification processing. Transport, HTTP 429 and
+server failures have bounded retries; expired tokens permit one refresh. Tokens stay in
+memory. The client uses [application OAuth](https://developer.ebay.com/develop/guides/sell/authorization)
+and [Browse buying-option filters](https://www.developer.ebay.com/api-docs/buy/static/ref-buy-browse-filters.html),
+without HTML scraping or photo downloads.
 
-## Search coverage and troubleshooting
+For rejected candidates, inspect normalized reasons in `listings.payload` and
+`listing_observations.payload`. Fixed-price items alert once; a never-alerted rejected
+item may qualify later. Auctions expire by explicit end time. Preserve failed runs and
+pending digests while investigating; see [failure handling](ERROR_HANDLING.md).
 
-Queries are configurable in `config/searches.yaml`. Each purchase-type/query pair fetches up to two pages of 100 results, sorted newly listed. Up to 30 promising or vintage results without a parseable count get `getItem` description enrichment. Page caps and API warnings are recorded in run notes and stderr. A cap means partial marketplace coverage, not an exhaustive scan. Search keywords never count as evidence about a listing's sets.
-
-A failed search or detail request aborts notification processing for that run. HTTP 429/5xx and transport failures get bounded retries; expired tokens get one refresh. Token values stay in memory. The client uses [eBay's client-credentials application token flow](https://developer.ebay.com/develop/guides/sell/authorization) and [Browse buying-option filters](https://www.developer.ebay.com/api-docs/buy/static/ref-buy-browse-filters.html). No HTML listing scraping or photo downloads are used.
-
-Not seeing an expected hit? Inspect `listings.payload` and `listing_observations.payload` in SQLite for normalized evidence and rejection reasons. The same BIN alerts once; a previously rejected, never-alerted item can alert when it crosses the threshold. Auctions are expired by their explicit end time. Absence from a bounded search alone does not prove that a listing expired.
-
-## Verification
+## Testing
 
 ```sh
-uv run pytest tests/test_runner.py tests/test_ebay.py tests/test_cli.py -q
+uv run --no-sync pytest -q tests/test_runner.py tests/test_ebay.py tests/test_cli.py
 ```
 
-The [CI guide](CI.md) owns full-suite, compilation, syntax, lint and formatting
-commands. Select the relevant test files for maintenance.
-
-Tests use constructed seller titles and mocked eBay responses, explicitly **not harvested real-listing fixtures**. They cover counts and ranges, composition, sets, purity, exact landed prices, max bids, hard thresholds, currency/shipping unknowns, OAuth and pagination, retries, SQLite persistence, alert suppression, ending reminders, failed delivery, stale-price rejection, description reclassification, and collection totals. Real-market false-positive quality still needs observation after credentials are configured.
+These tests use synthetic seller titles and mocked responses. They do not establish
+real-market accuracy or current provider access. [CI](CI.md) documents the broader
+validation commands.

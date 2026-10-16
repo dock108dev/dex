@@ -1,144 +1,140 @@
-# eBay hunts
-
-The authenticated localhost app supports explicit eBay searches with the same
-Browse client as the original app. Search results are private account-scoped
-snapshots. The app never buys or bids, and a listing never adds an owned card.
+# Shopping and eBay discovery
 
 ## Navigation
 
-Open Shopping for the existing lot calculator, then use its task bar for eBay
-searches, Find missing cards, saved eBay finds, Packs to open, independent pack
-lookup and saved pack research. The same bar appears on direct legacy destinations.
-Packs to open asks for an existing account-owned goal when no goal was supplied.
-Opening these pages does not search eBay, refresh prices, start recognition or
-change inventory.
+Open **Shopping** at `/shopping/` for **Find deals**, **Find missing cards** and
+**Check a listing/lot**. Assisted checks are at `/shopping/check/`; the manual
+calculator is at `/shopping/calculator/`. Contextual collection links retain their checked printing selector and Back destination.
+Saved research and Packs remain reachable. Opening any of these pages does not
+request provider data, refresh prices or change collection/goals.
 
-## Search and save
+## Find deals and missing cards
 
-Open **eBay** at `/hunt/`, or **Missing singles** at `/missing/`. Select
-**Find bargains** or **Fill a collection goal**, eBay search or Sample cards, a
-search pool, optional collection goal, focus and delivered budget in USD. An
-optional search phrase can direct a card or lot search. Search starts only when
-you request it. Bargain searches include owned cards; goal-filling searches use
-the goal's frozen checklist and your current active copies. Without a goal, the
-default collection scope remains Vintage 251.
+**Find deals** generates searches from the supported catalog and includes owned
+cards. It needs neither a goal nor manual card entry. An optional USD spending
+budget, search phrase, set and Kanto/Johto scope narrow the search. Discovery uses
+fixed-price singles, with vintage comparison coverage; other catalog cards may be
+unpriced.
 
-The search pools are known lots, individual cards and mystery/repacks. Default lot
-and mystery searches use Pokémon query pools. Goal-targeted singles use the
-selected published game, set, card name and number, including Trainer/Energy or
-other game entries when present in the catalog. Focus can narrow Pokémon searches
-to Kanto, Johto, missing rares or cheap bulk. A goal's game, sets, card type,
-rarity and Pokédex filters come from the saved goal builder. Open a goal's missing
-search to use that scope directly.
+**Find missing cards** explicitly selects current collection or a frozen goal.
+Current collection offers exact-printing or species policy. A selected goal retains
+its captured membership and ownership policy. Broad ownership declarations do not
+establish every edition/finish. Search is read-only for inventory and goals.
 
-Each batch saves automatically. **Next eBay batch** continues the captured search
-purpose, phrase, goal, pool, focus and budget rather than silently using changed form choices. Saved
-finds at `/finds/` can be reopened without a new provider call; they are re-scored
-against current ownership and spoiler reveal starts hidden again.
+Search starts only on explicit action. **Stop** cancels acquisition and suppresses
+late publication. **Next results** continues the captured choices and next catalog
+queries, deduplicating across batches. Edited choices require a new search. Filters,
+reveal, Back and reopening perform no provider requests. Titles, identities and seller
+links respect reveal preferences; seller text proposes identity, without physical
+verification.
 
-Titles, contents and seller links stay hidden until explicit reveal. Exact hits
-from live listings are seller-text candidates, not photo-verified card identity.
-Unknown and mystery contents remain unknown. Check the revealed seller page for
-current availability and condition.
+## Comparisons and temporary results
 
-## Price comparisons
+Discovery reads admitted references through `lot_calculator.retained_records`,
+private snapshot admission/lifecycle, `market_identity`, `lot_guides` and
+`shopping_math`. It rechecks lifecycle on local reads. Open pages also remove expired/withdrawn
+reference values and derived differences using local lifecycle checks. Expired, withdrawn, conflicting
+or inapplicable references remain unavailable; searching never acquires prices.
+Ranked comparisons use admitted reference arithmetic rather than the legacy hunt score.
 
-Results show the delivered price, guide reference, difference/discount, evidence
-basis, priced-card coverage and source dates. **All search results** preserves
-results without guide coverage. **Below guide reference** filters the saved
-results without calling eBay again. A low price against a benchmark needs seller
-review; it is not an established bargain or profit estimate.
+Cards show listing price, shipping and delivered total when known. Unknown shipping
+stays unknown. Comparable below-reference candidates, conditional comparisons and
+unpriced/ambiguous results stay distinct. Source/capture dates and unknown provider
+valuation dates remain explicit. Edition, finish, language, condition and literal
+grader/grade affect applicability. Generic grade scenarios do not establish exact slab
+matches. References are dated observations, not fresh quotations or profit estimates.
+Auction current bids, if encountered, do not become final prices.
 
-Identified singles use an ungraded guide unless seller grade and grader match
-supported graded evidence. Unknown edition uses a clearly conditional standard
-edition assumption. General grade 7/8/9 scenarios do not silently become PSA
-grade matches; the existing PriceCharting grade-10 reference supports PSA 10.
+Discovery results and provider summaries are temporary server memory. They are never
+written to raw hunt history, browser storage, exports, reports or backups. Saving
+these results is unavailable; the product explains that limitation. Existing saved
+research remains available under its original rights checks. Reopening temporary
+results requires the same authenticated session and a surviving server run; a restart
+requires a new explicit search. Local reads do not renew source rights.
 
-Identified lots use a conditional standard, ungraded baseline. A first-edition or
-graded mention for one card never applies to every card in the lot. Fully priced
-identified contents can be summed; partial identification/pricing shows only a
-subtotal and leaves other contents unvalued. For known lots with no identified
-cards, an average of current guides in the selected catalog scope times the
-stated card count is shown as a **benchmark**, with its coverage. It does not
-predict the contents or appraise that listing. Mystery, sealed and unopened
-unknown contents do not receive this benchmark.
+## Finite acquisition
 
-Reference values require current, nonnegative, finite USD evidence from a valid
-HTTPS source and a date no older than 30 days. Comparisons use retained guides and
-explicitly refreshed project `config/market_values.json` snapshots, selecting the
-newest valid observation. An equal-date refreshed snapshot takes precedence.
-Searching does not refresh guides. Per-card identities and guide links appear
-only after reveal. Auction comparisons use the current bid, which can change;
-it is not a settled purchase price. Tax, fees and resale proceeds are not modeled.
+Each explicit Search or Next action admits at most **one OAuth and four Browse
+requests**, at most **20 summaries per Browse**, **30 seconds per request** and
+**75 seconds overall**. The normal action uses one Browse request. An independent acquisition deadline
+suppresses late dispatch/publication even when local authorization is slow. Valid tokens can
+be reused. No retries, redirects, reauthentication, hidden pages or fallback calls
+are permitted. Failure ends that action. Admitted, in-flight and uncertain attempts
+are durably recorded without provider content; cancellation does not refund them.
+The old `/api/hunts/` POST returns 410 directing users to Shopping. Historical reads
+remain local. Discovery makes no item-detail, quota, sold-data or scheduled calls. Assisted checks use the separate explicit detail operations below.
 
 ## Local provider settings
 
-Use [.env.example](../.env.example) for `EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET` and optional
-`EBAY_DELIVERY_POSTAL_CODE`. Nonempty server-process values take precedence over
-`.env` at `ebay_hunts.configuration_root()`, which currently returns Django
-`PROJECT`, not the private data root or working directory. In a source runtime
-this is the checkout; an installed wheel resolves a directory above its package
-(for example, the runtime's `lib/python3.12`). `config/settings.yaml` is selected
-from that same directory.
-App ID is the Client ID; Cert ID is the Client Secret. Select the matching
-`environment` in `config/settings.yaml`: the committed example uses `production`.
-Sandbox credentials and Production credentials are separate. Marketplace,
-destination and bounded search limits share the original watcher's settings model.
-The authenticated app reads only eBay credentials from `.env`; staging live hunts
-are disabled. Missing credentials disable live search; sample hunts remain available.
+Shopping reads the local provider configuration and the private configuration-root
+`.env`. App ID maps to `EBAY_CLIENT_ID`, Cert ID to `EBAY_CLIENT_SECRET`.
+Nonempty process environment values take precedence over file values; restart the
+ordinary runtime after changing its environment. Keep credentials server-side and
+outside source control. See [local startup](local-development.md#existing-installations)
+and [provider operations](operations.md#shopping-discovery).
 
-Use the existing application's matching credential pair privately. Do not put secrets
-in command arguments, logs or chat. Refresh authenticated status to check the running
-process; another shell's configuration does not prove what the server inherited.
-Changing environment values requires a normal server restart. A configured status
-establishes credential presence, not OAuth success, access rights or remaining quota.
+Discovery and assisted checks require Production credentials and use
+**EBAY_US / US country-only** delivery, without a postal code. Local configuration
+or provider failures remain explicit. Reading configuration does not verify access
+or issue a provider request.
 
 ## Discovery integration constraints
 
-The hunt reference path reads legacy parity evidence and optional
-`PROJECT/config/market_values.json`. It does not consume the private Shopping
-snapshots described below. Source identity, condition/edition compatibility, dates
-and comparison/storage rights need independent validation before connecting them.
-Removable prices and derived discounts cannot enter permanent history without
-surviving save rights. Unknown language, edition, finish and condition stay
-conditional or unpriced. Literal grader and grade are independent of generic guide
-scenarios.
+Catalog coverage, admitted reference coverage and provider availability are
+independent. Discovery uses the calculator's managed private snapshot lifecycle,
+guide selection and arithmetic. Saved historical hunts retain their original read
+path. Seller/catalog compatibility and source rights are checked independently;
+conditional arithmetic does not establish a verified physical identity.
 
-A hunt batch can dispatch up to eight queries across two buying options and two
-pages each, with transport retries and 401 reauthentication. Successful batches
-persist raw listings automatically. There is no durable consumed-attempt ledger
-for failed hunts or independent hunt Stop. Search is a multi-operation workflow;
-it is unsuitable as a one-request access probe. Unknown shipping is excluded from
-hunts rather than shown as an incomplete comparison.
+Arbitrary seller URLs, shorteners and sold data are unsupported. Discovery makes
+no purchase, bid or inventory mutation. Both acquisition paths support fixed-price
+listings; auction loading and mixed-lot discovery are unavailable. Manual cost
+entry remains available and never places a bid or establishes a final purchase price.
 
-Applicable provider access, request allowance and storage/derivative rights must
-be established for the selected application. Saved history does not confer those
-rights. Consult current provider terms before live use; local credentials and
-mocked responses do not establish authorization. Reopening a save does not refresh
-its contents or renew its age.
+## Check a listing/lot
 
-The current eBay HTTPS validator checks link safety; it does not parse item IDs
-or load pasted listings. The client supports REST-item details, but no legacy-ID
-conversion or pasted-listing route is exposed. Automated sold comparables and
-assisted listing/lot entry are unavailable.
+Open **Check a listing/lot** at `/shopping/check/`. Paste a supported HTTPS eBay item
+URL, numeric ID or literal `v1|item|variation` ID and choose **Load listing**. Long
+tracking/encoded links, shorteners, unsafe hosts and unresolved parent listings are
+rejected; use the plain numeric ID or exact variation URL instead. Only official
+getItem/getItemByLegacyId operations run. No seller page is fetched.
 
-## Production access
+Loading opens a preview and keeps your existing review. **Use these details** explicitly
+replaces its contents/costs; **Keep my review** discards the preview. Available title,
+asking price/currency, shipping and condition claims are proposed. Listing stock,
+eBay lot units and seller-stated card count are separate. Proposed ambiguous printings
+have zero included. Correct the cards, quantities and value basis, and expand condition,
+grader and printing claims when needed. Find cards locally adds/corrects catalog choices.
+Manual/in-person entry is available without any provider request; the independent manual
+calculator and saved research remain in the final disclosure.
 
-Credentials do not establish OAuth or Browse eligibility. Resolve disabled keysets
-and application access in the eBay developer portal before requesting live searches.
-An authentication failure does not establish a specific account-policy cause.
-This repository has no account-deletion notification callback or public receiver.
-Saved snapshots persist provider data; changing provider compliance or retention
-requires a separate integration design. Consult the provider's current requirements
-for the selected application. The app does not activate keysets automatically.
+**Compare reviewed lot** invokes the existing admitted-reference calculator and Shopping
+arithmetic. The whole-lot asking price is counted once. Only included card quantities
+receive applicable values; unrecognized cards receive none. Blank remainder quantity
+means unknown, while zero explicitly states all contents are identified. Partial contents
+or pricing produce only a priced subtotal. Blank shipping/tax/other costs and foreign
+currencies prevent a complete USD delivered comparison. There is no currency conversion,
+price refresh, physical verification or inventory/goal/wanted-target mutation. Literal
+grader/grade applicability is preserved; generic guides remain separate scenarios.
 
-Provider availability must be checked for the configured installation. Mocked
-responses and sample searches verify behavior, not Production access or seller
-availability.
+Reviews and details are temporary account/session-bound server memory, for at most 30
+minutes or until restart. Navigation restores the remaining review lifetime; reads and
+edits never renew the lease. Expired provider details cannot be retained under a new
+lease. Stop, expiry and session revocation suppress later dispatch/publication. Local
+search, corrections, reopen, comparison and reference-lifecycle checks use no provider
+operations. Assisted inputs/results are not saved/exported or written to browser storage,
+raw hunt history, logs or backups. The UI explains this restriction; existing saved
+research retains its existing rights checks.
+
+Each explicit Load admits at most one OAuth and two combined detail/resolution calls,
+30 seconds per request and 75 seconds overall, with finite bodies and independent Stop.
+The normal path needs one detail/resolution call and reuses an eligible application token.
+No Browse fallback, retry, redirect or reauthentication occurs. Consumed/uncertain attempts
+remain in the independent sanitized ledger.
 
 ## Shopping lot calculator
 
-`/shopping/` compares explicitly included quantities with a lot price. Search the
+`/shopping/calculator/` compares explicitly included quantities with a lot price. Search the
 vintage card selector, add cards, lock wanted targets, fill in the remaining lot
 and compare. Clear lot removes current contents and costs while keeping
 locked wants. Locks belong to the signed-in session; they are not evidence of
@@ -149,10 +145,14 @@ Gym Challenge, Neo Genesis, Neo Discovery, Neo Revelation and Neo Destiny.
 Selectable entries depend on the installation's published catalog. Owned cards
 remain selectable; this scope does not restrict unrelated all-era browsing or goals.
 
-**Missing** opens the saved Original 151 collection goal first when
-available. Select a missing card, then its printing; change goals under **Goal**. Missing
-status uses that goal's frozen membership and existing ownership policy. These
-choices may include supported printings from other eras; classic vintage sets
+**Missing** defaults to **Current collection · Original 151**, using the same current
+species ownership as the unrestricted Kanto Pokédex. No saved goal is required.
+Select a missing Pokémon, then its printing. Under **Collection or saved goal**, an
+explicit saved goal instead uses its frozen membership and existing ownership policy.
+Saved declaration snapshots retain their original ownership and can differ from the
+current collection. Lot drafts retain user-authored rows and amounts independently
+of the active picker.
+Missing choices may include supported printings from other eras; classic vintage sets
 appear first. **All cards** retains the ordinary eleven-set selector.
 **Lock** adds a session wanted target with zero included in the current
 lot. **Add** adds the displayed quantity to the lot. Neither changes ownership
@@ -238,51 +238,7 @@ exact printing, literal grader/score and supported dates; missing grades are not
 interpolated. Conflicting product/subtype identities remain unpriced. Publisher-build
 dates never become provider valuation dates.
 
-There is no scheduled price refresh, automatic listing matching, whole-lot photo
+There is no scheduled price refresh, whole-lot photo
 recognition or automatic buy/bid action. Pack offers are retained observations;
 live sealed-offer acquisition is unsupported. See [catalogs and Pack lookup](catalogs.md)
 and [price snapshot operations](price-snapshots.md) for supported local inputs.
-
-## Completed data-path investigation
-
-The October 15 source investigation established two separate reference paths: hunts
-use retained parity/project guides, while the calculator uses the managed private
-snapshot lifecycle. Both share basic reference admission, but hunts do not yet consume
-private snapshots. Seller/catalog compatibility and surviving storage rights must be
-checked before reusing `market_identity`, `lot_guides`, Shopping arithmetic and history;
-a third price store would introduce competing policy.
-
-A bounded metadata-only audit recorded 901 conditionally eligible English/USD raw
-references across eleven vintage sets, with an October 9 publisher build, October 10
-capture, null provider valuation dates and November 9 expiry. That dated finding is
-not current availability, a fresh price, exact physical condition or all-era coverage.
-The recorded contracts admitted current display/arithmetic and managed storage, without
-permanent comparison-save, backup or export rights. Do not copy the values into docs.
-See the optional [data-path investigation](../reports/shop-01-20261014/data-path-map.md)
-and [readiness findings](../reports/shop-01-20261014/readiness-coverage-matrix.md).
-
-Installed readiness was subsequently observed as unconfigured; secure setup stopped
-before any provider call. [Operations](operations.md#existing-ebay-setup-prerequisite)
-explains that access prerequisite and the supported recovery procedure. No actual
-assigned/remaining quota, successful OAuth, Browse entitlement or comparison/ranking/
-retention rights were established by these investigations.
-
-## Backlog
-
-These are optional extensions rather than prerequisites for the current local scope:
-
-- Complete graded 8/9/10 pricing from permitted observations with exact printing,
-  literal grader/score and source dates. Missing coverage must stay unpriced; no
-  interpolation or paid-service assumption.
-- Additional raw product/subtype reconciliation for Base Set Machamp #8; Neo Destiny
-  Dark Exeggutor #33; Gym Challenge Rocket's Mewtwo #14, Blaine's Charizard #2 and
-  Brock's Vulpix #37; Gym Heroes Rocket's Hitmonchan #11, Misty's Psyduck #54 and
-  Misty's Seadra #9. These are retained identity gaps, not freshly checked prices.
-- Automatic refresh schedules, unattended monitoring/alerts, sold-history integration,
-  broader catalog publication, live sealed-offer acquisition and public/hosted release.
-- Named completion views, exact pack-family/origin relationships and additional date,
-  language, physical-variant or category metadata beyond current admitted coverage.
-- Further detail-image resolution/remote availability work, described in [artwork](artwork.md#remaining-image-limits).
-
-Select and bound any of these separately. The active discovery and onboarding work
-belongs in the remaining execution plan, not this optional list.

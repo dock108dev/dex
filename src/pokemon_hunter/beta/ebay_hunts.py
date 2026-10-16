@@ -1,4 +1,4 @@
-"""Explicit local eBay searches; configuration and provider errors stay server-side."""
+"""Shared local eBay configuration and read-only availability; no acquisition."""
 
 import os
 from pathlib import Path
@@ -6,12 +6,10 @@ from pathlib import Path
 import yaml
 from django.conf import settings
 
-from pokemon_hunter import config, ebay
+from pokemon_hunter import config
 
-from .diagnostics import closing, failure
+from .diagnostics import failure
 
-MAX_QUERIES = 8
-MAX_PAGES = 2
 ENV_KEYS = {"EBAY_CLIENT_ID", "EBAY_CLIENT_SECRET", "EBAY_DELIVERY_POSTAL_CODE"}
 
 
@@ -36,7 +34,6 @@ def configuration():
         for key, value in config.read_env(root / ".env", keys=ENV_KEYS).items():
             values.setdefault(key, value)
         provider = config.load_settings(root, environ=values, required=False)
-        provider.search.max_pages = min(provider.search.max_pages, MAX_PAGES)
     except (OSError, UnicodeError, ValueError, TypeError, yaml.YAMLError) as exc:
         failure("ebay_configuration_failed", exc)
         raise LiveHuntError("Check the local eBay settings before searching.") from None
@@ -64,40 +61,3 @@ def status():
         if configured
         else "Configure eBay credentials in the server environment or supported .env; restart after environment changes.",
     }
-
-
-def search(queries):
-    provider, values = configuration()
-    if not values.get("EBAY_CLIENT_ID") or not values.get("EBAY_CLIENT_SECRET"):
-        raise LiveHuntError("Add your eBay application credentials to the local .env or server environment.")
-    if not queries:
-        return [], {"limited": False, "environment": provider.environment}
-    try:
-        client = ebay.EbayClient(
-            provider, credentials=(values["EBAY_CLIENT_ID"], values["EBAY_CLIENT_SECRET"]), extended=True
-        )
-        with closing(client, "ebay_client_close_failed"):
-            raw = ebay.discover(client, queries)
-            if not isinstance(raw, list) or any(not isinstance(row, dict) for row in raw):
-                raise ValueError("Invalid provider result")
-            return raw, {
-                "limited": bool(client.warnings),
-                "environment": provider.environment,
-            }
-    except Exception as exc:
-        failure("ebay_search_failed", exc)
-        if isinstance(exc, ebay.EbayHTTPError):
-            code = f" ({exc.code})" if exc.code else ""
-            action = (
-                "Verify the active application keyset and credentials for the selected environment."
-                if exc.stage == "OAuth"
-                else "Verify Browse API access for the application and selected environment."
-            )
-            raise LiveHuntError(
-                f"eBay {exc.stage} returned HTTP {exc.status}{code}. {action} Retry explicitly after resolving it.",
-                status=502,
-            ) from None
-        raise LiveHuntError(
-            "eBay search could not complete. Check credentials, API access and connection, then retry explicitly.",
-            status=502,
-        ) from None

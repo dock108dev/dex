@@ -1,4 +1,4 @@
-"""M3 service/UI behavior on isolated synthetic SQLite; no real purchasability."""
+"""Pack-lookup service/UI behavior on synthetic SQLite; no real purchasability."""
 
 import copy
 import json

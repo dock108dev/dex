@@ -10,8 +10,8 @@ from test_b2 import b2 as b2
 from test_migration import snapshot as snapshot
 
 from pokemon_hunter.beta import collection as inv
+from pokemon_hunter.beta import collection_goals, collection_intents, store
 from pokemon_hunter.beta import ownership_declarations as decl
-from pokemon_hunter.beta import store
 from pokemon_hunter.inventory import connect
 from pokemon_hunter.migration import digest
 
@@ -29,6 +29,100 @@ def migrate(b2):
     with connect(b2["root"] / "inventory.db") as db:
         decl.initialize(db)
         decl.initialize(db)
+
+
+def scoped_source(headers, scope, *, bom=False, marked=True):
+    from pokemon_hunter.beta.canonical_species import registry
+
+    stream = io.StringIO(newline="")
+    writer = csv.DictWriter(stream, fieldnames=headers)
+    writer.writeheader()
+    numbers = range(1, 252) if scope == "full251" else [152 if scope == "johto" else 1]
+    for index, number in enumerate(numbers):
+        row = dict.fromkeys(headers, "")
+        row.update(Dex=number, Pokemon=registry()[number]["name"])
+        present = marked and index == 0
+        if scope == "full251":
+            row["Status"] = "Owned" if present else "Missing"
+        if present:
+            row[headers[3 if scope == "full251" else 2]] = "✓"
+        writer.writerow(row)
+    text = ("\ufeff" if bom else "") + stream.getvalue()
+    return dict(source_text=text, source_sha256=digest(text.encode()))
+
+
+@pytest.mark.parametrize(
+    ("headers", "scope"),
+    [
+        (decl.HEADERS, "kanto"),
+        (decl.GEN2_HEADERS, "johto"),
+        (decl.FULL_HEADERS, "full251"),
+        (decl.PHOTO_HEADERS, "full251"),
+    ],
+)
+@pytest.mark.parametrize("bom", [False, True])
+def test_declaration_scope_agrees_across_parser_goals_and_intents(headers, scope, bom):
+    source = scoped_source(headers, scope, bom=bom)
+    assert decl.header_scope(headers) == scope
+    assert {row["source_scope"] for row in decl.parse(source["source_text"], source["source_sha256"])} == {
+        scope
+    }
+    assert collection_goals.full_source(source) == (scope == "full251")
+    assert collection_intents.source_scope(source) == scope
+
+
+@pytest.mark.parametrize("headers", [decl.FULL_HEADERS, decl.PHOTO_HEADERS])
+def test_empty_full_declaration_retains_its_scope(headers):
+    source = scoped_source(headers, "full251", bom=True, marked=False)
+    assert decl.parse(source["source_text"], source["source_sha256"]) == []
+    assert collection_goals.full_source(source)
+    assert collection_intents.source_scope(source) == "full251"
+
+
+@pytest.mark.parametrize("headers", [None, [], decl.HEADERS[:-1], [*decl.HEADERS, "Extra"]])
+def test_declaration_scope_rejects_unknown_headers(headers):
+    with pytest.raises(ValueError, match="Unsupported collection declaration columns"):
+        decl.header_scope(headers)
+    text = ",".join(headers or ["Unsupported"]) + "\n"
+    source = dict(source_text=text, source_sha256=digest(text.encode()))
+    for read in (
+        lambda: decl.parse(text, source["source_sha256"]),
+        lambda: collection_goals.full_source(source),
+        lambda: collection_intents.source_scope(source),
+    ):
+        with pytest.raises(ValueError, match="Unsupported collection declaration columns"):
+            read()
+
+
+@pytest.mark.parametrize("headers", [decl.HEADERS, decl.GEN2_HEADERS, decl.FULL_HEADERS, decl.PHOTO_HEADERS])
+def test_scope_classification_preserves_source_hash_validation(headers):
+    scope = decl.header_scope(headers)
+    source = scoped_source(headers, scope)
+    source["source_sha256"] = "0" * 64
+    with pytest.raises(ValueError, match="source bytes/hash mismatch"):
+        decl.parse(source["source_text"], source["source_sha256"])
+    with pytest.raises(ValueError, match="source bytes/hash mismatch"):
+        collection_goals.full_source(source)
+    if scope != "full251":
+        with pytest.raises(ValueError, match="source bytes/hash mismatch"):
+            collection_intents.source_scope(source)
+
+
+@pytest.mark.parametrize(("headers", "scope"), [(decl.HEADERS, "kanto"), (decl.FULL_HEADERS, "full251")])
+def test_collection_scope_readers_obey_shared_schema_rejection(monkeypatch, headers, scope):
+    source = scoped_source(headers, scope)
+
+    def reject(headers):
+        raise ValueError("Declaration schema requires review")
+
+    monkeypatch.setattr(decl, "header_scope", reject)
+    for read in (
+        lambda: decl.parse(source["source_text"], source["source_sha256"]),
+        lambda: collection_goals.full_source(source),
+        lambda: collection_intents.source_scope(source),
+    ):
+        with pytest.raises(ValueError, match="Declaration schema requires review"):
+            read()
 
 
 def test_presence_account_isolation_idempotency_undo_and_preservation(b2):

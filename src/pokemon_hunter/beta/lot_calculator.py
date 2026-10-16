@@ -10,7 +10,7 @@ from django.conf import settings
 
 from pokemon_hunter.runtime_data import root as runtime_root
 
-from . import collection, price_snapshots, shopping, store
+from . import canonical_species, collection, effective_collection, price_snapshots, shopping, store
 from . import price_snapshot_contract as snapshot_rules
 from . import shopping_math as math
 from .lot_guides import cell_details as cell_details
@@ -37,7 +37,13 @@ RETAINED_SHA256 = "2d3a0867906ac5f84464ee42b618583cd0cb88818f773522420aa230d899e
 PRIVATE_RETAINED_SHA256 = "72d61c466c74b8a702cee9fd744a5485633c236c0dcbfaa07c26a3fafac27b03"
 
 
-def catalog(actor, query="", *, include_goals=False, goal_ids=None):
+def current_species_printing(printing):
+    attributes = printing["attributes"]
+    number = attributes.get("pokemon_dex")
+    return attributes.get("supertype") == "Pokémon" and type(number) is int and 1 <= number <= 151
+
+
+def catalog(actor, query="", *, include_goals=False, goal_ids=None, include_current=False):
     store.verified(actor)
     games = {g["id"] for g in store.rows("SELECT id FROM games WHERE game_key='pokemon'")}
     goal_ids = (
@@ -57,11 +63,12 @@ def catalog(actor, query="", *, include_goals=False, goal_ids=None):
     return [
         p
         for p in collection.catalog(actor, query)
-        if p["game_id"] in games and (p["set_name"] in SETS or p["id"] in goal_ids)
+        if p["game_id"] in games
+        and (p["set_name"] in SETS or p["id"] in goal_ids or include_current and current_species_printing(p))
     ]
 
 
-def missing_choices(actor, goal_id, item_id=""):
+def missing_choices(actor, goal_id, item_id="", *, pick_first=False):
     """Use the account's frozen goal and its existing ownership policy unchanged."""
     goal = next(iter(collection.goals(actor, goal_id=goal_id, include_updates=False)), None)
     if goal is None:
@@ -74,7 +81,39 @@ def missing_choices(actor, goal_id, item_id=""):
     ]
     if item_id and not any(i["id"] == item_id for i in items):
         raise ValueError("This card is no longer missing from your selected goal")
-    ids = {p for i in items if not item_id or i["id"] == item_id for p in i["printing_ids"]}
+    selected = item_id or (items[0]["id"] if pick_first and items else "")
+    ids = {p for i in items if not selected or i["id"] == selected for p in i["printing_ids"]}
+    return ids, [dict(id=i["id"], label=i["label"], available=len(i["printing_ids"])) for i in items]
+
+
+def current_missing_choices(actor, item_id="", *, pick_first=False):
+    """Current Original 151 species presence, independent of saved goal snapshots."""
+    actor = store.verified(actor)
+    generation = collection.generation(actor)
+    current = effective_collection.project(actor)
+    if current["user_id"] != actor.user_id or current["generation"] != generation:
+        raise collection.Conflict("Collection changed during Shopping read")
+    by_species = {}
+    for printing in catalog(actor, include_current=True):
+        if current_species_printing(printing):
+            by_species.setdefault(printing["attributes"]["pokemon_dex"], []).append(printing["id"])
+    names = canonical_species.registry()
+    items = [
+        dict(
+            id=f"#{number:03} {names[number]['name']}",
+            label=f"#{number:03} {names[number]['name']}",
+            printing_ids=by_species.get(number, []),
+        )
+        for number in range(1, 152)
+        if not current["species"][str(number)]["present"]
+    ]
+    if item_id and not any(item["id"] == item_id for item in items):
+        raise ValueError("This Pokémon is no longer missing from your current collection")
+    selected = item_id or (items[0]["id"] if pick_first and items else "")
+    ids = {pid for item in items if not selected or item["id"] == selected for pid in item["printing_ids"]}
+    store.verified(actor)
+    if collection.generation(actor) != generation:
+        raise collection.Conflict("Collection changed during Shopping read")
     return ids, [dict(id=i["id"], label=i["label"], available=len(i["printing_ids"])) for i in items]
 
 
@@ -104,21 +143,30 @@ def retained_records():
     return SnapshotRecords(current + legacy_records(), status)
 
 
-def selector(actor, query="", *, goal_id="", item_id="", printing_id="", pick_first=False):
-    missing_ids, items = missing_choices(actor, goal_id, item_id) if goal_id else (None, [])
-    if pick_first and items and not item_id:
-        item_id = items[0]["id"]
-        # Progress is already validated; use the same frozen item's printing IDs.
-        goal = collection.one(actor, "goal", goal_id)
-        missing_ids = set(
-            next(i["printing_ids"] for i in json.loads(goal["definition"])["items"] if i["label"] == item_id)
-        )
+def selector(
+    actor, query="", *, goal_id="", item_id="", printing_id="", pick_first=False, current_missing=False
+):
+    if current_missing and goal_id:
+        raise ValueError("Choose current collection or a saved goal")
+    missing_ids, items = (
+        current_missing_choices(actor, item_id, pick_first=pick_first)
+        if current_missing
+        else missing_choices(actor, goal_id, item_id, pick_first=pick_first)
+        if goal_id
+        else (None, [])
+    )
     printings = [
         p
-        for p in catalog(actor, query, include_goals=bool(printing_id), goal_ids=missing_ids)
+        for p in catalog(
+            actor,
+            query,
+            include_goals=bool(printing_id),
+            goal_ids=missing_ids,
+            include_current=current_missing,
+        )
         if (missing_ids is None or p["id"] in missing_ids) and (not printing_id or p["id"] == printing_id)
     ]
-    if goal_id:
+    if goal_id or current_missing:
         printings.sort(
             key=lambda p: (
                 p["set_name"] not in SETS,
@@ -148,14 +196,37 @@ def priced_cards(actor, printings):
     return result
 
 
-def browse(actor, query="", *, goal_id="", item_id="", printing_id=""):
-    printings, _ = selector(actor, query, goal_id=goal_id, item_id=item_id, printing_id=printing_id)
+def browse(actor, query="", *, goal_id="", item_id="", printing_id="", current_missing=False):
+    printings, _ = selector(
+        actor,
+        query,
+        goal_id=goal_id,
+        item_id=item_id,
+        printing_id=printing_id,
+        current_missing=current_missing,
+    )
     return priced_cards(actor, printings)
 
 
-def browse_page(actor, query="", *, goal_id="", item_id="", printing_id="", offset=0, pick_first=False):
+def browse_page(
+    actor,
+    query="",
+    *,
+    goal_id="",
+    item_id="",
+    printing_id="",
+    offset=0,
+    pick_first=False,
+    current_missing=False,
+):
     printings, items = selector(
-        actor, query, goal_id=goal_id, item_id=item_id, printing_id=printing_id, pick_first=pick_first
+        actor,
+        query,
+        goal_id=goal_id,
+        item_id=item_id,
+        printing_id=printing_id,
+        pick_first=pick_first,
+        current_missing=current_missing,
     )
     return dict(
         cards=priced_cards(actor, printings[offset : offset + 40]),
@@ -173,7 +244,7 @@ def locks(actor, session, supplied=None):
     if supplied is not None:
         if not isinstance(supplied, list) or len(supplied) > 200:
             raise ValueError("At most 200 wanted identities")
-        ids = {p["id"] for p in catalog(actor, include_goals=True)} | {
+        ids = {p["id"] for p in catalog(actor, include_goals=True, include_current=True)} | {
             p["printing_id"] for p in session.get(key, [])
         }
         seen = set()
@@ -188,7 +259,7 @@ def locks(actor, session, supplied=None):
     return session.get(key, [])
 
 
-def prepare(actor, raw, now=None):
+def prepare(actor, raw, now=None, *, review_traits=None, unknown_quantity=0):
     store.verified(actor)
     shopping.fields(
         raw,
@@ -199,7 +270,7 @@ def prepare(actor, raw, now=None):
         raise ValueError("At most 200 card identities")
     now = now or datetime.now(shopping.TZ)
     today = now.astimezone(shopping.TZ).date()
-    entries = {p["id"]: p for p in catalog(actor, include_goals=True)}
+    entries = {p["id"]: p for p in catalog(actor, include_goals=True, include_current=True)}
     records, identities, by_column, seen = retained_records(), [], {g: [] for g in COLUMNS}, set()
     selections = []
     for line in raw["cards"]:
@@ -211,6 +282,24 @@ def prepare(actor, raw, now=None):
         math.quantity(line["quantity"])
         shopping.fields(line["values"], COLUMNS, COLUMNS)
         guides = cells(p, records, today)
+        if review_traits is not None:
+            from .discovery_comparison import reference_issue
+
+            traits = review_traits[p["id"]]
+            grade = traits.get("grade") or "unknown"
+            clues = {
+                key: traits.get(key) or None
+                for key in ("language", "edition", "finish", "condition", "grader")
+            }
+            clues["graded"] = grade not in {"raw", "unknown"}
+            for column, ref in list(guides.items()):
+                if (
+                    ref is None
+                    or column != grade
+                    or (clues["graded"] and not clues["grader"])
+                    or reference_issue(p, clues, ref, today)
+                ):
+                    guides[column] = None
         identities.append(
             dict(printing_id=p["id"], quantity=line["quantity"], captured_identity=shopping.identity(p))
         )
@@ -227,6 +316,8 @@ def prepare(actor, raw, now=None):
             if value["mode"] == "guide":
                 ref = guides[grade]
                 if ref is None:
+                    if review_traits is not None:
+                        continue
                     raise ValueError("Guide changed or unavailable; review this cell")
                 ref = dict(ref, reference_id=p["id"] + ":" + grade)
             elif value["mode"] == "manual":
@@ -260,7 +351,7 @@ def prepare(actor, raw, now=None):
     validation = dict(
         selected_cards=[dict(s, chosen_value_reference=None) for s in selections],
         value_references=[],
-        unknown_contents=dict(quantity=0),
+        unknown_contents=dict(quantity=unknown_quantity),
         **{k: raw[k] for k in math.BASES},
         delivery_cost_inputs=raw["delivery_cost_inputs"],
     )

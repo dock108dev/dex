@@ -1,8 +1,6 @@
-"""Vintage views and explicit hunts projected from active session-owned copies."""
+"""Vintage views and retained hunt reads projected from active session-owned copies."""
 
 import json
-import uuid
-from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Literal
 
@@ -12,19 +10,17 @@ from pydantic import Field, field_validator
 
 from pokemon_hunter import hunt
 from pokemon_hunter.collection import derive, totals
-from pokemon_hunter.hunt import SearchRequest, public_listing, query_plan
+from pokemon_hunter.hunt import SearchRequest, public_listing
 from pokemon_hunter.inventory import stable_id
-from pokemon_hunter.migration import encode
 from pokemon_hunter.valuation import valuation_records
 
 from . import collection as service
 from . import ebay_hunts, effective_collection, goal_hunts, hunt_values, store
-from . import transactions as transaction
 from .diagnostics import failure
 
 
 def evidence(filename, default):
-    if filename not in {"market_values.json", "raw_values.json", "hunt.json", "demo_hunts.json"}:
+    if filename not in {"market_values.json", "raw_values.json", "hunt.json"}:
         raise ValueError("Unsupported parity evidence; species identity uses canonical_species")
     if getattr(settings, "STAGING", False):
         # Source review permits metadata only. No legacy pricing or hunt redistribution.
@@ -378,96 +374,3 @@ def hunt_response(actor, saved, batch, key, reveal=None):
         "results": [safe(r) for r in rows],
         "rescored": True,
     }
-
-
-def search(actor, raw):
-    store.verified(actor)
-    body = hunt_settings(raw)
-    config = evidence("hunt.json", None)
-    if config is None:
-        raise ValueError("Local hunt evidence unavailable")
-    if body.continuation_batch:
-        uuid.UUID(body.continuation_batch)
-        prior = store.resource(actor, "hunts", (body.continuation_batch, 1))
-        previous_body = saved_settings(json.loads(prior["request"]))
-        previous = json.loads(prior["coverage"] or "{}")
-        unchanged = all(
-            getattr(body, key) == getattr(previous_body, key)
-            for key in ("pool", "focus", "budget", "demo", "goal_id", "intent", "query")
-        )
-        if body.demo or not body.offset or body.offset != previous.get("next_offset") or not unchanged:
-            raise ValueError("Start a new search after changing search settings")
-        scope = previous.get("goal_scope")
-        plan = previous.get("query_plan")
-        if not isinstance(plan, list) or any(not isinstance(query, str) for query in plan):
-            raise ValueError("Start a new search to continue this historical snapshot")
-    else:
-        if body.offset:
-            raise ValueError("Continue from a saved search batch")
-        scope = goal_hunts.snapshot(actor, body.goal_id)
-        data = hunt_projection(actor, scope, body)
-        plan = [body.query] if body.query else query_plan(data, config, body.pool, body.focus)
-    if body.demo:
-        if body.offset:
-            raise ValueError("Samples have one batch")
-        raws = evidence("demo_hunts.json", None)
-        if raws is None:
-            raise ValueError("Local sample evidence unavailable")
-        coverage = {"queries_run": 0, "queries_total": len(plan), "offset": 0, "next_offset": None}
-    else:
-        if body.offset and body.offset >= len(plan):
-            raise ValueError("No more queries in this search")
-        queries = plan[
-            body.offset : body.offset + min(ebay_hunts.MAX_QUERIES, max(1, int(config["query_limit"])))
-        ]
-        raws, provider = ebay_hunts.search(queries)
-        coverage = {
-            **provider,
-            "queries_run": len(queries),
-            "queries_total": len(plan),
-            "offset": body.offset,
-            "next_offset": body.offset + len(queries) if body.offset + len(queries) < len(plan) else None,
-        }
-    coverage["goal_scope"] = scope
-    coverage["query_plan"] = plan
-    batch = str(uuid.uuid4())
-    saved = {
-        "created": datetime.now(UTC).isoformat(),
-        "demo": int(body.demo),
-        "request": body.model_dump_json(),
-        "raw": encode(raws),
-        "coverage": encode(coverage),
-    }
-    try:
-        # Validate and compare provider results before taking the short write lock.
-        result = hunt_response(actor, saved, batch, 1)
-    except (ValueError, TypeError, KeyError, AttributeError, IndexError, OverflowError) as exc:
-        if body.demo:
-            raise
-        failure("ebay_response_failed", exc)
-        raise ebay_hunts.LiveHuntError(
-            "eBay returned listing data that could not be reviewed. Retry explicitly.", status=502
-        ) from None
-    save_hunt(actor, batch, saved)
-    return result
-
-
-@transaction.atomic
-def save_hunt(actor, batch, saved):
-    store.verified(actor)
-    service.execute(
-        "INSERT INTO import_batches VALUES(%s,%s,%s,%s,%s)",
-        [batch, actor.user_id, batch, "b2-parity-hunt", "saved"],
-    )
-    service.execute(
-        "INSERT INTO saved_hunts VALUES(%s,%s,1,%s,%s,%s,%s,%s)",
-        [
-            batch,
-            actor.user_id,
-            saved["created"],
-            saved["demo"],
-            saved["request"],
-            saved["raw"],
-            saved["coverage"],
-        ],
-    )

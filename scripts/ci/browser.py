@@ -205,7 +205,7 @@ if __name__ == "__main__":
             patch("httpx.Client.send", side_effect=AssertionError("No CI fixture acquisition")),
             patch("httpx.AsyncClient.send", side_effect=AssertionError("No CI fixture acquisition")),
             patch(
-                "pokemon_hunter.beta.ebay_hunts.search",
+                "pokemon_hunter.beta.discovery_transport.Transport.request",
                 side_effect=AssertionError("No CI fixture acquisition"),
             ),
             patch("urllib.request.urlopen", side_effect=AssertionError("No CI fixture acquisition")),

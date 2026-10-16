@@ -106,7 +106,7 @@ def lot_catalog(request):
         context = shopping_context.resolve(
             who, {"generation": request.GET["generation"]} if "generation" in request.GET else {}
         )
-        entries = [p for p in lot.catalog(who, include_goals=True) if p["id"] in ids]
+        entries = [p for p in lot.catalog(who, include_goals=True, include_current=True) if p["id"] in ids]
         cards = lot.priced_cards(who, entries)
         return private_json(
             dict(
@@ -140,7 +140,11 @@ def lot_catalog(request):
     )
     if raw.get("wanted") == "1":
         ids = {w["printing_id"] for w in lot.locks(who, request.session)}
-        printings = [p for p in lot.catalog(who, include_goals=True) if p["id"] in ids] if ids else []
+        printings = (
+            [p for p in lot.catalog(who, include_goals=True, include_current=True) if p["id"] in ids]
+            if ids
+            else []
+        )
         cards = lot.priced_cards(who, printings) if printings else []
         data = dict(cards=cards, total=len(cards), offset=0, missing_items=[])
     else:
@@ -160,6 +164,7 @@ def lot_catalog(request):
                 printing_id=raw.get("printing", ""),
                 offset=offset,
                 pick_first=raw.get("pick_first") == "1",
+                current_missing=context["kind"] == "missing",
             )
     data["context"] = shopping_context.finish(who, context)
     return private_json(data, request)

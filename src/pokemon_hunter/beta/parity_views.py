@@ -20,10 +20,13 @@ def hunts(request):
     who = actor(request)
     if request.method == "GET":
         return JsonResponse({"hunts": parity.history(who), "search_status": ebay_hunts.status()})
-    try:
-        return JsonResponse(parity.search(who, body(request)))
-    except ebay_hunts.LiveHuntError as exc:
-        return JsonResponse({"error": exc.public_message}, status=exc.status)
+    # Historical reads remain available. Acquisition has one finite product route.
+    response = JsonResponse(
+        {"error": "Open Shopping to Find deals or Find missing cards.", "shopping_url": "/shopping/"},
+        status=410,
+    )
+    response["Cache-Control"] = "private, no-store"
+    return response
 
 
 @endpoint

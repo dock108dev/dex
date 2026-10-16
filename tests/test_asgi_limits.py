@@ -186,3 +186,16 @@ def test_real_django_ordinary_public_request_keeps_security_headers(env):
     headers = {key.lower(): value for key, value in sent[0]["headers"]}
     assert headers[b"cache-control"] == b"no-store"
     assert b"Content-Security-Policy".lower() in headers
+
+
+@pytest.mark.parametrize("suffix", ["upload", "retake"])
+def test_batch_photo_ingress_exact_independent_bound(ingress, suffix):
+    app, _, dispatched = ingress
+    path = f"/api/photo-batches/00000000-0000-0000-0000-000000000001/{suffix}/"
+    _, accepted = exchange(app, [chunk(b"x" * 8_100_000)], path=path)
+    assert accepted[0]["status"] == 200
+    dispatched.clear()
+    _, refused = exchange(app, [chunk(b"x" * 8_100_001)], path=path)
+    assert refused[0]["status"] == 413 and not dispatched
+    _, ordinary = exchange(app, [chunk(b"x" * 9)], path=path, method="PUT")
+    assert ordinary[0]["status"] == 413

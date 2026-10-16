@@ -7,7 +7,7 @@ import time
 from django.conf import settings
 from django.db import close_old_connections
 
-from . import scans
+from . import photo_batches, scans
 from .diagnostics import failure
 
 
@@ -30,7 +30,8 @@ def run(stop=None):
                 )
             else:
                 scans.cleanup()
-            worked = scans.process_one(stop)
+                photo_batches.cleanup()
+            worked = photo_batches.process_one(stop) or scans.process_one(stop)
         except Exception as exc:
             # Retry the iteration, never a claimed provider call. Log in both profiles.
             failure("worker_iteration_failed", exc)

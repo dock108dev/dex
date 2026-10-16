@@ -1,4 +1,4 @@
-"""E1 service qualification on synthetic private state; retained real package is input data."""
+"""Catalog service tests on synthetic private state and packaged public inputs."""
 
 import copy
 import json

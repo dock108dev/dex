@@ -354,5 +354,9 @@ def test_initialization_refuses_existing_or_checkout_paths(env):
 
     with pytest.raises(FileExistsError):
         initialize(env["root"])
+    # The protected application tree belongs to the implementation under test,
+    # including when these tests exercise a separately installed wheel.
+    from pokemon_hunter.beta import cli
+
     with pytest.raises(ValueError):
-        initialize(Path(__file__).resolve().parents[1] / "b1-unsafe")
+        initialize(Path(cli.__file__).resolve().parents[3] / "b1-unsafe")

@@ -3,6 +3,9 @@
 import json
 import time
 
+from scripts.ci.discovery_journey import exercise as discovery_journey
+from scripts.ci.listing_journey import exercise as listing_journey
+
 
 def exercise(url, root, output):
     if not (root / "SYNTHETIC_ONLY").is_file():
@@ -98,6 +101,9 @@ def exercise(url, root, output):
             }""")
             capture("consumer-shopping-text200")
             passed("narrow and actual doubled-text collection Shopping layout", started)
+
+            checks.extend(discovery_journey(page, url, output))
+            checks.extend(listing_journey(page, url, output))
 
             started = time.monotonic()
             page.goto(url + "/cards/?species=252")

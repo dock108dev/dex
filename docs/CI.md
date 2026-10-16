@@ -27,8 +27,8 @@ Branch protection is configured separately.
 The aggregate rejects missing, malformed, cancelled or unexpected skipped results. It
 downloads only this run/attempt’s `ci-*` artifacts, reads bounded JSON without executing
 artifact content, requires eight reports (ten for compatibility), and rejects stale
-candidate/attempt identities and duplicate job/runtime records. Use **Re-run all jobs**
-for a fresh qualification. Re-running only failed jobs leaves successful jobs’ prior-
+commit/run-attempt identities and duplicate job/runtime records. Use **Re-run all jobs**
+for a fresh result. Re-running only failed jobs leaves successful jobs' prior-
 attempt artifacts outside the accepted boundary; the aggregate will fail with missing
 reports until all jobs run in one attempt. Each report must agree with its native
 outcomes; a PASS label cannot override a failed test or scan. Failed records remain
@@ -41,10 +41,10 @@ bootstrapping the direct-script module path.
 ## Local checks
 
 `scripts/ci/source.py` checks shipped JavaScript syntax and maintained documentation
-links. Relative source/document targets must exist; links within ignored `reports/`
-are optional local evidence. A clean checkout therefore runs this check without
-copying private state or retained reports. Focused checker and read-only preservation
-tests are `tests/test_ci_source.py` and `tests/test_qualification_state.py`.
+links. Relative source/document targets and Markdown section fragments must exist.
+Maintained guides must work from a clean checkout without private files or local
+reports. Checker and read-only state-helper tests are `tests/test_ci_source.py` and
+`tests/test_qualification_state.py`.
 
 For ordinary development, use the smaller `dev` extra and focused tests from
 [development](local-development.md). To run checks requiring CI tools:
@@ -58,7 +58,7 @@ uv run --no-sync python scripts/ci/source.py
 uv run --no-sync pytest -q --disable-socket --allow-unix-socket
 ```
 
-The source check and renderer contracts require Node **22.18.0**, pinned in both source
+The source check and renderer contracts use Node **24**, selected by `.nvmrc` in both source
 and behavior jobs. Behavior tests invoke the real JavaScript engine; relying on the
 hosted image's incidental Node version would leave part of the suite unqualified. Run
 `node scripts/verify_cx05_races.js`, `node scripts/verify_cx06_races.js` and `node
@@ -210,42 +210,3 @@ provider/connection overrides. The caller must tear down its disposable server; 
 manages its ephemeral service container. Never pass a personal or production database
 URL. Real proxy/TLS deployment needs separate configuration; see
 [operations](operations.md#optional-postgresqlhttps-profile).
-
-## Recorded verification
-
-These are dated results from retained local checks, not a fresh pass of the current
-checkout or a substitute for owner acceptance. Counts from different harnesses overlap.
-The optional local reports are ignored and are not required to use a clean checkout.
-
-The October 14 collection delivery covered the compact card page, grouped navigation,
-artwork/defaults/numeric ordering and multiselect scoped completion. The final scoped
-completion regression passed 1,515 cases with no failures, errors or skips. Installed
-engineering checks covered 59 existing browser assertions, 21 navigation layouts and
-six scoped layouts, including computed 200% text; the integrated journey covered 51
-synthetic states without provider calls. Native Safari separately observed actual
-collection browsing, scoped progress, card/Shopping returns and cancellation. Native
-screen-reader/device and owner acceptance were not established. See the retained
-[collection delivery record](../reports/ux-03-20261014/closeout.md); earlier card and
-navigation details remain in the [card record](../reports/ux-01-20261014/closeout.md)
-and [navigation record](../reports/ux-02-20261014/closeout.md).
-
-The October 15 interface refinement changed Library controls/gallery, the narrow card
-reading order and Pokédex progress/filter hierarchy. Its isolated engineering review
-covered nine layouts at 1280/390/320 CSS pixels, doubled text at 390, keyboard/cancel/
-Back behavior, empty data and unavailable/recovery states. It passed 175 focused tests
-and 59 renderer contracts. That review did not install the changes or establish
-new-user or owner acceptance. See the [interface review](../reports/interface-review-20261015/review.md).
-The source authority cleanup passed 206 focused cases; its retained native result is
-[local JUnit](../reports/ssot-enforcement-20261015/final-junit.xml). Mapping identity and
-remote-image availability remain separate.
-
-The shared read-only test fingerprint and portable documentation checker passed 13
-focused cases both in the worktree and a clean source export. The subsequent docs and
-artifact cleanup passed 78 focused eBay/catalog/checker tests, lint/format, link,
-JavaScript and whitespace checks; it removed five unused generated research reports.
-These checks did not repeat the full suite, package delivery or live provider tests.
-The earlier [maintenance closeout](../reports/repository-cleanup-20261015/closeout.md)
-predates those five removals; its statement that no artifact removal was needed is
-historical. The later source changes are now in `a48e6dd`; the older reports' statements
-that their work was uncommitted describe their recording time. No current hosted CI
-result or installation of that commit is inferred.

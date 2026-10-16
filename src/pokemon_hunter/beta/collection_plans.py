@@ -72,7 +72,9 @@ def build(
             "batch_id": operation_id,
             "legacy_id": None,
             "first_edition_selected": int(
-                raw.get("first_edition_selected", p["edition"] == "first_edition" if p else 0)
+                raw.get(
+                    "first_edition_selected", p["edition"] in {"first_edition", "1st-edition"} if p else 0
+                )
             ),
             "state": "active",
             "revision": 0,
@@ -105,7 +107,47 @@ def build(
     policy = request.get("duplicate_policy")
     if kind in {"add", "set", "import"} and policy not in {"skip", "allow", "reject"}:
         raise ValueError("Choose an explicit duplicate policy: skip, allow or reject")
-    if kind in {"add", "set"}:
+    if kind == "bulk":
+        from .collection_drafts import plan_input
+
+        draft, normalized = plan_input(actor, request)
+        from .photo_batches import draft_guard
+
+        photo_review = draft_guard(actor, draft)
+        if photo_review:
+            result["photo_review"] = photo_review
+        result.update(
+            bulk=normalized, card_intents=[], draft_id=draft["id"], draft_revision=draft["revision"]
+        )
+        result["errors"] = [
+            f"Row {r['row_id']}: {error}"
+            for r in normalized["rows"]
+            if r["included"]
+            for error in r["errors"]
+        ]
+        for row in normalized["rows"]:
+            if row["errors"] or not row["included"] or row.get("skipped") or row.get("noop"):
+                continue
+            if row["action"] == "add_copies":
+                for i in range(row["quantity"]):
+                    copy(
+                        {
+                            "printing_id": row["printing_id"],
+                            "provisional_identity": row.get("provisional_identity"),
+                            **row["attributes"],
+                        },
+                        f"{row['row_id']}:{i}",
+                    )
+            else:
+                intent = dict(
+                    kind="mark_owned" if row["action"] == "mark_owned" else "card_quantity",
+                    identity=row["identity"],
+                )
+                if row["action"] == "set_total":
+                    intent["established_total_quantity"] = row["total"]
+                result["card_intents"].append(intent)
+        result["warnings"].append("Whole-lot context is retained once; no cost is allocated to copies.")
+    elif kind in {"add", "set"}:
         attributes(actor, request.get("attributes", {}))
         entries = (
             [resolve(request.get("printing_id"))]
@@ -158,6 +200,29 @@ def build(
             raise conflict_error("Only an unchanged active provisional copy can be resolved")
         p = resolve(request.get("printing_id"))
         identity = json.loads(before["provisional_identity"] or "{}")
+        from .copy_identity import binding as admitted_group_binding
+
+        binding = admitted_group_binding(before)
+        if binding:
+            from .card_groups import build_groups
+
+            pokemon_games = {g["id"] for g in store.rows("SELECT id FROM games WHERE game_key='pokemon'")}
+            target_groups = build_groups([p], pokemon_game_ids=pokemon_games)["groups"]
+            if len(target_groups) != 1 or target_groups[0]["id"] != binding["group_id"]:
+                raise ValueError(
+                    "Resolution must retain this provisional copy's original game, set and card group"
+                )
+            literal = binding["identity"]
+            if any(
+                p[field] != literal[key]
+                for field, key in (
+                    ("set_name", "set_name"),
+                    ("name", "name"),
+                    ("collector_number", "number"),
+                    ("language", "language"),
+                )
+            ):
+                raise ValueError("Resolution must retain this provisional copy's bound card identity")
         identity["resolution"] = {
             "printing_id": p["id"],
             "catalog_version": p["catalog_version"],

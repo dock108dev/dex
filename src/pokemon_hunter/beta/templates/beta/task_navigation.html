@@ -1,14 +1,15 @@
-{% if navigation_group %}
+{% if navigation_group and request.path != '/cards/' and request.path != '/card-library/' and '/card-groups/' not in request.path %}
 <nav class="task-navigation" aria-label="{% if navigation_group == 'collection' %}Collection tasks{% elif navigation_group == 'shopping' %}Shopping tasks{% elif navigation_group == 'settings' %}Settings tasks{% else %}Administration tasks{% endif %}">
   {% if navigation_group == 'collection' %}
   <a href="/collection-tools/" {% if request.path == '/collection-tools/' %}aria-current="page"{% endif %}>Collection tools</a>
+  <a href="/add-many/">Add many cards</a>
   <a href="/goals/" {% if request.path == '/goals/' %}aria-current="page"{% endif %}>Goals</a>
   <a href="/collection/" {% if request.path == '/collection/' %}aria-current="page"{% endif %}>Physical copies</a>
   {% if parity %}<a href="/overview/" {% if request.path == '/overview/' %}aria-current="page"{% endif %}>Overview</a>{% endif %}
   {% elif navigation_group == 'shopping' %}
-  <a href="/shopping/" {% if request.path == '/shopping/' or request.path == '/shopping/legacy/' or '/shopping/saved/' in request.path %}aria-current="page"{% endif %}>Check a lot</a>
-  <a href="/hunt/" {% if request.path == '/hunt/' %}aria-current="page"{% endif %}>{% if parity %}eBay searches{% else %}eBay guide{% endif %}</a>
-  {% if parity %}<a href="/missing/" {% if request.path == '/missing/' %}aria-current="page"{% endif %}>Find missing cards</a><a href="/finds/" {% if request.path == '/finds/' %}aria-current="page"{% endif %}>Saved eBay finds</a>{% endif %}
+  <a href="/shopping/" {% if request.path == '/shopping/' %}aria-current="page"{% endif %}>Find singles</a>
+  <a href="/shopping/check/" {% if request.path == '/shopping/check/' or request.path == '/shopping/calculator/' or request.path == '/shopping/legacy/' or '/shopping/saved/' in request.path %}aria-current="page"{% endif %}>Check a listing/lot</a>
+  {% if parity %}<a href="/finds/" {% if request.path == '/finds/' %}aria-current="page"{% endif %}>Saved eBay finds</a>{% endif %}
   <a href="/packs/" {% if '/packs/' in request.path and not '/packs/saved/' in request.path %}aria-current="page"{% endif %}>Packs to open</a>
   <a href="/lookup/" {% if request.path == '/lookup/' %}aria-current="page"{% endif %}>Pack lookup</a>
   <a href="/packs/saved/" {% if '/packs/saved/' in request.path %}aria-current="page"{% endif %}>Saved pack research</a>
