@@ -47,6 +47,11 @@ Paths are relative to `src/pokemon_hunter/`.
 | Lot selection, wants and guide cells | `beta/lot_calculator.py`; `beta/lot_guides.py` projects supplied admitted records |
 | Private price lifecycle | `beta/price_snapshot_contract.py`, `beta/price_snapshots.py`, `beta/price_snapshot_sources.py` |
 | Finite Shopping acquisition | `beta/discovery.py`, `beta/discovery_transport.py`, `beta/listing_check.py` |
+| Bulk listings Hunter | `beta/hunter.py`, `hunter_views.py`; `hunter_query.py` checks provider parameters; `hunter_traversal.py` captures finite plans/cursors; `hunter_budget.py` preserves HUNT-01 and owns the disabled independent traversal allowance |
+| Local Hunter identity/reference batches | `beta/hunter_catalog.py` indexes; shared literal `beta/discovery_matching.py` and `discovery_comparison._project`; admitted `lot_calculator.retained_records`, `lot_guides` and `shopping_math` retain lifecycle, source selection and arithmetic; no second store |
+| Hunter opportunity scenarios | `beta/hunter_ranking.py` projects freshly admitted rows through existing Shopping arithmetic and ranks equivalent cost/applicability groups |
+| Hunter screen and review rendering | `beta/templates/beta/hunter.html`, `beta/static/hunter.js`, `hunter-review.js`, `hunter.css`; authenticated `hunter_views` resolves checked image bindings and bounded all-era correction choices; services retain arithmetic and authority |
+| Hunter lot proposals and temporary reviews | `beta/hunter_lots.py` bounded local parser and all-era adapters to `lot_calculator.prepare`; `hunter_lot_details.py` explicit official details share original lease and durable allowance, disabled by default |
 | Listing identifiers and response projection | `beta/listing_details.py`; `listing_check.py` retains compatible public imports |
 | Visual local Shopping search | `beta/discovery_catalog.py`, using checked card groups, current/frozen collection scope and image bindings |
 | Captured provider query and product eligibility | `beta/discovery_search.py`; no ownership or reference-value authority |

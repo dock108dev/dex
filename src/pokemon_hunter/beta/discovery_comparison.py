@@ -9,15 +9,23 @@ import re
 from datetime import datetime
 from decimal import Decimal
 
-from pokemon_hunter.hunt import exact_text_matches
 from pokemon_hunter.parser import extract_count
 from pokemon_hunter.pricing import money as provider_money
 from pokemon_hunter.pricing import shipping as provider_shipping
 from pokemon_hunter.security import ebay_url
 
-from . import collection, image_bindings, lot_calculator, lot_guides, market_identity, shopping, store
+from . import (
+    collection,
+    discovery_matching,
+    image_bindings,
+    lot_calculator,
+    lot_guides,
+    market_identity,
+    shopping,
+    store,
+)
 from . import shopping_math as math
-from .discovery_search import canonical_query, product_kind
+from .discovery_search import product_kind
 
 _GRADERS = r"PSA|BGS|CGC|SGC"
 _LANGUAGES = {
@@ -60,33 +68,43 @@ def _condition(value):
     }.get(normalized)
 
 
-def _clues(raw):
+def _clues(raw, *, claim_text=None):
     text = " ".join(str(raw.get(k) or "") for k in ("title", "shortDescription", "condition"))
+    claim_text = text if claim_text is None else claim_text
     languages = {
-        key for key, pattern in _LANGUAGES.items() if re.search(r"\b(?:" + pattern + r")\b", text, re.I)
+        key for key, pattern in _LANGUAGES.items() if re.search(r"\b(?:" + pattern + r")\b", claim_text, re.I)
     }
-    first = bool(re.search(r"\b(?:1st|first)[ -]*edition\b", text, re.I))
-    unlimited = bool(re.search(r"\b(?:unlimited|standard[ -]+edition)\b", text, re.I))
-    negated = bool(re.search(r"\b(?:no|not|non)[ -]+(?:1st|first)[ -]*edition\b", text, re.I))
+    first = bool(re.search(r"\b(?:1st|first)[ -]*edition\b", claim_text, re.I))
+    unlimited = bool(re.search(r"\b(?:unlimited|standard[ -]+edition)\b", claim_text, re.I))
+    negated = bool(re.search(r"\b(?:no|not|non)[ -]+(?:1st|first)[ -]*edition\b", claim_text, re.I))
     editions = {v for v, yes in (("first_edition", first), ("unlimited", unlimited)) if yes}
-    nonholo = bool(re.search(r"\b(?:non[ -]?(?:holo(?:foil)?|foil)|normal)\b", text, re.I))
+    nonholo = bool(re.search(r"\b(?:non[ -]?(?:holo(?:foil)?|foil)|normal)\b", claim_text, re.I))
     # Remove the negated finish before checking its positive spelling.
-    finish_text = re.sub(r"\bnon[ -]?(?:holo(?:foil)?|foil)\b", "", text, flags=re.I)
+    reverse = bool(re.search(r"\breverse[ -]*(?:holo(?:foil)?|foil)\b", claim_text, re.I))
+    finish_text = re.sub(r"\b(?:non[ -]?|reverse[ -]*)(?:holo(?:foil)?|foil)\b", "", claim_text, flags=re.I)
     holo = bool(re.search(r"\b(?:holo(?:foil)?|foil)\b", finish_text, re.I))
-    finishes = {v for v, yes in (("normal", nonholo), ("holo", holo)) if yes}
+    finishes = {v for v, yes in (("normal", nonholo), ("holo", holo), ("reverse-holo", reverse)) if yes}
     grades = {
         (grader.upper(), grade)
         for grader, grade in re.findall(
             r"\b(" + _GRADERS + r")\s*[-:]?\s*(10|[1-9](?:\.5)?)(?![\d.])", text, re.I
         )
     }
-    graded = bool(grades or re.search(r"\b(?:graded|slab|gem[ -]*mint|grade\s*\d)\b", text, re.I))
+    graded = bool(grades or re.search(r"\b(?:graded|slab|gem[ -]*mint|grade\s*\d)\b", claim_text, re.I))
     condition = str(raw.get("condition") or "").strip() or None
-    special = bool(
-        re.search(
-            r"\b(?:shadowless|reverse[ -]*(?:holo|foil)|error|misprint|proxy|replica|custom)\b", text, re.I
+    condition_text = re.sub(r"\b(?:[0-9]{1,4}\s*HP|HP\s*[:=-]?\s*[0-9]{1,4})\b", "", claim_text, flags=re.I)
+    condition_claims = {
+        value
+        for value, pattern in (
+            ("NM", r"nm|near[ -]+mint(?:[ -]+or[ -]+better)?"),
+            ("LP", r"lp|lightly[ -]+played"),
+            ("MP", r"mp|moderately[ -]+played"),
+            ("HP", r"hp|heavily[ -]+played"),
+            ("DMG", r"dmg|damaged"),
         )
-    )
+        if re.search(r"\b(?:" + pattern + r")\b", condition_text, re.I)
+    }
+    special = bool(re.search(r"\b(?:shadowless|error|misprint|proxy|replica|custom)\b", claim_text, re.I))
     conflicts = []
     if len(languages) > 1:
         conflicts.append("Conflicting seller language claims")
@@ -96,6 +114,8 @@ def _clues(raw):
         conflicts.append("Conflicting seller finish claims")
     if len(grades) > 1:
         conflicts.append("Conflicting literal grader or grade claims")
+    if len(condition_claims) > 1:
+        conflicts.append("Conflicting seller raw-condition claims")
     if special:
         conflicts.append("Special, altered, or unresolved printing claims need review")
     grade = next(iter(grades)) if len(grades) == 1 else (None, None)
@@ -110,6 +130,7 @@ def _clues(raw):
         grade=grade[1] if graded else "raw",
         graded=graded,
         condition=condition,
+        condition_claims=sorted(condition_claims),
         conflicts=conflicts,
     )
 
@@ -127,8 +148,8 @@ def _identity_conflicts(printing, clues):
     return issues
 
 
-def reference_issue(printing, clues, ref, today):
-    """Shared seller/review applicability after admitted guide selection."""
+def _reference_claim_issue(printing, clues, ref):
+    """Seller claims narrow admitted observations, never establish admission."""
     if _identity_conflicts(printing, clues):
         return "Claimed attributes conflict with the selected printing"
     provider, evidence = ref.get("provider_identity") or {}, ref.get("raw_record") or {}
@@ -141,11 +162,15 @@ def reference_issue(printing, clues, ref, today):
         )
         if clues.get(key) and known and clues[key] != known:
             return "Claimed attributes conflict with the admitted reference"
+    reference_condition = _condition(evidence.get("condition"))
+    condition_claims = set(clues.get("condition_claims", []))
+    raw_condition = _condition(clues.get("condition"))
+    if raw_condition:
+        condition_claims.add(raw_condition)
     if (
         not clues["graded"]
-        and _condition(evidence.get("condition"))
-        and _condition(clues.get("condition"))
-        and _condition(evidence["condition"]) != _condition(clues["condition"])
+        and reference_condition
+        and any(claim != reference_condition for claim in condition_claims)
     ):
         return "Claimed condition conflicts with the admitted reference"
     if clues["graded"] and ref.get("grader") not in {
@@ -154,54 +179,77 @@ def reference_issue(printing, clues, ref, today):
         "Generic guide population",
     }:
         return "Literal reference grader conflicts with the claimed grader"
+    return None
+
+
+def reference_issue(printing, clues, ref, today):
+    """Shared seller/review applicability after admitted guide selection."""
+    issue = _reference_claim_issue(printing, clues, ref)
+    if issue:
+        return issue
     if math.eligibility(ref, today.isoformat()) != "eligible":
         return "The retained reference is no longer eligible"
     return None
 
 
-def _matches(candidates, clues):
-    # Reuse the established set/name/number matcher, independent of legacy scoring.
-    # Cheap normalization narrows the all-era catalog before compiling literal
-    # matching expressions; it cannot establish a match by itself.
-    clues = {**clues, "text": canonical_query(clues["text"])}
-    folded = " ".join(clues["text"].casefold().split())
-    candidates = [
-        p
-        for p in candidates
-        if " ".join(p["set_name"].casefold().split()) in folded
-        and " ".join(p["name"].casefold().split()) in folded
-    ]
-    cards = {
-        p["id"]: dict(
-            card_id=p["id"],
-            name=p["name"],
-            set=p["set_name"],
-            number=p["collector_number"],
-            set_id="base_set" if p["set_name"] == "Base Set" else p["set_id"],
-            dex_eligible=True,
+def _reference_cells(printing, records, today, clues):
+    """Narrow a local admitted bucket before the established dated selection.
+
+    A newer observation for a different literal grader or raw condition cannot
+    hide an older applicable observation. Null/stale/source/printing admission
+    remains with the ordinary guide projection and source lifecycle.
+    """
+    import json
+
+    legacy_id = json.loads(printing["provenance"]).get("legacy_id")
+    accepted, rejected, applicable = [], set(), 0
+    for record in records:
+        same_printing = (
+            record.get("printing_id") == printing["id"]
+            if "_snapshot_version" in record
+            else legacy_id is not None and record.get("card_id") == legacy_id
         )
-        for p in candidates
-    }
-    matched = exact_text_matches(clues["text"], dict(cards=cards, value_intent=True))
-    if matched:
-        return [p for p in candidates if p["id"] in matched]
-    # Multiple variants of the same card are not a set/name/number conflict. Only
-    # an explicit seller attribute may narrow them; never pick the highest value.
-    proposed = []
-    for p in candidates:
-        one = {p["id"]: cards[p["id"]]}
-        if exact_text_matches(clues["text"], dict(cards=one, value_intent=True)):
-            proposed.append(p)
+        if not same_printing or str(record.get("grade")) != clues["grade"]:
+            accepted.append(record)
+            continue
+        issue = _reference_claim_issue(
+            printing,
+            clues,
+            dict(
+                raw_record=record,
+                provider_identity=record.get("provider_identity"),
+                grader=record.get("grader"),
+            ),
+        )
+        if issue:
+            rejected.add(issue)
+        else:
+            accepted.append(record)
+            applicable += 1
+    subset = lot_calculator.SnapshotRecords(accepted, getattr(records, "status", "active_snapshot"))
+    cells, reasons = lot_guides.cell_details(printing, subset, today)
+    if cells.get(clues["grade"]) is None and rejected:
+        explanation = "; ".join(sorted(rejected))
+        reasons[clues["grade"]] = (
+            reasons.get(clues["grade"], "Unavailable admitted observation") + "; " + explanation
+            if applicable
+            else explanation
+        )
+    return cells, reasons
+
+
+def _matches(candidates, clues):
+    # Name tokens only narrow. The shared literal set/name/whole-number check
+    # establishes seller proposals; attributes may then resolve supported siblings.
+    candidates = discovery_matching.literal_candidates(candidates, clues["text"])
+    proposed = [p for p in candidates if discovery_matching.evidence(p, clues)["matched"]]
     fitting = [p for p in proposed if not _identity_conflicts(p, clues)]
     return fitting or proposed
 
 
 def _approx_matches(candidates, clues):
     """Name-only seller clues are useful choices, never exact-price evidence."""
-    text = canonical_query(clues["text"])
-    return [
-        p for p in candidates if re.search(r"(?<![\w'’])" + re.escape(p["name"]) + r"(?![\w'’])", text, re.I)
-    ]
+    return discovery_matching.literal_candidates(candidates, clues["text"])
 
 
 def _identity(printing, clues, artwork=None):
@@ -210,6 +258,7 @@ def _identity(printing, clues, artwork=None):
         name=printing["name"],
         set_name=printing["set_name"],
         collector_number=printing["collector_number"],
+        seller_collector_numbers=discovery_matching.number_claims(printing, clues["text"]),
         artwork_url=(artwork or {}).get("image_url"),
         artwork_basis="Catalog card reference; edition and finish depiction unverified",
         language=clues["language"],
@@ -257,9 +306,14 @@ def _reference(ref):
                 k: c.get(k)
                 for k in (
                     "source_url",
+                    "source_version",
                     "source_contract",
                     "as_of",
+                    "valuation_as_of",
                     "date_basis",
+                    "publisher_built_at",
+                    "captured_at",
+                    "grade",
                     "grader",
                     "expires_at",
                     "save_allowed",
@@ -307,7 +361,6 @@ def compare(actor, raw_rows, candidates, *, now=None):
     """
     store.verified(actor)
     now = now or datetime.now(shopping.TZ)
-    today = now.astimezone(shopping.TZ).date()
     authoritative = {p["id"]: p for p in collection.catalog(actor, include_archived=True)}
     printings = []
     for candidate in candidates:
@@ -316,7 +369,33 @@ def compare(actor, raw_rows, candidates, *, now=None):
             raise ValueError("Discovery catalog differs from authorized metadata")
         printings.append(p)
     records = lot_calculator.retained_records()
-    artwork = image_bindings.catalog_images(actor, printings)
+    return _project(actor, raw_rows, printings, records, now=now)
+
+
+def _project(
+    actor,
+    raw_rows,
+    printings,
+    records,
+    *,
+    now=None,
+    candidates_for=None,
+    records_for=None,
+    artwork=None,
+    include_unsupported=False,
+):
+    """Shared arithmetic over internally authorized catalog/reference batches.
+
+    This is an internal adapter boundary, not an alternate admission path. Callers
+    must load the catalog through collection.catalog and references through
+    retained_records before entering it. Hunter supplies indexed candidate and
+    reference subsets and leaves artwork for its later screen integration.
+    """
+    store.verified(actor)
+    now = now or datetime.now(shopping.TZ)
+    today = now.astimezone(shopping.TZ).date()
+    if artwork is None:
+        artwork = image_bindings.catalog_images(actor, printings)
     result, seen, guide_cache = [], set(), {}
     for raw in raw_rows:
         item_id = raw.get("itemId")
@@ -324,12 +403,41 @@ def compare(actor, raw_rows, candidates, *, now=None):
             continue
         seen.add(item_id)
         clues = _clues(raw)
-        kind = product_kind(clues["text"])
-        if kind == "unsupported":
+        candidates = candidates_for(clues) if candidates_for else printings
+        literal = [
+            candidate for candidate in candidates if discovery_matching.evidence(candidate, clues)["matched"]
+        ]
+        claim_text = discovery_matching.without_names(literal, clues["text"]) if literal else clues["text"]
+        if literal:
+            clues = _clues(raw, claim_text=claim_text)
+        kind = product_kind(claim_text)
+        if kind == "unsupported" and not include_unsupported:
             continue
-        matched = _matches(printings, clues)
-        approximate = matched or _approx_matches(printings, clues)
+        matched = _matches(candidates, clues)
+        approximate = matched or _approx_matches(candidates, clues)
         p = matched[0] if len(matched) == 1 and kind == "single" else None
+        evidence = discovery_matching.evidence(p, clues) if p else None
+        identity_issues = list(clues["conflicts"])
+        if p:
+            identity_issues.extend(_identity_conflicts(p, clues))
+        elif not matched:
+            for candidate in approximate:
+                identity_issues.extend(discovery_matching.evidence(candidate, clues)["conflicts"])
+        unavailable = discovery_matching.unavailable(p) if p else None
+        if unavailable:
+            identity_issues.append(unavailable)
+        identity_issues = list(dict.fromkeys(identity_issues))
+        identity_status = (
+            "unavailable"
+            if unavailable
+            else "conflicting"
+            if identity_issues
+            else "matched"
+            if p
+            else "ambiguous"
+            if approximate
+            else "unmatched"
+        )
         options = raw.get("buyingOptions", [])
         options = options if isinstance(options, list) and all(isinstance(o, str) for o in options) else []
         auction = "AUCTION" in options
@@ -356,6 +464,10 @@ def compare(actor, raw_rows, candidates, *, now=None):
             proposed_identity=_identity(p, clues, artwork.get(p["id"])) if p else None,
             identity_candidates=[_identity(c, clues, artwork.get(c["id"])) for c in approximate[:40]],
             identity_candidates_total=len(approximate),
+            identity_status=identity_status,
+            identity_diagnostics=identity_issues,
+            identity_uncertainties=evidence["uncertainties"] if evidence else [],
+            seller_collector_numbers=discovery_matching.number_claims(p, clues["text"]) if p else [],
             discovery_eligibility="candidate",
             reference_eligibility="unpriced",
             listing_price=price,
@@ -375,9 +487,7 @@ def compare(actor, raw_rows, candidates, *, now=None):
             save_allowed=False,
             save_reason="Discovery results are temporary; saved research is available in Check a listing/lot.",
         )
-        issues = list(clues["conflicts"])
-        if p:
-            issues += _identity_conflicts(p, clues)
+        issues = list(identity_issues)
         if len(matched) > 1:
             issues.append("Multiple catalog printings match; edition or finish needs review")
         if not {"FIXED_PRICE", "AUCTION"}.intersection(options):
@@ -386,6 +496,8 @@ def compare(actor, raw_rows, candidates, *, now=None):
             issues.append(
                 "Loose mixed-lot contents need review; one card reference cannot value the whole lot"
             )
+        elif kind == "unsupported":
+            issues.append("Unsupported product cannot use a single-card reference")
         count = extract_count(clues["text"]).denominator
         if (
             count is not None
@@ -399,9 +511,19 @@ def compare(actor, raw_rows, candidates, *, now=None):
         if issues:
             row["reason"] = "; ".join(issues)
         elif p:
-            if p["id"] not in guide_cache:
-                guide_cache[p["id"]] = lot_guides.cell_details(p, records, today)
-            cells, reasons = guide_cache[p["id"]]
+            guide_key = (
+                (p["id"],)
+                + tuple(
+                    clues.get(key)
+                    for key in ("language", "edition", "finish", "grade", "grader", "graded", "condition")
+                )
+                + (tuple(clues.get("condition_claims", [])),)
+            )
+            if guide_key not in guide_cache:
+                guide_cache[guide_key] = _reference_cells(
+                    p, records_for(p) if records_for else records, today, clues
+                )
+            cells, reasons = guide_cache[guide_key]
             ref = cells.get(clues["grade"])
             if ref is None:
                 row["reason"] = reasons.get(
@@ -426,6 +548,7 @@ def compare(actor, raw_rows, candidates, *, now=None):
                         or shipping is None
                         or price is None
                         or bool(ref.get("conflicts"))
+                        or bool(row.get("identity_uncertainties"))
                     )
                     row["reference"] = _reference(ref)
                     row["reference_eligibility"] = "conditional" if conditional else "eligible"
@@ -464,6 +587,8 @@ def compare(actor, raw_rows, candidates, *, now=None):
             row["basis"] += " Auction bid may change; any buy-now amount is a separate offer."
         if approximate and not matched:
             row["reason"] += "; approximate name match only, choose and confirm contents in review"
+        if row["identity_uncertainties"]:
+            row["reason"] += "; " + "; ".join(row["identity_uncertainties"])
         result.append(row)
 
     def rank(row):
@@ -484,4 +609,5 @@ def compare(actor, raw_rows, candidates, *, now=None):
         delta = comparison["reference_minus_delivered_total"]
         return band, -Decimal(delta) if delta is not None else Decimal(0), row["item_id"]
 
+    store.verified(actor)
     return sorted(result, key=rank)

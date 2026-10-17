@@ -109,6 +109,21 @@ navigation and reload. These are current views; named-view persistence is unavai
 
 ## Shopping
 
+Price Hunter at `/shopping/hunter/` leads with Singles/Lots/Both, Hunt and an
+independent Stop, followed by readable scope/progress and image-led received
+results. Coverage/accounting detail is secondary. Local result pages and explicit
+Continue acquisition have distinct labels and request contracts. Disabled
+acquisition explains unavailability before a search. The existing merged visual
+search and calculator remain separate Shopping tools.
+
+Temporary lot review leads with Ungraded, quantities and the unresolved remainder.
+Attribute/cost corrections, seller provenance and additional official details are
+secondary. Input changes withhold obsolete comparisons; stale revisions reload
+without resubmission. Back restores a revalidated result, scroll and keyboard
+focus. Lifecycle reads preserve focused result controls, and independent detail
+Stop remains reachable across Back. Measured text enlargement and narrow-layout
+checks are engineering evidence, separate from owner/device acceptance.
+
 Broad Pokémon names show Pokémon artwork and current collection context. Choosing
 a Pokémon reveals card references; detailed name/set/number searches show card scans
 and leave plausible printings as choices. All supported sets and quick set buttons
@@ -194,6 +209,26 @@ or human usability results. Customer walkthroughs use the existing installation 
 its actual available state.
 
 ## Design checks
+
+### Current owner review
+
+UX-05 remains an owner verdict on the genuine installed collection interface.
+Use the [recorded installation and existing helper](local-development.md#existing-installations),
+not old launcher/runtime instructions from historical handoffs. Review My Cards
+versus Library, species/card images, current versus frozen progress, editor cancel,
+scope Apply/Clear, Back/filter/focus and narrow/enlarged text. An actual collection
+change requires owner-selected real input and complete Review/Confirm.
+
+For delivered SHOP-04, search Hypno, Alakazam or Gengar; choose a Pokémon, refine
+by set, and inspect the card references and current Missing context. The
+[Shopping guide](hunts.md#one-visual-pokémon-card-and-ebay-search) describes explicit
+offer search and Ungraded review. Local browsing alone does not call eBay; another
+provider action is separate from closed engineering qualification allowances.
+Record acceptance or the page/action, observed result and expected behavior for
+a concrete repair. Tests and engineering walkthroughs do not supply the owner's
+verdict. Photo-batch real testing remains deferred; the Price Hunter is not yet built.
+
+### Engineering review
 
 Review representative first-use, populated, unavailable and failure states at matching
 viewport sizes. Check My Cards versus Card Library, species and card detail, ownership,

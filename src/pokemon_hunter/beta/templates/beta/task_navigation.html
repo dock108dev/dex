@@ -1,4 +1,4 @@
-{% if navigation_group and request.path != '/shopping/' and request.path != '/cards/' and request.path != '/card-library/' and '/card-groups/' not in request.path %}
+{% if navigation_group and request.path != '/shopping/' and request.path != '/shopping/hunter/' and request.path != '/cards/' and request.path != '/card-library/' and '/card-groups/' not in request.path %}
 <nav class="task-navigation" aria-label="{% if navigation_group == 'collection' %}Collection tasks{% elif navigation_group == 'shopping' %}Shopping tasks{% elif navigation_group == 'settings' %}Settings tasks{% else %}Administration tasks{% endif %}">
   {% if navigation_group == 'collection' %}
   <a href="/collection-tools/" {% if request.path == '/collection-tools/' %}aria-current="page"{% endif %}>Collection tools</a>
@@ -7,6 +7,7 @@
   <a href="/collection/" {% if request.path == '/collection/' %}aria-current="page"{% endif %}>Physical copies</a>
   {% if parity %}<a href="/overview/" {% if request.path == '/overview/' %}aria-current="page"{% endif %}>Overview</a>{% endif %}
   {% elif navigation_group == 'shopping' %}
+  <a href="/shopping/hunter/">Price Hunter</a>
   <a href="/shopping/" {% if request.path == '/shopping/' %}aria-current="page"{% endif %}>Search Pokémon &amp; cards</a>
   <a href="/shopping/check/" {% if request.path == '/shopping/check/' or request.path == '/shopping/calculator/' or request.path == '/shopping/legacy/' or '/shopping/saved/' in request.path %}aria-current="page"{% endif %}>Check a listing/lot</a>
   {% if parity %}<a href="/finds/" {% if request.path == '/finds/' %}aria-current="page"{% endif %}>Saved eBay finds</a>{% endif %}

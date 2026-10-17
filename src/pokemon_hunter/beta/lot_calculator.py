@@ -259,7 +259,17 @@ def locks(actor, session, supplied=None):
     return session.get(key, [])
 
 
-def prepare(actor, raw, now=None, *, review_traits=None, unknown_quantity=0):
+def prepare(
+    actor,
+    raw,
+    now=None,
+    *,
+    review_traits=None,
+    unknown_quantity=0,
+    catalog_entries=None,
+    reference_records=None,
+    reference_cells=None,
+):
     store.verified(actor)
     shopping.fields(
         raw,
@@ -270,8 +280,18 @@ def prepare(actor, raw, now=None, *, review_traits=None, unknown_quantity=0):
         raise ValueError("At most 200 card identities")
     now = now or datetime.now(shopping.TZ)
     today = now.astimezone(shopping.TZ).date()
-    entries = {p["id"]: p for p in catalog(actor, include_goals=True, include_current=True)}
-    records, identities, by_column, seen = retained_records(), [], {g: [] for g in COLUMNS}, set()
+    # Internal adapters let Hunter reuse this temporary review engine across the
+    # published all-era catalog; ordinary calculator admission stays unchanged.
+    entries = {
+        p["id"]: p
+        for p in (
+            catalog(actor, include_goals=True, include_current=True)
+            if catalog_entries is None
+            else catalog_entries
+        )
+    }
+    records = retained_records() if reference_records is None else reference_records
+    identities, by_column, seen = [], {g: [] for g in COLUMNS}, set()
     selections = []
     for line in raw["cards"]:
         shopping.fields(line, {"printing_id", "quantity", "values"}, {"printing_id", "quantity", "values"})
@@ -281,7 +301,7 @@ def prepare(actor, raw, now=None, *, review_traits=None, unknown_quantity=0):
         seen.add(p["id"])
         math.quantity(line["quantity"])
         shopping.fields(line["values"], COLUMNS, COLUMNS)
-        guides = cells(p, records, today)
+        guides = (reference_cells or cells)(p, records, today)
         if review_traits is not None:
             from .discovery_comparison import reference_issue
 

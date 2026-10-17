@@ -93,3 +93,12 @@ EX Trainer Kit 2 — Minun Vulpix #7 has no retained provider image. A substitut
 must match that exact card identity and its source permissions. An unavailable
 asset does not authorize bypassing a denied route or collecting image bytes.
 Higher-resolution references require the same identity binding and fallback policy.
+
+## Hunter result and review bindings
+
+Hunter HTTP projections resolve returned printing IDs through `catalog_images`.
+Results, unresolved candidates, lot proposals and included-review identities use
+those checked descriptors. Optional descriptors/labels are omitted when needed to
+retain the existing 2 MiB response limit; the UI keeps a neutral fixed image slot.
+No seller-image URLs are constructed. Browser qualification uses controlled image
+responses and does not establish remote availability or seller-photo evidence.

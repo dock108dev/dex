@@ -15,6 +15,20 @@ Updating one does not update the other.
 
 ## Existing installations
 
+The owner installation recorded at SHOP-04 delivery on October 16, 2026 is
+`/Users/michaelfuscoletti/dex-private/b2-parity-20260928/review-local`, served at
+`http://127.0.0.1:8011/`. Its saved helper is
+`/Users/michaelfuscoletti/.local/share/dex/operations/simple-local/start-dex.py`,
+selecting `/Users/michaelfuscoletti/.local/share/dex/runtimes/shop-04-delivered-20261016/bin/python`.
+Desktop `Dex.command` was absent at delivery. The recorded installed wheel SHA-256 is
+`536a225e7f9c544b94c94c6f516a6c3bbbfa06814412882576d41fee9c683096`.
+This is a delivery record, not a current listener/process verification. Recheck before
+using or updating the app. Local evidence is in
+`reports/shop-04-20261016/closeout.md` and `reports/shop-04-20261016/identity.json`.
+Later source commits and the offline ON-02 candidate do not become installed by
+updating the checkout. Keep the existing private provider configuration and
+compatible recovery runtimes; preserve latest state rather than restoring older data.
+
 Reuse the existing private data root and its installed interpreter. Check the running
 process and listener before starting another server. Set these variables to the actual
 existing locations; the example locations below are placeholders:
@@ -90,6 +104,25 @@ provider request; configured status does not prove remote access or remaining qu
 Restart normally after changing environment values. See [Shopping](hunts.md).
 
 ## Testing
+
+HUNT-01–05 and LOT-01 backend are backend-only; do not install the full checkout to demonstrate them.
+The normal authority/CSRF API, finite two-lane service and local identity/reference
+adapters can be exercised in engineering tests with `tests/test_hunter*.py`,
+`test_discovery_matching.py` and the existing Discovery/reference regressions.
+The Hunter backend implementation slices authorize zero provider operations; the exhausted HUNT-01 ledger is
+unchanged. Their exact isolated candidate and closeout are retained under
+`reports/hunt-02-03-20261016/`. Customer-facing sessions continue
+using the actual installation above. The metadata-only `scripts/qualify_hunter.py`
+audit may read that root without cleanup or provider acquisition. Genuine backend
+qualification uses the saved Production configuration and the independently
+consumed allowance described in [Shopping](hunts.md#hunt-01-backend-contract).
+
+The bounded traversal/ranking/lot backend candidate is recorded under
+`reports/hunt-04-05-lot-01-20261016/`. Its shared traversal allowance remains
+disabled; tests use disposable roots and fake transports with external sockets
+blocked. The real SHOP-04 installation, root and startup command above remain
+unchanged. See [service/API contracts](hunts.md#hunt-0405-and-lot-01-backend-contracts)
+for explicit continuation, local result cursors and temporary lot correction rules.
 
 Use focused checks for the affected behavior:
 
@@ -171,3 +204,20 @@ root. Preserve consumed attempts independently of restores; never reset the jour
 to bypass its 24-hour interval. There is no automatic retry or schedule. Raw response
 bodies and provider error text are not retained in summaries. On interruption, retain
 consumed state, allow the bounded child to exit, then clean managed pending copies.
+
+## Hunter UI engineering qualification
+
+HUNT-06 adds `/shopping/hunter/` and the temporary lot review to the source
+candidate. It is not installed in the customer SHOP-04 runtime. Production
+`TRAVERSAL_ALLOWANCE` remains `None`; HUNT-01 remains exhausted. Do not install the
+checkout or use fabricated state for a customer demonstration.
+
+Run `python scripts/qualify_hunter_ui.py --output reports/hunter-ui-local` in the
+checkout engineering environment. This real Chromium harness creates fresh
+disposable roots, uses in-process fake provider transport and controlled image/
+lifecycle responses, and refuses the ordinary customer port. It records layout,
+measured doubled text, API/action boundaries and zero external operations. These
+fixtures are engineering evidence, not provider listings or customer acceptance.
+The same harness can be invoked with a fresh isolated wheel interpreter; its
+report records application origins and exact shipped asset hashes. Focused
+renderer contracts use `node scripts/verify_hunter_review.js`.

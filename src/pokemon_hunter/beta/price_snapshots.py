@@ -116,10 +116,14 @@ def denied():
 
 
 def entries():
+    from . import store
     from .collection_catalog import catalog_entries
-    from .lot_calculator import SETS
 
-    return {p["id"]: p for p in catalog_entries(published_only=True) if p["set_name"] in SETS}
+    # The calculator's vintage browse selector is not a source/admission rule.
+    # Reviewed contracts still pin every product/subtype and exact printing;
+    # published all-era Pokémon metadata merely supplies validation identities.
+    games = {row["id"] for row in store.rows("SELECT id FROM games WHERE game_key='pokemon'")}
+    return {p["id"]: p for p in catalog_entries(published_only=True) if p["game_id"] in games}
 
 
 def reviewed(package):

@@ -34,6 +34,48 @@ physical-copy image. Source software/metadata licenses grant no artwork rights;
 private reference use remains local, with public/staging remote
 reference exclusions and no bundled/exported image bytes.
 
+## Price Hunter catalog scope
+
+HUNT-02 extends `beta/hunter_catalog.py` and the shared
+`beta/discovery_matching.py` literal matcher. One authorized catalog batch retains
+published set aliases, literal names, collector numbers and publication state.
+Indexed narrowing precedes literal set/name/number and printing applicability;
+tokens never establish an exact printing. Base Set and Base Set 2 remain separate.
+Padding can normalize a number without removing a conflicting denominator; a
+missing denominator remains explicit uncertainty. Named forms and plausible
+edition/finish/variant siblings stay distinct. Archived/unavailable identities
+remain visible without receiving a reference or substituting an available sibling.
+
+Matching includes owned, all indexed generations/eras and Trainer/Energy singles.
+It does not consult ownership to acquire listings. No eBay product ID is equated
+with another provider's product ID; existing independently reviewed product/subtype
+mappings remain reference applicability evidence. LOT-01 reuses these indexes
+for bounded seller-text proposals and passes all-era identities to the existing
+Ungraded review engine. Image binding IDs are backend proposals; artwork rendering
+and prefilled review UI remain HUNT-06 work.
+The October 16 read-only metadata audit counted 7,036 printings / 68 sets, including
+only four printings above species 251. This is local coverage, not the Pokémon
+universe or an acquisition allowlist. See the
+[qualified adapter contract](hunts.md#hunt-0203-local-adapters).
+
+The owner selected an all-generation, all-era Pokémon TCG Price Hunter as the
+next feature, using broad listing batches followed by local database matching.
+This is a new listing-search scope, not a claim that the current authenticated
+#001–251 research controls or published catalog already cover every offered card.
+The existing Original 151/251 denominators and frozen goals remain unchanged.
+
+The listing query spans all years under the selected US/English rules, without
+using owned or priced catalog cards as its allowlist. Match against versioned
+existing set/number/name/language/variant mappings and local admitted prices;
+include supported Pokémon, Trainer and Energy singles. Unmatched offers remain
+unmatched rather than forcing a new universe import before the first hunt.
+Indexed cards, artwork, reference eligibility and fetched/matched listings need
+separate denominators. Extend reviewed catalog publication/mappings independently
+where actual results expose gaps. A sampled result page is not complete marketplace
+coverage. All-card-game and general-eBay expansion is a later
+[Shopping backlog](hunts.md#backlog) decision. See the
+[selected hunter requirements](hunts.md#selected-price-hunter-requirements).
+
 ## Collection and goals
 
 Pokédex provides region, ownership, indexed set/era, card name/number, card type

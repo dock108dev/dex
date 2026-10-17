@@ -133,8 +133,13 @@ def cell_details(printing, records, today):
                             source_contract=other["_contract_sha256"],
                             source_review=other["_review_id"],
                             source_url=other["source_url"],
+                            source_version=other["source_version"],
                             as_of=snapshot_rules.reference_date(other),
+                            valuation_as_of=other["as_of"],
                             date_basis="publisher_build" if "reference_as_of" in other else "valuation",
+                            publisher_built_at=other.get("publisher_built_at"),
+                            captured_at=other["captured_at"],
+                            grade=other["grade"],
                             grader=other["grader"],
                             expires_at=other["_expires_at"],
                             save_allowed=other["_save_allowed"],
@@ -162,9 +167,9 @@ def cell_details(printing, records, today):
             )
         elif issues:
             labels = {
-                "invalid_or_missing_date": "Provider valuation date missing; capture date cannot establish freshness",
-                "stale": "Provider valuation date is older than 30 days",
-                "future": "Provider valuation date is in the future",
+                "invalid_or_missing_date": "Reference date missing; capture date cannot establish freshness",
+                "stale": "Reference date is older than 30 days",
+                "future": "Reference date is in the future",
                 "rejected_installed_identity": "Rejected: installed printing identity changed",
                 "rejected_provider_identity": "Rejected: provider set or number conflicts",
                 "rejected_unresolved_or_conflicting_variant": "Rejected: edition, finish or variant fit is unresolved",

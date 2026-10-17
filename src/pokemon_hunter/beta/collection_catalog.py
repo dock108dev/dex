@@ -16,7 +16,10 @@ def catalog_entries(query="", set_id="", include_archived=False, *, published_on
     if published_only and not settings.B4_ENABLED:
         return []
     result = store.rows(
-        "SELECT p.*,s.game_id,s.name AS set_name,s.catalog_version,s.coverage_status FROM printings p JOIN catalog_sets s ON s.id=p.set_id "
+        "SELECT p.*,s.game_id,s.name AS set_name,s.aliases AS set_aliases,"
+        + ("s.publication_state" if settings.B4_ENABLED else "'published'")
+        + " AS set_publication_state,s.catalog_version,s.coverage_status "
+        "FROM printings p JOIN catalog_sets s ON s.id=p.set_id "
         + (
             "WHERE p.publication_state='published' AND s.publication_state='published' "
             if (settings.B4_ENABLED and not include_archived) or published_only
@@ -31,6 +34,7 @@ def catalog_entries(query="", set_id="", include_archived=False, *, published_on
             if json.loads(r["provenance"]).get("provider", "").split(":")[0] in {"tcgdex", "dex-synthetic"}
         ]
     for row in result:
+        row["set_aliases"] = json.loads(row["set_aliases"])
         row["attributes"] = json.loads(row["attributes"])
         row["unresolved_fields"] = json.loads(row["unresolved_fields"])
         row["name"] = row["attributes"].get("name", "Unidentified card")

@@ -8,7 +8,15 @@ EDITION = {
     "1st-edition": "first_edition",
     "first_edition": "first_edition",
 }
-FINISH = {"holo": "holo", "holofoil": "holo", "normal": "normal", "nonfoil": "normal"}
+FINISH = {
+    "holo": "holo",
+    "holofoil": "holo",
+    "normal": "normal",
+    "nonfoil": "normal",
+    "reverse": "reverse-holo",
+    "reverse-holo": "reverse-holo",
+    "reverse-holofoil": "reverse-holo",
+}
 SUBTYPES = {
     "Holofoil": ("unspecified", "holo"),
     "Normal": ("unspecified", "normal"),

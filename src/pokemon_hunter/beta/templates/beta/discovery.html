@@ -6,7 +6,7 @@
 <div class="discovery" id="discovery">
   <div class="discovery-heading">
     <div><h1>Shopping</h1><p class="muted">Find Pokémon and cards, then explore eBay singles and loose lots.</p></div>
-    <div class="discovery-links"><a href="/shopping/check/">Check a listing/lot</a><a href="/shopping/calculator/">Manual calculator</a><a href="/shopping/legacy/">Saved research</a><a href="/packs/">Packs</a></div>
+    <div class="discovery-links"><a href="/shopping/hunter/">Price Hunter</a><a href="/shopping/check/">Check a listing/lot</a><a href="/shopping/calculator/">Manual calculator</a><a href="/shopping/legacy/">Saved research</a><a href="/packs/">Packs</a></div>
   </div>
   {% if shopping_context.return_url %}<p><a id="shopping-back" href="{{ shopping_context.return_url }}">Back to collection</a></p>{% endif %}
   {% if shopping_context.kind != 'all' %}<p class="discovery-context">{{ shopping_context.label }}{% if shopping_context.goal_policy %} · {{ shopping_context.goal_policy }}{% endif %}</p>{% endif %}

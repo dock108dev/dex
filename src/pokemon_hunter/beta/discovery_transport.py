@@ -58,12 +58,20 @@ class Transport:
             }
             if stage == "browse":
                 options = search_options or {}
-                if set(options) - {"sort"} or options.get("sort", "ending_soonest") not in {
+                if not isinstance(options, dict):
+                    raise ValueError("Choose supported provider search options")
+                if "hunter" in options:
+                    from .hunter_query import checked_params
+
+                    if set(options) != {"hunter"} or query is not None:
+                        raise ValueError("Hunter requires its separate checked request")
+                    params = checked_params(options["hunter"])
+                elif set(options) - {"sort"} or options.get("sort", "ending_soonest") not in {
                     "best_match",
                     "ending_soonest",
                 }:
                     raise ValueError("Choose supported provider search options")
-                if options.get("sort", "ending_soonest") == "ending_soonest":
+                elif options.get("sort", "ending_soonest") == "ending_soonest":
                     params["sort"] = "endingSoonest"
             if stage != "browse":
                 from .listing_details import parse_identifier
@@ -111,6 +119,14 @@ class Transport:
                     raise ProviderFailure(stage) from None
                 if not isinstance(value, dict) or value.get("errors"):
                     raise ProviderFailure(stage)
+                if stage == "browse" and search_options and "hunter" in search_options:
+                    rows = value.get("itemSummaries", [])
+                    if (
+                        not isinstance(rows, list)
+                        or len(rows) > params["limit"]
+                        or not all(isinstance(row, dict) for row in rows)
+                    ):
+                        raise ProviderFailure(stage)
                 return value
             finally:
                 await response.aclose()

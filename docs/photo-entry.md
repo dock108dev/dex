@@ -5,10 +5,56 @@ and requires confirmation before adding a physical copy. Manual matching and
 provisional entries work when recognition fails or catalog coverage is missing.
 Model output does not establish authenticity, condition, grade or value.
 
-Single-card entry uses `/scan/`. Multiple-card batches use `/add-photos/` and require
-separate local activation. Availability depends on the installation's capabilities;
-opening a page never enables a feature, migrates storage or starts recognition.
-Real-photo recognition accuracy remains unmeasured.
+Single-card entry uses `/scan/`. The separately qualified multiple-card candidate uses
+`/add-photos/` and requires explicit local activation. It is not installed on the
+customer runtime. Availability depends on the installation's capabilities; opening
+a page never enables a feature, migrates storage or starts recognition. Real-photo
+recognition accuracy remains unmeasured.
+
+## Delivered work and owner decisions
+
+The October 16 onboarding design (ON-00) mapped manual and photo entry into the
+existing collection planner, review, confirmation, receipt and Undo services. The
+catalog audit found 68 published English Pokémon sets, 7,036 printing rows and 4,275
+groups at that revision. Those are indexed scopes, not complete physical-card or
+variant coverage; see [catalog coverage](catalogs.md) and
+[manual bulk entry](effective-collection.md#manual-bulk-entry).
+
+| Decision | Current state | Meaning |
+| --- | --- | --- |
+| D1 — Manual bulk | Selected and locally delivered as ON-01, including its contrast repair | Add Card → Add many cards offers Checklist, Paste numbers and mixed-set CSV, one reviewed change and whole-batch Undo. Actual additions still require the owner's selected cards and explicit Review/Confirm. |
+| D2 — Recognition direction | Local Codex CLI pilot selected | ON-02 Phase A offline engineering is qualified. API/BYOK and product-funded premium are unselected alternatives; CLI sign-in does not establish API credentials or commercial entitlement. |
+| D3 — Real-photo evaluation | Explicitly deferred by the owner | Do not request a corpus, reopen the selection or run recognition without new owner direction. Retain the proposal and manual matching. |
+
+The delivered customer app includes ON-01 with its neutral readable title/back link,
+the current-collection Missing repair and the separate SHOP-04 overlay. SHOP-04
+preserves ON-01; its package explicitly excludes ON-02. Installed photo entry therefore
+remains single-card entry. The existing customer installation, saved configuration,
+collection, photos, drafts, replay mappings and independent attempts are preserved.
+Owner acceptance and actual real-card additions have not been established by the
+engineering walkthroughs.
+
+ON-02 Phase A qualifies the multi-photo controls described below with fake CLI
+executables and labeled engineering images. It is a retained candidate, not a real
+recognition result or customer installation. Its final package has 247 passing
+service/ingress cases, six viewport/text combinations including 320px and measured
+200% text, reproducible packaging and isolated startup evidence. Real recognition
+invocations, customer uploads and customer migrations/updates were zero. See
+[recorded verification](CI.md#recorded-verification).
+
+The retained D3 proposal uses 16 consented photos plus up to four retakes, at most
+40 CLI invocations and 30 active minutes, with the ordinary lower limits unchanged.
+It defines detection, identity, abstention and physical-duplicate criteria across
+eras, finishes, glare, small text and rotations. This deferred proposal grants no
+current calls, image transmission, customer installation or spending.
+
+Local evidence is kept in `reports/on-00-20261016/` (design, capability matrix and
+`owner-decisions.md`), `reports/on-01-20261016/` (manual implementation and delivery),
+`reports/on-01-contrast-20261016/`, `reports/missing-sync-20261016/`,
+`reports/shop-04-20261016/` and `reports/on-02-cli-20261016/` (exact candidate, protocol,
+privacy/recovery, D3 proposal and deferred lead prompt). These ignored records are
+optional local evidence, not clean-checkout dependencies. Earlier closeouts retain
+their original pending-decision statements; the decisions above are current.
 
 ## Provider configuration
 
@@ -43,6 +89,13 @@ API attempt reserves $0.05 before transmission, with maximum lifetime ceilings o
 $1 per root and $0.50 per account. Failed or cancelled calls retain reservations.
 Reported usage is an estimate, not an invoice. Review rates and the reservation
 bound before changing the model or payload size.
+
+The October 16 ON-00 official-document review recorded a January 14, 2027 removal
+date for the installed single-card API snapshot `gpt-4.1-mini-2025-04-14` in
+`reports/on-00-20261016/official-source-notes.md`. Reverify the current official model
+lifecycle before a separately qualified single-card migration. This dated maintenance
+finding does not select a replacement or establish its accuracy, access or price;
+it is independent of D2's CLI pilot and the owner's deferred D3 evaluation.
 
 `beta/codex_recognition.py` pins the CLI model and required flags. A private temporary
 directory, environment allowlist, disabled tools/config/rules, shared process lock

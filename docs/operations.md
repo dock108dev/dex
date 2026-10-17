@@ -83,6 +83,31 @@ or copy removable prices into diagnostic output.
 
 ## Snapshot retention and backups
 
+Hunter's HUNT-01 qualification ledger is
+`<root-parent>/.dex-shopping-discovery/<root-sha256>/hunt-01-20261016.jsonl`, alongside
+ordinary `attempts.jsonl`. Preserve both independently of app restore. It records
+only allowance/run/stage/lane/time; one OAuth and one Browse per auction/BIN lane
+are the total selected allowance, not daily or per-process limits. There is no
+reset/refund/retry command. Hunter results, summaries, references and derived
+amounts remain temporary server memory and are excluded from logs, reports,
+exports, browser storage and backups. HUNT-01 adds no installed capability,
+customer schema change, provider price refresh or background worker.
+HUNT-02/03 extend only local matching/reference adapters, with zero provider
+operations and no customer installation. The snapshot validation identity selector
+can span published Pokémon sets without widening any reviewed source contract.
+The ordinary lifecycle/backup exclusions and independent exhausted ledgers remain
+unchanged; the manual calculator's browse scope is separate.
+
+HUNT-04/05 and LOT-01 add the [bounded backend contracts](hunts.md#hunt-0405-and-lot-01-backend-contracts).
+Traversal's independent `hunt-04-<authorized-id>.jsonl` namespace stores only
+allowance/limit fingerprint/run/stage/lane/scope/dispatch/time, atomically before
+send. Trusted numeric configuration defaults to disabled and cannot be supplied
+by HTTP clients. Preserve that ledger beside the exhausted HUNT-01 and ordinary
+attempt journals; neither restore, restart nor a date change renews capacity.
+Provider summaries/details and local review values retain the original source
+lease and stay excluded from persistent history/logs/backups. Source code and
+isolated qualification do not update the customer runtime or activate an allowance.
+
 Back up the protected database, authentication secret, photos, configuration, drafts
 and permitted history before a data-changing update. Git and ordinary copy/goal exports
 are not complete collection backups. Preserve current independent journals separately.
@@ -162,3 +187,14 @@ originals are removed. Database rollback must not restore deleted access. Cleanu
 only registered owned temporary directories after 90 seconds while the shared CLI lock
 is free. Hard termination cannot recall transmitted images or prove provider deletion.
 See [photo entry](photo-entry.md) for consent, recognition and image-serving behavior.
+
+## Hunter screen availability
+
+HUNT-06 source includes an authenticated Price Hunter screen and local temporary
+card/lot review. Availability reads do not probe credentials or a provider. With
+production traversal disabled it explains that no marketplace search has run;
+existing Shopping remains available. No startup/migration/install or allowance
+activation is part of this UI slice. The customer stays on SHOP-04. Before a later
+HUNT-07 genuine qualification, rebind the exact integrated candidate, finish the
+offline/runtime/security checks and obtain separate finite-plan authorization.
+HUNT-08 installation and explicit owner acceptance follow those gates.

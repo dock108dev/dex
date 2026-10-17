@@ -588,24 +588,41 @@ async def _dispatch(run, transport, stage, deadline, *, actor=None, **kwargs):
         if remaining <= 0:
             raise ProviderFailure(stage, uncertain=False)
         limits = (
-            {"oauth": MAX_OAUTH, "browse": MAX_BROWSE}
+            {"oauth": 1, "browse": 2}
+            if run.operation == "hunter"
+            else {"oauth": MAX_OAUTH, "browse": MAX_BROWSE}
             if run.operation == "browse"
             else {"oauth": 1, "detail": 2, "resolution": 2}
         )
+        action_counts = getattr(run, "action_counts", None)
+        limit_counts = run.counts if action_counts is None else action_counts
         if (
             stage not in limits
-            or run.counts.get(stage, 0) >= limits[stage]
+            or limit_counts.get(stage, 0) >= limits[stage]
             or (
                 run.operation != "browse"
                 and run.counts.get("detail", 0) + run.counts.get("resolution", 0) >= 2
             )
         ):
             raise ProviderFailure(stage, uncertain=False)
+        # Hunter's explicit qualification allowance survives processes/restarts.
+        # Consume before dispatch; journal or transport failure never refunds it.
+        admit = getattr(run, "admit", None)
+        if admit is not None:
+            admit(stage)
+        if action_counts is not None:
+            action_counts[stage] = action_counts.get(stage, 0) + 1
         run.counts[stage] = run.counts.get(stage, 0) + 1
         run.counts["total"] += 1
         sequence = run.counts["total"]
         _journal(run, stage, "admitted", attempt=sequence)
         _journal(run, stage, "in_flight", attempt=sequence)
+        # Durable accounting can itself be slow. Recheck the absolute deadline
+        # after it, before scheduling any send; consumed admissions stay counted.
+        _check_acquisition(run)
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise ProviderFailure(stage, uncertain=False)
         # Stop and admission share this lock; no dispatch is scheduled after Stop.
         task = asyncio.create_task(
             transport.request(stage, timeout=min(REQUEST_SECONDS, remaining), **kwargs)
