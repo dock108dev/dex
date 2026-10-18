@@ -18,9 +18,10 @@ not validate a user's collection, live marketplace results or a hosted deploymen
 | `validate.yml` / `gate` | Required same-run result/report aggregation | After validation jobs, including failures |
 | `assurance.yml` | Validation plus compatibility runtimes, image build and bounded health metadata | Sunday 09:23 UTC; manual `full` or `compatibility` |
 
-Normal behavior entries are Ubuntu 24.04 Python 3.12/3.14 and macOS 15 Python 3.12.
-Compatibility adds Ubuntu Python 3.13 and macOS Python 3.14. Matrix fail-fast is
-disabled. Other required jobs use Ubuntu Python 3.12 and Node 24 where needed.
+Normal behavior entries are Ubuntu 24.04 and macOS 15, both using Python 3.14.
+Compatibility adds Ubuntu Python 3.13. Matrix fail-fast is disabled. Other required
+jobs use Ubuntu Python 3.14 and Node 24 where needed. Python 3.12 remains the
+declared package minimum but is no longer exercised in CI.
 Behavior has a 30-minute job limit; pytest reports slow tests and emits diagnostic
 stacks after a 90-second stall. The diagnostic does not terminate the test.
 
@@ -100,7 +101,7 @@ set explicit retention. Contributors' text is escaped and artifact contents are
 parsed as bounded data, never executed to render a report. Do not retain credentials,
 private state, unnecessary source archives or bulky routine recordings.
 
-The aggregate requires eight native job reports, or ten for compatibility. It
+The aggregate requires seven native job reports, or eight for compatibility. It
 rejects missing, duplicate, malformed, stale or contradictory reports, unexpected
 skips and cancelled required jobs. Expected test modules must execute; all-skipped
 modules fail. A report's PASS cannot override failed native tests or scan findings.

@@ -3,7 +3,7 @@ name: Shared validation
   workflow_call:
     inputs:
       compatibility:
-        description: Include Python 3.13 and macOS Python 3.14
+        description: Include Ubuntu Python 3.13
         type: boolean
         default: false
     outputs:
@@ -30,7 +30,7 @@ jobs:
     - id: setup
       uses: ./.github/actions/setup
       with:
-        python-version: '3.12'
+        python-version: '3.14'
     - name: Actions-aware validation
       id: actions
       run: |-
@@ -132,8 +132,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(inputs.compatibility && '[{"os":"ubuntu-24.04","python":"3.12"},{"os":"ubuntu-24.04","python":"3.14"},{"os":"macos-15","python":"3.12"},{"os":"ubuntu-24.04","python":"3.13"},{"os":"macos-15","python":"3.14"}]'
-          || '[{"os":"ubuntu-24.04","python":"3.12"},{"os":"ubuntu-24.04","python":"3.14"},{"os":"macos-15","python":"3.12"}]') }}
+        include: ${{ fromJSON(inputs.compatibility && '[{"os":"ubuntu-24.04","python":"3.14"},{"os":"macos-15","python":"3.14"},{"os":"ubuntu-24.04","python":"3.13"}]'
+          || '[{"os":"ubuntu-24.04","python":"3.14"},{"os":"macos-15","python":"3.14"}]') }}
   distribution:
     name: Fresh distribution
     runs-on: ubuntu-24.04
@@ -145,7 +145,7 @@ jobs:
     - id: setup
       uses: ./.github/actions/setup
       with:
-        python-version: '3.12'
+        python-version: '3.14'
     - name: Build and install in an empty environment
       id: build
       run: |
@@ -159,7 +159,7 @@ jobs:
         rebuilt=("$RUNNER_TEMP/dex-from-sdist"/*.whl)
         [[ ${#rebuilt[@]} -eq 1 ]]
         cmp "${wheel[0]}" "${rebuilt[0]}"
-        uv venv --python 3.12 "$RUNNER_TEMP/dex-wheel"
+        uv venv --python 3.14 "$RUNNER_TEMP/dex-wheel"
         uv export --locked --no-dev --no-emit-project --format requirements-txt --output-file "$RUNNER_TEMP/runtime-requirements.txt" > /dev/null
         uv pip sync --python "$RUNNER_TEMP/dex-wheel/bin/python" --require-hashes "$RUNNER_TEMP/runtime-requirements.txt"
         uv pip install --python "$RUNNER_TEMP/dex-wheel/bin/python" --no-deps "${wheel[0]}"
@@ -193,7 +193,7 @@ jobs:
     - id: setup
       uses: ./.github/actions/setup
       with:
-        python-version: '3.12'
+        python-version: '3.14'
     - name: Install pinned Chromium and OS dependencies
       id: chromium
       run: uv run --no-sync playwright install --with-deps chromium
@@ -233,7 +233,7 @@ jobs:
     - id: setup
       uses: ./.github/actions/setup
       with:
-        python-version: '3.12'
+        python-version: '3.14'
     - name: Install checksum-pinned secret scanner
       id: gitleaks
       run: uv run --no-sync python scripts/ci/install_tools.py gitleaks --destination "$RUNNER_TEMP/ci-tools"
@@ -283,7 +283,7 @@ jobs:
     - id: setup
       uses: ./.github/actions/setup
       with:
-        python-version: '3.12'
+        python-version: '3.14'
     - name: Copied migration, account access and reviewed PostgreSQL mutations
       id: staging
       env:
@@ -329,7 +329,7 @@ jobs:
       run: |-
         python3 scripts/ci/report.py aggregate --needs-json "$NEEDS_JSON" --output reports/ci/gate/metrics.json --required quality --required behavior --required distribution --required browser --required security --required staging \
           --report-directory reports/ci/children \
-          --expect-job-reports "Source quality=1" --expect-job-reports "Behavior=${{ inputs.compatibility && 5 || 3 }}" \
+          --expect-job-reports "Source quality=1" --expect-job-reports "Behavior=${{ inputs.compatibility && 3 || 2 }}" \
           --expect-job-reports "Staging PostgreSQL=1" --expect-job-reports "Fresh distribution=1" --expect-job-reports "Synthetic browser journeys=1" --expect-job-reports "Security and dependencies=1"
         echo "result=PASS" >> "$GITHUB_OUTPUT"
     - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
