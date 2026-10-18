@@ -30,8 +30,9 @@ def test_identity_queries_scale_by_batch_and_return_every_card(b4):
         _, cards = cat.rows_for(p)
     assert len(cards) == 1001
     assert len({c["id"] for c in cards}) == 1001
-    # One game read, one set read and two bounded reads for each of three batches.
-    assert len(queries) == 8
+    # One game read, one set read, two reads per batch, and three fixed
+    # replacement-safety snapshot reads (sets, cards and journal head).
+    assert len(queries) == 11
     assert all(c["edition"] == card["edition"] for c in cards)
 
 

@@ -2,9 +2,12 @@
 
 ## CI maintenance review — October 17, 2026
 
-Current source baseline is `d144265df0eb132d836186a2441c23d9096d2d0b` plus preserved
-uncommitted application/security/interface/snapshot work. No commit, push, dispatch,
-branch setting, secret, account integration, customer runtime or owner data changed.
+The review began at `d144265df0eb132d836186a2441c23d9096d2d0b` with preserved
+application/security/interface/snapshot work. During validation, the checkout advanced
+to `92b9f8b` through independently created commits; this pass issued no commit, push
+or dispatch. Branch settings, secrets, account integrations, customer runtime and
+owner data were not changed by this pass. Final local evidence includes the three
+additional test repairs described below on that baseline.
 The workflow/check map below is the current contract; historical campaign results
 later in this guide qualify only their original candidates.
 
@@ -17,7 +20,12 @@ job recorded the four PTY `select()` descriptor-limit errors and one retired
 Shopping-navigation assertion; Python 3.12/macOS entries hit the existing 30-minute
 job limit. The repair uses POSIX `poll()` for valid high-numbered PTY descriptors
 and asserts the current discovery form/Hunter navigation. It does not exclude tests
-or suppress SQLite/resource warnings. Synthetic fixture hashing is reduced as
+or suppress SQLite/resource warnings. The first full local run then exposed three
+stale contracts: the bulk transport harness omitted the now-required local Host and
+peer, and two batch-query budgets omitted the replacement guard's three fixed
+snapshot reads. Tests now supply valid loopback ingress and assert exact query
+counts (11 ordinary, 18 legacy for 1,001 cards), retaining protection against
+per-card query growth. Synthetic fixture hashing is reduced as
 explained below, while production KDF and installed auth remain explicitly checked.
 
 The quality pass repaired a renamed existing-installation heading, local-only
@@ -61,6 +69,34 @@ browser readiness failure remain retained separately from later passes. A passin
 rerun alone is not evidence of a flaky test. Hosted Linux/macOS matrix execution
 and summary rendering on the final commit remain unverified until publication is
 explicitly requested.
+
+### Local validation evidence
+
+The representative environment is macOS arm64, Python 3.14.0 and Node 24.22.0;
+installed smoke uses a fresh Python 3.12.15 environment. Evidence is local and
+includes dirty-worktree test repairs; no hosted matrix result is inferred.
+
+| Executed validation | Result / retained evidence |
+| --- | --- |
+| Full offline behavior and native reporting | **3,324 passed, 0 failures, 0 skips across 144 modules**, 323.35 seconds; line **87.564%**, branch **79.192%**; `final-junit.xml`, `final-coverage.json`, `final-native-metrics.json`; 9,183 warnings retained |
+| Hosted five-failure regression modules | 154 passed; `repaired-regressions.log` |
+| Additional transport and batch-query modules | 61 passed; `additional-regressions.log` |
+| Reporting/security/source/aggregation unit contracts | 122 passed, plus the separately recovered browser preparation case; `reporting-final.log`, `browser-preparation-retry.log`; full suite includes all cases |
+| Workflow/source quality | actionlint 1.7.12, Ruff lint/format (382 files), compilation, 19 JavaScript files / 19 maintained guides, tracked clean-export source check passed |
+| Native renderer contracts | Three maintained Node commands passed (36 + 24 + 8 cases); no provider operations |
+| Distribution | Repeat wheel and sdist-derived wheel identical; fresh hash-locked install passed 10 checks / 43 HTTP assertions; `smoke.json` |
+| Configured uv version | uv 0.9.10 build also reproduced the same wheel; `pinned-build.log` |
+| Synthetic Chromium | 51 states / 21 checks, 35.421 seconds, no outbound browser/provider requests; `browser-final/report.json` |
+| PostgreSQL 17.11 | 5 integration checks, 39 source tables, 105.208 seconds; `staging.json`; disposable container removed |
+| Final security | Gitleaks 0, pip-audit 0, Bandit 72 nonblocking / 0 blocking; `security-final/security-status.json` |
+| Native negative report | Earlier full suite's three failures correctly produced FAIL; `prior-native-metrics.json` |
+| Hosted/platform/scheduled image | Final GitHub Linux/macOS matrix, final hosted rendering and scheduled application-container build not run in this local pass |
+
+The reproducible wheel SHA-256 is
+`095e1379dc2d00fc32ca86f9c2e263983c388a568f09ee249ae9a67a162198e2`.
+It is an engineering artifact, not a customer installation or release. No
+production password hasher, ingress requirement or replacement-safety guard was
+changed to accommodate the tests. Warnings remain visible in retained native logs.
 
 ### Integration selection and verified service limits
 

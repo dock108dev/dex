@@ -46,7 +46,9 @@ def test_legacy_queries_scale_by_batch_without_suppressing_cards(b4):
     with connection.execute_wrapper(record):
         _, rows = cat.rows_for(p)
     assert len(rows) == len({r["id"] for r in rows}) == 1001
-    assert len(queries) <= 16
+    # Legacy reconciliation and identity reads remain batched; the replacement
+    # guard also reads the set, cards and journal head once per projection.
+    assert len(queries) == 18
 
 
 @pytest.mark.parametrize("fault", ["missing", "other-set", "wrong-legacy", "ambiguous"])
