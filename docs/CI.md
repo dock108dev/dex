@@ -1,5 +1,84 @@
 # Continuous integration and testing
 
+## CI maintenance review — October 17, 2026
+
+Current source baseline is `d144265df0eb132d836186a2441c23d9096d2d0b` plus preserved
+uncommitted application/security/interface/snapshot work. No commit, push, dispatch,
+branch setting, secret, account integration, customer runtime or owner data changed.
+The workflow/check map below is the current contract; historical campaign results
+later in this guide qualify only their original candidates.
+
+### Implemented repairs
+
+The latest inspected hosted Tests run,
+[38991529275](https://github.com/dock108dev/dex/actions/runs/38991529275), tested
+`1ce771aec78fb2949f1dd6ce43cb24430f3b093d`, not this checkout. Its Ubuntu Python 3.14
+job recorded the four PTY `select()` descriptor-limit errors and one retired
+Shopping-navigation assertion; Python 3.12/macOS entries hit the existing 30-minute
+job limit. The repair uses POSIX `poll()` for valid high-numbered PTY descriptors
+and asserts the current discovery form/Hunter navigation. It does not exclude tests
+or suppress SQLite/resource warnings. Synthetic fixture hashing is reduced as
+explained below, while production KDF and installed auth remain explicitly checked.
+
+The quality pass repaired a renamed existing-installation heading, local-only
+tracker links, formatting in five previously edited snapshot/test files, and
+Markdown links that incorrectly depended on ignored report files. Their labels,
+evidence paths, prior closeouts and unrelated source changes remain. Before-edit
+document copies are local evidence under `reports/ci-review-20261017/docs-before-portability/`.
+A new checker regression proves that generated report presence cannot make source
+quality falsely pass. A tracked-file export passes the same source check.
+
+Distribution uses `only-include` for the same explicit sdist roots, pruning walks
+through non-shipped local state. The gate now explicitly rebuilds a wheel from the
+sdist and compares it to the first wheel. Both workflow bodies select Bash explicitly
+so failure/pipe status is consistent. No permissions, required names, timeouts,
+blocking security policy, supported matrix entries or artifact retention were weakened.
+
+### Bounded hosted health and settings evidence
+
+The read-only sample contains 30 completed runs created within the preceding
+30 days: 3 PR runs, 11 main-branch push runs and 16 other/generated workflows.
+All three PR runs were cancelled: their first-attempt pass rate is unavailable.
+Main has 6 failures and 5 cancellations: first-attempt pass rate is **0/6 (0%)**,
+with cancellations excluded. The 16 successful generated workflows are a separate
+group, not green application validation. No reruns occur in this sample and no
+flakiness diagnosis is established. Main's six measured non-cancelled spans have
+median **1,843.5 seconds**; p95 is unavailable with fewer than 20 observations.
+These historical values are not an improvement baseline for the changed source.
+
+The artifact API returned 100 of 283 records: active byte subtotal **97,454,081**,
+with total active storage unknown. Cache metadata reported **50 entries /
+3,047,890,404 bytes**. These are observed storage metadata, not billing. Actual
+account plan/quota was not queried. Branch protection returned “Branch not protected”
+and rulesets were empty; none were changed. Recommended enforcement remains
+`CI / Required checks` after an exact committed candidate passes. Use Re-run all
+jobs to retain the existing same-run/attempt artifact boundary.
+
+Machine-readable health, scan, native tests/coverage, build, service and browser
+reports are optional local evidence under `reports/ci-review-20261017/`. Initial
+baseline interruptions, a concurrent-load synthetic preparation timeout and a
+browser readiness failure remain retained separately from later passes. A passing
+rerun alone is not evidence of a flaky test. Hosted Linux/macOS matrix execution
+and summary rendering on the final commit remain unverified until publication is
+explicitly requested.
+
+### Integration selection and verified service limits
+
+Verified October 17, 2026 against official documentation:
+
+| Option / actual status | Eligibility and limits | Permissions / data / outage behavior |
+| --- | --- | --- |
+| Native [summaries](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-commands#adding-a-job-summary), artifacts and read-only API — retained; configured changes not hosted-verified | Repository API confirms this repo is public. [Standard hosted runners are free for public repositories](https://docs.github.com/en/billing/concepts/product-billing/github-actions); larger runners remain billed. If made private, plan limits apply (GitHub Free: 2,000 minutes/month, 500 MB artifact storage); account plan eligibility is unverified. Cache allowance is 10 GB/repository. No separate LOC/user/upload tier is selected | Existing GitHub account/token only: contents read; health additionally actions read. Source executes on hosted runners; only sanitized native reports/layout captures are artifacts, retained 7/14/30 days as documented. Quota exhaustion can block runs/uploads; required artifacts fail visibly. No new token, comment or notification integration |
+| [actionlint](https://github.com/rhysd/actionlint) and [Gitleaks CLI](https://github.com/gitleaks/gitleaks) — checksum-pinned, exercised locally | Open-source CLI execution has no SaaS account/LOC/upload tier. Gitleaks CLI is MIT; its wrapper Action licensing is a separate product and is not used | Binaries downloaded from official GitHub releases; analysis stays on runner. No source upload to a new scanner service. Installation/scanner failure blocks required evidence |
+| Existing Bandit, pip-audit and coverage — retained and locally exercised | Locked open-source tools, no new account/upload plan. Coverage history/deltas remain unavailable without a comparable baseline | pip-audit sends dependency names/versions to PyPI's advisory service; full source/owner records are not submitted. Fresh advisory lookup/incomplete response failures block; coverage/JUnit require native evidence |
+
+Codecov/SonarQube Cloud, another dependency scanner and Lighthouse CI were not
+activated or recommended as new services: native reports already address this
+scope, and no comparable changed-code/performance baseline exists. Consequently no
+new external account, private-repository free-tier assumption, source upload,
+token or self-hosted dashboard is required. A future unmet reporting need must
+verify that service's then-current eligibility before proposing activation.
+
 ## HUNT-11 offline reference qualification — October 17
 
 `tests/test_tcgcsv_offline.py` qualifies explicit mappings, Trainer/Energy/promos,
@@ -88,19 +167,24 @@ compatibility dispatches add runtime combinations; they do not publish or deploy
 
 The required aggregate depends on six independent jobs:
 
-| Job | Checks |
-| --- | --- |
-| Source quality | Locked setup, actionlint/ShellCheck, Ruff lint/format, Python compilation, JavaScript syntax, current renderer authority/recovery contracts and portable documentation links |
-| Behavior | Entire `tests/` suite with external sockets blocked; JUnit and branch/line coverage |
-| Distribution | Wheel/sdist contents and hashes, repeat build, fresh isolated install and synthetic startup |
-| Browser | Chromium public/private journeys plus current Card Library, Pokémon, edit cancellation, contextual Shopping and error recovery on generated synthetic state |
-| Security | Redacted Gitleaks history/authored-input scan, Bandit and pip-audit; outages and incomplete reports fail |
-| Staging PostgreSQL | Empty PostgreSQL 17.11 service, copied SQLite migration, retained values/configuration, account isolation, routes/CSRF and reviewed confirm/retry/undo |
+| Area / product risk | Exact workflow / job / command | Event / platform | Policy | Reason / evidence |
+| --- | --- | --- | --- | --- |
+| Source and workflow correctness | `validate.yml` / `quality`: actionlint, Ruff check/format, compileall, `scripts/ci/source.py`, three Node renderer contracts | PR / main push; Ubuntu 24.04, Python 3.12, Node 24 | Required aggregate member | Syntax, Actions expressions/ShellCheck, shipped JS, portable docs and authority/recovery contracts |
+| Persistence, authorization, cleanup, API/domain contracts | `validate.yml` / `behavior`: full pytest with socket block, JUnit, line/branch coverage, `--durations=15` | PR / main push; Ubuntu Python 3.12/3.14, macOS 15 Python 3.12 | Required | Discover every candidate test module; missing or wholly skipped modules fail reporting |
+| Distribution and clean inputs | `validate.yml` / `distribution`: repeat `uv build`, rebuild wheel from sdist and byte-compare, hash-locked fresh Python 3.12 install, `scripts/ci/smoke.py` | PR / main push; Ubuntu | Required | Packaged assets/registry, reproducible bytes, isolated imports, synthetic initializer and authenticated startup; no publication |
+| Browser tasks, keyboard and layouts | `validate.yml` / `browser`: `scripts/ci/browser.py` | PR / main push; Ubuntu Python 3.12, pinned Playwright Chromium | Required | Public/member journeys, current collection/Shopping, narrow/200% layouts, error recovery; generated data, no acquisition |
+| Secrets, dependencies and static security | `validate.yml` / `security`: `scripts/ci/security.py` | PR / main push; Ubuntu | Required | Gitleaks CLI, strict locked-export pip-audit, Bandit; native reports and tool outages fail closed |
+| Copied migration and service compatibility | `validate.yml` / `staging`: `scripts/ci/staging.py` | PR / main push; disposable digest-pinned PostgreSQL 17.11 | Required | Empty-destination refusal, migration preservation, sessions/CSRF, confirm/retry/undo |
+| Additional supported runtime combinations | `assurance.yml` / `ci` calls `validate.yml` with compatibility | Sunday 09:23 UTC or manual `compatibility`; Ubuntu 3.13 and macOS 15 3.14 added | Required within that assurance run; not stale PR evidence | Same complete gates; no obsolete or unsupported Windows matrix |
+| Container and image size | `assurance.yml` / `container`: Docker build and network-disabled non-root import/registry assertion | Weekly / manual compatibility; Ubuntu | Scheduled gate, outside PR aggregate | Locked application install, pinned base, no registry push; image byte measurement advisory |
+| Historical health/storage | `assurance.yml` / `health`: `scripts/ci/health.py --with-resources` | Weekly / either manual scope | Advisory API telemetry | Maximum 30 completed runs in 30 days, event/workflow separation, native summaries/artifacts; no notifications |
+| Full static typing / JS coverage / lab performance deltas | No new gate | N/A | Explicit omission | No established complete typing or JS coverage contract; existing compilation, runtime contracts and browser assertions apply. Package size/startup time are measured; no comparable primary-branch baseline supports a new blocking trend budget |
+| Merge queue / releases | No active `merge_group`, signing or publication workflow | N/A | Not activated | Read-only settings inspection found no ruleset/branch protection or selected merge queue. Add the event before enabling a queue; release authorization remains separate |
 
 Normal behavior entries are Ubuntu Python 3.12/3.14 and macOS 15 Python 3.12.
 Compatibility also adds Ubuntu 3.13 and macOS 15 Python 3.14. Matrix fail-fast is
 disabled so all results remain visible. The behavior job has a 30-minute timeout,
-including setup and coverage. Source, distribution, browser, security and staging jobs
+including setup and coverage. Pytest emits the 15 slowest durations and a diagnostic stack after a test stalls for 90 seconds; the latter is diagnostic, not a test timeout or an excuse to raise the job cap. Source, distribution, browser, security and staging jobs
 use Ubuntu Python 3.12. These are configured checks; consult the actual run for results.
 Branch protection is configured separately.
 
@@ -132,7 +216,7 @@ hosted CI for dirty source nor provider/customer/owner acceptance.
 ## Local checks
 
 `scripts/ci/source.py` checks shipped JavaScript syntax and maintained documentation
-links. Relative source/document targets and Markdown section fragments must exist.
+links. Relative source/document targets and Markdown section fragments must exist. Generated `reports/` links are rejected even on a warm checkout; optional local evidence belongs in labeled code paths, not portable Markdown link targets.
 Maintained guides must work from a clean checkout without private files or local
 reports. Checker and read-only state-helper tests are `tests/test_ci_source.py` and
 `tests/test_qualification_state.py`.
@@ -150,7 +234,7 @@ uv run --no-sync pytest -q --disable-socket --allow-unix-socket
 ```
 
 The source check and renderer contracts use Node **24**, selected by `.nvmrc` in both source
-and behavior jobs. Behavior tests invoke the real JavaScript engine; relying on the
+and behavior jobs. Synthetic account fixtures use Django's fast MD5 test hasher only within the fixture override; no product/environment switch selects it. A dedicated default-hasher test checks PBKDF2 success and rejection, while installed smoke exercises real production hashing and sign-in. Password validation, account isolation, CSRF and session revocation assertions are unchanged. Behavior tests invoke the real JavaScript engine; relying on the
 hosted image's incidental Node version would leave part of the suite unqualified. Run
 `node scripts/verify_cx05_races.js`, `node scripts/verify_cx06_races.js` and `node
 scripts/verify_cx06_source_tools.js` for the standalone renderer contracts. Browser
@@ -240,7 +324,7 @@ settings.
 Synthetic checks do not establish live provider access, photo accuracy, current seller
 availability, screen-reader/device behavior or user acceptance. The disposable
 PostgreSQL gate validates the supported copied migration and Django staging behavior.
-Actual TLS termination/proxy networking and container operation still need environment-
+Actual TLS termination/proxy networking and deployed container operation still need environment-
 specific qualification. The scheduled container build checks the locked non-root image
 and packaged registry with networking disabled; it neither publishes an image nor
 qualifies a hosted deployment. Windows process cancellation is unsupported. The source
