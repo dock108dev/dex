@@ -27,7 +27,7 @@ ACTION_PAGE_LIMIT = 2
 SCOPES = ("singles", "lots")
 PLAN_SCOPES = (*SCOPES, "both")
 LOT_CATEGORY = "183455"
-# Explicit names for the run integration; these are separate from HUNT-01's
+# Explicit names for the run integration; these are separate from the fixed
 # 400-summary sample and ordinary Shopping's unchanged limits.
 MAX_CUMULATIVE_SUMMARIES = CUMULATIVE_SUMMARY_LIMIT
 MAX_RETAINED_SUMMARIES = RETAINED_SUMMARY_LIMIT

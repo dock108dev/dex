@@ -1,9 +1,8 @@
 """All-era local Hunter identity/reference batches; no acquisition or persistence.
 
-Catalog availability limits matches, never provider query scope. These minimal
-HUNT-02/03 adapters reuse Shopping's admission, literal identity and arithmetic.
-They are also the local matching boundary for LOT-01's future reviewed contents;
-a whole lot never receives the value of one matching single.
+Catalog availability limits matches, never provider query scope. The adapters
+reuse Shopping's admission, literal identity and arithmetic for single-card and
+reviewed lot contents. A whole lot never receives one matching single's value.
 """
 
 import json

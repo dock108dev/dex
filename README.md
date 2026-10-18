@@ -18,7 +18,7 @@ never buys, bids or treats a listing as proof of ownership.
 
 ## Quickstart: existing installation
 
-Reuse the established installation and its recorded runtime; check whether it is
+Reuse the existing installation and its compatible runtime; check whether it is
 already serving before starting another process. Follow
 [existing-installation startup](docs/local-development.md#existing-installations)
 and use ordinary sign-in at [Dex](http://127.0.0.1:8011/):

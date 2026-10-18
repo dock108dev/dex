@@ -6,6 +6,7 @@ from django.views.decorators.http import require_GET
 
 from . import lookup as lookup_service
 from . import offer_filters, public_catalog
+from .request_inputs import query
 
 
 @require_GET
@@ -16,7 +17,7 @@ def hunt(request):
 @require_GET
 def catalog(request):
     try:
-        context = public_catalog.pokedex(request.GET.dict())
+        context = public_catalog.pokedex(query(request, public_catalog.FILTERS))
     except ValueError:
         return JsonResponse({"error": "Choose valid, shorter catalog filters."}, status=400)
     return JsonResponse({"printings": context["cards"], "counts": context["counts"]})
@@ -26,14 +27,11 @@ def catalog(request):
 def lookup(request):
     try:
         allowed = (lookup_service.FIELDS - {"goal"}) | set(offer_filters.FIELDS) | {"expansion"}
-        if set(request.GET) - allowed:
-            raise ValueError(
-                "Public lookup accepts Pokémon and offer filters. Sign in to use saved goals or collection tools."
-            )
+        raw = query(request, allowed)
         context = public_catalog.pack_lookup(
-            {key: request.GET.get(key, "") for key in lookup_service.FIELDS},
-            filters={key: request.GET.get(key, "") for key in offer_filters.FIELDS},
-            expansion=request.GET.get("expansion", ""),
+            {key: raw.get(key, "") for key in lookup_service.FIELDS},
+            filters={key: raw.get(key, "") for key in offer_filters.FIELDS},
+            expansion=raw.get("expansion", ""),
         )
     except ValueError:
         context = dict(

@@ -105,7 +105,7 @@ def _validate(plan, authorization):
 
 
 def run_transition(plan, authorization, adapter, session):
-    """Run one selected session, then return to compatible SHOP-04 on latest state.
+    """Run one selected session, then restore the saved compatible runtime on latest state.
 
     ``session`` may wait for local completion, Stop or user interruption; it must
     never silently activate or dispatch provider work. A production child uses

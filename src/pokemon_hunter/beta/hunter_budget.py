@@ -1,4 +1,4 @@
-"""One owner-selected HUNT-01 allowance, independent of temporary run memory.
+"""Fixed owner-selected qualification allowances, independent of temporary results.
 
 Only consumed operation metadata is retained. File locking makes concurrent
 workers/processes share the same allowance; failures and uncertain sends count.
@@ -103,7 +103,7 @@ def remaining(root):
     return {key: max(0, value - counts[key]) for key, value in LIMITS.items()}
 
 
-# HUNT-04/LOT-01 is a distinct contract. The legacy HUNT-01 identity, path,
+# Traversal has a distinct allowance contract. The original fixed identity, path,
 # limits and consumed records above remain unchanged. No production allowance
 # is activated by this implementation. Future authorization must select exact
 # numeric limits in trusted server configuration, never in an HTTP action.

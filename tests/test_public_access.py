@@ -240,3 +240,19 @@ def test_guest_pokedex_dispatch_and_signed_in_collection_remain_distinct(b4):
         settings.PARITY_ENABLED = previous
         importlib.reload(urls)
         clear_url_caches()
+
+
+@pytest.mark.parametrize(
+    "route, repeated, reader",
+    [
+        ("/api/public/catalog/", "q=Pikachu&q=Eevee", "pokedex"),
+        ("/api/public/catalog/", "region=kanto&region=johto", "pokedex"),
+        ("/lookup/", "targets=123&targets=134", "pack_lookup"),
+        ("/lookup/", "age=fresh&age=older", "pack_lookup"),
+    ],
+)
+def test_public_scalar_filters_reject_ambiguity_before_catalog_reads(b4, route, repeated, reader):
+    with patch.object(public_catalog, reader) as read:
+        response = b4["client"]().get(route + "?" + repeated)
+    assert response.status_code == 400
+    read.assert_not_called()

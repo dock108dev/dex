@@ -226,3 +226,29 @@ def test_physical_card_criteria_lookup_does_not_use_declarations(e1):
     assert g["satisfied"] == 0
     assert result["progress"]["satisfied"] == 0
     assert "collection_source" not in result["goal"]["definition"]
+
+
+@pytest.mark.parametrize("query", ["targets=123&targets=134", "scope=all&scope=missing", "account=other"])
+def test_private_lookup_uses_shared_scalar_filter_contract(e1, query):
+    from unittest.mock import patch
+
+    with patch.object(lookup, "project") as read:
+        response = e1["a"].get("/lookup/?" + query)
+    assert response.status_code == 400
+    read.assert_not_called()
+
+
+@pytest.mark.parametrize("field", ["targets", "scope_version", "name"])
+def test_lookup_save_rejects_repeated_scalars_before_projection_or_storage(e1, field):
+    from unittest.mock import patch
+
+    e1["a"].get("/lookup/?targets=123")
+    token = e1["a"].cookies["dex_b1_csrf"].value
+    with patch.object(lookup, "project") as read, patch.object(pack_research, "store_context") as write:
+        response = e1["a"].post(
+            "/lookup/save/",
+            {"csrfmiddlewaretoken": token, field: ["123", "134"]},
+        )
+    assert response.status_code == 400
+    read.assert_not_called()
+    write.assert_not_called()

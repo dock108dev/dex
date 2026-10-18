@@ -200,7 +200,7 @@ def prepare(root):
         variants.validate(p)
     if (len(parents), len(dispositions), len(targets)) != (660, 617, 300):
         raise ValueError("Frozen descriptor or mapping counts changed")
-    # S4 handoff exact ID lists are independently enforced, not inferred from counts.
+    # Enforce pinned identity lists independently; counts alone cannot prove scope.
     for key, count in (
         ("numbered_identity_spans_multiple_variants", 305),
         ("source_variant_detail_absent", 355),

@@ -7,16 +7,8 @@ from django.views.decorators.http import require_GET, require_POST
 
 from . import card_groups, collection, collection_views, store
 from .collection_views import body, browsing_endpoint, endpoint
+from .request_inputs import query
 from .views import actor
-
-
-def query(request, allowed=None):
-    if any(len(values) != 1 for _, values in request.GET.lists()):
-        raise ValueError("Choose each filter once")
-    raw = request.GET.dict()
-    if allowed is not None and set(raw) - allowed:
-        raise ValueError("Unsupported query fields")
-    return raw
 
 
 def private(response, who=None):

@@ -26,6 +26,29 @@ function setup(route) {
 (async () => {
   const cases = [];
   async function check(name, test) { await test(); cases.push(name); }
+  await check('initial refresh waits until all deferred renderer scripts have executed', async () => {
+    const calls = [], listeners = [];
+    const start = collection.lastIndexOf("document.querySelectorAll('[data-close]')");
+    assert.ok(start >= 0);
+    const context = {
+      document: {
+        readyState: 'interactive',
+        querySelectorAll: () => [],
+        addEventListener: (type, callback, options) => listeners.push({type, callback, options}),
+      },
+      refresh: () => {calls.push('refresh'); return Promise.resolve();},
+      recoverPendingOperation: () => calls.push('recover'),
+    };
+    vm.createContext(context);
+    vm.runInContext(collection.slice(start), context);
+    assert.deepEqual(calls, [], 'A fast API response must not outrun deferred renderers');
+    assert.equal(listeners.length, 1);
+    assert.equal(listeners[0].type, 'DOMContentLoaded');
+    assert.equal(listeners[0].options.once, true);
+    listeners[0].callback();
+    await Promise.resolve();
+    assert.deepEqual(calls, ['refresh', 'recover']);
+  });
   const routes = [
     ['/pokedex/', 'renderSpeciesScreen'], ['/pokedex/2/', 'renderSpeciesScreen'],
     ['/cards/', 'renderCardScreens'], ['/card-library/', 'renderCardScreens'],

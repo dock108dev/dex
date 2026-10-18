@@ -211,7 +211,9 @@ def test_received_refresh_holds_conflicting_received_name(refresh):
 def test_r3_received_identity_independent_review_and_pins(refresh, monkeypatch):
     _received_refresh(refresh)
     root, directory, plan, scope, plan_path, _ = refresh
-    monkeypatch.setattr(collector, "R3_ACQUIRE1_GROUPS", ((11,),))
+    from scripts import tcgcsv_capture_contract
+
+    monkeypatch.setattr(tcgcsv_capture_contract, "R3_ACQUIRE1_GROUPS", ((11,),))
     plan.update(
         refresh_cadence="owner_r3_acquire1_same_build_once",
         timing_override=f"r3-acquire1-{collector.R3_ACQUIRE1_PROPOSAL[:16]}-batch-1",

@@ -126,24 +126,3 @@ because the action has already recorded an uncertain outcome; no late result is
 published and no retry follows. Keep the journal and diagnostics together when
 investigating. A failed journal write can leave only the earlier admitted/in-flight
 record: that is incomplete accounting, never evidence of unused capacity.
-
-## Maintenance review boundary
-
-The October 17, 2026 source pass surveyed exception/suppression patterns across
-application Python, browser clients and operator/CI scripts, then traced Shopping
-workers, transport ownership, journals and cancellation. It also checked existing
-request boundaries, recognition worker recovery, watcher durability, source/usage
-fail-closed behavior, image validation and logging configuration. Existing broad
-catches that erase temporary data and re-raise, deliberate unavailable-image or
-price fallbacks, authorization revocation, safe CLI boundaries, and content-free
-request logging remain intentional. Decompression warnings remain validation errors.
-No global warning suppression or new debug-mode fallback was added.
-
-The implemented changes are source maintenance against Git baseline
-`d144265df0eb132d836186a2441c23d9096d2d0b`, alongside preserved pre-existing
-snapshot scripts/tests and documentation edits. Focused tests use temporary state
-and fake transports. This pass does not qualify or replace the installed wheel,
-observe customer journeys, enable deferred recognition/acquisition work, or establish
-owner acceptance. Retain the tracker-recorded installed identity until a separately
-qualified compatible update is delivered. Persistent log retention/alerting and
-unobserved installed cancellation journeys remain separate follow-up work.

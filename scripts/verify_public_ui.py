@@ -272,8 +272,16 @@ def run(root, base, output):
             expect(page.get_by_role("heading", name="#001 Bulbasaur", exact=True)).to_be_visible()
             expect(page.get_by_role("heading", name="Your Cards", exact=True)).to_be_visible()
             expect(page.locator("dialog[open]")).to_have_count(0)
+
+            def delayed_species_renderer(route):
+                # Exercise return navigation while the required deferred script is slow.
+                page.wait_for_timeout(300)
+                route.continue_()
+
+            page.route("**/collection-assets/species-screens.js*", delayed_species_renderer)
             page.get_by_role("link", name="Back to Pokédex", exact=True).click()
             expect(page.locator("[data-dex-species]").first).to_be_focused()
+            page.unroute("**/collection-assets/species-screens.js*", delayed_species_renderer)
             page.goto(base + "/settings/")
             expect(page.get_by_role("heading", name="Settings & data", exact=True)).to_be_visible()
             capture(page, width, "member-settings")

@@ -1,4 +1,4 @@
-"""Checked, listings-first HUNT-01 acquisition and local eligibility contract.
+"""Checked listings-first acquisition and local eligibility contract.
 
 No credentials, account/catalog reads, HTTP, paging or persistence belong here.
 The scope is EBAY_US CCG singles, Pokémon TCG, English, all years, including

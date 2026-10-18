@@ -111,7 +111,7 @@ def test_authoritative_browser_renderers_and_removed_paths():
         timeout=30,
     )
     report = json.loads(result.stdout)
-    assert report["passed"] == 30
+    assert report["passed"] == 31
     assert report["customer_data"] is False and report["provider_calls"] == 0
 
 
@@ -548,3 +548,44 @@ def test_filtered_and_vintage_species_goals_use_shared_builder():
     assert filtered["items"][1]["label"] == "#251 Celebi"
     assert filtered["items"][0]["printing_ids"] == vintage["items"][249]["printing_ids"] == ["a", "z"]
     assert vintage["items"][249] == dict(label="Species 250", printing_ids=["a", "z"], unresolved=False)
+
+
+def test_catalog_and_lookup_boundaries_share_one_query_owner():
+    from pokemon_hunter.beta import (
+        card_group_views,
+        lookup_views,
+        public_views,
+        request_inputs,
+        species_views,
+    )
+
+    for boundary in (card_group_views, lookup_views, public_views, species_views):
+        assert boundary.query is request_inputs.query
+
+
+@pytest.mark.parametrize("encoded", ["q=one&q=two", "q=one&q=one", "q=&q=", "q=one&account=other"])
+def test_shared_scalar_input_policy_rejects_duplicates_and_unknown_fields(env, encoded):
+    from django.http import QueryDict
+
+    from pokemon_hunter.beta.request_inputs import single_values
+
+    values = QueryDict(encoded)
+    with pytest.raises(ValueError):
+        single_values(values, {"q"})
+    assert values.urlencode() == encoded
+
+
+def test_query_and_form_inputs_share_policy_without_changing_empty_values(env):
+    from django.http import QueryDict
+    from django.test import RequestFactory
+
+    from pokemon_hunter.beta import request_inputs
+
+    raw = QueryDict("q=&region=kanto")
+    with patch.object(request_inputs, "single_values", wraps=request_inputs.single_values) as policy:
+        assert request_inputs.query(RequestFactory().get("/", raw), {"q", "region"}) == {
+            "q": "",
+            "region": "kanto",
+        }
+        policy.assert_called_once()
+    assert request_inputs.single_values(raw, {"q", "region"}) == {"q": "", "region": "kanto"}

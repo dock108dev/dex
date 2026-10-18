@@ -395,4 +395,9 @@ function restoreCollectionFocus(){
 }
 document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('close',restoreCollectionFocus));
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$('#'+b.dataset.close).close());
-refresh().then(recoverPendingOperation).catch(e=>{if(window.navigationAuthorityDiscarded||!$('#content'))return;status(e.message,true);$('#content').innerHTML='<h1>Collection unavailable</h1><p>Reload to try again. If a change was interrupted, review its saved status before repeating it.</p><button id="collection-retry">Reload collection</button>';$('#collection-retry').onclick=()=>location.reload();});
+// A fast bootstrap response can outrun later deferred renderer downloads.
+// DOMContentLoaded runs after every deferred script, including required renderers.
+function startCollection() {
+  refresh().then(recoverPendingOperation).catch(e=>{if(window.navigationAuthorityDiscarded||!$('#content'))return;status(e.message,true);$('#content').innerHTML='<h1>Collection unavailable</h1><p>Reload to try again. If a change was interrupted, review its saved status before repeating it.</p><button id="collection-retry">Reload collection</button>';$('#collection-retry').onclick=()=>location.reload();});
+}
+document.addEventListener('DOMContentLoaded',startCollection,{once:true});

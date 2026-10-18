@@ -8,6 +8,7 @@ from django.views.decorators.http import require_GET, require_POST
 
 from . import collection_goals, lookup, offer_filters, pack_research
 from .collection_views import endpoint
+from .request_inputs import query, single_values
 from .views import actor
 
 
@@ -23,12 +24,12 @@ def home(request):
 @endpoint
 def private_home(request):
     who = actor(request)
-    raw = {k: request.GET.get(k, "") for k in lookup.FIELDS}
+    raw = query(request, lookup.FIELDS | set(offer_filters.FIELDS) | {"expansion"})
     context = lookup.project(
         who,
-        raw,
-        filters={k: request.GET.get(k, "") for k in offer_filters.FIELDS},
-        expansion=request.GET.get("expansion", ""),
+        {k: raw.get(k, "") for k in lookup.FIELDS},
+        filters={k: raw.get(k, "") for k in offer_filters.FIELDS},
+        expansion=raw.get("expansion", ""),
     )
     context["research_enabled"] = pack_research.available()
     from .collection import goals
@@ -40,24 +41,26 @@ def private_home(request):
 @endpoint
 @require_POST
 def save(request):
-    if set(request.POST) - {
-        "csrfmiddlewaretoken",
-        *lookup.FIELDS,
-        *offer_filters.FIELDS,
-        "expansion",
-        "scope_version",
-        "name",
-    }:
-        raise ValueError("Unsupported saved lookup fields")
+    raw = single_values(
+        request.POST,
+        {
+            "csrfmiddlewaretoken",
+            *lookup.FIELDS,
+            *offer_filters.FIELDS,
+            "expansion",
+            "scope_version",
+            "name",
+        },
+    )
     context = lookup.project(
         actor(request),
-        {k: request.POST.get(k, "") for k in lookup.FIELDS},
-        filters={k: request.POST.get(k, "") for k in offer_filters.FIELDS},
-        expansion=request.POST.get("expansion", ""),
+        {k: raw.get(k, "") for k in lookup.FIELDS},
+        filters={k: raw.get(k, "") for k in offer_filters.FIELDS},
+        expansion=raw.get("expansion", ""),
     )
-    if context["goal"]["version"] != request.POST.get("scope_version"):
+    if context["goal"]["version"] != raw.get("scope_version"):
         raise ValueError("Collection or catalog changed; review the lookup again")
-    key = pack_research.store_context(actor(request), context, request.POST.get("name", ""))
+    key = pack_research.store_context(actor(request), context, raw.get("name", ""))
     return redirect("saved-pack-research", key=UUID(str(key)))
 
 

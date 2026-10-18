@@ -24,6 +24,7 @@ Paths are relative to `src/pokemon_hunter/`.
 | Responsibility | Owner |
 | --- | --- |
 | Runtime profile and initialization | `beta/staging_config.py`; `beta/cli.py`, `settings.py` and `urls.py` consume the selected profile and capability markers |
+| Scalar HTTP selectors | `beta/request_inputs.py:single_values/query`; `card_group_views.query` is the same function export for existing callers |
 | Authentication and account scope | Django auth, `beta/accounts.py`, `beta/store.py` |
 | Schema and explicit legacy import | `inventory.py`, `migration.py` |
 | Collection preview, confirmation and undo | `beta/collection.py`, `beta/transactions.py`; `collection_plans.py` builds plans through account-scoped readers |
@@ -47,7 +48,7 @@ Paths are relative to `src/pokemon_hunter/`.
 | Lot selection, wants and guide cells | `beta/lot_calculator.py`; `beta/lot_guides.py` projects supplied admitted records |
 | Private price lifecycle | `beta/price_snapshot_contract.py`, `beta/price_snapshots.py`, `beta/price_snapshot_sources.py` |
 | Finite Shopping acquisition | `beta/discovery.py`, `beta/discovery_transport.py`, `beta/listing_check.py` |
-| Bulk listings Hunter | `beta/hunter.py`, `hunter_views.py`; `hunter_query.py` checks provider parameters; `hunter_traversal.py` captures finite plans/cursors; `hunter_budget.py` preserves HUNT-01 and owns the disabled independent traversal allowance |
+| Bulk listings Hunter | `beta/hunter.py`, `hunter_views.py`; `hunter_query.py` checks provider parameters; `hunter_traversal.py` captures finite plans/cursors; `hunter_policy.py` owns ordinary owner-selected usage; `hunter_budget.py` preserves independent finite qualification allowances |
 | Local Hunter identity/reference batches | `beta/hunter_catalog.py` indexes; shared literal `beta/discovery_matching.py` and `discovery_comparison._project`; admitted `lot_calculator.retained_records`, `lot_guides` and `shopping_math` retain lifecycle, source selection and arithmetic; no second store |
 | Hunter opportunity scenarios | `beta/hunter_ranking.py` projects freshly admitted rows through existing Shopping arithmetic and ranks equivalent cost/applicability groups |
 | Hunter screen and review rendering | `beta/templates/beta/hunter.html`, `beta/static/hunter.js`, `hunter-review.js`, `hunter.css`; authenticated `hunter_views` resolves checked image bindings and bounded all-era correction choices; services retain arithmetic and authority |
@@ -66,6 +67,30 @@ Paths are relative to `src/pokemon_hunter/`.
 | Card/species rendering | `beta/static/card-screens.js`, `species-screens.js`, `public-species.js`; `collection.js:render` dispatches by route |
 | Overview, hunt history and retained per-copy guides | `beta/parity.py`, `beta/static/parity.js`; no card/species renderer or new hunt acquisition |
 | Ingress, diagnostics and deployment | `security.py`, `beta/security.py`, `asgi.py`, `diagnostics.py`, `deployment.py`, `support.py` |
+
+## Scalar request authority
+
+`request_inputs.single_values` checks Django multi-value containers before they
+become plain dictionaries. `query` applies that rule to GET selectors. Card,
+species, navigation and Shopping adapters retain the existing `card_group_views.query`
+import, which exports the same function; public catalog and guest/private Pack
+lookup use it directly. Lookup save applies `single_values` to its scalar form.
+Repeated fields (even equal or blank values) and unknown allowlisted fields fail
+before projection or saving. Domain owners still validate values and account scope.
+Intentional lists, such as refresh source choices and photo uploads, retain their
+own multi-value schemas.
+
+## Engineering tool boundaries
+
+Snapshot execution stays in `scripts/capture_tcgcsv_snapshot.py`; its pure
+contract, read-only history and HTTP/watchdog adapters are the sibling
+`tcgcsv_capture_contract.py`, `tcgcsv_capture_history.py` and
+`tcgcsv_capture_transport.py` modules. They share one `CaptureRefused` type and
+preserve serialized plans, immutable reservations and fixed historical identities.
+Browser qualification separates `qualify_hunter_ui.py` process ownership from
+`hunter_ui_journey.py`'s ordered checks; both are bound into source evidence.
+See [maintenance conventions](local-development.md#maintenance-conventions) for
+structure, fixture ownership and retained lifecycle boundaries.
 
 ## Cross-cutting invariants
 
