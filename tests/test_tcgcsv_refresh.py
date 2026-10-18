@@ -170,3 +170,56 @@ def test_refresh_refuses_scope_without_exact_bindings(refresh):
         independent.inspect(
             root, scope, plan, directory, dict(catalog_identity_sha256=scope["catalog_identity_sha256"])
         )
+
+
+def _received_refresh(refresh):
+    root, directory, plan, scope, plan_path, scope_path = refresh
+    plan.update(refresh_cadence="selected_groups_new_build", timing_override="selected-refresh-once")
+    scope.pop("exact_bindings")
+    scope["refresh_binding_mode"] = "received_identity"
+    plan_path.write_text(json.dumps(plan))
+    scope_path.write_text(json.dumps(scope))
+    meta = json.loads((directory / "capture-metadata.json").read_text())
+    meta["plan_sha256"] = collector.validate_batch_plan(plan, root)
+    (directory / "capture-metadata.json").write_bytes(collector._json_bytes(meta))
+
+
+def test_received_refresh_independently_rederives_received_binding(refresh):
+    _received_refresh(refresh)
+    root, directory, plan, scope, *_ = refresh
+    result, manifest = inspect(refresh)
+    assert len(manifest["bindings"]) == 1
+    assert independent.inspect(root, scope, plan, directory, result, manifest)["all_passed"]
+
+
+def test_received_refresh_holds_conflicting_received_name(refresh):
+    _received_refresh(refresh)
+    root, directory, plan, scope, *_ = refresh
+    path = directory / "groups/11/products.json"
+    body = json.loads(path.read_text())
+    body["results"][0]["name"] = "Bulbasaur"
+    path.write_bytes(collector._json_bytes(body))
+    meta = json.loads((directory / "capture-metadata.json").read_text())
+    for row in meta["files"]:
+        row["bytes"] = (directory / row["filename"]).stat().st_size
+    (directory / "capture-metadata.json").write_bytes(collector._json_bytes(meta))
+    result, manifest = inspect(refresh)
+    assert not manifest["bindings"]
+    assert independent.inspect(root, scope, plan, directory, result, manifest)["all_passed"]
+
+
+def test_r3_received_identity_independent_review_and_pins(refresh, monkeypatch):
+    _received_refresh(refresh)
+    root, directory, plan, scope, plan_path, _ = refresh
+    monkeypatch.setattr(collector, "R3_ACQUIRE1_GROUPS", ((11,),))
+    plan.update(
+        refresh_cadence="owner_r3_acquire1_same_build_once",
+        timing_override=f"r3-acquire1-{collector.R3_ACQUIRE1_PROPOSAL[:16]}-batch-1",
+    )
+    plan_path.write_text(json.dumps(plan))
+    meta = json.loads((directory / "capture-metadata.json").read_text())
+    meta["plan_sha256"] = collector.validate_batch_plan(plan, root)
+    (directory / "capture-metadata.json").write_bytes(collector._json_bytes(meta))
+    result, manifest = inspect(refresh)
+    assert len(manifest["bindings"]) == 1
+    assert independent.inspect(root, scope, plan, directory, result, manifest)["all_passed"]

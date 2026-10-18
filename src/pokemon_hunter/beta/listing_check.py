@@ -22,6 +22,7 @@ from . import discovery as d
 from . import discovery_comparison as dc
 from . import ebay_hunts, image_bindings, shopping
 from . import lot_calculator as lot
+from .diagnostics import async_closing, failure
 from .discovery_search import product_kind
 from .discovery_transport import ProviderFailure, Transport
 
@@ -71,7 +72,7 @@ def start(actor, session, identifier, *, auth_session=None):
 
 async def _acquire(run, credentials, actor=None):
     transport = Transport()
-    try:
+    async with async_closing(transport, "shopping_transport_close_failed"):
         token = await d.access_token(run, transport, credentials, actor)
         stage = "detail" if parse_identifier(run.identifier)["rest"] else "resolution"
         raw = await d._dispatch(
@@ -88,8 +89,6 @@ async def _acquire(run, credentials, actor=None):
             run.raws = [value]
             run.acquired_at = time.monotonic()
             run.state = "complete"
-    finally:
-        await asyncio.wait_for(transport.close(), timeout=0.5)
 
 
 def _worker(run, actor, credentials):
@@ -101,6 +100,8 @@ def _worker(run, actor, credentials):
             run.state = "running"
         asyncio.run(_acquire(run, credentials, actor))
     except Exception as exc:
+        if not isinstance(exc, d._Stopped):
+            failure("shopping_listing_failed", exc)
         with run.lock:
             run.raws.clear()
             if run.cancel.is_set():
@@ -110,9 +111,7 @@ def _worker(run, actor, credentials):
                 run.state = "failed"
                 code = f" (HTTP {exc.status})" if isinstance(exc, ProviderFailure) and exc.status else ""
                 run.error = (
-                    str(exc)
-                    if isinstance(exc, ValueError)
-                    else f"eBay listing load stopped{code}. No retry was made. Your review remains available."
+                    f"eBay listing load stopped{code}. No retry was made. Your review remains available."
                 )
     finally:
         close_old_connections()

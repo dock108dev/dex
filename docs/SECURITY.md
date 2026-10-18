@@ -14,7 +14,7 @@ Longer authentication confers no longer Hunt/review lease, source expiry or budg
 The launcher keeps the existing secret/cookie identity and canonical loopback
 origin, requesting OS default browser reuse. Engineering browsers require separate
 user-data stores; port differences do not isolate cookies. Owner-session absence
-is not evidence of profile misuse. See [qualified installed evidence](../reports/local-auth-catalog-capacity-20261017/browser-diagnosis.md).
+is not evidence of profile misuse. See qualified installed evidence (local evidence: `reports/local-auth-catalog-capacity-20261017/browser-diagnosis.md`).
 
 ## HUNT-11 offline reference boundary
 
@@ -94,8 +94,15 @@ selected. Prior source rights and consumed ledgers are preserved. See
 ## Input and browser policy
 
 The supported Django local, staging and synthetic-browser launchers use
-`beta.asgi.get_asgi_application`. It bounds declared and streamed request bytes
-before Django buffers them or runs middleware/views. Ordinary requests use
+`beta.asgi.get_asgi_application`. In the local profile it checks the exact Host,
+loopback peer, Origin and absence of forwarded headers before reading the body or
+entering Django. Missing/duplicate Host, duplicate Origin and empty/foreign Origin
+are refused with a fixed 403 carrying the shared security headers. Requests without
+Origin remain supported for ordinary navigation and local clients. The local
+middleware repeats the shared policy for defense in depth and alternate callers.
+Staging retains its separate trusted-proxy middleware policy; local ingress checks
+do not replace staging qualification. The wrapper also bounds declared and streamed
+request bytes before Django buffers them or runs middleware/views. Ordinary requests use
 `DATA_UPLOAD_MAX_MEMORY_SIZE` (16,384 bytes for account-only roots; 2,000,000 for
 collection/staging roots). Enabled `POST /api/scans/` allows 16,100,000 bytes,
 including multipart overhead. Photo-batch upload/retake requests allow 8,100,000
@@ -255,3 +262,94 @@ write set remain authoritative. Handback validates immutable identity and skips
 mutable ledger health; it never restores accounting or starts another Hunt.
 Offline qualification creates only report/package artifacts and no actual
 authorization, completion ledger, provider operation or customer transition.
+
+## Security maintenance review — October 17, 2026
+
+This source review follows Git baseline
+`d144265df0eb132d836186a2441c23d9096d2d0b` and the preceding uncommitted error-handling
+pass. Existing snapshot scripts/tests, docs, customer installation and all private
+state were preserved. This section records source evidence, not installed security
+qualification or a claim that the repository has no vulnerabilities.
+
+### Fixed hardening opportunity: reject local ingress before body buffering
+
+- **Category:** resource exhaustion / browser-to-loopback boundary.
+- **Severity:** medium; **confidence:** high; **status:** fixed in source.
+- **Evidence:** `beta.asgi.BoundedBodyApplication` previously entered Django after
+  checking only body size. Django creates/reads its body spool before
+  `beta.security.LocalOnlyMiddleware` checks Host, Origin, forwarded headers and
+  peer. Thus disallowed requests could consume upload buffering up to each route's
+  finite cap (32 MB for bulk), before their eventual denial.
+- **Realistic abuse:** a foreign website, where browser policy permits loopback
+  requests, or a client with disallowed headers can repeatedly send bodies to
+  upload routes. This can waste memory, temporary disk and request capacity.
+  Existing per-request limits bound each request; this is not evidence of an
+  authentication bypass, cross-account data access or an unbounded single upload.
+- **Fix:** share the existing local policy between ASGI and middleware and reject
+  before the first body read. ASGI additionally rejects ambiguous repeated
+  Host/Origin fields rather than depending on header joining. Blank Origin is
+  refused consistently. Valid canonical requests, originless local clients, body
+  limits, CSRF, account authorization and staging policy remain supported.
+- **Tests:** disallowed Host/Origin/peer/forwarded and duplicate-header cases read
+  zero body chunks and never dispatch downstream. A real Django regression fails
+  if a foreign-origin request creates any body spool. Canonical IPv4/IPv6 peer,
+  staging separation, upload limits, security headers and session behavior pass.
+
+### Intentional acceptable patterns
+
+The inspected trust boundaries include public browsing/authentication entry,
+session-authenticated collection and file endpoints, owner catalog/usage actions,
+account-scoped SQL, temporary provider workers, normalized photo uploads, browser
+rendering and storage, outbound integrations, local configuration/subprocesses and
+optional staging ingress. `urls.py`, `store.py`, `accounts.py`, `views.py`,
+`collection_views.py`, `catalog_views.py`, `catalog_imports.py`, `scan_views.py`,
+`photo_batch_images.py`, `discovery_transport.py`, `codex_recognition.py`,
+`staging_config.py` and the shared security modules provide the reviewed controls.
+
+- Authentication/CSRF and framework token generation remain Django-owned. Resource
+  selectors are checked against the active account; owner services enforce role
+  checks. Public catalog data is distinct from private copies/photos.
+- Browser state conveys navigation/preference selectors, not backend authority.
+  Display escaping and the existing script CSP remain. Noindex is indexing policy,
+  never authorization.
+- Loopback HTTP retains non-Secure HttpOnly/SameSite session cookies; staging keeps
+  HTTPS/Secure cookies and HSTS. Same-OS-user processes are outside this isolation
+  boundary. No hosted authentication stack was added.
+- Private archive downloads use authorized database bytes, and static/package
+  paths use allowlists. Image normalization and size/dimension limits remain.
+  SQL values use parameters; dynamic identifiers are internally selected.
+- Provider transport uses fixed official endpoints and finite counted actions.
+  No incoming third-party webhook exists. Recognition subprocesses use argument
+  arrays, private temporary files and a restricted inherited environment. No
+  recognition, source acquisition or external notification was exercised.
+
+These are reviewed design patterns, not a new penetration-test result. No additional
+confirmed authentication, injection or secret-leak vulnerability is claimed by this
+pass. No credential values were inspected or printed.
+
+### Prioritized remaining work and manual verification
+
+1. **Moderate hardening opportunity — aggregate ingress capacity; needs decision.**
+   Even valid local headers or staging requests reach body buffering before
+   authentication. Per-request limits do not cap concurrent uploads, duration or
+   total spool disk. If actual contention appears, select a connection/concurrency
+   budget and receive deadline at the supported server boundary, with cancellation
+   cleanup tests. Headers are not proof of a trusted process. Blanket request-rate
+   throttling has not been added to ordinary beta use.
+2. **Installed successor — manual qualification required.** These source changes
+   do not update the recorded installed wheel. Build/qualify a compatible successor
+   with current data-preservation evidence before any future delivery. This review
+   did not restart, install, migrate or inspect customer state.
+3. **Deployment/dependency verification — deferred outside this local pass.**
+   Verify real TLS/proxy stripping and backup permissions if staging is selected.
+   Run the existing advisory/secret/static CI checks against the exact future
+   candidate when publication/qualification is requested. No advisory lookup,
+   dependency audit, hosted CI or full security campaign was run; no package
+   vulnerability or clean-dependency claim is made. Focused tests reported one
+   existing Starlette TestClient deprecation warning, not a vulnerability finding.
+
+Validation: **100 focused tests passed** in `test_asgi_limits.py`,
+`test_security.py`, `test_local_sessions.py` and `test_original_security.py`, using
+disposable data and in-process clients. Affected Python compilation, Ruff lint and
+format checks and diff whitespace validation passed. No live browser walkthrough,
+provider request or customer acceptance is claimed.

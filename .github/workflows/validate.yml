@@ -12,6 +12,9 @@ name: Shared validation
         value: ${{ jobs.gate.outputs.result }}
 permissions:
   contents: read
+defaults:
+  run:
+    shell: bash
 env:
   CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
   UV_NO_PROGRESS: '1'
@@ -105,7 +108,7 @@ jobs:
       id: tests
       run: |-
         mkdir -p reports/ci/behavior
-        uv run --no-sync pytest -q --disable-socket --allow-unix-socket --junitxml=reports/ci/behavior/junit.xml --cov=pokemon_hunter --cov-branch --cov-report=xml:reports/ci/behavior/coverage.xml --cov-report=json:reports/ci/behavior/coverage.json --cov-report=term
+        uv run --no-sync pytest -q --durations=15 --disable-socket --allow-unix-socket --junitxml=reports/ci/behavior/junit.xml --cov=pokemon_hunter --cov-branch --cov-report=xml:reports/ci/behavior/coverage.xml --cov-report=json:reports/ci/behavior/coverage.json --cov-report=term
     - name: Required result report
       if: always()
       env:
@@ -152,6 +155,10 @@ jobs:
         repeat=("$RUNNER_TEMP/dex-build-repeat"/*.whl)
         sdist=("$RUNNER_TEMP/dex-build-first"/*.tar.gz)
         [[ ${#wheel[@]} -eq 1 && ${#repeat[@]} -eq 1 && ${#sdist[@]} -eq 1 ]]
+        uv build --wheel --no-build-isolation "${sdist[0]}" --out-dir "$RUNNER_TEMP/dex-from-sdist"
+        rebuilt=("$RUNNER_TEMP/dex-from-sdist"/*.whl)
+        [[ ${#rebuilt[@]} -eq 1 ]]
+        cmp "${wheel[0]}" "${rebuilt[0]}"
         uv venv --python 3.12 "$RUNNER_TEMP/dex-wheel"
         uv export --locked --no-dev --no-emit-project --format requirements-txt --output-file "$RUNNER_TEMP/runtime-requirements.txt" > /dev/null
         uv pip sync --python "$RUNNER_TEMP/dex-wheel/bin/python" --require-hashes "$RUNNER_TEMP/runtime-requirements.txt"

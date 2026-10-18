@@ -2,11 +2,11 @@
 {% block title %}Shopping · Dex{% endblock %}
 {% block body_class %}discovery-page{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="/collection-assets/discovery.css?v=20261016-shop04">
+<link rel="stylesheet" href="/collection-assets/discovery.css?v=interface-20261017">
 <div class="discovery" id="discovery">
   <div class="discovery-heading">
-    <div><h1>Shopping</h1><p class="muted">Find Pokémon and cards, then explore eBay singles and loose lots.</p></div>
-    <div class="discovery-links"><a href="/shopping/hunter/">Price Hunter</a><a href="/shopping/check/">Check a listing/lot</a><a href="/shopping/calculator/">Manual calculator</a><a href="/shopping/legacy/">Saved research</a><a href="/packs/">Packs</a></div>
+    <div><h1>Shopping</h1><p class="muted">Choose a card or search eBay for singles and loose lots.</p></div>
+    <div class="discovery-links"><a href="/shopping/hunter/">Price Hunter</a><a href="/shopping/check/">Check a listing/lot</a><a href="/shopping/calculator/">Manual calculator</a></div>
   </div>
   {% if shopping_context.return_url %}<p><a id="shopping-back" href="{{ shopping_context.return_url }}">Back to collection</a></p>{% endif %}
   {% if shopping_context.kind != 'all' %}<p class="discovery-context">{{ shopping_context.label }}{% if shopping_context.goal_policy %} · {{ shopping_context.goal_policy }}{% endif %}</p>{% endif %}
@@ -50,7 +50,7 @@
     <p class="field-help">Seller text proposes a card identity. Confirm the card, edition, finish and condition before deciding. Searching never changes your collection or goals.</p>
   </section>
   <details class="discovery-help"><summary>About these comparisons</summary><p>Search uses a small batch of singles, loose mixed lots and supported auctions. Auction current bids can rise and are not final purchase prices. References keep their original dates; Dex does not refresh guide prices here. A reference may depend on an unconfirmed condition or edition. A generic grade scenario does not verify a slab.</p><p>Shipping is separate from the listing price. A delivered total is shown only when shipping is known. Results may be temporary when source permissions do not allow saving. Reopening, revealing sellers and filtering do not search eBay.</p></details>
-  <details class="discovery-help"><summary>More Shopping tools</summary><nav class="discovery-links" aria-label="More Shopping tools"><a href="/finds/">Saved eBay finds</a><a href="/lookup/">Pack lookup</a><a href="/packs/saved/">Saved pack research</a></nav></details>
+  <details class="discovery-help"><summary>More Shopping tools</summary><nav class="discovery-links" aria-label="More Shopping tools"><a href="/shopping/legacy/">Saved research</a><a href="/packs/">Packs</a><a href="/finds/">Saved eBay finds</a><a href="/lookup/">Pack lookup</a><a href="/packs/saved/">Saved pack research</a></nav></details>
   <noscript><p class="discovery-note">Enable JavaScript to use visual search and discovery. The <a href="/shopping/calculator/">listing/lot calculator</a> remains available.</p></noscript>
 </div>
 <script src="/collection-assets/discovery.js?v=20261016-shop04" defer></script>

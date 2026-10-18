@@ -4,6 +4,8 @@ from django.conf import settings
 
 from pokemon_hunter.security import BROWSER_HEADERS
 
+from .security import local_ingress_allowed
+
 BULK_BODY_LIMIT = 32_000_000  # JSON expansion of at most 2,000 independently validated manual rows.
 SCAN_BODY_LIMIT = 16_100_000  # Two 8 MB photos plus multipart overhead.
 
@@ -15,6 +17,27 @@ class BoundedBodyApplication:
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":
             return await self.application(scope, receive, send)
+
+        if not getattr(settings, "STAGING", False):
+            # Django's middleware runs after body spooling. Reject foreign and
+            # ambiguous local requests here before reading any upload bytes.
+            headers = [(key.lower(), value) for key, value in scope.get("headers", [])]
+            hosts = [value.decode("latin-1") for key, value in headers if key == b"host"]
+            origins = [value.decode("latin-1") for key, value in headers if key == b"origin"]
+            peer = (scope.get("client") or (None,))[0]
+            if (
+                len(hosts) != 1
+                or len(origins) > 1
+                or not local_ingress_allowed(
+                    hosts[0],
+                    peer,
+                    origins[0] if origins else None,
+                    forwarded=any(
+                        key == b"forwarded" or key.startswith(b"x-forwarded-") for key, _ in headers
+                    ),
+                )
+            ):
+                return await self.refuse(send, 403, b'{"error":"Local app is loopback-only"}')
 
         limit = settings.DATA_UPLOAD_MAX_MEMORY_SIZE
         if settings.B3_ENABLED and scope["path"] == "/api/scans/" and scope["method"] == "POST":

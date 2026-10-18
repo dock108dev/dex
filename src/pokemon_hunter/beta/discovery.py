@@ -25,6 +25,7 @@ from django.http import Http404
 from pydantic import BaseModel, Field, StrictBool, StrictInt, field_validator, model_validator
 
 from . import ebay_hunts, goal_hunts, parity, store
+from .diagnostics import async_closing, failure
 from .discovery_search import submitted_query
 from .discovery_transport import ProviderFailure, Transport
 
@@ -580,6 +581,15 @@ def _authorize(actor, session_key=None):
         close_old_connections()
 
 
+def _discard_dispatch_result(task):
+    # The foreground path already records the result or an uncertain attempt.
+    # Retrieve late outcomes so asyncio cannot print private transport exceptions.
+    try:
+        task.result()
+    except (Exception, asyncio.CancelledError):
+        pass
+
+
 async def _dispatch(run, transport, stage, deadline, *, actor=None, **kwargs):
     from .hunter_profile import check_dispatch
 
@@ -650,8 +660,9 @@ async def _dispatch(run, transport, stage, deadline, *, actor=None, **kwargs):
         check_dispatch(run)
         _journal(run, stage, "completed", attempt=sequence, http_status=200)
         return value
-    except _Stopped:
-        _journal(run, stage, "uncertain", attempt=sequence, reason="stopped_in_flight")
+    except (_Stopped, asyncio.CancelledError) as exc:
+        reason = "cancelled_in_flight" if isinstance(exc, asyncio.CancelledError) else "stopped_in_flight"
+        _journal(run, stage, "uncertain", attempt=sequence, reason=reason)
         raise
     except ProviderFailure as exc:
         _journal(
@@ -662,18 +673,17 @@ async def _dispatch(run, transport, stage, deadline, *, actor=None, **kwargs):
             **({"http_status": exc.status} if exc.status else {}),
         )
         raise
-    except Exception:
+    except Exception as exc:
+        failure("shopping_dispatch_failed", exc)
         _journal(run, stage, "uncertain", attempt=sequence)
         raise ProviderFailure(stage, uncertain=True) from None
     finally:
         if not task.done():
             task.cancel()
-        if task.done():
-            try:
-                task.result()
-            except (Exception, asyncio.CancelledError):
-                pass
-        else:
+        # Register before waiting: even an outcome after the bounded join is
+        # consumed without logging transport text. This never retries a request.
+        task.add_done_callback(_discard_dispatch_result)
+        if not task.done():
             await asyncio.wait({task}, timeout=0.25)
 
 
@@ -708,7 +718,7 @@ async def _acquire(run, credentials, actor=None):
     _arm_deadline(run)
     transport = Transport()
     deadline = run.deadline
-    try:
+    async with async_closing(transport, "shopping_transport_close_failed"):
         token = await access_token(run, transport, credentials, actor)
         remaining_queries = run.queries[run.offset : run.offset + run.choices.browse_requests]
         additions = []
@@ -741,8 +751,6 @@ async def _acquire(run, credentials, actor=None):
                     run.seen.add(key)
                     additions.append(row)
                 run.offset += 1
-    finally:
-        await asyncio.wait_for(transport.close(), timeout=0.5)
     _check_acquisition(run)
     if actor is not None:
         await asyncio.to_thread(_context_current, actor, run.choices)
@@ -773,6 +781,7 @@ def _worker(run, actor, credentials):
                 run.state = "stopped"
             run.raws.clear()
     except Exception as exc:
+        failure("shopping_search_failed", exc)
         with run.lock:
             if run.cancel.is_set():
                 if not run.timed_out:

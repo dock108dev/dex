@@ -40,6 +40,9 @@ or alerting service; repeated failures produce repeated records.
 | `watcher_run_failed`, `watcher_failure_status_write_failed` | A watcher run failed/interrupted, or recording that outcome also failed. Existing observations and delivery may remain committed. |
 | `watcher_database_close_failed`, `watcher_client_close_failed`, `legacy_ebay_client_close_failed` | Resource cleanup failed. Inspect committed state before replaying an otherwise successful action. |
 | `legacy_request_failed`, `legacy_ebay_search_failed` | The original app returned a safe server/provider failure without private error text. |
+| `shopping_search_failed`, `hunter_acquisition_failed`, `shopping_listing_failed`, `hunter_lot_detail_failed` | A background Shopping action failed. The temporary status remains safe; consumed/uncertain operations are not refunded or retried. Explicit Stop is not logged as an acquisition fault. |
+| `shopping_dispatch_failed` | An unexpected transport, authorization or journal failure was converted to a safe uncertain provider result. Inspect this record for the original class and code locations. |
+| `shopping_transport_close_failed`, `shopping_response_close_failed` | Closing a Shopping client or response failed or timed out. Cleanup preserves an existing acquisition error or cancellation; otherwise it fails the action. |
 | `worker_shutdown_incomplete` | The local worker remained alive after its five-second join; this does not certify provider cancellation. |
 
 Request/access logging is suppressed because URLs can contain bearer setup links.
@@ -104,3 +107,43 @@ Deleted, expired or unauthorized photos are omitted from catalog review. Import 
 report row errors before confirmation. Optional display metadata and missing images never
 create ownership. Frontend failures remain visible with recovery actions and retained
 input where supported.
+
+## Shopping cancellation and cleanup
+
+Discovery, listing checks, Hunter and selected lot details share redacted async
+cleanup. Client and response closing use a 0.5-second timeout. This relies on
+cooperative cancellation in the async transport; it is not process termination or
+proof that the provider did not receive a request. When acquisition and cleanup
+both fail, the acquisition error remains primary and cleanup has its own diagnostic.
+A cleanup failure after a successful response fails the action without replaying it.
+Listing worker errors use fixed text rather than arbitrary `ValueError` messages.
+
+A cancelled in-flight dispatch records `uncertain` with `cancelled_in_flight`;
+explicit Stop records `stopped_in_flight`. Admissions remain consumed. Late task
+outcomes are retrieved after the bounded 0.25-second cancellation wait so asyncio
+does not print private transport exceptions. Their result is deliberately discarded
+because the action has already recorded an uncertain outcome; no late result is
+published and no retry follows. Keep the journal and diagnostics together when
+investigating. A failed journal write can leave only the earlier admitted/in-flight
+record: that is incomplete accounting, never evidence of unused capacity.
+
+## Maintenance review boundary
+
+The October 17, 2026 source pass surveyed exception/suppression patterns across
+application Python, browser clients and operator/CI scripts, then traced Shopping
+workers, transport ownership, journals and cancellation. It also checked existing
+request boundaries, recognition worker recovery, watcher durability, source/usage
+fail-closed behavior, image validation and logging configuration. Existing broad
+catches that erase temporary data and re-raise, deliberate unavailable-image or
+price fallbacks, authorization revocation, safe CLI boundaries, and content-free
+request logging remain intentional. Decompression warnings remain validation errors.
+No global warning suppression or new debug-mode fallback was added.
+
+The implemented changes are source maintenance against Git baseline
+`d144265df0eb132d836186a2441c23d9096d2d0b`, alongside preserved pre-existing
+snapshot scripts/tests and documentation edits. Focused tests use temporary state
+and fake transports. This pass does not qualify or replace the installed wheel,
+observe customer journeys, enable deferred recognition/acquisition work, or establish
+owner acceptance. Retain the tracker-recorded installed identity until a separately
+qualified compatible update is delivered. Persistent log retention/alerting and
+unobserved installed cancellation journeys remain separate follow-up work.

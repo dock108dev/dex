@@ -33,6 +33,7 @@
     if (!authority()) return;
     $('hunter-status').textContent = value;
     $('hunter-status').dataset.error = String(error);
+    if (usageOwner) $('hunter-usage-status').hidden = Boolean(usagePolicy?.enabled && usagePolicy?.remaining > 0) || value === $('hunter-usage-status').textContent;
   }
   async function request(url, body) {
     if (!authority()) throw new Error('Your session changed. Reload Shopping to continue.');
@@ -105,7 +106,9 @@
     if (hasSettings && ![...timezoneControl.querySelectorAll('option')].some(option => option.value === p.timezone)) timezoneControl.append(h('option', 'Current timezone (' + p.timezone.replaceAll('_', ' ') + ')', {value: p.timezone}));
     const timezoneLabel = hasSettings ? [...timezoneControl.querySelectorAll('option')].find(option => option.value === p.timezone)?.textContent || p.timezone : '';
     $('hunter-usage-status').textContent = p.reason || (!p.configured ? 'Acquisition is disabled. Choose your usage settings to enable it.' : !p.enabled ? 'Acquisition is paused.' : p.remaining > 0 ? 'Acquisition is enabled within your selected limits.' : 'Your daily capacity is exhausted.');
-    $('hunter-usage-capacity').textContent = hasSettings ? `${p.remaining ?? 0} of ${p.daily_limit} daily operations remaining · ${p.used ?? 0} consumed · up to ${p.per_hunt_limit} per Hunt. ${p.recurring ? 'Next daily window: ' + usageDate(p.next_window_at, p.timezone) + '.' : 'This window only; a new day does not renew capacity.'} Timezone: ${timezoneLabel}.${p.expires_at ? ' Policy expires ' + usageDate(p.expires_at, p.timezone) + '.' : ''}` : p.configured ? 'Capacity cannot be read safely. Acquisition remains disabled; existing local Shopping tools remain available.' : 'No limits have been selected. Opening Dex and changing these settings use no provider operations.';
+    $('hunter-usage-capacity').textContent = hasSettings ? `${p.remaining ?? 0} of ${p.daily_limit} daily operations remaining · ${p.used ?? 0} consumed · up to ${p.per_hunt_limit} per Hunt.` : p.configured ? 'Capacity cannot be read safely. Acquisition remains disabled; existing local Shopping tools remain available.' : 'Select limits below. Saving settings does not start a search.';
+    if ($('hunter-usage-window')) $('hunter-usage-window').textContent = hasSettings ? `${p.recurring ? 'Next daily window: ' + usageDate(p.next_window_at, p.timezone) + '.' : 'This window only; a new day does not renew capacity.'} Timezone: ${timezoneLabel}.${p.expires_at ? ' Policy expires ' + usageDate(p.expires_at, p.timezone) + '.' : ''}` : '';
+    $('hunter-usage-status').hidden = hasSettings && p.enabled && p.remaining > 0;
     if (!p.configured) $('hunter-usage-settings').open = true;
     if (fill) {
       $('hunter-usage-enabled').value = hasSettings ? String(p.enabled) : '';
@@ -195,7 +198,7 @@
     $('hunter-window').textContent = `${pretty(value.plan?.scope || 'singles')} · auctions ${fmt(w.start)} to ${fmt(w.end)} · available Buy It Now offers.`;
     const c = value.traversal_coverage || {}, counts = value.counts || {}, local = value.coverage || {};
     $('hunter-coverage').textContent = `${c.fetched ?? counts.received ?? 0} fetched · ${c.unique ?? local.unique ?? 0} unique · ${c.retained ?? local.unique ?? 0} retained · ${c.remaining_pages ?? 0} planned pages remaining.`;
-    $('hunter-limitations').textContent = `${value.running ? 'Hunt is working through its captured pages. ' : 'Partial marketplace coverage. '}${c.truncated || counts.truncated_pages ? 'Some pages report further results. ' : ''}Results do not establish complete marketplace coverage. References retain their original dates.`;
+    $('hunter-limitations').textContent = `${value.running ? 'Hunt is working through its captured pages. ' : 'Partial marketplace coverage. '}${c.truncated || counts.truncated_pages ? 'Some pages report further results. ' : ''}References retain their original dates.`;
     const accounting = $('hunter-accounting'); accounting.replaceChildren();
     for (const [label, val] of [['Fetched observations', c.fetched ?? counts.received], ['Unique identities', c.unique ?? local.unique], ['Duplicate observations', c.duplicates ?? counts.duplicates], ['Retained summaries', c.retained ?? local.unique], ['Skipped by limits', c.skipped], ['Malformed identity rejections', c.rejected ?? counts.invalid_identity], ['Locally rejected offers', local.rejected], ['Truncated pages (advisory)', c.truncated ?? counts.truncated_pages]]) accounting.append(h('p', `${label}: ${val ?? 'Unknown'}`));
     for (const [key, val] of Object.entries(local)) if (!['unique', 'results', 'rejected'].includes(key)) accounting.append(h('p', key === 'comparable' ? `Exact reference matches (costs may be incomplete): ${val}` : `${pretty(key)} results: ${val}`));
@@ -209,7 +212,7 @@
       for (const [key, count] of Object.entries(diagnostic.reason_counts || {})) accounting.append(h('p', `${diagnostic.reason_labels?.[key] || pretty(key)}: ${count} of ${d.retained ?? 'Unknown'} retained summaries`));
       const outcomes = Object.entries(diagnostic.primary_outcomes || {}).map(([key, count]) => `${pretty(key)} ${count}`).join(' · ');
       if (outcomes) accounting.append(h('p', 'Primary outcomes: ' + outcomes + '.'));
-      $('hunter-limitations').append(h('span', ` ${d.admitted_references ?? 0} retained offers have an admitted reference; ${d.complete_comparisons ?? 0} have complete delivered comparisons. Open comparison coverage below for missing-input reasons.`));
+      $('hunter-limitations').append(h('span', ` ${d.admitted_references ?? 0} retained offers have an admitted reference; ${d.complete_comparisons ?? 0} have complete delivered comparisons.`));
     }
     accounting.append(h('p', 'Duplicates are repeat observations; skipped identities were not retained. Rejections and reference coverage have separate meanings. Provider totals are advisory.'));
   }
@@ -249,8 +252,8 @@
     field(amounts, row.price_kind === 'current_bid' ? 'Current bid' : 'Listing amount', money(row.listing_price)); field(amounts, 'Shipping', money(row.shipping)); article.append(amounts);
     if (row.reason) article.append(h('p', row.reason));
     if (row.comparison_diagnostics?.reasons?.length) {
-      const why = h('section', null, {class: 'hunter-comparison-reasons', 'aria-label': 'Comparison coverage reasons'});
-      why.append(h('h4', row.comparison_diagnostics.complete_delivered_comparison ? 'Comparison basis' : 'Comparison coverage'));
+      const why = h(inspect ? 'section' : 'details', null, {class: 'hunter-comparison-reasons', 'aria-label': 'Comparison coverage reasons'});
+      why.append(h(inspect ? 'h4' : 'summary', row.comparison_diagnostics.complete_delivered_comparison ? 'Comparison basis' : 'Why this comparison is incomplete'));
       for (const reason of row.comparison_diagnostics.reasons) why.append(h('p', reason));
       article.append(why);
     }

@@ -11,7 +11,15 @@ from pokemon_hunter.beta import asgi
 from pokemon_hunter.security import BROWSER_HEADERS
 
 
-def exchange(application, chunks=(), headers=(), path="/login/", method="POST"):
+def exchange(
+    application,
+    chunks=(),
+    headers=(),
+    path="/login/",
+    method="POST",
+    host=b"127.0.0.1:8011",
+    peer=("127.0.0.1", 54321),
+):
     async def run():
         messages = iter(chunks)
         reads, sent = [], []
@@ -35,8 +43,8 @@ def exchange(application, chunks=(), headers=(), path="/login/", method="POST"):
             "path": path,
             "query_string": b"",
             "scheme": "http",
-            "headers": [(b"host", b"127.0.0.1:8011"), *headers],
-            "client": ("127.0.0.1", 54321),
+            "headers": ([(b"host", host)] if host is not None else []) + list(headers),
+            "client": peer,
             "server": ("127.0.0.1", 8011),
         }
         await asyncio.wait_for(application(scope, receive, send), timeout=5)
@@ -199,3 +207,71 @@ def test_batch_photo_ingress_exact_independent_bound(ingress, suffix):
     assert refused[0]["status"] == 413 and not dispatched
     _, ordinary = exchange(app, [chunk(b"x" * 9)], path=path, method="PUT")
     assert ordinary[0]["status"] == 413
+
+
+@pytest.mark.parametrize(
+    "options",
+    [
+        {"host": None},
+        {"host": b"evil.example"},
+        {"host": b"localhost:8011"},
+        {"host": b"127.0.0.1:8012"},
+        {"headers": [(b"Host", b"127.0.0.1:8011")]},
+        {"headers": [(b"Origin", b"https://evil.example")]},
+        {"headers": [(b"origin", b"null")]},
+        {"headers": [(b"origin", b"")]},
+        {"headers": [(b"origin", b"http://127.0.0.1:8011"), (b"Origin", b"http://127.0.0.1:8011")]},
+        {"headers": [(b"Forwarded", b"for=127.0.0.1")]},
+        {"headers": [(b"X-Forwarded-Port", b"8011")]},
+        {"peer": ("192.0.2.1", 54321)},
+        {"peer": None},
+    ],
+)
+def test_local_boundary_rejects_before_reading_or_spooling(ingress, options):
+    app, forwarded, dispatched = ingress
+    reads, sent = exchange(app, [chunk(b"untrusted upload")], path="/api/scans/", **options)
+    assert not reads and not forwarded and not dispatched
+    assert sent[0]["status"] == 403
+    assert b"untrusted" not in sent[1]["body"]
+    headers = dict(sent[0]["headers"])
+    for key, value in BROWSER_HEADERS.items():
+        assert headers[key.lower().encode()] == value.encode()
+
+
+@pytest.mark.parametrize("peer", [("127.0.0.1", 1234), ("::1", 1234)])
+@pytest.mark.parametrize("headers", [[], [(b"origin", b"http://127.0.0.1:8011")]])
+def test_local_boundary_accepts_canonical_requests(ingress, peer, headers):
+    app, _, dispatched = ingress
+    _, sent = exchange(app, [chunk(b"valid")], peer=peer, headers=headers)
+    assert sent[0]["status"] == 200 and dispatched == ["/login/"]
+
+
+def test_staging_retains_separate_ingress_policy(ingress):
+    app, _, dispatched = ingress
+    asgi.settings.STAGING = True
+    _, sent = exchange(
+        app,
+        [chunk(b"valid")],
+        host=b"dex.example",
+        peer=("192.0.2.1", 1234),
+        headers=[(b"x-forwarded-proto", b"https"), (b"origin", b"https://dex.example")],
+    )
+    # The wrapper leaves staging ingress to its existing trusted-proxy middleware.
+    assert sent[0]["status"] == 200 and dispatched == ["/login/"]
+
+
+def test_foreign_origin_never_creates_a_real_django_spool(env, monkeypatch):
+    from django.core.handlers import asgi as django_asgi
+
+    def forbidden_spool(*args, **kwargs):
+        pytest.fail("Disallowed local ingress reached Django body buffering")
+
+    monkeypatch.setattr(django_asgi.tempfile, "SpooledTemporaryFile", forbidden_spool)
+    reads, sent = exchange(
+        asgi.get_asgi_application(),
+        [chunk(b"untrusted upload")],
+        headers=[(b"origin", b"https://evil.example")],
+        path="/api/scans/",
+    )
+    assert not reads
+    assert sent[0]["status"] == 403

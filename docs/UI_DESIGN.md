@@ -213,7 +213,7 @@ its actual available state.
 ### Current owner review
 
 UX-05 remains an owner verdict on the genuine installed collection interface.
-Use the [recorded installation and existing helper](local-development.md#existing-installations),
+Use the [recorded installation and existing helper](local-development.md),
 not old launcher/runtime instructions from historical handoffs. Review My Cards
 versus Library, species/card images, current versus frozen progress, editor cancel,
 scope Apply/Clear, Back/filter/focus and narrow/enlarged text. An actual collection
@@ -226,7 +226,12 @@ offer search and Ungraded review. Local browsing alone does not call eBay; anoth
 provider action is separate from closed engineering qualification allowances.
 Record acceptance or the page/action, observed result and expected behavior for
 a concrete repair. Tests and engineering walkthroughs do not supply the owner's
-verdict. Photo-batch real testing remains deferred; the Price Hunter is not yet built.
+verdict. The Price Hunter is delivered at `/shopping/hunter/`; review real singles
+and loose-lot comparisons, exact printing choices, dated/conditional references,
+unknown costs and partial lot totals, Stop, Back and reopening. The owner accepts
+the current catalog/reference population as sufficient for beta. Further coverage,
+real data pipelines and photo-batch testing are deferred; focus on practical use
+and named usability defects.
 
 ### Engineering review
 
@@ -241,3 +246,67 @@ for customer walkthroughs. Keep missing photos, archived examples and prices exp
 never substitute fabricated customer data. Inventory changes require an intentional
 user action. Technical checks do not establish human usability, recognition accuracy,
 provider entitlement or release readiness.
+
+## Shopping interface review — October 17, 2026
+
+This requested presentation pass retains Dex's neutral canvas, system typography
+and restrained red actions. It adapts the shared Starter 02 guidance for this
+existing product; no template runtime dependency or new theme was added.
+
+- **Shopping:** two-column compact catalog choices put card name, set/number and
+  ownership beside the reference image. The same four fabricated cards occupy
+  about 380 fewer vertical pixels at 1280px than the prior large image tiles.
+  Saved research and Packs remain in More Shopping tools; common search,
+  Price Hunter, listing check and calculator stay direct. Missing artwork is
+  explicitly labeled. Rows wrap by text size so 200% text does not overlap images.
+- **Hunter:** heading and search controls share the Shopping content alignment.
+  Hunt/Stop precede setup and are visible in the first desktop viewport even when
+  limits are unconfigured; the blocker remains beside them. Blank setup fields
+  and deliberate owner selection are preserved. Ready usage shows remaining,
+  consumed and per-Hunt operations; timezone, renewal and expiry remain in Usage
+  settings. Duplicate availability text is omitted without hiding active errors.
+- **Results:** amounts have stronger aligned typography. Extended comparison
+  reasons use Why this comparison is incomplete; direct card inspection keeps them
+  expanded. Classification, unknown costs, reference/valuation dates, partial
+  coverage, original capture window, seller reveal and Stop retain their meanings.
+  Local disclosures, filtering and recovery add no acquisition or persistence.
+
+### Matched rendered review
+
+The owner explicitly allowed an isolated synthetic preview in this request.
+These captures are **fabricated engineering state**, not the customer's installed
+collection or genuine listings. Remote artwork was blocked intentionally to review
+fallbacks. Before/after use the same four-card catalog and fake provider response
+shapes on separately initialized disposable roots; capture times and opaque handles
+naturally differ. The existing installation was never accessed or replaced.
+
+| State | Before | After |
+| --- | --- | --- |
+| Shopping catalog, 1280px | Before (local evidence: `reports/interface-review-20261017/before-shopping-viewport.png`) | After (local evidence: `reports/interface-review-20261017/after-shopping.png`) |
+| Hunter first use, 1280px | Before (local evidence: `reports/interface-review-20261017/before-first-use-viewport.png`) | After (local evidence: `reports/interface-review-20261017/after-first-use.png`) |
+| Hunter populated, 1280px | Before (local evidence: `reports/interface-review-20261017/before-hunter-results-viewport.png`) | After (local evidence: `reports/interface-review-20261017/after-hunter-results.png`) |
+| Hunter populated, 390px | Before (local evidence: `reports/interface-review-20261017/before-hunter-mobile-viewport.png`) | After (local evidence: `reports/interface-review-20261017/after-hunter-mobile.png`) |
+
+Additional reviewed captures: 200% text catalog (local evidence: `reports/interface-review-20261017/after-shopping-card-text2x.png`),
+long result at 320px (local evidence: `reports/interface-review-20261017/after-long-result-320.png`),
+comparison reasons (local evidence: `reports/interface-review-20261017/after-comparison-details.png`),
+unavailable/recovery state (local evidence: `reports/interface-review-20261017/after-unavailable.png`).
+The enlarged-text review caught and corrected image-label overlap that a simple
+horizontal-overflow assertion missed. Controls retain at least 44px targets;
+keyboard Enter opens settings/reasons and keyboard focus remains visible.
+
+**Validation:** 55 focused tests passed across Hunter client/review/view contracts,
+Shopping client contracts, preview guards and ASGI limits. Browser review recorded
+14 checks: 1280/390/320px, 200% text, long names, unavailable images, keyboard
+settings/reasons, Stop clearing, availability failure/recovery and no JavaScript
+errors. JavaScript syntax, preview-script compilation/Ruff and diff whitespace
+checks passed. The guarded disposable preview helper now applies its exact
+non-customer port policy to the ASGI ingress check as well as middleware; production
+Host/Origin policy is unchanged. Zero real provider operations were made.
+
+Source identity and limits (local evidence: `reports/interface-review-20261017/review.json`) and
+browser checks (local evidence: `reports/interface-review-20261017/browser-checks.json`) retain the
+technical evidence. This is a rendered **source-only** improvement, provisional for
+customer use. Installed successor qualification, healthy remote-artwork observation,
+and real new-user/owner evaluation remain separate. No commercial-readiness,
+screen-reader, customer acceptance or release claim is made.

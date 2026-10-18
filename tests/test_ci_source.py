@@ -92,3 +92,12 @@ def test_explicit_compatibility_anchors_remain_valid(docs):
     )
     source.check_document_links()
     assert "example-only" not in source.heading_anchors(docs)
+
+
+def test_present_generated_reports_cannot_make_a_warm_checkout_pass(docs):
+    report = docs.parent / "reports/local/report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text("# Local-only evidence")
+    docs.write_text("[Local report](reports/local/report.md)\n")
+    with pytest.raises(ValueError, match="generated evidence is not a portable link"):
+        source.check_document_links()

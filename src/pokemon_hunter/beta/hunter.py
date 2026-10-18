@@ -32,6 +32,7 @@ from . import (
     hunter_traversal,
     store,
 )
+from .diagnostics import async_closing, failure
 from .discovery_transport import ProviderFailure, Transport
 
 MAX_SUMMARIES = 400
@@ -488,7 +489,7 @@ async def _acquire(run, credentials, actor=None):
     transport = Transport()
     rows_by_id = {}
     run.lanes = _planned_lanes(run)
-    try:
+    async with async_closing(transport, "shopping_transport_close_failed"):
         token = await discovery.access_token(run, transport, credentials, actor)
         for request, lane in zip(run.queries, run.lanes, strict=True):
             run.current_lane = request["lane"]
@@ -555,8 +556,6 @@ async def _acquire(run, credentials, actor=None):
                             "_hunt_observed_at": datetime.now(UTC).isoformat(),
                         }
                 run.offset += 1
-    finally:
-        await asyncio.wait_for(transport.close(), timeout=0.5)
     discovery._check_acquisition(run)
     if actor is not None:
         await asyncio.to_thread(discovery._authorize, actor, run.auth_session)
@@ -589,7 +588,8 @@ def _worker(run, actor, credentials):
             if not run.timed_out:
                 run.state = "stopped"
             run.raws.clear()
-    except Exception:
+    except Exception as exc:
+        failure("hunter_acquisition_failed", exc)
         with run.lock:
             run.raws.clear()
             if not run.cancel.is_set():
@@ -609,7 +609,7 @@ async def _acquire_traversal(run, credentials, actor=None):
     counts = run.coverage_counts
     for key in ("fetched", "unique", "duplicates", "rejected", "skipped", "pages", "truncated"):
         counts.setdefault(key, 0)
-    try:
+    async with async_closing(transport, "shopping_transport_close_failed"):
         token = await discovery.access_token(run, transport, credentials, actor)
         dispatched = 0
         while run.next_index < len(run.traversal.requests) and dispatched < 2:
@@ -742,8 +742,6 @@ async def _acquire_traversal(run, credentials, actor=None):
                 raise
             finally:
                 lane["attempted"] = run.counts["browse"] - before
-    finally:
-        await asyncio.wait_for(transport.close(), timeout=0.5)
     discovery._check_acquisition(run)
     with run.lock:
         while (

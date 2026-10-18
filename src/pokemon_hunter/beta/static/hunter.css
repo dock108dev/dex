@@ -71,3 +71,76 @@
   .hunter-amounts { grid-template-columns: minmax(0, 1fr); }
   .hunter-review-card, .hunter-catalog-match { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Interface review: the search is the workspace; configuration stays secondary. */
+.hunter-page main { max-width:1160px; margin-top:24px; }
+.hunter { padding:0; }
+.hunter-heading { align-items:center; margin-bottom:20px; gap:8px 24px; }
+.hunter-heading h1 { margin:0; }
+.hunter-heading p { margin:6px 0 0; }
+.hunter-heading nav { gap:4px 16px; }
+#hunter-form { padding:20px; border:1px solid var(--border); border-radius:14px; background:#fff; }
+.hunter-controls { margin:0; gap:10px; }
+.hunter-controls label { margin:0; max-width:300px; }
+.hunter-controls select { display:block; width:100%; margin-top:6px; }
+.hunter-scope { margin:12px 0 0; font-size:.9375rem; }
+.hunter-availability { display:flex; align-items:center; flex-wrap:wrap; gap:8px 16px; margin-top:12px; }
+#hunter-status { flex:1 1 25rem; margin:0; font-size:.9375rem; font-weight:500; }
+#hunter-status:empty { display:none; }
+#hunter-status[data-error="true"] { border-left:3px solid var(--danger); padding:8px 12px; background:#fff1f3; }
+.hunter-usage { margin:16px 0; padding:0 0 12px; border:0; border-bottom:1px solid var(--border); border-radius:0; background:transparent; }
+.hunter-usage h2 { font-size:1rem; margin:0 0 4px; }
+.hunter-usage p { margin:6px 0; }
+#hunter-usage-status { font-size:.9375rem; font-weight:500; }
+#hunter-usage-capacity { color:var(--muted); font-size:.9375rem; max-width:85ch; }
+.hunter-usage details { margin-top:4px; }
+.hunter-usage details[open] { padding:0 18px 16px; border:1px solid var(--border); border-radius:12px; background:#fff; }
+.hunter-usage-fields { margin:12px 0; gap:12px 20px; }
+.hunter-usage-fields label { margin:0; font-size:.9375rem; }
+.hunter-usage .hunter-note { font-size:.9375rem; max-width:85ch; }
+#hunter-progress { margin:16px 0; padding:0 0 8px; border-top:0; }
+#hunter-progress p { margin:6px 0; font-size:.9375rem; }
+#hunter-progress details { margin-top:0; }
+.hunter-results-heading { margin:20px 0 8px; }
+.hunter-results-heading h2 { margin:0; font-size:1.375rem; }
+.hunter-cards { align-items:start; gap:16px; }
+.hunter-card { padding:20px; min-width:0; border-color:var(--border); }
+.hunter-card h3 { margin:0 0 6px; font-size:1.25rem; line-height:1.3; }
+.hunter-card-head p { margin:6px 0; font-size:.9375rem; color:var(--muted); }
+.hunter-card-head { grid-template-columns:88px minmax(0,1fr); gap:16px; }
+.hunter-amounts { gap:12px 20px; padding:12px 0; margin:12px 0; border-block:1px solid var(--border); }
+.hunter-amounts dt { color:var(--muted); line-height:1.4; }
+.hunter-amounts dd { font-size:1.25rem; font-weight:650; margin:4px 0 0; line-height:1.3; }
+.hunter-card > p, .hunter-scenario p { font-size:.9375rem; margin:8px 0; }
+.hunter-card .hunter-comparison-reasons { margin:8px 0; }
+.hunter-comparison-reasons summary { font-size:.9375rem; font-weight:500; }
+.hunter-comparison-reasons p { font-size:.9375rem; margin:8px 0; }
+.hunter-card button:hover:enabled, .hunter button.secondary:hover:enabled { background:#faf2f3; border-color:#9c1c30; }
+.hunter button.primary:hover:enabled { background:#8f1d2e; }
+.hunter-help { margin-top:20px; }
+@media(max-width:700px) {
+  .hunter { padding:0; }
+  .hunter-heading { display:block; }
+  .hunter-heading nav { margin:8px 0 0; }
+  .hunter-heading nav a { padding:0; }
+  #hunter-form { padding:16px; }
+  .hunter-controls label { flex-basis:100%; max-width:none; }
+  .hunter-availability { align-items:start; }
+  .hunter-usage details[open] { padding-inline:12px; }
+  .hunter-card { padding:16px; }
+  .hunter-results-heading { align-items:start; }
+}
+@media(max-width:380px) {
+  .hunter-card-head { grid-template-columns:68px minmax(0,1fr); gap:12px; }
+  .hunter-amounts { grid-template-columns:minmax(0,1fr); }
+}
+.hunter-usage:not(:has(details[open])) { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; column-gap:16px; }
+.hunter-usage:not(:has(details[open])) h2 { margin:0; }
+.hunter-usage:not(:has(details[open])) details { grid-column:2; grid-row:1 / span 3; margin:0; }
+.hunter-usage:not(:has(details[open])) #hunter-usage-capacity { margin:2px 0 0; }
+@media(max-width:600px) {
+  .hunter-usage:not(:has(details[open])) { display:block; }
+}
+.hunter-card-head { display:flex; flex-wrap:wrap; }
+.hunter-card-head > .hunter-image { flex:0 0 5.5rem; width:5.5rem; max-width:100%; }
+.hunter-card-head > div { flex:1 1 10rem; min-width:0; }

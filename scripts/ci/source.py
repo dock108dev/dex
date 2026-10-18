@@ -74,7 +74,9 @@ def check_document_links():
                 broken.append(f"{relative}: nonportable absolute path {target}")
                 continue
             destination = (document.parent / unquote(parsed.path)).resolve() if parsed.path else document
-            if not destination.exists():
+            if destination.is_relative_to((ROOT / "reports").resolve()):
+                broken.append(f"{relative}: generated evidence is not a portable link {target}")
+            elif not destination.exists():
                 broken.append(f"{relative}: {target}")
             elif parsed.fragment and destination.suffix.lower() == ".md":
                 if unquote(parsed.fragment) not in heading_anchors(destination):

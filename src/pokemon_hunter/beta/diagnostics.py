@@ -1,8 +1,9 @@
 """Content-free failure diagnostics; never format exception messages or locals."""
 
+import asyncio
 import logging
 import sys
-from contextlib import contextmanager
+from contextlib import asynccontextmanager, contextmanager
 from pathlib import Path
 
 logger = logging.getLogger("dex.failures")
@@ -17,6 +18,21 @@ def closing(resource, event):
         failed = sys.exc_info()[0] is not None
         try:
             resource.close()
+        except Exception as exc:
+            failure(event, exc)
+            if not failed:
+                raise
+
+
+@asynccontextmanager
+async def async_closing(resource, event, *, close_method="close", timeout=0.5):
+    """Bound cleanup; log failures without replacing an active error or cancellation."""
+    try:
+        yield resource
+    finally:
+        failed = sys.exc_info()[0] is not None
+        try:
+            await asyncio.wait_for(getattr(resource, close_method)(), timeout=timeout)
         except Exception as exc:
             failure(event, exc)
             if not failed:

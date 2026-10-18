@@ -567,8 +567,15 @@ def inspect(root, plan_path, expected_plan, directory, review_id, scope_path):
     if scope.get("schema") != SCOPE_SCHEMA or rules.digest(entries) != scope["catalog_identity_sha256"]:
         raise ValueError("Frozen scope/current catalog conflict")
     exact_bindings = scope.get("exact_bindings")
+    received_refresh = (
+        plan.get("refresh_cadence") in {"selected_groups_new_build", "owner_r3_acquire1_same_build_once"}
+        and scope.get("refresh_binding_mode") == "received_identity"
+        and exact_bindings is None
+    )
     if plan["purpose"] == "refresh" and (
-        scope.get("capture_purpose") != "refresh" or not isinstance(exact_bindings, dict)
+        scope.get("capture_purpose") != "refresh"
+        or not isinstance(exact_bindings, dict)
+        and not received_refresh
     ):
         raise ValueError("Ordinary refresh requires frozen exact child bindings")
     groups = [group["group_id"] for group in plan["groups"]]

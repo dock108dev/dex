@@ -36,6 +36,7 @@ pokemon-hunter = "pokemon_hunter.main:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+faulthandler_timeout = 90 # Diagnose stalled tests before the bounded hosted job expires.
 
 [tool.coverage.run]
 branch = true
@@ -55,7 +56,8 @@ show_missing = true
 "config/catalog-pipeline/m4-20261006" = "pokemon_hunter/data/config/catalog-pipeline/m4-20261006"
 
 [tool.hatch.build.targets.sdist]
-include = ["/src", "/web", "/config/catalog-imports", "/config/sealed/2026-10-04", "/config/sealed/2026-10-04-151/package.json", "/config/sealed/2026-10-05-det1-e1c/package.json", "/config/catalog-pipeline/inputs.json", "/config/catalog-pipeline/retained-20261004.json", "/config/catalog-pipeline/universe-20261004.json", "/config/catalog-pipeline/m4-20261006", "/pyproject.toml", "/uv.lock", "/README.md"]
+# Traverse only shipped roots, never local reports, runtimes or ignored state.
+only-include = ["src", "web", "config/catalog-imports", "config/sealed/2026-10-04", "config/sealed/2026-10-04-151/package.json", "config/sealed/2026-10-05-det1-e1c/package.json", "config/catalog-pipeline/inputs.json", "config/catalog-pipeline/retained-20261004.json", "config/catalog-pipeline/universe-20261004.json", "config/catalog-pipeline/m4-20261006", "pyproject.toml", "uv.lock", "README.md"]
 
 [tool.ruff]
 line-length = 110

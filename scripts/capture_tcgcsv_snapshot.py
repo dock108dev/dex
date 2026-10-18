@@ -549,6 +549,16 @@ def make_batch_plan(
     return plan
 
 
+# One owner-selected finite exception. The immutable proposal and exact partitions
+# are code-bound; changing display IDs, dates or exception names cannot replay it.
+R3_ACQUIRE1_PROPOSAL = "a5619a24eb41e7f677d8137121ed1d4a5d512af8f05f8b5ad4579311a23687cf"
+R3_ACQUIRE1_GROUPS = (
+    (630, 635, 1367, 1368, 1369, 1374, 1375, 1378, 1379, 1380, 1383, 1390, 1391, 1392, 1395, 1397),
+    (1398, 1402, 1405, 1406, 1411, 1415, 1417, 1419, 1428, 1429, 1430, 1444, 1957, 2848, 2906, 3040),
+    (3118, 3170, 17688, 22873, 23120, 23228, 23353, 23473, 23537, 23651, 23821, 24073, 24269, 24380),
+)
+
+
 def validate_batch_plan(plan, root):
     keys = {
         "schema",
@@ -564,18 +574,33 @@ def validate_batch_plan(plan, root):
     }
     if (
         not isinstance(plan, dict)
-        or not keys <= set(plan) <= keys | {"purpose", "refresh_cadence"}
+        or not keys <= set(plan) <= keys | {"purpose", "refresh_cadence", "timing_override"}
         or plan["schema"] != "dex-tcgcsv-batch-plan-v1"
         or "purpose" in plan
         and (not isinstance(plan["purpose"], str) or plan["purpose"] not in {"refresh", "initial_fill"})
     ):
         raise CaptureRefused("invalid_batch_plan")
     if "refresh_cadence" in plan and (
-        plan["refresh_cadence"] != "selected_groups"
+        not isinstance(plan["refresh_cadence"], str)
+        or plan["refresh_cadence"]
+        not in {"selected_groups", "selected_groups_new_build", "owner_r3_acquire1_same_build_once"}
         or plan.get("purpose", "refresh") != "refresh"
         or plan["include_groups"] is not False
     ):
         raise CaptureRefused("invalid_refresh_cadence")
+    newer_build_override = plan.get("refresh_cadence") in {
+        "selected_groups_new_build",
+        "owner_r3_acquire1_same_build_once",
+    }
+    if (
+        newer_build_override != ("timing_override" in plan)
+        or newer_build_override
+        and (
+            not isinstance(plan["timing_override"], str)
+            or not re.fullmatch(r"[a-z][a-z0-9-]{1,79}", plan["timing_override"])
+        )
+    ):
+        raise CaptureRefused("invalid_timing_override")
     if (
         not isinstance(plan["plan_id"], str)
         or not re.fullmatch(r"[a-z][a-z0-9-]{1,79}", plan["plan_id"])
@@ -603,6 +628,13 @@ def validate_batch_plan(plan, root):
         ):
             raise CaptureRefused("invalid_batch_groups")
         seen.add(group["group_id"])
+    if plan.get("refresh_cadence") == "owner_r3_acquire1_same_build_once":
+        partitions = {
+            f"r3-acquire1-{R3_ACQUIRE1_PROPOSAL[:16]}-batch-{i}": gids
+            for i, gids in enumerate(R3_ACQUIRE1_GROUPS, 1)
+        }
+        if tuple(g["group_id"] for g in groups) != partitions.get(plan["timing_override"]):
+            raise CaptureRefused("r3_exception_exact_selection_required")
     limits = plan["limits"]
     if not isinstance(limits, dict) or set(limits) != set(BATCH_LIMITS):
         raise CaptureRefused("invalid_batch_limits")
@@ -651,7 +683,7 @@ def _history(accounting, metadata_ledger, *, group_history=None, resource_histor
         raise CaptureRefused("historical_accounting_required")
     times, builds = [], []
     used_groups, unknown_groups, detailed_reservations = set(), False, set()
-    group_times = {}
+    group_times, group_builds = {}, {}
     files = sorted(accounting.glob("*.jsonl"))
     if len(files) > 1000:
         raise CaptureRefused("accounting_capacity_exhausted")
@@ -777,6 +809,16 @@ def _history(accounting, metadata_ledger, *, group_history=None, resource_histor
                 if path.name.startswith("batch-"):
                     detailed_reservations.add("tcgcsv-" + path.stem)
             builds.extend(received_builds)
+            # Build checks cover the full reserved scope, even when no product
+            # request followed. Preserve the global result for legacy plans.
+            scoped_groups = (
+                {3170}
+                if path.name == "hunt11-five-request-v1.jsonl"
+                else (set(declared_groups) if declared_groups is not None else observed_groups)
+            )
+            if received_builds:
+                for gid in scoped_groups:
+                    group_builds[gid] = max(group_builds.get(gid, min(received_builds)), *received_builds)
         except (KeyError, UnicodeError, ValueError, RecursionError):
             raise CaptureRefused("invalid_accounting") from None
     metadata = {"schema": "dex-tcgcsv-metadata-attempts-v1", "attempts": []}
@@ -805,7 +847,9 @@ def _history(accounting, metadata_ledger, *, group_history=None, resource_histor
     if group_history is not None:
         group_history.update(groups=used_groups, unknown=unknown_groups)
     if resource_history is not None:
-        resource_history.update(latest_by_group=group_times, unknown=unknown_groups)
+        resource_history.update(
+            latest_by_group=group_times, builds_by_group=group_builds, unknown=unknown_groups
+        )
     return max(times, default=None), max(builds, default=None), metadata
 
 
@@ -936,19 +980,41 @@ def _capture_batch_locked(root, plan, digest, accounting, metadata_ledger, open_
             raise CaptureRefused("historical_group_scope_unknown")
         if {row["group_id"] for row in plan["groups"]} & group_history["groups"]:
             raise CaptureRefused("initial_fill_group_already_consumed")
-    elif plan.get("refresh_cadence") == "selected_groups":
+    elif plan.get("refresh_cadence") in {
+        "selected_groups",
+        "selected_groups_new_build",
+        "owner_r3_acquire1_same_build_once",
+    }:
         if resource_history["unknown"]:
             raise CaptureRefused("historical_group_scope_unknown")
+        previous_build = max(
+            (
+                resource_history["builds_by_group"][row["group_id"]]
+                for row in plan["groups"]
+                if row["group_id"] in resource_history["builds_by_group"]
+            ),
+            default=None,
+        )
         selected_times = [
             resource_history["latest_by_group"][row["group_id"]]
             for row in plan["groups"]
             if row["group_id"] in resource_history["latest_by_group"]
         ]
         if (
-            selected_times
+            plan.get("refresh_cadence") == "selected_groups"
+            and selected_times
             and (selected_at - max(selected_times)).total_seconds() < limits["publication_spacing_seconds"]
         ):
             raise CaptureRefused("selected_groups_24h_reservation")
+        if plan.get("refresh_cadence") in {"selected_groups_new_build", "owner_r3_acquire1_same_build_once"}:
+            # Explicit operator-selected one-time exception. Preserve real history,
+            # strict newer-build validation, and replay refusal after any reservation.
+            if previous_build is None:
+                raise CaptureRefused("override_prior_resource_build_required")
+            for path in accounting.glob("*.jsonl"):
+                first = json.loads(path.read_bytes().splitlines()[0])
+                if first.get("timing_override") == plan["timing_override"]:
+                    raise CaptureRefused("timing_override_already_reserved")
     elif latest and (selected_at - latest).total_seconds() < limits["publication_spacing_seconds"]:
         raise CaptureRefused("publisher_24h_reservation")
     retained = root / "price-snapshots/staging/hunt11/capture-v1/groups.json"
@@ -1017,6 +1083,7 @@ def _capture_batch_locked(root, plan, digest, accounting, metadata_ledger, open_
                 maximum_attempts=plan["request_count"],
                 purpose=purpose,
                 group_ids=[row["group_id"] for row in plan["groups"]],
+                **({"timing_override": plan["timing_override"]} if "timing_override" in plan else {}),
             ),
         )
         _sync_directory(accounting)
@@ -1102,7 +1169,10 @@ def _capture_batch_locked(root, plan, digest, accounting, metadata_ledger, open_
                         if first_build is None:
                             first_build = details["publisher_build_text"]
                             if previous_build and (
-                                built < previous_build or purpose == "refresh" and built <= previous_build
+                                built < previous_build
+                                or purpose == "refresh"
+                                and built <= previous_build
+                                and plan.get("refresh_cadence") != "owner_r3_acquire1_same_build_once"
                             ):
                                 raise CaptureRefused("publisher_build_spacing")
                         elif first_build != details["publisher_build_text"]:

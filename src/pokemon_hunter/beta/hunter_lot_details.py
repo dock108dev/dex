@@ -17,6 +17,7 @@ from django.http import Http404
 
 from . import discovery as d
 from . import ebay_hunts, hunter, hunter_budget, listing_details
+from .diagnostics import async_closing, failure
 from .discovery_transport import ProviderFailure, Transport
 
 MAX_DETAIL_BATCH = 2  # The established explicit detail action limit is unchanged.
@@ -166,7 +167,7 @@ def start(actor, session_key, run_id, result_ids):
 
 async def _acquire(run, actor, session_key, credentials):
     transport = Transport()
-    try:
+    async with async_closing(transport, "shopping_transport_close_failed"):
         token = await d.access_token(run, transport, credentials, actor)
         acquired = []
         for request in run.queries:
@@ -197,8 +198,6 @@ async def _acquire(run, actor, session_key, credentials):
             run.raws = acquired
             run.acquired_at = time.monotonic()
             run.state = "complete"
-    finally:
-        await asyncio.wait_for(transport.close(), timeout=0.5)
 
 
 def _worker(run, actor, session_key, credentials):
@@ -208,7 +207,9 @@ def _worker(run, actor, session_key, credentials):
             d._check_acquisition(run)
             run.state = "running"
         asyncio.run(_acquire(run, actor, session_key, credentials))
-    except Exception:
+    except Exception as exc:
+        if not isinstance(exc, d._Stopped):
+            failure("hunter_lot_detail_failed", exc)
         with run.lock:
             run.raws.clear()
             run.state = "stopped" if run.cancel.is_set() and not run.timed_out else "failed"

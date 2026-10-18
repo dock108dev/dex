@@ -44,6 +44,18 @@ def run(root, output, port=8011):
             return security.secure_response(self.get_response(request))
 
         security.LocalOnlyMiddleware.__call__ = local_port
+
+        from pokemon_hunter.beta import asgi
+
+        def isolated_ingress(host, peer, origin, *, forwarded=False):
+            return (
+                host == f"127.0.0.1:{port}"
+                and peer in {"127.0.0.1", "::1"}
+                and origin in (None, f"http://127.0.0.1:{port}")
+                and not forwarded
+            )
+
+        asgi.local_ingress_allowed = isolated_ingress
     import uvicorn
 
     from pokemon_hunter.beta.asgi import get_asgi_application

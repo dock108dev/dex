@@ -174,7 +174,8 @@ def test_ordinary_routes_and_lookup_save_scope_validation(e1):
     assert b"pokedex.js" in body and b'href="/shopping/"' in body
     shopping = e1["a"].get("/shopping/")
     assert shopping.status_code == 200
-    assert b'aria-label="Shopping tasks"' in shopping.content
+    assert b'id="discovery-form"' in shopping.content
+    assert b'href="/shopping/hunter/"' in shopping.content
     assert b'href="/lookup/"' in shopping.content and b"Pack lookup" in shopping.content
 
 

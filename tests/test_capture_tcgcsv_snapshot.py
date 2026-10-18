@@ -1180,3 +1180,160 @@ def test_selected_group_refresh_policy_is_strict_and_digest_bound(batch, mutatio
     with pytest.raises(capture.CaptureRefused, match="invalid_refresh_cadence"):
         batch["run"]()
     assert not batch["calls"]
+
+
+@pytest.mark.parametrize("gid,expected", [(9999, "captured"), (1397, "publisher_build_spacing")])
+def test_selected_build_history_is_resource_scoped(batch, gid, expected):
+    _selected_group_refresh(batch)
+    _reserve_group(batch, gid, "2026-10-18T12:00:00Z")
+    path = batch["accounting"] / "other-reservation.jsonl"
+    with path.open("ab") as stream:
+        stream.write(
+            capture._json_bytes(dict(stage="received", attempt=1, publisher_built_at="2026-10-18T12:30:00Z"))
+        )
+    result = batch["run"]()
+    assert result.get("reason", result["status"]) == expected
+    assert result["provider_operations"] == (6 if expected == "captured" else 1)
+
+
+def test_resource_build_index_preserves_global_legacy_build(batch):
+    _reserve_group(batch, 9999, "2026-10-18T12:00:00Z")
+    with (batch["accounting"] / "other-reservation.jsonl").open("ab") as stream:
+        stream.write(
+            capture._json_bytes(dict(stage="received", attempt=1, publisher_built_at="2026-10-18T12:30:00Z"))
+        )
+    resources = {}
+    _, global_build, _ = capture._history(batch["accounting"], batch["metadata"], resource_history=resources)
+    assert global_build.isoformat() == "2026-10-18T12:30:00+00:00"
+    assert resources["builds_by_group"][3170].isoformat() == "2026-10-16T12:30:00+00:00"
+    assert resources["builds_by_group"][9999] == global_build
+    assert 1397 not in resources["builds_by_group"]
+
+
+def _one_time_new_build_refresh(batch):
+    _selected_group_refresh(batch)
+    batch["plan"].update(refresh_cadence="selected_groups_new_build", timing_override="owner-refresh-once")
+    _reserve_group(batch, 1397, "2026-10-19T12:59:00Z", consumed=True)
+    with (batch["accounting"] / "other-reservation.jsonl").open("ab") as stream:
+        stream.write(
+            capture._json_bytes(dict(stage="received", attempt=1, publisher_built_at="2026-10-17T12:30:00Z"))
+        )
+
+
+def test_one_time_new_build_override_retains_real_history_and_consumption(batch):
+    _one_time_new_build_refresh(batch)
+    old = (batch["accounting"] / "other-reservation.jsonl").read_bytes()
+    result = batch["run"]()
+    assert result["status"] == "captured" and result["provider_operations"] == 6
+    assert (batch["accounting"] / "other-reservation.jsonl").read_bytes() == old
+    header = json.loads(next(batch["accounting"].glob("batch-*.jsonl")).read_text().splitlines()[0])
+    assert header["timing_override"] == "owner-refresh-once"
+
+
+def test_one_time_override_still_requires_strictly_newer_build(batch):
+    _one_time_new_build_refresh(batch)
+    batch["bodies"][0] = b"2026-10-17T12:30:00Z"
+    result = batch["run"]()
+    assert result["reason"] == "publisher_build_spacing" and result["provider_operations"] == 1
+    batch["plan"].update(plan_id="renamed-override", not_before="2026-10-19T13:00:01Z")
+    with pytest.raises(capture.CaptureRefused, match="timing_override_already_reserved"):
+        batch["run"](now=lambda: "2026-10-19T14:00:00Z")
+    assert len(batch["calls"]) == 1
+
+
+def test_one_time_override_stop_prevents_dispatch(batch):
+    _one_time_new_build_refresh(batch)
+    capture.request_stop(batch["root"])
+    with pytest.raises(capture.CaptureRefused, match="stop_requested"):
+        batch["run"]()
+    assert not batch["calls"]
+
+
+@pytest.mark.parametrize("override", [None, [], "", "../unsafe"])
+def test_one_time_override_requires_valid_explicit_identity(batch, override):
+    _one_time_new_build_refresh(batch)
+    batch["plan"]["timing_override"] = override
+    with pytest.raises(capture.CaptureRefused, match="invalid_timing_override"):
+        batch["run"]()
+    assert not batch["calls"]
+
+
+def test_ordinary_refresh_cannot_accept_timing_override(batch):
+    _selected_group_refresh(batch)
+    batch["plan"]["timing_override"] = "owner-refresh-once"
+    with pytest.raises(capture.CaptureRefused, match="invalid_timing_override"):
+        batch["run"]()
+    assert not batch["calls"]
+
+
+def _r3_same_build(batch, monkeypatch):
+    _one_time_new_build_refresh(batch)
+    # Fabricated transport exercises the finite policy without customer data.
+    monkeypatch.setattr(
+        capture, "R3_ACQUIRE1_GROUPS", (tuple(g["group_id"] for g in batch["plan"]["groups"]),)
+    )
+    batch["plan"].update(
+        refresh_cadence="owner_r3_acquire1_same_build_once",
+        timing_override=f"r3-acquire1-{capture.R3_ACQUIRE1_PROPOSAL[:16]}-batch-1",
+    )
+    batch["bodies"][0] = batch["bodies"][-1] = b"2026-10-17T12:30:00Z"
+
+
+def test_r3_same_publication_and_consumed_history(batch, monkeypatch):
+    _r3_same_build(batch, monkeypatch)
+    old = (batch["accounting"] / "other-reservation.jsonl").read_bytes()
+    result = batch["run"]()
+    assert result["status"] == "captured" and result["provider_operations"] == 6
+    assert (batch["accounting"] / "other-reservation.jsonl").read_bytes() == old
+    batch["plan"].update(plan_id="renamed", not_before="2026-10-19T14:00:00Z")
+    with pytest.raises(capture.CaptureRefused, match="timing_override_already_reserved"):
+        batch["run"](now=lambda: "2026-10-19T14:00:01Z")
+    assert len(batch["calls"]) == 6
+
+
+@pytest.mark.parametrize(
+    "body,reason",
+    [
+        (b"2026-10-16T12:30:00Z", "publisher_build_spacing"),
+        (b"2026-10-20T12:30:00Z", "publisher_build_in_future"),
+        (b"invalid", "invalid_build_timestamp"),
+    ],
+)
+def test_r3_bad_build_consumes_and_cannot_replay(batch, monkeypatch, body, reason):
+    _r3_same_build(batch, monkeypatch)
+    batch["bodies"][0] = body
+    result = batch["run"]()
+    assert result["reason"] == reason and result["provider_operations"] == 1
+    batch["plan"]["plan_id"] = "renamed-after-failure"
+    with pytest.raises(capture.CaptureRefused, match="timing_override_already_reserved"):
+        batch["run"]()
+    assert len(batch["calls"]) == 1
+
+
+def test_r3_changed_build_and_stop(batch, monkeypatch):
+    _r3_same_build(batch, monkeypatch)
+    batch["bodies"][-1] = b"2026-10-18T12:30:00Z"
+    result = batch["run"]()
+    assert result["reason"] == "publisher_build_changed" and result["provider_operations"] == 6
+
+
+def test_r3_stop_before_dispatch(batch, monkeypatch):
+    _r3_same_build(batch, monkeypatch)
+    capture.request_stop(batch["root"])
+    with pytest.raises(capture.CaptureRefused, match="stop_requested"):
+        batch["run"]()
+    assert not batch["calls"]
+
+
+@pytest.mark.parametrize("change", ["rename_exception", "add_group", "reverse_groups"])
+def test_r3_exception_cannot_expand_or_rename(batch, monkeypatch, change):
+    _r3_same_build(batch, monkeypatch)
+    if change == "rename_exception":
+        batch["plan"]["timing_override"] = "r3-new-exception"
+    elif change == "add_group":
+        batch["plan"]["groups"].append(dict(group_id=9999, name="Other"))
+    else:
+        batch["plan"]["groups"].reverse()
+    with pytest.raises(capture.CaptureRefused, match="r3_exception_exact_selection_required"):
+        batch["run"]()
+    assert not batch["calls"]

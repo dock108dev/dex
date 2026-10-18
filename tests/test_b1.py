@@ -14,7 +14,7 @@ from pokemon_hunter.migration import import_snapshot
 
 
 @pytest.fixture
-def env(tmp_path, snapshot):
+def env(tmp_path, snapshot, request):
     target = tmp_path / "b0.db"
     batch = import_snapshot(snapshot, target)
     root = tmp_path / "isolated"
@@ -28,7 +28,14 @@ def env(tmp_path, snapshot):
     settings.DATABASES["default"]["NAME"] = root / "inventory.db"
     connection.settings_dict["NAME"] = root / "inventory.db"
     call_command("migrate", verbosity=0)
-    from django.test import Client
+    from django.test import Client, override_settings
+
+    # Domain fixtures exercise Django auth/session behavior without repeating its
+    # deliberately expensive production KDF for every synthetic account.
+    # The production hasher has its own test; installed smoke uses real defaults.
+    fixture_hashers = override_settings(PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"])
+    fixture_hashers.enable()
+    request.addfinalizer(fixture_hashers.disable)
 
     from pokemon_hunter.beta import accounts, store
 
@@ -360,3 +367,18 @@ def test_initialization_refuses_existing_or_checkout_paths(env):
 
     with pytest.raises(ValueError):
         initialize(Path(cli.__file__).resolve().parents[3] / "b1-unsafe")
+
+
+def test_production_password_hashing_uses_strong_framework_default(env):
+    from django.conf import global_settings
+    from django.contrib.auth.hashers import check_password, identify_hasher, make_password
+    from django.test import override_settings
+
+    from pokemon_hunter.beta import settings as product_settings
+
+    assert not hasattr(product_settings, "PASSWORD_HASHERS")
+    with override_settings(PASSWORD_HASHERS=global_settings.PASSWORD_HASHERS):
+        encoded = make_password("synthetic strong-default verification")
+        assert identify_hasher(encoded).algorithm == "pbkdf2_sha256"
+        assert check_password("synthetic strong-default verification", encoded)
+        assert not check_password("different synthetic value", encoded)

@@ -29,10 +29,10 @@ six groups/routes and **0 consumed / 14 remaining**, with the original October 1
 resource/publisher-build gates. The next selected pricing action is that finite
 refresh when its real gates permit. Owner acceptance remains separate.
 
-[Combined closeout](../reports/catalog-additive-batch-20261017/closeout.md),
-[installed verification](../reports/catalog-additive-batch-20261017/installed-qualification.json),
-[exact holds](../reports/catalog-additive-batch-20261017/holds.json),
-[current S6 continuation](../reports/catalog-additive-batch-20261017/s6-continuation.md).
+Combined closeout (local evidence: `reports/catalog-additive-batch-20261017/closeout.md`),
+installed verification (local evidence: `reports/catalog-additive-batch-20261017/installed-qualification.json`),
+exact holds (local evidence: `reports/catalog-additive-batch-20261017/holds.json`),
+current S6 continuation (local evidence: `reports/catalog-additive-batch-20261017/s6-continuation.md`).
 
 Earlier sections below retain their dated evidence and historical counts.
 
@@ -56,9 +56,9 @@ only its expected rows, with zero existing edits/archives. All 59 schemas and
 original rows are preserved, apart from explained ordinary session renewal if any.
 No runtime installation/restart, migration, provider request, artwork acquisition,
 new price/source admission or owner acceptance occurred. See the
-[combined closeout](../reports/catalog-batch-20261017/closeout.md),
-[frozen reviewed cohort](../reports/catalog-batch-20261017/reviewed-manifest.json)
-and [publication receipt](../reports/catalog-batch-20261017/publication.json).
+combined closeout (local evidence: `reports/catalog-batch-20261017/closeout.md`),
+frozen reviewed cohort (local evidence: `reports/catalog-batch-20261017/reviewed-manifest.json`)
+and publication receipt (local evidence: `reports/catalog-batch-20261017/publication.json`).
 
 The pinned October 6 source cutoff and promo/distribution/US limitations remain.
 There are 9,407 numbered image bindings and twelve unavailable bindings; none
@@ -67,14 +67,14 @@ checks cover every set, literal numbers/names, cross-generation Pokémon, Traine
 Energy and all old references. Ordinary Safari checks use the existing profile
 and the real twelve-card missing-image cohort without remote artwork acquisition.
 S6 is rebound once to the final catalog with the same 300 children and unused
-14-request ceiling; use the [current continuation](../reports/catalog-batch-20261017/s6-continuation.md).
+14-request ceiling; use the current continuation (local evidence: `reports/catalog-batch-20261017/s6-continuation.md`).
 
 The original candidate selection remains historical input. **Zero selected
 packages were held.** Generations (`g1`, 117 records) retains its separate legacy
 Gym Heroes alias hold. The then-next branch was one **52-set / 5,102-missing-record
 additive existing-set batch**, with exact alias/source gaps independently recorded.
 Missing-only ordinary full-set replacement remains prohibited. Follow the
-[next batch handoff](../reports/catalog-batch-20261017/next-batch-handoff.md).
+next batch handoff (local evidence: `reports/catalog-batch-20261017/next-batch-handoff.md`).
 Broader CATALOG-C1 and actual expanded reference import remain open.
 
 ## BW Black Star Promos published — October 17, 2026
@@ -96,13 +96,13 @@ and individual promo date/US distribution limitations remain explicit. A fresh
 private protected backup excludes managed prices. Safari's existing session is
 preserved, with a later ordinary hourly renewal separately reconciled. No runtime
 install, migration, restart, provider request or owner acceptance occurred. See
-[publication closeout](../reports/catalog-bwp-20261017/closeout.md).
+publication closeout (local evidence: `reports/catalog-bwp-20261017/closeout.md`).
 
 S6's operational catalog binding is refreshed, preserving the same 300 targets,
 history and zero consumed / 14 remaining. Use the
-[current S6 continuation](../reports/catalog-batch-20261017/s6-continuation.md).
+current S6 continuation (local evidence: `reports/catalog-batch-20261017/s6-continuation.md`).
 Broader CATALOG-C1 and expanded reference import stay open; the current
-continuation is the [additive batch handoff](../reports/catalog-batch-20261017/next-batch-handoff.md).
+continuation is the additive batch handoff (local evidence: `reports/catalog-batch-20261017/next-batch-handoff.md`).
 
 ## CATALOG-C1/C preparation evidence — October 17, 2026
 
@@ -126,8 +126,8 @@ There are 101 numbered image bindings; bytes/remote availability are unobserved,
 and exact-child assets remain unavailable. **C1/C performed preparation only**;
 its then-actual baseline was **7,768 / 69 sets, 4,722 eligible / 3,046 unpriced**.
 Its 7,869-identity projection was subsequently realized by publication above.
-See [C1/C closeout](../reports/catalog-c1c-20261017/closeout.md) and the
-[exact next publication handoff](../reports/catalog-c1c-20261017/publication-handoff.md).
+See C1/C closeout (local evidence: `reports/catalog-c1c-20261017/closeout.md`) and the
+exact next publication handoff (local evidence: `reports/catalog-c1c-20261017/publication-handoff.md`).
 The preparation handoff is now historical; publication above completed its native
 execution and S6 metadata rebind. Broader CATALOG-C1 and expanded reference import
 remain open.
@@ -147,12 +147,12 @@ across seven sources retain all applicability decisions. Installed name/set sear
 qualifies all new groups, including Snivy (species 495), Trainer and Energy. Safari shows
 Snivy's ordinary detail, unknown variant and missing retained evidence. All 115
 numbered reference image identities bind; none establishes exact variant artwork
-or verified image bytes. See [publication and preservation](../reports/catalog-c1b-20261017/closeout.md).
+or verified image bytes. See publication and preservation (local evidence: `reports/catalog-c1b-20261017/closeout.md`).
 
 S6's catalog digest was separately reviewed and rebound, preserving its 300
 children, resource history and unused 14-request ceiling. Broader CATALOG-C1 stays
 open; BW Black Star Promos publication above is complete. Follow the
-[next additive existing-set batch](../reports/catalog-batch-20261017/next-batch-handoff.md).
+next additive existing-set batch (local evidence: `reports/catalog-batch-20261017/next-batch-handoff.md`).
 The October 6 source cutoff and unresolved inventory gaps below still apply.
 
 ## CATALOG-C1/A retained broader inventory — October 17, 2026
@@ -184,10 +184,10 @@ The explicit assessment policy `english-physical-all` includes all resolved spec
 Trainer and Energy; the default vintage-251 and existing frozen 151/251 policies
 retain their scope. A separately checked and disposable-rehearsed **115-record
 Black & White** package was subsequently published as C1/B above; its original
-[publication handoff](../reports/local-auth-catalog-capacity-20261017/publication-handoff.md) remains historical evidence.
+publication handoff (local evidence: `reports/local-auth-catalog-capacity-20261017/publication-handoff.md`) remains historical evidence.
 It preserves unknown physical attributes and contains no prices or artwork.
 Broader CATALOG-C1 remains open. See the
-[inventory and gap reconciliation](../reports/local-auth-catalog-capacity-20261017/inventory-gaps.md).
+inventory and gap reconciliation (local evidence: `reports/local-auth-catalog-capacity-20261017/inventory-gaps.md`).
 
 ## HUNT-11/S5 parent and evidenced variants — October 17, 2026
 
@@ -225,8 +225,8 @@ All **4,722 eligible baseline identities / 7,036** survive. The 617 children hav
 **zero admitted references**; publication supplies no price evidence. Exactly
 300 ordinary first-edition children have independently reviewed future subtype
 mappings. The other 317 remain unsupported for an exact refresh. See the
-[S5 closeout](../reports/hunt-11-s5-20261017/closeout.md) and finite
-[S6 refresh handoff](../reports/hunt-11-s5-20261017/refresh-handoff.md).
+S5 closeout (local evidence: `reports/hunt-11-s5-20261017/closeout.md`) and finite
+S6 refresh handoff (local evidence: `reports/hunt-11-s5-20261017/refresh-handoff.md`).
 The S4 sections below retain historical evidence; S5 completes its representation
 handoff while preserving every old unspecified identity.
 
@@ -257,7 +257,7 @@ assignment. The 355 missing-detail cases require actual variant evidence. The
 305 lists establish alternatives, not the variant of an existing owned object.
 This bounded work precedes price refresh for this cohort and does not require
 broader CATALOG-C1 completion. See the
-[S4 representation handoff](../reports/hunt-11-s4-20261017/representation-handoff.md).
+S4 representation handoff (local evidence: `reports/hunt-11-s4-20261017/representation-handoff.md`).
 
 ## Scope and identity
 

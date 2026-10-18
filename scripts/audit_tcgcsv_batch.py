@@ -506,7 +506,14 @@ def inspect(root, scope, plan, directory, review, manifest=None):
     exact_bindings = scope.get("exact_bindings")
     if plan["purpose"] == "refresh":
         require(
-            scope.get("capture_purpose") == "refresh" and isinstance(exact_bindings, dict),
+            scope.get("capture_purpose") == "refresh"
+            and (
+                isinstance(exact_bindings, dict)
+                or exact_bindings is None
+                and plan.get("refresh_cadence")
+                in {"selected_groups_new_build", "owner_r3_acquire1_same_build_once"}
+                and scope.get("refresh_binding_mode") == "received_identity"
+            ),
             "refresh_exact_scope_required",
         )
     if exact_bindings is not None:

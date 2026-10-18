@@ -1,6 +1,262 @@
 # Private price snapshots
 
-## Additive existing-set delivery — October 17, 2026
+## Current beta scope — owner decision, October 17, 2026
+
+The owner accepts the existing catalog and dated-reference population as sufficient
+for the current beta: **33,083 identities / 19,365 eligible references (58.5%,
+roughly 60%)**, with **13,718 unpriced** at the last verified delivery. Coverage
+expansion and real data pipelines are deferred. **REFERENCE-R3/RESIDUAL-1 is parked**,
+along with further binding/physical/catalog repair campaigns, additional acquisition,
+refresh automation and sold-history integration. Historical next handoffs below
+are retained evidence and are superseded by this scope decision.
+
+The active focus is ordinary beta use: real singles and lot-content comparisons,
+Stop/Back/reopen, clear partial/unpriced/dated-reference behavior, concrete usability
+repairs and the owner's product feedback. Use the installed app and existing data;
+do not make deferred pipeline/coverage work a prerequisite for beta use. Keep
+ordinary source expiry/withdrawal, honest reference dates and unknown values intact.
+All previous acquisition selections remain exhausted; no new request allowance,
+Hunter setting, schedule or provider action is created by this documentation change.
+Photo onboarding and other expansion work remain deferred. The current population
+is accepted for beta; practical usability feedback remains open.
+
+The active plan is Desktop Next Steps (`/Users/michaelfuscoletti/Desktop/dex_next_steps.md`, local-only tracker).
+Earlier delivery records and measured counts below retain their historical meaning.
+
+## REFERENCE-R3/ACQUIRE-1 delivered — October 17 Eastern / October 18 UTC
+
+**6,117 observations activated / 6,117 newly eligible identities.** All 5,361 selected
+R3 children and 756 PREP-2 children are eligible; both S6 prices remain missing.
+All 6,119 exact received bindings passed; 15 unsupported special reuse bindings
+remained excluded. **98/98 requests consumed, zero failed/uncertain, zero remaining**;
+92 product/price GETs + six build checks, no retries, replacements or other acquisition.
+
+Actual catalog: **33,083 identities / 187 sets; 19,365 eligible / 13,718 unpriced**.
+Parents **21,772 / 8,373 eligible / 13,399 unpriced**; children **11,311 / 10,992
+eligible / 319 unpriced**. References: **23,355 observations / 22 sources**, preserving
+all 17,238 old observations / 19 sources and independent applicability/expiry/withdrawal.
+Active release `2af89c05-d3a2-49d7-b325-ad3304c59304`. All new references retain conditional
+mixed-condition ungraded meaning, publisher build **2026-10-17T20:05:21+00:00** and
+null provider valuation time; capture/activation do not make them live valuations.
+
+Same actual root `/Users/michaelfuscoletti/dex-private/b2-parity-20260928/review-local`,
+URL `http://127.0.0.1:8011/`, PID 81008, catalog-additive-release-20261017 interpreter
+and wheel `115a336d4e36df4a64e268f587311810f71bc8f4a7396471d601c21290b2609f`;
+all 243 installed members match. No app installation, restart or migration.
+Catalog digest remains `e756f60638f55005878b8465e65e766c8e662fcc60ea29c03e1ddd212017692e`.
+
+The owner selected a separately reviewed one-time immediate exception for the exact
+proposal SHA `a5619a24eb41e7f677d8137121ed1d4a5d512af8f05f8b5ad4579311a23687cf`.
+It permits the same valid cached build and supersedes this wave's local timing gates
+only. Fixed per-partition durable reservations prevent replay; real clocks/history,
+rollback/future/changed-build refusal, consumed accounting, serial pacing, transport
+limits and independent Stop remain. Default policy is unchanged. This selection is
+exhausted; REFRESH-1 and S6 remain exhausted. No standing exception/schedule/poll exists.
+
+**405 focused tests**, separate same-session received-row/contract review, native dry-runs,
+all pre-admission count/byte measurements and **6,119 installed single/lot lookups**
+pass. Final release: **23,360 mappings / 23,355 observations / 50,462,535 bytes**;
+all source/catalog/preparation/release ceilings unchanged. All **59 tables/schemas**,
+207 copies, three frozen goals, sessions, identities/mappings/aliases and protected
+credentials/configuration/photos survive. Fresh owner-only backups exclude managed
+prices; all raw/intermediate product/price inputs are cleaned.
+
+**Recorded sequence limitation:** batch 1's supplemental complete global product-scope
+check ran after activation/cleanup, while batch 2 capture was underway; 546 older-format
+mappings needed retained group inventories. It passed, as did complete pre-admission
+checks for batches 2/3 and final all-23,360-mapping review. No conflict was found.
+Genuine seller-specific single/resolved-lot journeys remain unverified without retained
+authentic seller inputs; owner acceptance remains separate.
+
+**Deferred by the owner:** the previously proposed REFERENCE-R3/RESIDUAL-1
+remaining-child/held-identity repair. The current population is sufficient for beta;
+further coverage and pipeline work awaits later owner direction. Exhausted
+acquisition selections remain closed.
+
+Delivered closeout (local evidence: `reports/reference-r3-acquire1-20261018/closeout.md`),
+coverage (local evidence: `reports/reference-r3-acquire1-20261018/coverage-final.json`),
+accounting (local evidence: `reports/reference-r3-acquire1-20261018/accounting-final.json`),
+preservation (local evidence: `reports/reference-r3-acquire1-20261018/preservation-summary.json`),
+material differences (local evidence: `reports/reference-r3-acquire1-20261018/material-differences.json`),
+next executable handoff (local evidence: `reports/reference-r3-acquire1-20261018/next-handoff.md`).
+Earlier sections below are historical evidence.
+
+## REFERENCE-R3/PREP-1 delivered — October 17 Eastern / October 18 UTC
+
+**40 native packages added 5,361 exact physical children; 15 existing children reused.**
+Zero provider requests, new observations or source admissions. Actual catalog is now
+**33,083 identities / 187 sets; 13,248 eligible / 19,835 unpriced**. References remain
+**17,238 observations / 19 sources**, release `410abf07-a064-4da7-a974-9c6c618be6f2`.
+Parents: **21,772 / 8,373 eligible**; children: **11,311 / 4,875 eligible**.
+All new/reused children are unpriced. Metadata additions create no prices.
+
+Actual root `/Users/michaelfuscoletti/dex-private/b2-parity-20260928/review-local`, URL
+`http://127.0.0.1:8011/`, PID 81008 and interpreter
+`/Users/michaelfuscoletti/.local/share/dex/runtimes/catalog-additive-release-20261017/bin/python`
+remain. All 243 members match wheel SHA-256
+`115a336d4e36df4a64e268f587311810f71bc8f4a7396471d601c21290b2609f`.
+Catalog digest: `e756f60638f55005878b8465e65e766c8e662fcc60ea29c03e1ddd212017692e`.
+No runtime change, restart or migration occurred.
+
+Every **6,136 refresh hold** is reconciled; original price bindings stay held,
+with **158 older references / 5,978 unpriced cases**. Of 7,163 physical candidates,
+5,361 were published, 15 reused and **1,787 remain held**. PREP-2's 756 children,
+93 edition holds, one denominator hold, 314 physical holds under 233 parents and
+37 excluded Gym Challenge parents remain separately accounted, with no exact
+identity overlap with refresh holds. S6's two resolved identities still lack prices.
+
+Separate same-session evidence/package review, **406 socket-blocked installed tests**,
+40 engineering rehearsals and **5,376 installed shared single/lot lookups** pass.
+All 59 schemas/tables reconcile: 54 tables unchanged; only intended catalog printing,
+mapping, import, head and audit changes. Owner state, sessions, old mappings/aliases,
+credentials/configuration/photos, source lifecycle and independent consumed/uncertain
+journals survive. Fresh owner-only backup excludes managed prices. Catalog size is
+**44,666,453 bytes**; all independent limits pass. No raw prices were recovered.
+
+Next: **REFERENCE-R3/ACQUIRE-1**, one **unselected** proposal for **6,119 children /
+46 groups / three shards / 98 maximum requests**. Preparation grants zero allowance;
+future explicit selection must revalidate latest state, resource gates and strictly
+newer nonfuture applicable builds. No schedule/polling. REFRESH-1's 128 and S6's 14
+requests remain exhausted; never replay them. Genuine seller journeys and owner
+acceptance remain open.
+
+Closeout (local evidence: `reports/reference-r3-prep1-20261018/closeout.md`),
+hold ledger (local evidence: `reports/reference-r3-prep1-20261018/hold-ledger.json`),
+publication (local evidence: `reports/reference-r3-prep1-20261018/publication.json`),
+preservation (local evidence: `reports/reference-r3-prep1-20261018/preservation-summary.json`),
+sole unselected proposal (local evidence: `reports/reference-r3-prep1-20261018/future-proposal.json`),
+next handoff (local evidence: `reports/reference-r3-prep1-20261018/next-handoff.md`).
+Earlier sections below are historical evidence.
+
+## REFERENCE-R2/REFRESH-1 and S6 delivered — October 17 Eastern / October 18 UTC
+
+The owner-directed immediate execution is complete. **128 refresh + 14 separate S6
+requests consumed; both allowances exhausted; no retries or replacement probes**.
+Five reviewed sources added **5,302 observations / 1,377 eligible identities**.
+Actual installation: **27,722 identities / 187 sets; 13,248 eligible / 14,474 unpriced;
+17,238 observations / 19 sources**. All original 11,936 observations / 14 sources
+survive, with independent applicability, expiry and withdrawal preserved.
+
+Active release `410abf07-a064-4da7-a974-9c6c618be6f2`; same root, PID 81008, runtime,
+qualified wheel and all 243 installed members. All **59 schemas and tables are
+unchanged**, including 207 copies, declarations, three frozen goals, mappings and
+sessions. Credentials/configuration/photos survive. Only five intended admissions,
+managed references and independent request journals changed; no unexplained changes.
+All raw/intermediate prices were cleaned before later capture; backups exclude prices.
+No app installation, restart, login reset, Hunt or detail acquisition was needed.
+
+The owner's timing correction was recorded separately from unchanged PREP-2 plans.
+New digest-bound one-time successor plans remove only the local not-before/24-hour
+wait, preserving actual clock/history, strictly newer applicable resource builds,
+matching before/after checks, finite limits, consumed accounting, independent Stop
+and replay refusal. The received-identity refresh path and separate independent
+checker passed **234 focused tests**; original exact S6 bindings remain intact.
+Batch 1 measured combined bytes after admission but before activation; later batches
+measure source and combined bytes before admission. All actual sizes are within limits.
+
+Refresh gained **1,079 parents**; S6 gained **298 exact children**, with two missing
+market prices held. Full release: **17,241 mappings / 17,238 observations /
+37,207,834 bytes**, within all independent limits. No previously eligible identity
+lost coverage. **6,136 refresh bindings remain held**; 158 retain older applicable
+references. The hypothetical 6,021 upper bound was not a promised result.
+
+Use the completed closeout (local evidence: `reports/reference-r2-refresh1-20261018/closeout.md`),
+final accounting (local evidence: `reports/reference-r2-refresh1-20261018/now-execution/accounting-final.json`),
+coverage/holds (local evidence: `reports/reference-r2-refresh1-20261018/now-execution/holds.json`),
+preservation (local evidence: `reports/reference-r2-refresh1-20261018/now-execution/preservation-final-summary.json`)
+and next zero-request preparation slice (local evidence: `reports/reference-r2-refresh1-20261018/next-handoff.md`).
+No REFRESH-1 or S6 capacity remains. Genuine seller-specific journeys and owner
+acceptance remain unverified; earlier sections below are historical evidence.
+
+## Historical REFERENCE-R2/PREP-2 completed — October 17, 2026
+
+Current actual installation: **27,722 identities / 187 sets, 11,871 eligible /
+15,851 unpriced; 11,936 observations / 14 independent sources**. Five native
+packages published **756 literal physical children**, all unpriced. All original
+identities, 207 copies, declarations, three frozen goals, old mappings and source
+lifecycle survive. PID **81008**, actual root, interpreter and all 243 wheel members
+remain unchanged; no runtime installation, restart or migration occurred.
+
+The exact 577-case cohort is reconciled: **483 absent optional pins** (zero literal
+contradictions), **93 recovered Gym Challenge member lineages** with edition bindings
+still held, and **one retained denominator hold**. **314 physical combinations**
+remain explicitly held; passing siblings do not clear them. No observations or
+provider requests were created, and the consumed 101-group R2 wave stays closed.
+
+The consolidated refresh is prepared: **60 groups / 59 local sets / 11,140 exact
+current identities / four batches / 128 requests still unselected**. It covers
+**5,064 of 5,101 additive parents**; the other **37 Gym Challenge parents** are in
+consumed R2 group 1440 and excluded. Candidate pins and previously proven bindings
+still require independent review of future received rows. Resource/build and all
+independent capacity gates remain enforced; price gains are projections only.
+
+**396 socket-blocked tests**, separate same-session repair/refresh review, all five
+native publication rehearsals, actual installed native lookup and **59-table**
+preservation reconciliation pass. **54 tables** and all protected state outside the
+intended catalog/journal additions are unchanged. No genuine retained seller input
+was available; seller-specific singles and resolved-lot comparisons remain unverified.
+Owner acceptance remains separate.
+
+S6 is rebound to this final state: same **300 children / six groups / 14 total /
+zero consumed / 14 remaining**. Gate: **October 18, 2026, 20:04:24.557753 UTC /
+4:04 p.m. Eastern**, then a valid nonfuture build strictly newer than
+`2026-10-16T20:05:27+00:00`. No polling, schedule, unattended wait or repeat approval.
+
+Use the PREP-2 closeout (local evidence: `reports/reference-r2-prep2-20261017/closeout.md`),
+exact unexecuted refresh proposal (local evidence: `reports/reference-r2-prep2-20261017/refresh-proposal.json`),
+exhaustive repair/hold ledger (local evidence: `reports/reference-r2-prep2-20261017/repair-ledger.json`),
+current S6 continuation (local evidence: `reports/reference-r2-prep2-20261017/s6-continuation.md`)
+and executable next handoff (local evidence: `reports/reference-r2-prep2-20261017/next-handoff.md`).
+Earlier sections below are historical delivery evidence.
+
+## Historical REFERENCE-R2 first broad wave — October 17, 2026
+
+Ordinary Dex now has **26,966 identities / 187 sets, 11,871 eligible / 15,095
+unpriced**, with **11,936 observations / 14 independent sources**. This wave added
+**7,242 observations / seven contracts**, preserving all 4,694 old observations
+and seven prior sources. Coverage gained **2,572 existing numbered parents plus
+4,577 separately evidenced physical children**. All original parents, 617 prior
+children, 207 copies and three frozen goals retain their meaning. The earlier
+5,101-parent additive cohort remains unpriced; its previously reserved groups
+belong to a separate consolidated refresh proposal.
+
+The reviewed finite selection captured **101 groups / seven batches / 216 HTTP
+200 requests**, with zero retries or failures and no collector metadata/eBay/OAuth/
+artwork/per-card operations. Each batch was reviewed, independently audited,
+admitted, atomically activated and cleaned before the next capture. Private raw
+inputs and temporary price copies are removed. All new references are conditional
+ungraded market references across conditions; provider valuation time stays null
+and the publisher build is **2026-10-17T20:05:21+00:00**. Pricing a child does not
+price its unspecified parent or establish a seller-specific delivered comparison.
+
+The ordinary root, port, PID 81008 and qualified catalog-additive runtime/wheel
+remain unchanged. All 243 installed members match wheel SHA-256
+`115a336d4e36df4a64e268f587311810f71bc8f4a7396471d601c21290b2609f`.
+The only executable repair is a standalone collector helper: explicit
+`selected_groups` refreshes use the selected resources' prior builds as well as
+resource cadence, while legacy global plans keep their original semantics.
+No installation, migration or restart was needed. The exact helpers pass 329
+socket-blocked tests against that installed package. All 59 schemas, old owner
+rows and signed sessions are reconciled. Safari's existing authenticated tab and
+real installed reference lookup pass; genuine retained listing inputs were absent,
+so single-listing and resolved-lot comparison journeys remain unobserved.
+Hunter acquisition remains disabled and numeric settings unselected.
+
+S6 is rebound to this final state: same **300 exact children / six groups / 14
+total requests / zero consumed / 14 remaining**. Its October 18, 20:04:24.557753
+UTC resource gate and strictly newer build than `2026-10-16T20:05:27+00:00` are
+unchanged. No new approval boundary or schedule. The separate 60-group refresh
+proposal retains actual resource/build dependencies and grants no capacity.
+
+Combined closeout (local evidence: `reports/reference-r2-20261017/closeout.md`),
+coverage and gaps (local evidence: `reports/reference-r2-20261017/coverage-final.json`),
+cleanup (local evidence: `reports/reference-r2-20261017/cleanup-receipt.json`),
+current S6 continuation (local evidence: `reports/reference-r2-20261017/s6-continuation.md`),
+next refresh proposal (local evidence: `reports/reference-r2-20261017/next-consolidated-refresh.json`).
+Broader REFERENCE-R2 and owner acceptance remain open. Earlier delivery records
+and counts below are historical.
+
+## Historical additive existing-set delivery — October 17, 2026
 
 The compatible numbered-extension package is installed. All **51 passing packages /
 5,101 new parents** from the selected 52-set / 5,102-record cohort are published.
@@ -29,10 +285,10 @@ six groups/routes and **0 consumed / 14 remaining**, with the original October 1
 resource/publisher-build gates. The next selected pricing action is that finite
 refresh when its real gates permit. Owner acceptance remains separate.
 
-[Combined closeout](../reports/catalog-additive-batch-20261017/closeout.md),
-[installed verification](../reports/catalog-additive-batch-20261017/installed-qualification.json),
-[exact holds](../reports/catalog-additive-batch-20261017/holds.json),
-[current S6 continuation](../reports/catalog-additive-batch-20261017/s6-continuation.md).
+Combined closeout (local evidence: `reports/catalog-additive-batch-20261017/closeout.md`),
+installed verification (local evidence: `reports/catalog-additive-batch-20261017/installed-qualification.json`),
+exact holds (local evidence: `reports/catalog-additive-batch-20261017/holds.json`),
+current S6 continuation (local evidence: `reports/catalog-additive-batch-20261017/s6-continuation.md`).
 
 Earlier sections below retain their dated evidence and historical counts.
 
@@ -45,14 +301,14 @@ is unpriced. All **4,694 snapshot observations / seven admitted sources**, all
 reference disposition agree with the fresh baseline and projected catalog.
 Active release remains `fda6cadc-224c-4e64-b88b-d71563f75cd4`. No expiry regression,
 source-contract rewrite, price acquisition/import/admission or managed-price backup
-occurred. See [catalog batch closeout](../reports/catalog-batch-20261017/closeout.md).
+occurred. See catalog batch closeout (local evidence: `reports/catalog-batch-20261017/closeout.md`).
 
 S6's metadata binding now uses the final actual catalog, preserving its same
 300 children, six groups, complete history/reservations and one 14-request ceiling:
 **zero consumed / 14 remaining**. The socket-blocked preflight remains
 WAITING_DAILY_RESOURCE_WINDOW, earliest October 18 at 20:04:24.557753 UTC / 4:04 p.m.
 Eastern, then the original strictly newer aware/nonfuture publisher build gate.
-No S6 request ran. Use the [current S6 continuation](../reports/catalog-batch-20261017/s6-continuation.md).
+No S6 request ran. Use the current S6 continuation (local evidence: `reports/catalog-batch-20261017/s6-continuation.md`).
 
 
 ## BW Black Star Promos publication preserves references — October 17, 2026
@@ -66,13 +322,13 @@ The prepublication projection and installed postpublication audit recheck all 4,
 non-pruning readers/validators. Every decision and existing set version survives;
 all 101 new identities remain unpriced. No prices or
 managed fingerprints were exported, backed up, imported or admitted. See
-[publication and preservation](../reports/catalog-bwp-20261017/closeout.md).
+publication and preservation (local evidence: `reports/catalog-bwp-20261017/closeout.md`).
 
 S6's catalog metadata binding is updated for this publication, preserving full
 history, the same 300 children, one 14-request ceiling and 0 consumed / 14 remaining.
 Its actual resource window, newer-build requirement and Stop/accounting rules are
 unchanged; no request, polling, schedule or new approval was created. Use the
-[current S6 continuation](../reports/catalog-batch-20261017/s6-continuation.md).
+current S6 continuation (local evidence: `reports/catalog-batch-20261017/s6-continuation.md`).
 Expanded reference import remains open.
 
 ## REFERENCE-R2/A capacity delivered — October 17, 2026
@@ -102,15 +358,15 @@ current coverage after C1/B's additive 115-parent Black & White publication is
 **4,722/7,768**, with **3,046 unpriced**. The 115 additions received no references;
 all old observation decisions and source lifecycle bytes remain unchanged. Exact
 broader crosswalks and actual expanded-reference import remain open. See
-[capacity and delivery evidence](../reports/local-auth-catalog-capacity-20261017/closeout.md)
-and [actual C1/B publication](../reports/catalog-c1b-20261017/closeout.md).
+capacity and delivery evidence (local evidence: `reports/local-auth-catalog-capacity-20261017/closeout.md`)
+and actual C1/B publication (local evidence: `reports/catalog-c1b-20261017/closeout.md`).
 
 S6 retains the same unused 14-request selection on the qualified successor. Use
-[the current continuation](../reports/catalog-batch-20261017/s6-continuation.md), whose catalog binding includes C1/B and `bwp`.
+the current continuation (local evidence: `reports/catalog-batch-20261017/s6-continuation.md`), whose catalog binding includes C1/B and `bwp`.
 Its source/resource/build/Stop/retention gates
 and complete accounting remain unchanged.
 
-## HUNT-11/S6 selected ordinary refresh — awaiting resource window
+## Historical HUNT-11/S6 selection and timing policy before delivery
 
 One owner-selected execution covers the exact 300 first-edition children across
 six previously acquired groups, at most **14 requests**: six products, six prices,
@@ -118,7 +374,7 @@ two builds, zero group metadata/eBay/OAuth. **Zero consumed and zero references
 added on October 17.** S6 remains open pending genuine capture, mapping review,
 import/admission/activation, audit and raw cleanup.
 
-The [timing-policy amendment](../reports/hunt-11-s6-20261017/timing-policy.md)
+The timing-policy amendment (local evidence: `reports/hunt-11-s6-20261017/timing-policy.md`)
 separates retained daily cached-pull guidance from Dex's global history policy.
 Explicit new `refresh_cadence: selected_groups` plans apply the unchanged daily
 interval to matching data attempts or full-scope reservations, preserving failed,
@@ -134,7 +390,7 @@ relabeling it initial fill or substituting another product/subtype. All 326
 socket-blocked cases passed against the installed S5 dependencies. No customer
 runtime change was needed. Existing release, seven sources, 4,694 observations,
 all applicability and baseline/child coverage are unchanged. Use the
-[current S6 continuation](../reports/catalog-batch-20261017/s6-continuation.md).
+current S6 continuation (local evidence: `reports/catalog-batch-20261017/s6-continuation.md`).
 
 ## HUNT-11/S5 additive identity compatibility — October 17, 2026
 
@@ -156,7 +412,7 @@ The S3 raw inputs remain deleted. All 63 consumed S3 scopes stay consumed; globa
 history also retains the earlier scopes and pilot. Metadata publication neither
 refreshes existing references nor licenses an initial-fill replay.
 
-The historical [S5 refresh handoff](../reports/hunt-11-s5-20261017/refresh-handoff.md) and its
+The historical S5 refresh handoff (local evidence: `reports/hunt-11-s5-20261017/refresh-handoff.md`) and its
 machine-readable companion contain **300** reviewed new target IDs, products,
 subtypes and six groups, with an ordinary-refresh ceiling of **14 requests**.
 At S5 close the historical retained global pacing time was **October 18, 2026,
@@ -167,7 +423,7 @@ capture. Existing Stop, no-retry, uncertainty/reservation, source-use, retention
 independent mapping review and admission requirements continue to apply.
 The selected S6 resource-specific policy and current lower bound are recorded above.
 The remaining 317 children and all unspecified parents have no unique supported
-refresh assignment. See [S5 evidence](../reports/hunt-11-s5-20261017/closeout.md).
+refresh assignment. See S5 evidence (local evidence: `reports/hunt-11-s5-20261017/closeout.md`).
 
 ## HUNT-11/S4 offline identity disposition — October 17, 2026
 
@@ -239,7 +495,7 @@ its fingerprints. All 126 raw product/price files and temporary manifests/prepar
 copies were removed; normalized source shards retain ordinary expiry/withdrawal.
 Focused mapping/audit tests passed 82 cases and source/snapshot regressions passed
 126. Unchanged package/collector qualification was reused. See the
-[S3 closeout](../reports/hunt-11-s3-20261017/closeout.md) for per-batch accounting,
+S3 closeout (local evidence: `reports/hunt-11-s3-20261017/closeout.md`) for per-batch accounting,
 actual coverage, independent review, cleanup and preservation evidence.
 
 ## HUNT-11/S2 executed snapshot import — October 17, 2026
@@ -272,7 +528,7 @@ installed application members remain unchanged; a generated offline-adapter
 bytecode cache is an explicit runtime-file delta. eBay acquisition and numeric
 settings remain disabled/unselected.
 
-[Actual capture, review, import and preservation evidence](../reports/hunt-11-s2-executed-20261017/closeout.md)
+Actual capture, review, import and preservation evidence (local evidence: `reports/hunt-11-s2-executed-20261017/closeout.md`)
 records the completed slice. The earlier October 17 preflight and proposed October
 18 wait under `reports/hunt-11-s2-first-batch/` remain historical evidence. They do
 not prescribe the corrected initial-fill policy below. The collector correction

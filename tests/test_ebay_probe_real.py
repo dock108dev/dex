@@ -691,6 +691,8 @@ def test_hidden_tty_input_and_signal_restore(interrupt):
     import termios
 
     master, slave = pty.openpty()
+    poller = select.poll()
+    poller.register(master, select.POLLIN)
     code = """
 import fcntl,os,sys,termios
 fcntl.ioctl(0, termios.TIOCSCTTY, 0)
@@ -719,7 +721,7 @@ os.write(1,b'PRIVATE_INPUT_OK\\n')
         deadline = time.monotonic() + 3
         while marker not in output:
             assert time.monotonic() < deadline
-            if select.select([master], [], [], 0.1)[0]:
+            if poller.poll(100):
                 output.extend(os.read(master, 4096))
 
     try:
@@ -823,6 +825,8 @@ def test_guardian_private_input_timeout_restores_echo(authority):
     import sys
 
     master, slave = pty.openpty()
+    poller = select.poll()
+    poller.register(master, select.POLLIN)
     code = """
 import fcntl,os,sys,termios
 from pathlib import Path
@@ -853,7 +857,7 @@ os.write(1,b'GUARDIAN_CLEANUP_OK\\n')
     try:
         deadline = time.monotonic() + 3
         while b"GUARDIAN_CLEANUP_OK" not in output and time.monotonic() < deadline:
-            if select.select([master], [], [], 0.1)[0]:
+            if poller.poll(100):
                 output.extend(os.read(master, 4096))
         assert b"GUARDIAN_CLEANUP_OK" in output
         deadline = time.monotonic() + 2

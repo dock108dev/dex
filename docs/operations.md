@@ -16,9 +16,9 @@ Actual delivery: 51 packages / 5,101 new records, six checkpoints, same owner ro
 Recover using the qualified successor against latest state; never overwrite later
 activity with an old backup. Protected and independent-journal backups exclude
 managed price trees/fingerprints. The original runtime remains available as evidence.
-[Closeout](../reports/catalog-additive-batch-20261017/closeout.md),
-[backup/install receipts](../reports/catalog-additive-batch-20261017/installation.json),
-[precise package holds](../reports/catalog-additive-batch-20261017/holds.json).
+Closeout (local evidence: `reports/catalog-additive-batch-20261017/closeout.md`),
+backup/install receipts (local evidence: `reports/catalog-additive-batch-20261017/installation.json`),
+precise package holds (local evidence: `reports/catalog-additive-batch-20261017/holds.json`).
 
 
 ## Completed catalog batch and current recovery — October 17, 2026
@@ -36,14 +36,14 @@ The bounded local metadata path uses an 8-MiB explicit ceiling for the exact
 2,102,040-byte input and preserves web body limits. Use `mode="checkpoint"`,
 `limit=15` and fresh `expected_completed` for each native publication transaction.
 Do not use atomic mode or wrap every checkpoint in one outer transaction. The
-retained [operator helper](../reports/catalog-batch-20261017/batch_ops.py) reuses
+retained operator helper (local evidence: `reports/catalog-batch-20261017/batch_ops.py`) reuses
 an exact persisted journal on interruption and checks current state before resume.
-This completed batch must not be replayed. See [combined evidence](../reports/catalog-batch-20261017/closeout.md).
+This completed batch must not be replayed. See combined evidence (local evidence: `reports/catalog-batch-20261017/closeout.md`).
 
 S6 is rebound once to the final catalog with unchanged targets, reservations,
 history and unused 14-request ceiling. Follow the
-[current S6 continuation](../reports/catalog-batch-20261017/s6-continuation.md).
-The separate [next catalog batch](../reports/catalog-batch-20261017/next-batch-handoff.md)
+current S6 continuation (local evidence: `reports/catalog-batch-20261017/s6-continuation.md`).
+The separate next catalog batch (local evidence: `reports/catalog-batch-20261017/next-batch-handoff.md`)
 requires a qualified additive existing-set service and fresh latest-state backup.
 
 ## HUNT-11/S6 selected execution — resource daily gate open work
@@ -53,7 +53,7 @@ The October 17 owner selection is bound to 300 exact children, six groups and
 All six resources were pulled today. The current earliest single-plan start is
 **October 18, 2026 at 20:04:24.557753 UTC (4:04 p.m. Eastern)**, with a strictly
 newer publisher build than `2026-10-16T20:05:27+00:00`. Do not probe or poll first.
-The [S6 continuation](../reports/catalog-batch-20261017/s6-continuation.md) provides the
+The S6 continuation (local evidence: `reports/catalog-batch-20261017/s6-continuation.md`) provides the
 exact installed-runtime preflight and once-only frozen helper command. Selection
 persists; no repeated approval or automatic schedule is required.
 
@@ -67,8 +67,8 @@ tables, protected files, independent journals and source lifecycle remain unchan
 Before future admission/activation, take fresh protected/journal backups using the
 existing exclusions below and compare against latest owner activity. Preserve all
 seven sources and their dated observations; reject stale activation baselines.
-Read [S6 closeout](../reports/hunt-11-s6-20261017/closeout.md) and its explicit
-[timing amendment](../reports/hunt-11-s6-20261017/timing-policy.md).
+Read S6 closeout (local evidence: `reports/hunt-11-s6-20261017/closeout.md`) and its explicit
+timing amendment (local evidence: `reports/hunt-11-s6-20261017/timing-policy.md`).
 
 ## Completed HUNT-11/S3 current-catalog fill
 
@@ -78,7 +78,7 @@ or eBay requests. Additive installed activation admitted **3,206 new references*
 Current coverage is **4,722 / 7,036 eligible identities**, with **2,314 unpriced**;
 the seven-source release contains 4,694 observations. Original 1,488 observations
 and their source lifecycle remain unchanged. See the
-[S3 closeout](../reports/hunt-11-s3-20261017/closeout.md).
+S3 closeout (local evidence: `reports/hunt-11-s3-20261017/closeout.md`).
 
 Capture, full independent identity/contract review, dry-run, fresh protected backup,
 locked additive source admission, expected-current staging, preview/validation,
@@ -112,7 +112,7 @@ three sources, preserving both earlier sources and their independent dates,
 expiry and withdrawal semantics. The October 16 publisher-build date is separate
 from October 17 capture; per-card valuation dates remain unavailable.
 
-See [the S2 closeout](../reports/hunt-11-s2-executed-20261017/closeout.md) for the
+See the S2 closeout (local evidence: `reports/hunt-11-s2-executed-20261017/closeout.md`) for the
 capture, mapping, additive activation, cleanup and preservation evidence. The
 previous future-dated preflight in `reports/hunt-11-s2-first-batch/` remains
 historical; its self-imposed daily-refresh delay did not apply to this initial

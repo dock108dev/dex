@@ -11,6 +11,8 @@ from urllib.parse import quote
 
 import httpx
 
+from .diagnostics import async_closing
+
 
 class ProviderFailure(Exception):
     def __init__(self, stage, status=None, uncertain=False):
@@ -101,7 +103,7 @@ class Transport:
         )
         try:
             response = await self.client.send(wire, stream=True, auth=None, follow_redirects=False)
-            try:
+            async with async_closing(response, "shopping_response_close_failed", close_method="aclose"):
                 if response.status_code != 200:
                     raise ProviderFailure(stage, response.status_code)
                 # Identity was requested. Reject unsolicited compressed bodies so
@@ -128,8 +130,6 @@ class Transport:
                     ):
                         raise ProviderFailure(stage)
                 return value
-            finally:
-                await response.aclose()
         except httpx.TransportError:
             raise ProviderFailure(stage, uncertain=True) from None
 
