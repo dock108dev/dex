@@ -4,7 +4,9 @@ from pokemon_hunter.security import BROWSER_HEADERS
 
 
 def secure_response(response):
-    private_cache = response.get("Cache-Control") == "private, no-store"
+    private_cache = "private" in {
+        value.strip().lower() for value in response.get("Cache-Control", "").split(",")
+    }
     for key, value in BROWSER_HEADERS.items():
         response[key] = value
     if private_cache:

@@ -20,6 +20,7 @@ FINISH = {
 SUBTYPES = {
     "Holofoil": ("unspecified", "holo"),
     "Normal": ("unspecified", "normal"),
+    "Reverse Holofoil": ("unspecified", "reverse-holo"),
     "Unlimited Holofoil": ("unlimited", "holo"),
     "Unlimited": ("unlimited", "normal"),
     "1st Edition Holofoil": ("first_edition", "holo"),

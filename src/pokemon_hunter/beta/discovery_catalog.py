@@ -212,7 +212,8 @@ def search(who, raw):
         [
             dict(
                 id=child["id"],
-                label=" · ".join(
+                label=child.get("variant_label")
+                or " · ".join(
                     filter(None, [child.get("edition"), child.get("finish"), child.get("variant")])
                 ),
                 available=child["id"] in selected_group["_published_ids"],

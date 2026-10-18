@@ -42,17 +42,22 @@ def reviewed(entries, upper=151):
         package = json.loads(h["package"])
         if package["game"] != "pokemon":
             continue
+        from .catalog_variants import SCHEMA as VARIANTS
+
+        version = package["version"]
+        if package["schema_version"] in {VARIANTS, "dex-catalog-additions-v1"}:
+            version = json.loads(h["baseline"])["sets"][0]["catalog_version"]
         members = [
             p
             for p in entries
             if p["set_id"] == h["set_id"]
-            and p["catalog_version"] == package["version"]
+            and p["catalog_version"] == version
             and p.get("publication_state") == "published"
         ]
         if not members:
             continue
         # Membership must be in the actual reviewed package, not merely a row in its set.
-        _, approved = cat.rows_for(package)
+        approved = cat.reviewed_rows(h)
         approved = {p["id"]: json.loads(p["attributes"]) for p in approved}
         selected.extend(p for p in members if eligible(p, upper) and p["attributes"] == approved.get(p["id"]))
         refs.append(
@@ -182,7 +187,7 @@ def validate(d, upper=151, targets=None):
         )
         if ref != expected or p["game"] != "pokemon":
             raise ValueError("Forged catalog reference")
-        _, rows = cat.rows_for(p)
+        rows = cat.reviewed_rows(h)
         for row in rows:
             row["attributes"] = json.loads(row["attributes"])
             if eligible(row, upper):

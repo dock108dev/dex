@@ -14,7 +14,15 @@ from decimal import Decimal
 
 from pokemon_hunter.pricing import money as provider_money
 
-from . import collection, discovery_comparison, discovery_matching, hunter_ranking, lot_calculator, store
+from . import (
+    collection,
+    discovery_comparison,
+    discovery_matching,
+    hunter_coverage,
+    hunter_ranking,
+    lot_calculator,
+    store,
+)
 from . import shopping_math as math
 from .discovery_search import canonical_query
 
@@ -39,8 +47,10 @@ class IdentityIndex:
         self.by_token = defaultdict(set)
         self.by_set_token = defaultdict(set)
         self.by_number = defaultdict(set)
+        self.sets = {}
         set_tokens, number_keys = {}, {}
         for index, printing in enumerate(printings):
+            self.sets.setdefault(printing["set_id"], printing)
             aliases = tuple(_tokens(name) for name in discovery_matching.names(printing))
             self.names[index] = aliases
             for tokens in aliases:
@@ -100,6 +110,23 @@ class IdentityIndex:
         # only the later literal evidence checks can establish a printing.
         narrowed = (narrowed & number_matches) or narrowed
         return [self.printings[index] for index in sorted(narrowed)]
+
+    def set_issues(self, candidates, clues):
+        """Reject separate literal set claims, without guessing an intended one.
+
+        Shared aliases/contained aliases alone are not contradictory evidence.
+        Card names are removed so a card called Arceus is not a set claim.
+        """
+        text = discovery_matching.without_names(candidates, clues["text"])
+        claims = defaultdict(set)
+        for set_id, printing in self.sets.items():
+            for span in discovery_matching.set_spans(printing, text):
+                claims[span].add(set_id)
+        for first, sets in claims.items():
+            for second, other in claims.items():
+                if first[1] <= second[0] and sets.isdisjoint(other):
+                    return ["Seller set claims conflict with one another; exact printing needs review"]
+        return []
 
 
 class ReferenceIndex:
@@ -177,6 +204,7 @@ def compare(actor, raw_rows, *, now=None):
         records_for=references.for_printing,
         artwork={},
         include_unsupported=True,
+        identity_issues_for=identities.set_issues,
     )
     by_id = {raw.get("itemId"): raw for raw in reversed(raw_rows)}
     for row in rows:
@@ -207,6 +235,7 @@ def compare(actor, raw_rows, *, now=None):
             other_costs=None,
             delivered_cost_basis="Listing amount and shipping only; tax and other costs unknown",
             contents_review_required=row["discovery_kind"] == "mixed_lot",
+            reference_lifecycle_status=references.status,
         )
         for identity in [row["proposed_identity"], *row["identity_candidates"]]:
             if identity is not None:
@@ -219,7 +248,13 @@ def compare(actor, raw_rows, *, now=None):
     store.verified(actor)
     if collection.generation(actor) != generation:
         raise collection.Conflict("Catalog changed during Hunter comparison; start a new Hunt")
-    return hunter_ranking.project(rows, now=now)
+    projected = hunter_ranking.project(rows, now=now)
+    for row in projected:
+        clues = discovery_comparison._clues(by_id[row["item_id"]])
+        row["comparison_diagnostics"] = hunter_coverage.diagnose(
+            row, identity_reasons=hunter_coverage.identity_codes(identities.candidates(clues), clues)
+        )
+    return projected
 
 
 def counts(rows):

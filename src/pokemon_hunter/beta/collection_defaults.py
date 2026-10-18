@@ -85,12 +85,15 @@ def intents(plan):
     return ([plan["card_intent"]] if plan.get("card_intent") else []) + plan.get("card_intents", [])
 
 
-def variant_printing_ids(row, catalog):
+def variant_printing_ids(row, catalog, *, attested_ids=None):
     """Known normal children only; unknown catalog fields never become exact proof."""
     if row.get("owned_variant") != "normal":
         return []
     return [
         p["id"]
         for p in catalog
-        if p["id"] in row["printing_ids"] and p.get("finish") == "normal" and _normal_metadata(p)
+        if p["id"] in row["printing_ids"]
+        and (attested_ids is None or p["id"] in attested_ids)
+        and p.get("finish") == "normal"
+        and _normal_metadata(p)
     ]

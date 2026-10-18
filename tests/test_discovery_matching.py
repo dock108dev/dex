@@ -204,7 +204,7 @@ def test_name_only_single_stays_ambiguous_and_index_fallback_explains_bad_number
     assert conflict["identity_status"] == "conflicting" and conflict["reference"] is None
 
 
-def test_reverse_finish_is_literal_but_does_not_create_provider_subtype_admission(local, monkeypatch):
+def test_reverse_finish_is_literal_and_source_fit_preserves_known_edition_conflicts(local, monkeypatch):
     normal = printing("normal")
     reverse = printing("reverse", finish="reverse", variant="reverse-holo")
     raw = listing(reverse, title="Paradox Rift Gholdengo ex 252/182 English Unlimited Reverse Holo")
@@ -212,7 +212,10 @@ def test_reverse_finish_is_literal_but_does_not_create_provider_subtype_admissio
     assert clues["finish"] == "reverse-holo" and clues["conflicts"] == []
     assert discovery_comparison._matches([normal, reverse], clues) == [reverse]
     assert market_identity.FINISH["reverse"] == "reverse-holo"
-    assert "Reverse Holofoil" not in market_identity.SUBTYPES
+    source_edition, source_finish = market_identity.SUBTYPES["Reverse Holofoil"]
+    assert (source_edition, source_finish) == ("unspecified", "reverse-holo")
+    assert not market_identity.compatible(reverse, source_edition, source_finish)
+    assert market_identity.compatible(dict(reverse, edition=None), source_edition, source_finish)
 
 
 def test_index_uses_alias_set_and_number_without_dropping_conflict_candidates():

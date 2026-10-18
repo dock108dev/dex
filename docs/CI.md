@@ -1,5 +1,85 @@
 # Continuous integration and testing
 
+## HUNT-11 offline reference qualification — October 17
+
+`tests/test_tcgcsv_offline.py` qualifies explicit mappings, Trainer/Energy/promos,
+variant/language/condition/currency/date conflicts, duplicates, bounded parsing,
+68-group input sharding and partial failures. Independent
+`tests/test_hunt11_reference_integration.py` joins prepared v2 releases to existing
+atomic activation, expiry, withdrawal/source isolation, Hunter singles/lots,
+coverage reconciliation and dry-run/staging safeguards. Run these with external
+sockets blocked alongside existing TCGCSV, price-snapshot and Hunter reference
+tests. Fixtures are engineering inputs and establish no actual source coverage,
+rights or customer outcome. Exact package and native test evidence are retained
+under `reports/hunt-11-20261017/`; no new hosted-CI/advisory pass is claimed.
+
+The final isolated Python 3.12 wheel run passed **949 tests across 41 modules**
+with external sockets blocked. Every application member and wheel RECORD entry
+was checked, all loaded application origins were isolated, repeat archives matched,
+and source-to-wheel members matched. One existing socket-block warning remains in
+the native output; no external transport occurred. Focused Ruff, compilation,
+maintained-guide checks and targeted Bandit passed (zero findings/errors). The
+first exact-wheel run retained one obsolete subtype-absence assertion; its test
+now verifies documented reverse support preserves known-edition conflicts. These
+are engineering results on an uninstalled candidate, not customer delivery or
+actual source coverage. Earlier focused test totals overlap this final run.
+
+## HUNT-09/10 ordinary policy and comparison coverage — October 17
+
+The repeat-identical successor wheel is
+`02f6b096f4189e8e2bddea37fac03abece93e730347b9ebf0ab0db9f149f0b3f`.
+All 239 installed application/data members and 243 RECORD entries match.
+The exact installed interpreter passed 772 focused offline cases with external
+sockets blocked, including policy/time/concurrency/recovery, historical campaigns,
+matching/references/lifecycle, lots, HTTP/CSRF/ingress and distribution guards.
+The new 51 policy/worker cases are included, not additive. A five-process race
+admits only the two selected daily operations; full workers exercise successive
+parents, Continue, details, pause and in-flight Stop without genuine transport.
+
+Installed Chromium qualification passed 32 checks, 12 layouts and four measured
+doubled-text states on disposable fabricated data. The harness selects ordinary
+policy through the real settings API; package/source identity stayed stable.
+Local settings/review interactions acquired nothing. Current-root read-only
+compatibility accepted all 59 tables without migration. Ordinary startup retained
+bounded ASGI, lifecycle and selected-scan behavior with zero outbound attempts on
+generated 40-table state. Recovery rehearsal preserved later writes and events.
+Actual installed blank settings, disabled Hunt, ordinary collection/Shopping,
+Check availability, Back and reopening were observed separately. No genuine
+provider operations or ordinary numeric policy were selected; the owner explicitly
+left acquisition disabled. Live repeated Hunts/Stop/value and owner acceptance
+remain open. Focused lint/format, compilation, Node contracts, guide links,
+distribution privacy guards and targeted Bandit passed. No new hosted-CI or
+advisory scan is claimed. Evidence: `reports/hunt-09-10-20261017/closeout.md`.
+
+## HUNT-08 ordinary installed delivery — October 17
+
+The successor wheel `3ab5caa9e9cd84e7551cd8a2c7d534239da5056b4f9265ba3fb982a7a61bded9`
+and sdist repeat-build identically. All 237 installed members/241 RECORD entries
+match. Its fresh installed interpreter passed 312 focused offline cases with
+external sockets blocked, including installed finite authority, the full fake
+Both/five-Continue/two-detail plan, worker admission, account/CSRF/ingress, source
+withdrawal and recovery. Independent final binding/worker review passed 37 cases.
+These overlapping runs are separate evidence, not counts to add together.
+
+The ordinary CLI probe retained real setup, routes, bounded ASGI and lifecycle
+threads, adapting only the blocking network runner on generated 44-table state;
+it observed zero outbound attempts and no startup data/schema change. Both saved
+SHOP-04 and the successor accepted the actual 59-table schema read-only without
+migration. Disposable backup/pointer/recovery rehearsal preserved later writes and
+independent consumed events without applying old state. Unchanged HUNT-07 UI bytes
+reuse their exact earlier layout/race evidence; no broad browser suite was repeated.
+
+The actual installed journey then consumed fifteen owner-selected HTTP-200
+operations: one OAuth, twelve Browse and two details. Local journeys and Stops
+passed; 59/59 tables, all measured fields and database bytes match. Genuine
+in-flight Stop suppression and deliberate exact-printing correction remain
+unobserved and separately offline-qualified. The exhausted installed allocation
+is closed; installed delivery is complete, owner acceptance remains open.
+Targeted Bandit records three reviewed MEDIUM/LOW-confidence SQL-construction
+findings with separately bound values. No current dirty-source hosted-CI or new
+dependency-advisory result is implied. Full evidence and the usable installed
+paths are in `reports/hunt-08-20261017/closeout.md`.
+
 ## Workflows
 
 `.github/workflows/tests.yml` validates pull requests and pushes to `main` through
@@ -37,6 +117,17 @@ all secret findings and high/medium Bandit findings with high confidence. Other 
 findings remain reported. Tool and download failures are failures rather than zero
 findings. `browser.py` uses one localized `E402` exception to import its helper after
 bootstrapping the direct-script module path.
+
+The guarded Hunter boundary adds `tests/test_hunter_operator.py`,
+`test_hunter_transition.py`, `test_hunter_profile.py` and
+`test_hunter_profile_acquisition.py`. These use disposable schema-compatible roots,
+fake processes/transports and controlled artwork. `scripts/qualify_hunter_boundary.py`
+verifies exact archive/RECORD/installed members, import origins, optional installed
+tests and a restricted-profile Chromium sign-in/CSRF/route journey. Repeat wheel
+and sdist checks and the real saved-runtime read-only compatibility gate are retained
+under `reports/hunt-07-boundary-20261016/`. The existing full fake Hunter UI harness
+continues to qualify unchanged UI assets. These local gates establish neither
+hosted CI for dirty source nor provider/customer/owner acceptance.
 
 ## Local checks
 
@@ -367,3 +458,145 @@ Hunter templates, both scripts and CSS. Qualify a repeat-built wheel in a fresh
 isolated interpreter, with installed imports and packaged browser assets checked.
 Evidence under `reports/hunt-06-20261016/` is local engineering only; genuine
 provider, customer installation, hosted CI and owner acceptance remain separate.
+
+HUNT-07 adds a joined fake-transport traversal/review/detail/accounting suite in
+`tests/test_hunter_h07_integration.py`, alongside the HUNT-06 browser and renderer
+gates. Native security/dependency/secret reports, current hosted revision evidence,
+installed-module reconciliation and fresh all-table preservation remain separate
+evidence classes. A green committed-revision run does not qualify later dirty UI
+or test changes; local exact-candidate gates do not manufacture a hosted pass.
+Genuine execution still requires a resolved, qualified boundary and separate
+finite authorization; no provider or installation follows from these tests.
+
+### Authorized partial Hunter execution — October 17
+
+The qualified guarded transition was explicitly selected and executed at the actual
+root/origin, followed by compatible latest-state SHOP-04 handback. One Both action
+consumed one OAuth and two Browse operations, all HTTP 200, and the live UI showed
+400 fetched/unique/retained summaries with ten planned pages remaining. The initial
+pages were singles; no lot/details or continuation evidence was obtained.
+
+The active automation tab then became unavailable and a fresh tab lacked its
+temporary run context. The attempt ended without another Hunt or hidden recovery.
+This observation does not establish a backend defect. Temporary selections were
+closed; consumed accounting remains intact. This attempt's genuine qualification
+was partial; the separately selected completion below resolves its remaining
+bounded gate. Local evidence is under
+`reports/hunt-07-live-20261017/`.
+
+Schema and 55 tables match the fresh baseline; only ordinary authentication/session
+bookkeeping differs, consistent with observed sign-in. Runtime/configuration,
+startup pointers, collection state and independent source rights match. The original
+attempt-journal prefix and exhausted HUNT-01 ledger are byte-identical; authorized
+append/new-ledger effects are separately recorded. No old state was restored.
+
+### Browser interruption recovery — October 17
+
+`scripts/qualify_hunter_browser_recovery.py` extends the existing disposable
+Hunter harness with ordinary sign-in, persistent original Chromium target/history
+across controller disconnect/reconnect, same-tab reload, explicit Continue,
+local paging/filter/reveal, corrected lot review/Back/focus, fresh-tab refusal and
+missing-run recovery. It also retains the prior 30 UI/lifecycle/race checks. Real
+Chromium behavior, actual Computer Use API observations and the documented
+turn-retention model are separate evidence classes. The model does not prove a
+real Codex cleanup event or genuine cross-turn retention.
+
+The missing-run case reproduced an HTML 404 whose status the client discarded
+while parsing JSON. Only that parse failure now preserves HTTP status, allowing
+the existing unavailable branch to clear stale context. Client contracts cover
+immediate and delayed startup metadata without acquisition or renewed authority.
+Retained browser attempts 1/2 document the harness error and pre-repair failure;
+fresh isolated-wheel evidence qualifies the repaired asset. Backend/operator
+bytes remain unchanged, and earlier exact-byte qualification retains its scope.
+
+Final recovery gates pass: 40 fresh-wheel Hunter browser checks/eight layouts/two
+doubled-text states, nine restricted-profile sign-in/route checks, 35 focused
+isolated-wheel cases, 123 affected source cases and 204 preserved backend/operator
+regressions. Main/review client contracts pass 23/24; documentation-checker cases
+pass 11 and the source check covers 19 JavaScript files / 19 maintained guides.
+Counts overlap and must not be added. Repeat wheel and sdist bytes match; all 236
+installed application/data members match, with only `hunter.js` changed from the
+executed wheel. Current dirty source has no new hosted-CI claim.
+
+Recovery evidence, reproducible package identities, focused native reports and
+read-only actual-state preservation are under
+`reports/hunt-07-browser-recovery-20261017/`. Use the
+[tested browser procedure](hunter-browser-workflow.md). This pass sends zero
+actual provider operations and makes no customer runtime transition. The three
+previously consumed operations and closed attempt remain intact. A new finite
+execution needs separately qualified fixed-plan binding; the old proposal cannot
+be reused with a renamed ledger or edited document. The later completion binding
+and genuine execution are recorded below. HUNT-08 and owner acceptance remain open.
+
+### Completion-plan binding gates
+
+`tests/test_hunter_completion_binding.py` exercises the literal completion ID,
+strict plan/predecessor documents, byte-exact prior accounting, independent
+selection and refusal before side effects. Existing full-plan service/HTTP tests
+run for both fixed IDs, including twelve Browse pages and two shared-budget
+details. An uncertain OAuth-only admission also prevents completion restart.
+Completion detail dispatch must retain a live parent with the same owner tuple
+and exact allowance. Invalid mutable accounting still permits handback-only
+validation while preserving the damaged journal for repair.
+
+The affected operator/profile/transition, finite-budget and integration suites
+remain offline with disposable roots and fake transport. Reproducible new archives,
+fresh isolated-wheel installed tests, restricted-profile auth/routes and retained
+browser reconnect/404/lifecycle proof bind the completion candidate. The browser
+model is simulated turn cleanup; real reconnects do not establish historical
+Codex cleanup cause. Exact reports and unexecuted proposal are retained under
+`reports/hunt-07-completion-binding-20261017/`. No actual provider operation,
+customer HTTP or runtime transition is authorized by these gates; they do not
+close HUNT-07, install HUNT-08 or supply owner acceptance.
+
+The final completion candidate passes 223 fresh isolated-wheel cases, nine
+restricted-profile browser checks and 40 Hunter browser checks/eight layouts/two
+measured doubled-text states. The 40 new binding cases and both fixed-plan full
+fifteen-operation fake service/HTTP paths are included in installed qualification.
+Forty-seven final focused source cases supplement earlier unchanged affected
+passes; counts overlap. Retained failures identify the repaired detail-parent
+allowance check and one test-message assertion correction. Targeted Bandit retains
+two low findings and zero blocking findings; dependency/security history remains
+separate. Ruff, compilation, JavaScript/guide checks and whitespace pass. These
+are local exact-candidate results, with no new hosted-CI claim.
+
+### Completed bounded genuine Hunter gate — October 17
+
+The owner selected the exact completion proposal and finite plan. The frozen
+wheel SHA-256 is `ceb3abbb1df16abfa49cc07202b6ac2d98ae0d49e84dc2e52c56c71a6f7726eb`;
+its proposal SHA-256 is
+`eb602c52d7c9a75ec270cf0f2c53685fc2a4ff21587c122cb1f6f567c6a758d9`.
+The same original tab retained one Both run, its UTC window and lease across five
+explicit Continues, local review and selected details. One OAuth, twelve Browse
+and two exact details completed HTTP 200. All twelve pages returned 200 summaries
+and advisory truncation. Each captured page has a recorded disposition; partial
+coverage never establishes a complete market scan.
+
+The 2,400 observations reconcile to 2,391 unique identities plus nine duplicates;
+800 were retained and 1,591 skipped at the retention limit. Fifty retained offers
+were locally rejected. The other 750 were 13 conditional, 15 matched-unpriced,
+134 ambiguous, 161 unmatched and 427 unsupported, with zero fully comparable
+results. Local paging/filter/reveal, lot analysis/comparison, Back/focus and
+reopening added no acquisition. Two received lots exposed honest unresolved
+contents. No justified contents correction was available, so deliberate correction
+was not exercised live; offline corrected-review qualification remains separate.
+
+Stop details was selected while loading, after its transport had completed. Actual
+in-flight Stop/late-response suppression remains an offline-qualified race, not a
+new live observation. Parent Stop cleared results and dependent reviews. The
+operator returned to ordinary SHOP-04 using latest state. Schema and 55 of 59
+tables match; four authentication/session bookkeeping changes are consistent with
+observed sign-in. Runtime/helper/configuration, protected collection state and
+source lifecycle match. The original journal prefix and closed three-operation
+ledger are preserved. The new journal contains 52 rows: six action admissions,
+fifteen each admitted/in-flight/completed operations and one stopped action.
+All fifteen new operations remain consumed, for eighteen across these two HUNT-07
+intervals; earlier campaigns remain separate.
+
+Exact authorization/execution, sanitized outcomes, preservation, evidence matrix
+and the next `HUNT-08-handoff.md` are under
+`reports/hunt-07-completion-live-20261017/`. HUNT-07's bounded genuine gate is
+complete. The historical tab-loss cause and HUNT-06's missing start-state/writer
+evidence remain unresolved. This local execution supplies no new hosted-CI result,
+permanent Hunter installation, owner acceptance or further provider capacity.
+Guide edits after execution are separate from the frozen candidate bytes.

@@ -95,7 +95,7 @@ def start(actor, session_key, run_id, result_ids):
     intent = hunter_lots.detail_intent(actor, session_key, run_id, result_ids)
     parent = hunter._lookup(actor, session_key, run_id)
     allowance = getattr(parent, "allowance", None)
-    if type(allowance) is not hunter_budget.TraversalAllowance:
+    if not hunter_budget.is_traversal_allowance(allowance):
         raise ValueError("No future official lot-detail allowance is active")
     remaining = hunter_budget.remaining_traversal(parent.owner[0], allowance)
     if (
@@ -249,7 +249,7 @@ def status(actor, session_key, action_id):
             run.review_ids = [review["review_id"] for review in reviews]
         else:
             reviews = [hunter_lots.read(actor, session_key, key) for key in run.review_ids]
-        d._check_acquisition(run)
+        d._check_acquisition(run, authorization=False)
         result["reviews"] = reviews
         return hunter_lots._bounded_response(result)
 

@@ -6,6 +6,8 @@
   const api = '/api/shopping/hunter/', binding = page.dataset.navigationBinding || '', account = page.dataset.navigationAccount || '';
   const initial = JSON.parse($('hunter-initial')?.textContent || '{}');
   const generation = initial.authority?.generation;
+  const usageOwner = initial.usage_settings?.owner === true && Boolean($('hunter-usage-form'));
+  let usagePolicy = initial.usage_settings?.policy || null, usageBusy = false;
   let metadata = initial.metadata || {}, run = null, rows = [], epoch = 0, viewEpoch = -1, requestId = 0;
   let busy = false, revoked = false, stopped = false, reading = false, statusTimer = null, detailTimer = null;
   let deadline = Infinity, leaseTimer = null, wantedPages = 1, reviewId = null, inspectedId = null;
@@ -46,7 +48,10 @@
       const error = new Error('Your session is unavailable. Sign in again to continue.'); error.status = response.status; throw error;
     }
     let value;
-    try { value = await response.json(); } catch { throw new Error('Price Hunter returned an unreadable response. Check availability to continue.'); }
+    try { value = await response.json(); } catch {
+      const error = new Error(response.status === 404 ? 'This temporary Hunter content is unavailable. It may have expired or been cleared.' : 'Price Hunter returned an unreadable response. Check availability to continue.');
+      error.status = response.status; throw error;
+    }
     if (!response.ok) { const error = new Error(typeof value.error === 'string' ? value.error : 'This action is unavailable. Check the current Hunt.'); error.status = response.status; error.code = value.code; throw error; }
     if (!authority() || !account || !binding || value.authority?.account_id !== account || value.authority?.binding !== binding || generation != null && value.authority?.generation !== generation) {
       invalidate(); throw new Error('Your session or catalog changed. Reload Shopping to continue.');
@@ -76,17 +81,83 @@
   const review = window.DexHunterReview.mount({container: $('hunter-review'), request, current: () => active(viewEpoch), image, message, onBack: () => backToResults(), onDetailStart: prepareDetails});
   function ready() {
     const left = metadata.traversal_remaining || {};
+    if (usageOwner && (!usagePolicy?.configured || !usagePolicy.enabled || !(usagePolicy.remaining > 0))) return false;
     return metadata.acquisition_available === true || metadata.acquisition_available == null && metadata.traversal_allowance_enabled && left.browse > 0 && left.total > 0;
   }
+  function usageDate(value, timezone) {
+    const date = new Date(value);
+    if (!value || !Number.isFinite(date.getTime())) return 'Unavailable';
+    try { return date.toLocaleString(undefined, {timeZone: timezone || undefined, timeZoneName: 'short'}); }
+    catch { return date.toLocaleString(); }
+  }
+  function expiryMode() {
+    if (!usageOwner) return;
+    const required = $('hunter-usage-expiry-mode').value === 'at';
+    $('hunter-usage-expiry-label').hidden = !required;
+    $('hunter-usage-expiry').required = required;
+  }
+  function renderUsage(value, fill = false) {
+    if (!usageOwner || !authority()) return;
+    usagePolicy = value || {configured: false, enabled: false};
+    const p = usagePolicy;
+    const hasSettings = p.configured && Number.isInteger(p.per_hunt_limit) && Number.isInteger(p.daily_limit) && typeof p.timezone === 'string';
+    const timezoneControl = $('hunter-usage-timezone');
+    if (hasSettings && ![...timezoneControl.querySelectorAll('option')].some(option => option.value === p.timezone)) timezoneControl.append(h('option', 'Current timezone (' + p.timezone.replaceAll('_', ' ') + ')', {value: p.timezone}));
+    const timezoneLabel = hasSettings ? [...timezoneControl.querySelectorAll('option')].find(option => option.value === p.timezone)?.textContent || p.timezone : '';
+    $('hunter-usage-status').textContent = p.reason || (!p.configured ? 'Acquisition is disabled. Choose your usage settings to enable it.' : !p.enabled ? 'Acquisition is paused.' : p.remaining > 0 ? 'Acquisition is enabled within your selected limits.' : 'Your daily capacity is exhausted.');
+    $('hunter-usage-capacity').textContent = hasSettings ? `${p.remaining ?? 0} of ${p.daily_limit} daily operations remaining · ${p.used ?? 0} consumed · up to ${p.per_hunt_limit} per Hunt. ${p.recurring ? 'Next daily window: ' + usageDate(p.next_window_at, p.timezone) + '.' : 'This window only; a new day does not renew capacity.'} Timezone: ${timezoneLabel}.${p.expires_at ? ' Policy expires ' + usageDate(p.expires_at, p.timezone) + '.' : ''}` : p.configured ? 'Capacity cannot be read safely. Acquisition remains disabled; existing local Shopping tools remain available.' : 'No limits have been selected. Opening Dex and changing these settings use no provider operations.';
+    if (!p.configured) $('hunter-usage-settings').open = true;
+    if (fill) {
+      $('hunter-usage-enabled').value = hasSettings ? String(p.enabled) : '';
+      $('hunter-usage-per-hunt').value = hasSettings ? String(p.per_hunt_limit) : '';
+      $('hunter-usage-daily').value = hasSettings ? String(p.daily_limit) : '';
+      $('hunter-usage-timezone').value = hasSettings ? p.timezone : '';
+      $('hunter-usage-recurring').value = hasSettings ? String(p.recurring) : '';
+      $('hunter-usage-expiry-mode').value = hasSettings ? p.expires_at ? 'at' : 'none' : '';
+      const expiry = p.expires_at ? new Date(p.expires_at) : null;
+      $('hunter-usage-expiry').value = expiry && Number.isFinite(expiry.getTime()) ? new Date(expiry.getTime() - expiry.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '';
+      expiryMode();
+    }
+    buttons();
+  }
+  function selectedUsage() {
+    const boolean = id => { const value = $(id).value; if (!['true', 'false'].includes(value)) throw new Error('Choose enabled or paused and whether capacity repeats each day.'); return value === 'true'; };
+    const integer = (id, max) => { const value = $(id).value; if (!/^[1-9][0-9]*$/.test(value) || Number(value) > max) throw new Error('Choose whole-number limits: 1–15 per Hunt and 1–1,000 per day.'); return Number(value); };
+    const timezone = $('hunter-usage-timezone').value.trim();
+    if (!timezone) throw new Error('Choose the timezone for your daily windows.');
+    const mode = $('hunter-usage-expiry-mode').value;
+    if (!['none', 'at'].includes(mode)) throw new Error('Choose until paused or a specific expiry.');
+    const expiry = mode === 'at' ? new Date($('hunter-usage-expiry').value) : null;
+    if (expiry && (!Number.isFinite(expiry.getTime()) || expiry.getTime() <= Date.now())) throw new Error('Choose a future expiry in your browser’s local time.');
+    return {enabled: boolean('hunter-usage-enabled'), per_hunt_limit: integer('hunter-usage-per-hunt', 15), daily_limit: integer('hunter-usage-daily', 1000), timezone, recurring: boolean('hunter-usage-recurring'), expires_at: expiry ? expiry.toISOString() : null, revision: usagePolicy?.revision || 0};
+  }
+  async function saveUsage(pause = false) {
+    if (!usageOwner || usageBusy || !authority()) return;
+    const feedback = $('hunter-usage-feedback');
+    try {
+      const fields = pause ? {enabled: false, per_hunt_limit: usagePolicy.per_hunt_limit, daily_limit: usagePolicy.daily_limit, timezone: usagePolicy.timezone, recurring: usagePolicy.recurring, expires_at: usagePolicy.expires_at || null, revision: usagePolicy.revision} : selectedUsage();
+      usageBusy = true; feedback.textContent = 'Saving your selected usage settings…'; feedback.dataset.error = 'false'; buttons();
+      const value = await request(api + 'usage/', fields);
+      if (!authority()) return;
+      renderUsage(value, true); feedback.textContent = pause ? 'Acquisition paused. Already attempted operations remain consumed; local review and Stop remain available.' : 'Usage settings saved. Hunt is a separate explicit action; no marketplace search has run.';
+      await availability();
+    } catch (error) { if (authority()) { feedback.textContent = error.message + ' Settings were not changed unless confirmed above. Check availability before trying again.'; feedback.dataset.error = 'true'; } }
+    finally { usageBusy = false; buttons(); }
+  }
   function buttons() {
-    $('hunter-start').disabled = !authority() || !ready() || busy || reading || Boolean(run?.running);
+    $('hunter-start').disabled = !authority() || !ready() || busy || reading || usageBusy || Boolean(run?.running);
     $('hunter-scope').disabled = busy || Boolean(run?.running);
     $('hunter-stop').disabled = !authority() || stopped || !busy && !run;
     $('hunter-recheck').disabled = !authority() || busy;
     $('hunter-local-next').hidden = !run?.result_cursor || view !== 'results';
     $('hunter-local-next').disabled = busy || reading;
     $('hunter-continue').hidden = !run?.has_next || view !== 'results';
-    $('hunter-continue').disabled = busy || reading || run?.running || Boolean(run?.continuation_blocked_reason) || !run?.continuation_cursor || $('hunter-scope').value !== (run?.plan?.scope || 'singles');
+    $('hunter-continue').disabled = busy || reading || usageBusy || usageOwner && !ready() || run?.running || Boolean(run?.continuation_blocked_reason) || !run?.continuation_cursor || $('hunter-scope').value !== (run?.plan?.scope || 'singles');
+    if (usageOwner) {
+      $('hunter-usage-save').disabled = !authority() || usageBusy;
+      $('hunter-usage-pause').disabled = !authority() || usageBusy || !usagePolicy?.configured || !usagePolicy.enabled;
+      if (!ready() || usageBusy) $('hunter-detail-load').disabled = true;
+    }
     $('hunter-next-note').textContent = run?.has_next ? $('hunter-scope').value !== (run?.plan?.scope || 'singles') ? 'Scope changed. Start a new Hunt to use it.' : run.continuation_blocked_reason ? 'Acquisition cannot continue: ' + pretty(run.continuation_blocked_reason) + '.' : 'Continue acquisition makes an explicit request within this Hunt’s captured plan. Showing received results uses no provider requests.' : run ? 'This received batch is local. Coverage remains limited to the captured pages.' : '';
   }
   function remember(push = false) {
@@ -107,6 +178,7 @@
     if (revoked) return;
     clearContent('Your session changed.'); revoked = true;
     $('hunter-status').textContent = 'Your session changed. Reload Shopping and sign in to continue.';
+    if (usageOwner) { $('hunter-usage-status').textContent = 'Your session changed. Reload Shopping to check your usage settings.'; $('hunter-usage-capacity').textContent = ''; }
     buttons();
   }
   function bindLease(value) {
@@ -117,6 +189,7 @@
     }, 250);
   }
   function coverage(value) {
+    if (value.usage_policy) renderUsage(value.usage_policy);
     $('hunter-progress').hidden = false;
     const w = value.window || {}, fmt = date => { const d = new Date(date); return Number.isFinite(d.getTime()) ? d.toLocaleString() : 'Unknown'; };
     $('hunter-window').textContent = `${pretty(value.plan?.scope || 'singles')} · auctions ${fmt(w.start)} to ${fmt(w.end)} · available Buy It Now offers.`;
@@ -125,8 +198,19 @@
     $('hunter-limitations').textContent = `${value.running ? 'Hunt is working through its captured pages. ' : 'Partial marketplace coverage. '}${c.truncated || counts.truncated_pages ? 'Some pages report further results. ' : ''}Results do not establish complete marketplace coverage. References retain their original dates.`;
     const accounting = $('hunter-accounting'); accounting.replaceChildren();
     for (const [label, val] of [['Fetched observations', c.fetched ?? counts.received], ['Unique identities', c.unique ?? local.unique], ['Duplicate observations', c.duplicates ?? counts.duplicates], ['Retained summaries', c.retained ?? local.unique], ['Skipped by limits', c.skipped], ['Malformed identity rejections', c.rejected ?? counts.invalid_identity], ['Locally rejected offers', local.rejected], ['Truncated pages (advisory)', c.truncated ?? counts.truncated_pages]]) accounting.append(h('p', `${label}: ${val ?? 'Unknown'}`));
-    for (const [key, val] of Object.entries(local)) if (!['unique', 'results', 'rejected'].includes(key)) accounting.append(h('p', `${pretty(key)} results: ${val}`));
+    for (const [key, val] of Object.entries(local)) if (!['unique', 'results', 'rejected'].includes(key)) accounting.append(h('p', key === 'comparable' ? `Exact reference matches (costs may be incomplete): ${val}` : `${pretty(key)} results: ${val}`));
     for (const [key, val] of Object.entries(c.reasons || {})) accounting.append(h('p', `${pretty(key)}: ${val}`));
+    const diagnostic = value.coverage_diagnostics;
+    if (diagnostic) {
+      const d = diagnostic.denominators || {};
+      accounting.append(h('h3', 'Comparison coverage'));
+      for (const [key, label] of Object.entries({fetched: 'Fetched observations', retained: 'Retained summaries', eligible_singles: 'Eligible singles', lots: 'Loose lots', matched_identities: 'Matched catalog identities', admitted_references: 'Admitted references', complete_comparisons: 'Complete delivered comparisons'})) accounting.append(h('p', `${label}: ${d[key] ?? 'Unknown'}`));
+      accounting.append(h('p', 'Reasons below may overlap. Each reason counts retained summaries, so they do not add up to the primary outcomes.'));
+      for (const [key, count] of Object.entries(diagnostic.reason_counts || {})) accounting.append(h('p', `${diagnostic.reason_labels?.[key] || pretty(key)}: ${count} of ${d.retained ?? 'Unknown'} retained summaries`));
+      const outcomes = Object.entries(diagnostic.primary_outcomes || {}).map(([key, count]) => `${pretty(key)} ${count}`).join(' · ');
+      if (outcomes) accounting.append(h('p', 'Primary outcomes: ' + outcomes + '.'));
+      $('hunter-limitations').append(h('span', ` ${d.admitted_references ?? 0} retained offers have an admitted reference; ${d.complete_comparisons ?? 0} have complete delivered comparisons. Open comparison coverage below for missing-input reasons.`));
+    }
     accounting.append(h('p', 'Duplicates are repeat observations; skipped identities were not retained. Rejections and reference coverage have separate meanings. Provider totals are advisory.'));
   }
   function field(dl, label, value) { const wrap = h('div'); wrap.append(h('dt', label), h('dd', value)); dl.append(wrap); }
@@ -157,19 +241,26 @@
     const head = h('div', null, {class: 'hunter-card-head'}), info = h('div');
     head.append(image(identity?.artwork, identity?.name, () => active(token)), info);
     const classification = row.opportunity?.classification || row.hunt_status || row.classification || 'unpriced';
-    info.append(h('span', pretty(classification), {class: `hunter-badge ${classification.includes('conditional') ? 'conditional' : ''}`}), h('h3', identity?.name || row.label || 'Unresolved card identity'));
-    if (identity) info.append(h('p', [identity.set_name, identity.collector_number, identity.edition, identity.finish].filter(Boolean).join(' · ')));
+    const badge = ['comparable', 'priced'].includes(classification) && !row.comparison_diagnostics?.complete_delivered_comparison ? 'Reference matched · costs incomplete' : pretty(classification);
+    info.append(h('span', badge, {class: `hunter-badge ${classification.includes('conditional') ? 'conditional' : ''}`}), h('h3', identity?.name || row.label || 'Unresolved card identity'));
+    if (identity) info.append(h('p', [identity.set_name, identity.collector_number, identity.edition, identity.finish, identity.variant_label].filter(Boolean).join(' · ')));
     info.append(h('p', countdown(row), {'data-countdown': id})); article.append(head);
     const amounts = h('dl', null, {class: 'hunter-amounts'});
     field(amounts, row.price_kind === 'current_bid' ? 'Current bid' : 'Listing amount', money(row.listing_price)); field(amounts, 'Shipping', money(row.shipping)); article.append(amounts);
     if (row.reason) article.append(h('p', row.reason));
+    if (row.comparison_diagnostics?.reasons?.length) {
+      const why = h('section', null, {class: 'hunter-comparison-reasons', 'aria-label': 'Comparison coverage reasons'});
+      why.append(h('h4', row.comparison_diagnostics.complete_delivered_comparison ? 'Comparison basis' : 'Comparison coverage'));
+      for (const reason of row.comparison_diagnostics.reasons) why.append(h('p', reason));
+      article.append(why);
+    }
     const scenarios = row.opportunity?.scenarios || [];
     if (scenarios.length) { article.append(scenario(scenarios[0])); if (scenarios.length > 1) { const more = h('details'); more.append(h('summary', 'Other auction / buying scenarios')); for (const s of scenarios.slice(1)) more.append(scenario(s)); article.append(more); } }
     if (!scenarios.length || scenarios.every(s => s.reference_amount == null)) article.append(h('p', 'No applicable admitted reference. A value or gap is unavailable.'));
     const candidates = row.identity_candidates || [];
     if (!identity && candidates.length) {
       const choices = h('details'); choices.append(h('summary', `${row.identity_candidates_total || candidates.length} unresolved printing candidates`));
-      for (const candidate of candidates) { const item = h('div', null, {class: 'hunter-candidate'}); item.append(image(candidate.artwork, candidate.name, () => active(token)), h('p', [candidate.name, candidate.set_name, candidate.collector_number, candidate.printing_id].filter(Boolean).join(' · '))); choices.append(item); } article.append(choices);
+      for (const candidate of candidates) { const item = h('div', null, {class: 'hunter-candidate'}); item.append(image(candidate.artwork, candidate.name, () => active(token)), h('p', [candidate.name, candidate.set_name, candidate.collector_number, candidate.variant_label, candidate.printing_id].filter(Boolean).join(' · '))); choices.append(item); } article.append(choices);
     }
     const seller = h('div', null, {class: 'hunter-seller'}), show = () => {
       seller.replaceChildren(h('p', row.title || 'Seller text unavailable.'));
@@ -218,7 +309,7 @@
   }
   async function doReadResults({more = false, quiet = false} = {}) {
     if (!run || stopped || !authority() || reading || busy) return;
-    const token = epoch, serial = ++requestId, runId = run.run_id;
+    const token = epoch, serial = ++requestId, runId = run.run_id, wasRunning = run.running;
     reading = true; buttons();
     const pages = more ? Math.min(800, wantedPages + 1) : wantedPages;
     let loadedPages = 1, failed = false;
@@ -243,9 +334,17 @@
       if (['stopped', 'expired', 'superseded'].includes(value.state) || value.expires_in_seconds <= 0) {
         stopped = true; clearContent('The original Hunt is no longer available.'); message('This Hunt stopped or expired. Its temporary results and reviews were cleared.'); remember(); return;
       }
+      if (usageOwner && value.usage_policy) {
+        metadata.acquisition_available = value.usage_policy.acquisition_available === true;
+        metadata.acquisition_unavailable_reason = value.usage_policy.reason;
+      } else if (!usageOwner && value.traversal_remaining && value.traversal_allowance_id === metadata.traversal_allowance_id) {
+        metadata.traversal_remaining = value.traversal_remaining;
+        metadata.acquisition_available = metadata.traversal_allowance_enabled === true && value.traversal_remaining.browse > 0 && value.traversal_remaining.total > 0;
+        if (!metadata.acquisition_available) metadata.acquisition_unavailable_reason = 'Acquisition is unavailable because the captured allowance is consumed. Received results remain available locally.';
+      }
       run = {...value, result_cursor: pageValue.result_cursor}; rows = received; wantedPages = loadedPages; bindLease(value); coverage(value); renderCards(); lastRead = Date.now();
       if (view === 'single') renderSingle();
-      if (!quiet) message(value.running ? 'Hunting… Stop remains available independently.' : value.error ? 'The Hunt ended with limited results: ' + value.error : 'Received results are ready. Review them locally or explicitly continue acquisition when available.', Boolean(value.error));
+      if (!quiet || wasRunning && !value.running) message(value.running ? 'Hunting… Stop remains available independently.' : value.error ? 'The Hunt ended with limited results: ' + value.error : 'Received results are ready. Review them locally or explicitly continue acquisition when available.', Boolean(value.error));
       remember();
     } catch (error) {
       if (active(token) && serial === requestId) {
@@ -259,11 +358,20 @@
   async function availability() {
     if (busy || !authority()) return;
     const token = epoch;
-    try { metadata = await request(api); if (!authority() || token !== epoch) return; message(ready() ? 'Choose Singles, Lots or Both, then Hunt. No goal or card entry is needed.' : metadata.acquisition_unavailable_reason || 'Hunt is unavailable: no authorized acquisition allowance is active. Existing Shopping tools remain available.'); buttons(); }
+    try {
+      const value = await request(api); if (!authority() || token !== epoch) return;
+      metadata = value;
+      if (usageOwner) {
+        const policy = value.usage_policy || await request(api + 'usage/');
+        if (!authority() || token !== epoch) return;
+        renderUsage(policy);
+      }
+      message(ready() ? 'Choose Singles, Lots or Both, then Hunt. No goal or card entry is needed.' : usageOwner && usagePolicy?.reason || metadata.acquisition_unavailable_reason || 'Hunt is unavailable: choose your usage settings when available. Existing Shopping tools remain available.'); buttons();
+    }
     catch (error) { if (authority() && token === epoch) { message(error.message, true); buttons(); } }
   }
   async function start(continuation = false) {
-    if (busy || reading || !authority() || continuation && (!run?.continuation_cursor || $('hunter-continue').disabled) || !continuation && !ready()) return;
+    if (busy || reading || usageBusy || !authority() || continuation && (!run?.continuation_cursor || $('hunter-continue').disabled) || !continuation && !ready()) return;
     const old = run;
     if (continuation) { review.clear(); rows = []; $('hunter-cards').replaceChildren(); view = 'results'; }
     else { clearContent(); stopped = false; wantedPages = 1; returnContext = null; }
@@ -339,7 +447,7 @@
       if (!active(token) || serial !== detailEpoch) return;
       detailIntent = {runId, resultIds};
       $('hunter-detail-status').textContent = value.dispatch_allowed ? 'Plan prepared. Load official details is a separate explicit acquisition within the captured allowance.' : value.reason || 'Official details are unavailable without an authorized captured allowance.';
-      $('hunter-detail-load').disabled = value.dispatch_allowed !== true;
+      $('hunter-detail-load').disabled = value.dispatch_allowed !== true || usageOwner && !ready();
     } catch (error) { if (active(token) && serial === detailEpoch) $('hunter-detail-status').textContent = error.message; }
     finally { if (serial === detailEpoch) detailBusy = false; }
   }
@@ -386,7 +494,13 @@
     if (run && authority()) await readResults({quiet: true});
   }
   $('hunter-form').addEventListener('submit', event => { event.preventDefault(); start(); });
-  $('hunter-stop').addEventListener('click', stop); $('hunter-recheck').addEventListener('click', availability);
+  if (usageOwner) {
+    $('hunter-usage-form').addEventListener('submit', event => { event.preventDefault(); saveUsage(); });
+    $('hunter-usage-pause').addEventListener('click', () => saveUsage(true));
+    $('hunter-usage-expiry-mode').addEventListener('change', expiryMode);
+    renderUsage(usagePolicy, true);
+  }
+  $('hunter-stop').addEventListener('click', stop); $('hunter-recheck').addEventListener('click', () => run ? readResults() : availability());
   $('hunter-continue').addEventListener('click', () => start(true)); $('hunter-local-next').addEventListener('click', () => readResults({more: true}));
   $('hunter-filter').addEventListener('change', () => { renderCards(); remember(); }); $('hunter-scope').addEventListener('change', () => { buttons(); if (run) message('Scope changed. Start a new explicit Hunt to use it; received results keep the captured scope.'); });
   $('hunter-detail-load').addEventListener('click', loadDetails); $('hunter-detail-stop').addEventListener('click', stopDetails);

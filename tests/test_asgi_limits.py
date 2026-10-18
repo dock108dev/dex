@@ -184,7 +184,7 @@ def test_real_django_ordinary_public_request_keeps_security_headers(env):
     _, sent = exchange(asgi.get_asgi_application(), [chunk(b"")], method="GET")
     assert sent[0]["status"] == 200
     headers = {key.lower(): value for key, value in sent[0]["headers"]}
-    assert headers[b"cache-control"] == b"no-store"
+    assert b"no-store" in {value.strip() for value in headers[b"cache-control"].split(b",")}
     assert b"Content-Security-Policy".lower() in headers
 
 

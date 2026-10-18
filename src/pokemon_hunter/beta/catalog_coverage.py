@@ -93,7 +93,7 @@ def coverage(actor, profile="current"):
         p = a["package"]
         if published and p["schema_version"] == "dex-sealed-v1":
             return active_members
-        if published and p["schema_version"] == "dex-catalog-v1":
+        if published and p["schema_version"] in {"dex-catalog-v1", "dex-catalog-additions-v1"}:
             provider = p["provider"] + ":" + p["language"]
             return {
                 c["external_id"]: catalog_members.get((provider, c["external_id"]), "unknown")
@@ -255,7 +255,7 @@ def indexed_eras():
                 if pub.get("state") != "published":
                     continue
                 p = a["package"]
-                if p.get("schema_version") == "dex-catalog-v1":
+                if p.get("schema_version") in {"dex-catalog-v1", "dex-catalog-additions-v1"}:
                     external[p["provider"] + ":" + p["language"], p["set_key"]] = a["era"]
     return {
         m["internal_id"]: external[m["provider"], m["external_id"]]

@@ -36,6 +36,8 @@ def parse(text):
                 i += 1
                 if k[0] in "\"'":
                     k = ast.literal_eval(k)
+                if k in d:
+                    raise ValueError("Duplicate literal object key")
                 if ts[i] == ":":
                     i += 1
                     d[k] = val()

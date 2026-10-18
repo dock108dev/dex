@@ -45,6 +45,8 @@ class Assessment(BaseModel):
     source_status: Literal["usable", "unavailable"] = "usable"
     package: dict
     numbered_mappings: dict[str, str] = Field(default_factory=dict)
+    # Legacy target/frozen-goal assessments keep their original denominator.
+    catalog_policy: Literal["vintage-251", "english-physical-all"] = "vintage-251"
 
 
 class Batch(BaseModel):
@@ -134,11 +136,15 @@ def assess(raw):
                 )
             )
         memberships = {m["printing_id"]: m["status"] for m in p["memberships"]}
-    elif p.get("schema_version") == "dex-catalog-v1":
+    elif p.get("schema_version") in {"dex-catalog-v1", "dex-catalog-additions-v1"}:
         if a["set_id"] != f"{p['provider']}:{p['language']}:{p['set_key']}" or a["language"] != p["language"]:
             raise ValueError("Assessment and package identity conflict")
         if p["source_sha256"] != a["source_sha256"]:
             raise ValueError("Assessment source hash conflict")
+        if p["schema_version"] == "dex-catalog-additions-v1":
+            from .catalog_additions import validate
+
+            p = validate(p)
         cards = [
             dict(
                 c,
@@ -149,7 +155,7 @@ def assess(raw):
                     c.get("metadata", {}).get("supertype"), "unknown"
                 ),
             )
-            for c in p["cards"]
+            for c in p.get("enumeration", p["cards"])
         ]
         memberships = {}
     else:
@@ -181,6 +187,8 @@ def assess(raw):
     for c in unique.values():
         n = c["pokemon_dex"]
         if c["category"] in {"trainer", "energy"} and n is None:
+            if a["catalog_policy"] == "english-physical-all":
+                target.append(c)
             continue
         if c["category"] != "pokemon" or n is None:
             exceptions.append(dict(identity=c["external_id"], reason="unresolved-canonical-mapping"))
@@ -190,7 +198,7 @@ def assess(raw):
         except ValueError:
             exceptions.append(dict(identity=c["external_id"], reason="invalid-canonical-mapping"))
             continue
-        if n > 251:
+        if n > 251 and a["catalog_policy"] == "vintage-251":
             excluded.append(c["external_id"])
             continue
         target.append(c)
@@ -259,7 +267,7 @@ def assess(raw):
         distribution=dict(distribution) if scope else {},
         exceptions=exceptions,
         excluded_above251=excluded,
-        species=sorted({c["pokemon_dex"] for c in target}) if scope else [],
+        species=sorted({c["pokemon_dex"] for c in target if c["pokemon_dex"] is not None}) if scope else [],
         target_records=target if scope else [],
         enumeration_complete=complete,
         fatal=fatal,
@@ -273,6 +281,8 @@ def prepared(a, report):
         return None
     if p["schema_version"] == "dex-sealed-v1":
         # Existing sealed schema preserves non-target source metadata and exact bridges.
+        return p
+    if p["schema_version"] == "dex-catalog-additions-v1":
         return p
     if p.get("reconcile_legacy_set"):
         return p
@@ -288,7 +298,9 @@ def prepared(a, report):
     p["coverage"] = "partial"
     p["expected_count"] = max(p["expected_count"], len(p["cards"]))
     for c in p["cards"]:
-        c["metadata"]["dex_eligible"] = True
+        c["metadata"]["dex_eligible"] = (
+            c["metadata"]["supertype"] == "Pokémon" and c["metadata"]["pokemon_dex"] is not None
+        )
     return p
 
 
@@ -304,6 +316,8 @@ def publish_one(actor, a, report):
     if prior_state == "preview":
         service.transition(actor, op["id"], "verify")
     if prior_state in {"preview", "verified"}:
+        service.transition(actor, op["id"], "publish")
+    elif prior_state == "rolled-back" and p["schema_version"] == "dex-catalog-additions-v1":
         service.transition(actor, op["id"], "publish")
     elif prior_state != "published":
         raise inv.Conflict("Rolled-back child needs a fresh reviewed source version")

@@ -1,7 +1,8 @@
 """Real Chromium Hunter qualification on disposable, explicitly fabricated state.
 
 No customer installation or credentials are read. The test child replaces provider
-transport with an in-process fake and uses its own finite engineering allowance.
+transport with an in-process fake and deliberately selects ordinary usage through
+the owner settings on its disposable root.
 Controlled browser responses cover races and lifecycle changes that are awkward
 to schedule through a real backend. Neither evidence class is genuine listings.
 """
@@ -11,6 +12,7 @@ import asyncio
 import hashlib
 import json
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -64,6 +66,19 @@ def package_binding():
     )
 
 
+def contrast_ratio(foreground, background):
+    def luminance(value):
+        channels = [float(channel) / 255 for channel in re.findall(r"[\d.]+", value)[:3]]
+        linear = [
+            channel / 12.92 if channel <= 0.04045 else ((channel + 0.055) / 1.055) ** 2.4
+            for channel in channels
+        ]
+        return sum(channel * weight for channel, weight in zip(linear, (0.2126, 0.7152, 0.0722), strict=True))
+
+    low, high = sorted((luminance(foreground), luminance(background)))
+    return (high + 0.05) / (low + 0.05)
+
+
 def prepare(root, source):
     """Create the existing four-printing fixture; never accept an existing root."""
     if root.exists() or source.exists():
@@ -109,16 +124,6 @@ def serve(root, output, port):
 
     # This assertion is before the test-only patch: source configuration stays off.
     assert hunter_budget.TRAVERSAL_ALLOWANCE is None
-    allowance = hunter_budget.TraversalAllowance(
-        "hunt-04-ui-engineering-only",
-        oauth=1,
-        browse=90,
-        detail=0,
-        total=91,
-        auction=45,
-        buy_it_now=45,
-        lots=91,
-    )
     calls = []
 
     class FakeTransport:
@@ -174,7 +179,6 @@ def serve(root, output, port):
             pass
 
     with (
-        patch.object(hunter_budget, "TRAVERSAL_ALLOWANCE", allowance),
         patch.object(hunter, "Transport", FakeTransport),
         patch.object(
             shopping,
@@ -318,6 +322,8 @@ def exercise(base, root, output, report):
                     state["review"] = value
                 if value.get("reviews"):
                     state["review"] = value["reviews"][0]
+                if "configured" in value:
+                    state["policy"] = value
                 if is_local and response.ok:
                     state["last"] = value
                 if mode == "unavailable" and path == "/api/shopping/hunter/" and not query:
@@ -384,11 +390,11 @@ def exercise(base, root, output, report):
         page = context.new_page()
         page.on("pageerror", lambda error: errors.append(str(error)))
 
-        def load(mode="real"):
+        def load(mode="real", enabled=True):
             state["mode"] = mode
             page.goto(base + "/shopping/hunter/")
             expect(page.locator("#hunter-app")).to_be_visible()
-            if mode not in {"wrong-authority", "missing-authority", "unavailable"}:
+            if enabled and mode not in {"wrong-authority", "missing-authority", "unavailable"}:
                 expect(page.locator("#hunter-start")).to_be_enabled()
 
         def start(scope="singles"):
@@ -433,10 +439,46 @@ def exercise(base, root, output, report):
               .filter(e=>{const r=e.getBoundingClientRect();return r.width&& (r.right>innerWidth+1||r.left< -1)})
               .map(e=>({tag:e.tagName,text:e.textContent.slice(0,80),right:e.getBoundingClientRect().right}))""")
             assert page.evaluate("document.documentElement.scrollWidth<=innerWidth"), (name, overflow[:10])
+            if name == "unavailable":
+                colors = page.locator(".hunter-heading h1,.hunter-heading nav a").evaluate_all("""elements=>elements.map(el=>{
+                  let parent=el,background='rgb(255,255,255)';
+                  while(parent){const paint=getComputedStyle(parent).backgroundColor;
+                    if(paint!=='rgba(0, 0, 0, 0)'&&paint!=='transparent'){background=paint;break;}parent=parent.parentElement;}
+                  return {text:el.textContent,foreground:getComputedStyle(el).color,background};
+                })""")
+                for color in colors:
+                    color["contrast"] = round(contrast_ratio(color["foreground"], color["background"]), 3)
+                    assert color["contrast"] >= 4.5, color
+                report["heading_and_navigation_contrast"] = colors
+            if name.startswith(("results-", "lot-review-")):
+                target = "hunter-review" if name.startswith("lot-review-") else "hunter-results"
+                page.evaluate(
+                    "id=>scrollTo(0,document.getElementById(id).getBoundingClientRect().top+scrollY-16)",
+                    target,
+                )
+            elif name.startswith("settings-"):
+                page.locator("#hunter-usage-enabled").scroll_into_view_if_needed()
             page.screenshot(path=str(output / ("engineering-hunter-" + name + ".png")), full_page=False)
             report.setdefault("layouts", []).append(
                 dict(state=name, width=width, doubled=doubled, overflow=False)
             )
+
+        def settings(enabled, per_hunt, daily, timezone, recurring):
+            page.locator("#hunter-usage-settings").evaluate("el=>el.open=true")
+            page.locator("#hunter-usage-enabled").select_option(str(enabled).lower())
+            page.locator("#hunter-usage-per-hunt").fill(str(per_hunt))
+            page.locator("#hunter-usage-daily").fill(str(daily))
+            page.locator("#hunter-usage-timezone").select_option(timezone)
+            page.locator("#hunter-usage-recurring").select_option(str(recurring).lower())
+            page.locator("#hunter-usage-expiry-mode").select_option("none")
+            with page.expect_response(
+                lambda response: (
+                    response.url == base + "/api/shopping/hunter/usage/" and response.request.method == "POST"
+                )
+            ):
+                page.locator("#hunter-usage-save").click()
+            expect(page.locator("#hunter-usage-feedback")).to_contain_text("Usage settings saved")
+            expect(page.locator("#hunter-usage-save")).to_be_enabled()
 
         try:
             page.goto(base + "/login/")
@@ -445,6 +487,48 @@ def exercise(base, root, output, report):
             page.get_by_role("button", name="Sign in", exact=True).click()
             expect(page).to_have_url(base + "/cards/")
             before = protected_state(root)
+            load(enabled=False)
+            expect(page.locator("#hunter-start")).to_be_disabled()
+            expect(page.locator("#hunter-usage-settings")).to_have_attribute("open", "")
+            for key in ("enabled", "per-hunt", "daily", "timezone", "recurring", "expiry-mode"):
+                expect(page.locator("#hunter-usage-" + key)).to_have_value("")
+            assert not (root / "hunter-policy.json").exists()
+            assert not (output / "fake-transport.json").exists()
+            capture("settings-unconfigured-320", 320)
+            capture("settings-unconfigured-320-text2x", 320, doubled=True)
+            passed(
+                "unconfigured ordinary owner settings are blank and Hunt stays disabled without any provider dispatch",
+                "real settings API on disposable engineering root",
+            )
+            load(enabled=False)
+            settings(True, 6, 20, "America/New_York", False)
+            expect(page.locator("#hunter-start")).to_be_enabled()
+            expect(page.locator("#hunter-usage-capacity")).to_contain_text("20 of 20")
+            expect(page.locator("#hunter-usage-capacity")).to_contain_text("does not renew")
+            page.locator("#hunter-usage-pause").click()
+            expect(page.locator("#hunter-usage-feedback")).to_contain_text("Acquisition paused")
+            expect(page.locator("#hunter-start")).to_be_disabled()
+            expect(page.locator("#hunter-usage-pause")).to_be_disabled()
+            settings(False, 2, 7, "UTC", True)
+            expect(page.locator("#hunter-start")).to_be_disabled()
+            expect(page.locator("#hunter-usage-per-hunt")).to_have_value("2")
+            expect(page.locator("#hunter-usage-daily")).to_have_value("7")
+            expect(page.locator("#hunter-usage-capacity")).to_contain_text("Next daily window")
+            settings(True, 2, 7, "UTC", True)
+            expect(page.locator("#hunter-start")).to_be_enabled()
+            expect(page.locator("#hunter-usage-capacity")).to_contain_text("7 of 7")
+            assert state["policy"]["revision"] == 4
+            assert state["policy"]["used"] == 0
+            assert not (output / "fake-transport.json").exists()
+            capture("settings-selected-320", 320)
+            capture("settings-selected-320-text2x", 320, doubled=True)
+            passed(
+                "owner explicitly selects limits, pauses, reduces limits, changes timezone and resumes through actual settings APIs; no acquisition occurs",
+                "real policy/accounting on disposable engineering root",
+            )
+            load()
+            settings(True, 15, 1000, "America/New_York", True)
+            page.locator("#hunter-usage-settings").evaluate("el=>el.open=false")
             load("unavailable")
             expect(page.locator("#hunter-status")).to_contain_text("unavailable", ignore_case=True)
             capture("unavailable")
@@ -606,10 +690,10 @@ def exercise(base, root, output, report):
             page.get_by_role("button", name="Analyze lot", exact=True).first.click()
             expect(page.locator("#hunter-review")).to_be_visible()
             page.get_by_role("button", name="Additional official details…", exact=True).click()
-            expect(page.locator("#hunter-detail-status")).to_contain_text("allowance")
-            expect(page.locator("#hunter-detail-load")).to_be_disabled()
+            expect(page.locator("#hunter-detail-status")).to_contain_text("separate explicit acquisition")
+            expect(page.locator("#hunter-detail-load")).to_be_enabled()
             assert post_count("/analyze-lot-details/") == 0
-            passed("official detail intent is explicit and grants no execution capacity")
+            passed("official detail intent reads selected ordinary capacity and does not execute its plan")
             state["mode"] = "detail-running"
             page.get_by_role("button", name="Additional official details…", exact=True).click()
             expect(page.locator("#hunter-detail-load")).to_be_enabled()
@@ -804,6 +888,9 @@ def run(output):
         external_provider_operations=0,
         checks=[],
     )
+    report["source_hashes"] = {
+        name: hashlib.sha256((PROJECT / name).read_bytes()).hexdigest() for name in SOURCE_FILES
+    }
     try:
         with tempfile.TemporaryDirectory(prefix="dex-hunter-ui-engineering-") as temporary:
             temporary = Path(temporary)
@@ -888,9 +975,13 @@ def run(output):
             assert json.loads((output / "provider-calls.json").read_text())["calls"] == 0
             report["blocked_provider_transport_attempts"] = 0
             report["fake_transport_operations"] = json.loads((output / "fake-transport.json").read_text())
-            report["source_hashes"] = {
+            after_source_hashes = {
                 name: hashlib.sha256((PROJECT / name).read_bytes()).hexdigest() for name in SOURCE_FILES
             }
+            assert report["source_hashes"] == after_source_hashes, (
+                "Source changed during browser qualification"
+            )
+            report["source_stable_during_verification"] = True
         report["status"] = "PASS"
     except Exception:
         report["failure"] = traceback.format_exc()

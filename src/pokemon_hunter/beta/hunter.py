@@ -25,6 +25,8 @@ from . import (
     ebay_hunts,
     hunter_budget,
     hunter_catalog,
+    hunter_coverage,
+    hunter_policy,
     hunter_query,
     hunter_ranking,
     hunter_traversal,
@@ -170,11 +172,15 @@ def _expire(run_id):
 
 
 def metadata(actor, session_key):
+    from .hunter_installed import current_allowance
+
     owner = discovery._owner(actor, session_key)
-    allowance = hunter_budget.TRAVERSAL_ALLOWANCE
+    allowance = current_allowance(actor)
     capacity = hunter_budget.remaining_traversal(owner[0], allowance=allowance)
     available = allowance is not None and capacity["browse"] > 0 and capacity["total"] > 0
+    usage = hunter_policy.status(actor) if getattr(actor, "role", None) == "owner" else None
     return {
+        "usage_policy": usage,
         "allowance": hunter_budget.ALLOWANCE,
         "remaining": hunter_budget.remaining(owner[0]),
         "traversal_allowance_enabled": allowance is not None,
@@ -200,6 +206,8 @@ def metadata(actor, session_key):
 
 
 def start(actor, session_key, raw, *, auth_session=None):
+    from .hunter_installed import check_dispatch, current_allowance
+
     owner = discovery._owner(actor, session_key)
     if (
         not isinstance(raw, dict)
@@ -210,7 +218,7 @@ def start(actor, session_key, raw, *, auth_session=None):
             "Hunt takes only a singles, lots or both scope; no filters, paging or budget overrides"
         )
     plan = hunter_traversal.build_plan(datetime.now(UTC), scope=raw.get("scope", "singles"))
-    allowance = hunter_budget.TRAVERSAL_ALLOWANCE
+    allowance = current_allowance(actor)
     capacity = hunter_budget.remaining_traversal(owner[0], allowance=allowance)
     if allowance is None or capacity["browse"] < 1 or capacity["total"] < 1:
         raise ValueError("No authorized traversal allowance remains; the HUNT-01 allowance stays consumed")
@@ -232,9 +240,15 @@ def start(actor, session_key, raw, *, auth_session=None):
         allowance=allowance,
         action_counts={},
     )
+    hunter_policy.bind(run, actor)
+    check_dispatch(run)
     with _lock:
         for old in _runs.values():
-            if old.owner == owner and old.state in {"queued", "running"}:
+            if (
+                type(run.allowance) is not hunter_policy.OrdinaryAllowance
+                and old.owner == owner
+                and old.state in {"queued", "running"}
+            ):
                 with old.lock:
                     old.cancel.set()
                     old.raws.clear()
@@ -259,6 +273,8 @@ def _launch(run, actor, credentials):
 
 
 def continue_run(actor, session_key, run_id, raw):
+    from .hunter_installed import current_allowance
+
     run = _lookup(actor, session_key, run_id)
     if not isinstance(raw, dict) or set(raw) != {"cursor"}:
         raise ValueError("Continue takes only the captured continuation cursor")
@@ -268,6 +284,8 @@ def continue_run(actor, session_key, run_id, raw):
         expected = run.traversal.cursor(run.next_index)
         if expected is None or raw["cursor"] != expected:
             raise ValueError("The continuation cursor is repeated, incompatible or nonadvancing")
+        if current_allowance(actor, existing=run.allowance) is None:
+            raise ValueError("The captured installed Hunter authority is unavailable")
         remaining = hunter_budget.remaining_traversal(run.owner[0], allowance=run.allowance)
         if remaining["browse"] < 1 or remaining["total"] < 1:
             raise ValueError("The authorized traversal allowance is consumed")
@@ -315,9 +333,12 @@ def status(actor, session_key, run_id, *, cursor=None):
     run = _lookup(actor, session_key, run_id)
     with run.lock:
         result = _summary(run)
+        if type(run.allowance) is hunter_policy.OrdinaryAllowance:
+            result["usage_policy"] = hunter_policy.status(actor)
         if run.cancel.is_set() or run.state != "complete":
             return result
         raws = deepcopy(run.raws)
+        snapshot_next_index = run.next_index
     now = datetime.now(UTC)
     eligible, rejected = [], []
     for raw in raws:
@@ -383,7 +404,11 @@ def status(actor, session_key, run_id, *, cursor=None):
         store.verified(actor)
     with run.lock:
         discovery._acquisition_timeout(run)
+        if run.cancel.is_set() or run.state != "complete":
+            return _summary(run)
         if not run.cancel.is_set() and run.state == "complete":
+            if run.raws != raws or run.next_index != snapshot_next_index:
+                raise collection.Conflict("Hunt changed while preparing local results; read again")
             revision = hashlib.sha256(json.dumps(rows, sort_keys=True, default=str).encode()).hexdigest()
             offset = 0
             if cursor is not None:
@@ -394,6 +419,12 @@ def status(actor, session_key, run_id, *, cursor=None):
                 if cursor not in offsets:
                     raise InvalidResultCursor("Choose a valid local result cursor")
                 offset = offsets[cursor]
+            result["coverage"] = {**coverage, "unique": len(raws), "results": len(rows)}
+            result["coverage_diagnostics"] = hunter_coverage.summarize(
+                rows,
+                fetched=run.coverage_counts.get("fetched", run.counts.get("summary_count")),
+                retained=len(raws),
+            )
             selected, used = [], len(json.dumps(result, default=str).encode()) + 4096
             for row in rows[offset : offset + 200]:
                 row_bytes = len(json.dumps(row, default=str, ensure_ascii=True).encode())
@@ -423,7 +454,6 @@ def status(actor, session_key, run_id, *, cursor=None):
                 "total": len(rows),
                 "remaining": len(rows) - end,
             }
-            result["coverage"] = {**coverage, "unique": len(raws), "results": len(rows)}
     return result
 
 

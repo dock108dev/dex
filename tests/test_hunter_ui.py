@@ -49,3 +49,10 @@ def test_protected_state_detects_collection_goal_and_source_right_changes(tmp_pa
     assert before["collection_goals"] == after["collection_goals"]
     (tmp_path / "price-contracts.json").write_text('{"engineering-fixture":"withdrawn"}')
     assert script.protected_state(tmp_path)["price-contracts.json"] != after["price-contracts.json"]
+
+
+def test_computed_color_contrast_gate_detects_invisible_navigation():
+    script = harness()
+    assert script.contrast_ratio("rgb(0, 0, 0)", "rgb(255, 255, 255)") == pytest.approx(21)
+    assert script.contrast_ratio("rgb(255, 255, 255)", "rgb(245, 246, 248)") < 1.1
+    assert script.contrast_ratio("rgb(156, 28, 48)", "rgb(245, 246, 248)") >= 4.5

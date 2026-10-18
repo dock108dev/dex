@@ -244,7 +244,13 @@ def _matches(candidates, clues):
     candidates = discovery_matching.literal_candidates(candidates, clues["text"])
     proposed = [p for p in candidates if discovery_matching.evidence(p, clues)["matched"]]
     fitting = [p for p in proposed if not _identity_conflicts(p, clues)]
-    return fitting or proposed
+    fitting = fitting or proposed
+    # A family is one numbered card, but seller clues must establish a particular
+    # child before its independent reference can be compared. Broad offers remain
+    # ambiguous; no parent price or physical attribute is inherited.
+    from .catalog_variants import seller_candidates
+
+    return seller_candidates(fitting, clues)
 
 
 def _approx_matches(candidates, clues):
@@ -268,6 +274,8 @@ def _identity(printing, clues, artwork=None):
         grader=clues["grader"],
         grade=clues["grade"],
         verified=False,
+        parent_printing_id=printing.get("parent_printing_id"),
+        variant_label=printing.get("variant_label"),
     )
 
 
@@ -383,6 +391,7 @@ def _project(
     records_for=None,
     artwork=None,
     include_unsupported=False,
+    identity_issues_for=None,
 ):
     """Shared arithmetic over internally authorized catalog/reference batches.
 
@@ -407,7 +416,11 @@ def _project(
         literal = [
             candidate for candidate in candidates if discovery_matching.evidence(candidate, clues)["matched"]
         ]
-        claim_text = discovery_matching.without_names(literal, clues["text"]) if literal else clues["text"]
+        claim_text = (
+            discovery_matching.without_sets(literal, discovery_matching.without_names(literal, clues["text"]))
+            if literal
+            else clues["text"]
+        )
         if literal:
             clues = _clues(raw, claim_text=claim_text)
         kind = product_kind(claim_text)
@@ -418,6 +431,8 @@ def _project(
         p = matched[0] if len(matched) == 1 and kind == "single" else None
         evidence = discovery_matching.evidence(p, clues) if p else None
         identity_issues = list(clues["conflicts"])
+        if identity_issues_for:
+            identity_issues.extend(identity_issues_for(candidates, clues))
         if p:
             identity_issues.extend(_identity_conflicts(p, clues))
         elif not matched:

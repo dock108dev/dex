@@ -44,6 +44,7 @@ class Element {
     if (key === 'id') this.id = String(value);
     if (key === 'class') this.className = String(value);
     if (key === 'type') this.type = String(value);
+    if (key === 'value') this.value = String(value);
     if (key.startsWith('data-')) this.dataset[key.slice(5).replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())] = String(value);
   }
   getAttribute(key) {return key === 'id' ? this.id || null : this.attributes[key] ?? null;}
@@ -69,7 +70,7 @@ class Element {
   }
   async click() {if (!this.disabled) await this.emit('click');}
 }
-function setup(responder, {metadata = META, saved = null} = {}) {
+function setup(responder, {metadata = META, saved = null, usagePolicy} = {}) {
   const calls = [], events = {}, docEvents = {}, historyStates = [], timeouts = new Map(), intervals = new Map(), reviewCalls = [];
   let time = 1800000000000, timerId = 0;
   const doc = {hidden: false, createElement: tag => new Element(tag, doc),
@@ -81,10 +82,11 @@ function setup(responder, {metadata = META, saved = null} = {}) {
     'hunter-local-next', 'hunter-continue', 'hunter-next-note', 'hunter-status', 'hunter-cards', 'hunter-results',
     'hunter-review', 'hunter-details', 'hunter-progress', 'hunter-window', 'hunter-coverage', 'hunter-limitations',
     'hunter-accounting', 'hunter-filter', 'hunter-results-title', 'hunter-detail-load', 'hunter-detail-stop', 'hunter-detail-status'];
+  if (usagePolicy !== undefined) ids.push('hunter-usage-form', 'hunter-usage-status', 'hunter-usage-capacity', 'hunter-usage-settings', 'hunter-usage-enabled', 'hunter-usage-per-hunt', 'hunter-usage-daily', 'hunter-usage-timezone', 'hunter-usage-recurring', 'hunter-usage-expiry-mode', 'hunter-usage-expiry-label', 'hunter-usage-expiry', 'hunter-usage-save', 'hunter-usage-pause', 'hunter-usage-feedback');
   const nodes = new Map(ids.map(id => {const node = doc.createElement(id.includes('form') ? 'form' : id.includes('scope') || id.includes('filter') ? 'select' : id.match(/start|stop|recheck|next|continue|load/) ? 'button' : 'section'); node.id = id; return [id, node];}));
   doc.body.append(nodes.get('hunter-app'));
   for (const [id, node] of nodes) if (id !== 'hunter-app') nodes.get('hunter-app').append(node);
-  nodes.get('hunter-initial').textContent = JSON.stringify({metadata, authority: auth});
+  nodes.get('hunter-initial').textContent = JSON.stringify({metadata, authority: auth, ...(usagePolicy === undefined ? {} : {usage_settings: {owner: true, policy: usagePolicy}})});
   nodes.get('hunter-scope').value = 'both'; nodes.get('hunter-filter').value = 'all';
   nodes.get('hunter-detail-stop').disabled = true; nodes.get('hunter-detail-load').disabled = true;
   const csrf = doc.createElement('input'); csrf.setAttribute('name', 'csrfmiddlewaretoken'); csrf.value = 'fixture-csrf'; nodes.get('hunter-form').append(csrf);
@@ -102,7 +104,10 @@ function setup(responder, {metadata = META, saved = null} = {}) {
       const body = options.body === undefined ? undefined : JSON.parse(options.body);
       calls.push({url, body, options});
       const value = await responder(url, body, calls.length);
-      if (value?.httpStatus) return {status: value.httpStatus, ok: false, json: async () => clone(value.value || {})};
+      if (value?.httpStatus) return {status: value.httpStatus, ok: false, json: async () => {
+        if (value.nonJson) throw new SyntaxError('Controlled HTML error response');
+        return clone(value.value || {});
+      }};
       return {status: 200, ok: true, json: async () => clone({...value, authority: value?.authority === null ? null : value?.authority || auth})};
     },
     DexHunterReview: {mount(options) {context.reviewOptions = options; return review;}},
@@ -119,10 +124,80 @@ const cases = [];
 async function check(name, run) {await run(); cases.push({name, status: 'passed'});}
 const ordinary = (url, body) => body && url.endsWith('/stop/') ? projection({state: 'stopped'}) : body ? projection() : url.endsWith('/hunter/') ? META : projection({results: [row()]});
 (async () => {
+  await check('ordinary unconfigured settings select no defaults and never dispatch on incomplete save', async () => {
+    const policy = {configured: false, enabled: false, remaining: 0, revision: 0, reason: 'Choose your Hunter usage limits to enable acquisition.'};
+    const t = setup(() => ({acquisition_available: false, usage_policy: policy}), {metadata: {acquisition_available: false}, usagePolicy: policy});
+    await t.ready(); assert(t.nodes.get('hunter-start').disabled);
+    for (const key of ['enabled', 'per-hunt', 'daily', 'timezone', 'recurring', 'expiry-mode']) assert.equal(t.nodes.get('hunter-usage-' + key).value, '');
+    await t.nodes.get('hunter-usage-form').emit('submit');
+    assert(t.calls.every(call => call.body === undefined)); assert(t.nodes.get('hunter-usage-feedback').textContent.includes('Choose'));
+    assert(t.nodes.get('hunter-usage-settings').open);
+  });
+  await check('deliberate settings select limits without acquisition and immediate Pause uses saved limits', async () => {
+    let policy = {configured: false, enabled: false, remaining: 0, revision: 0};
+    const t = setup((url, body) => {
+      if (url.endsWith('/usage/') && body) { policy = {...body, configured: true, revision: body.revision + 1, used: 0, remaining: body.enabled ? body.daily_limit : 0, reason: body.enabled ? null : 'Hunter acquisition is paused.'}; return policy; }
+      return {acquisition_available: policy.enabled, usage_policy: policy};
+    }, {usagePolicy: policy});
+    await t.ready();
+    for (const [key, value] of Object.entries({enabled: 'true', 'per-hunt': '4', daily: '7', timezone: 'America/New_York', recurring: 'true', 'expiry-mode': 'none'})) t.nodes.get('hunter-usage-' + key).value = value;
+    await t.nodes.get('hunter-usage-form').emit('submit');
+    const saved = t.calls.find(call => call.body)?.body;
+    assert.deepEqual(Object.keys(saved).sort(), ['enabled', 'per_hunt_limit', 'daily_limit', 'timezone', 'recurring', 'expires_at', 'revision'].sort());
+    assert.equal(saved.per_hunt_limit, 4); assert.equal(saved.daily_limit, 7); assert.equal(saved.revision, 0);
+    assert(!t.nodes.get('hunter-start').disabled); assert(t.nodes.get('hunter-usage-capacity').textContent.includes('7 of 7'));
+    t.nodes.get('hunter-usage-daily').value = '1000'; await t.click('hunter-usage-pause');
+    const paused = t.calls.filter(call => call.body).at(-1).body;
+    assert.equal(paused.daily_limit, 7); assert.equal(paused.enabled, false); assert.equal(paused.revision, 1);
+    assert(t.nodes.get('hunter-start').disabled); assert(t.calls.filter(call => call.body).every(call => call.url.endsWith('/usage/')));
+  });
+  await check('unavailable ordinary accounting stays readable without invented numeric capacity', async () => {
+    const policy = {configured: true, enabled: false, per_hunt_limit: null, daily_limit: null, timezone: null, remaining: 0, revision: 0, reason: 'Hunter usage settings or accounting are unavailable.'};
+    const t = setup(() => ({acquisition_available: false, usage_policy: policy}), {usagePolicy: policy});
+    await t.ready(); assert(t.nodes.get('hunter-start').disabled);
+    assert(t.nodes.get('hunter-usage-capacity').textContent.includes('cannot be read safely'));
+    assert(!t.nodes.get('hunter-usage-capacity').textContent.includes('null'));
+    assert.equal(t.nodes.get('hunter-usage-per-hunt').value, '');
+  });
+  await check('per-Hunt exhaustion leaves a successive independent Hunt available within shared daily capacity', async () => {
+    const policy = {configured: true, enabled: true, acquisition_available: true, per_hunt_limit: 3, daily_limit: 7, timezone: 'America/New_York', recurring: false, expires_at: null, used: 3, remaining: 4, revision: 1};
+    const meta = {acquisition_available: true, usage_policy: policy, traversal_allowance_enabled: true, traversal_allowance_id: 'ordinary-policy', traversal_remaining: {browse: 3, total: 3}};
+    const t = setup((url, body) => !body && url.includes('run_id=') ? projection({results: [row()], usage_policy: policy, traversal_allowance_id: 'ordinary-policy', traversal_remaining: {browse: 0, total: 0}, continuation_blocked_reason: 'per_hunt_limit', has_next: true}) : !body && url.endsWith('/hunter/') ? meta : ordinary(url, body), {metadata: meta, usagePolicy: policy});
+    await t.ready(); await t.start();
+    assert(!t.nodes.get('hunter-start').disabled); assert(t.nodes.get('hunter-continue').disabled);
+    await t.start(); assert.equal(t.calls.filter(call => call.body && call.url.endsWith('/hunter/')).length, 2);
+    assert(t.nodes.get('hunter-usage-capacity').textContent.includes('4 of 7'));
+  });
+  await check('comparison coverage keeps exact-reference matches distinct from complete delivered comparisons', async () => {
+    const t = setup((url, body) => !body && url.includes('run_id=') ? projection({results: [row('incomplete', {hunt_status: 'priced', opportunity: {classification: 'comparable', scenarios: []}, comparison_diagnostics: {complete_delivered_comparison: false, reasons: ['Tax and other costs are unknown.']}})],
+      coverage: {comparable: 1}, coverage_diagnostics: {denominators: {fetched: 1, retained: 1, eligible_singles: 1, lots: 0, matched_identities: 1, admitted_references: 1, complete_comparisons: 0}, primary_outcomes: {priced: 1}, reason_counts: {unknown_costs: 1}, reason_labels: {unknown_costs: 'Unknown delivered costs'}}}) : ordinary(url, body));
+    await t.ready(); await t.start();
+    assert(t.nodes.get('hunter-cards').textContent.includes('Reference matched · costs incomplete'));
+    assert(t.nodes.get('hunter-cards').textContent.includes('Tax and other costs are unknown.'));
+    assert(t.nodes.get('hunter-accounting').textContent.includes('Complete delivered comparisons: 0'));
+    assert(t.nodes.get('hunter-accounting').textContent.includes('1 of 1 retained summaries'));
+    assert(t.nodes.get('hunter-accounting').textContent.includes('Exact reference matches (costs may be incomplete): 1'));
+  });
   await check('disabled acquisition is readable and sends no start or implicit provider action', async () => {
     const t = setup(() => ({acquisition_available: false, acquisition_unavailable_reason: 'No authorized allowance'}), {metadata: {acquisition_available: false}});
     await t.ready(); assert(t.nodes.get('hunter-start').disabled); assert(t.nodes.get('hunter-status').textContent.includes('No authorized allowance'));
     await t.start(); assert(t.calls.every(call => call.body === undefined));
+  });
+  await check('exhausted captured allowance disables another Hunt while preserving local reads', async () => {
+    for (const remaining of [{browse: 0, total: 5}, {browse: 1, total: 0}, {browse: 0, total: 0}]) {
+      const metadata = {...META, traversal_allowance_enabled: true, traversal_allowance_id: 'controlled-allowance', traversal_remaining: {browse: 2, total: 3}};
+      const t = setup((url, body) => !body && url.includes('run_id=') ? projection({results: [row()],
+        traversal_allowance_id: metadata.traversal_allowance_id, traversal_remaining: remaining}) :
+        !body && url.endsWith('/hunter/') ? metadata : ordinary(url, body), {metadata});
+      await t.ready(); assert(!t.nodes.get('hunter-start').disabled); await t.start();
+      assert(t.nodes.get('hunter-start').disabled); assert(t.doc.getElementById('hunter-result-fixture-single'));
+      const before = t.calls.length; await t.start(); assert.equal(t.calls.length, before);
+      await t.click('hunter-recheck'); assert.equal(t.calls.length, before + 1);
+      assert.equal(t.calls.at(-1).body, undefined); assert(t.calls.at(-1).url.includes('run_id=' + RUN));
+      assert(t.doc.getElementById('hunter-result-fixture-single'));
+      assert.equal(t.calls.filter(call => call.body && call.url.endsWith('/hunter/')).length, 1);
+      assert.equal(t.calls.filter(call => /continue|analyze-lot-details/.test(call.url)).length, 0);
+    }
   });
   await check('normal result rendering escapes seller text and reveal never acquires', async () => {
     const t = setup(ordinary); await t.ready(); await t.start();
@@ -154,6 +229,44 @@ const ordinary = (url, body) => body && url.endsWith('/stop/') ? projection({sta
     assert(t.doc.getElementById('hunter-result-new-rank')); assert(!t.doc.getElementById('hunter-result-old-rank'));
     assert.equal(t.calls.filter(call => call.body && call.url.endsWith('/hunter/')).length, 1);
     assert.equal(t.calls.filter(call => call.url.includes('/continue/')).length, 0);
+  });
+  await check('explicit availability check recovers a conflicted current run with one local GET', async () => {
+    let conflicted = false, current = 'before-conflict';
+    const t = setup((url, body) => !body && url.includes('run_id=') ?
+      conflicted ? {httpStatus: 409, value: {error: 'Hunt changed while preparing local results; read again'}} :
+        projection({results: [row(current)]}) : ordinary(url, body));
+    await t.ready(); await t.start(); assert(t.doc.getElementById('hunter-result-before-conflict'));
+    conflicted = true; const beforeFailure = t.calls.length; await t.visibility(false);
+    assert.equal(t.calls.length, beforeFailure + 1); assert(t.nodes.get('hunter-results').hidden);
+    assert.equal(t.nodes.get('hunter-cards').children.length, 0);
+    assert(t.nodes.get('hunter-status').textContent.includes('Hunt changed'));
+    conflicted = false; current = 'after-conflict'; const beforeRecovery = t.calls.length;
+    await t.click('hunter-recheck');
+    assert.equal(t.calls.length, beforeRecovery + 1);
+    assert(t.calls.at(-1).url.includes('run_id=' + RUN)); assert.equal(t.calls.at(-1).body, undefined);
+    assert(t.doc.getElementById('hunter-result-after-conflict')); assert(!t.nodes.get('hunter-results').hidden);
+    assert.equal(t.calls.filter(call => call.body && call.url.endsWith('/hunter/')).length, 1);
+    assert.equal(t.calls.filter(call => /continue|analyze-lot-details/.test(call.url)).length, 0);
+  });
+  await check('HTML 404 on restored opaque run clears its handle and cannot be overwritten by late boot availability', async () => {
+    for (const delayedMetadata of [false, true]) {
+      const metadataGate = deferred();
+      const saved = {hunter: 1, account: auth.account_id, binding: auth.binding, generation: auth.generation,
+        run: RUN, view: 'results', review: null, inspect: null, scope: 'both', filter: 'all', pages: 1, returnContext: null};
+      const t = setup(url => url.includes('run_id=') ? {httpStatus: 404, nonJson: true} :
+        delayedMetadata ? metadataGate.promise : META, {saved});
+      await t.ready();
+      assert(t.nodes.get('hunter-status').textContent.includes('unavailable'));
+      assert.equal(t.context.history.state.run, null);
+      assert(t.nodes.get('hunter-results').hidden); assert(t.nodes.get('hunter-review').hidden);
+      assert(t.nodes.get('hunter-continue').hidden); assert(t.nodes.get('hunter-stop').disabled);
+      assert.equal(t.nodes.get('hunter-cards').children.length, 0);
+      assert(t.calls.every(call => call.body === undefined));
+      metadataGate.resolve(META); await drain();
+      assert(t.nodes.get('hunter-status').textContent.includes('unavailable'));
+      assert.equal(t.context.history.state.run, null);
+      assert.equal(t.calls.filter(call => /continue|analyze-lot-details/.test(call.url)).length, 0);
+    }
   });
   await check('Stop while start is inflight clears immediately and stops late returned run', async () => {
     const gate = deferred(), t = setup((url, body) => body && url.endsWith('/hunter/') ? gate.promise : ordinary(url, body));

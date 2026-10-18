@@ -295,10 +295,16 @@ def _arm_deadline(run):
     watchdog.start()
 
 
-def _check_acquisition(run):
+def _check_acquisition(run, *, authorization=True):
     _acquisition_timeout(run)
     if run.cancel.is_set():
         raise _Stopped
+    if authorization:
+        from .hunter_installed import check_dispatch as check_installed_dispatch
+        from .hunter_profile import check_dispatch
+
+        check_dispatch(run)
+        check_installed_dispatch(run)
 
 
 def _expire(run_id):
@@ -575,6 +581,8 @@ def _authorize(actor, session_key=None):
 
 
 async def _dispatch(run, transport, stage, deadline, *, actor=None, **kwargs):
+    from .hunter_profile import check_dispatch
+
     _check_acquisition(run)
     if actor is not None:
         await asyncio.to_thread(_context_current, actor, run.choices)
@@ -639,6 +647,7 @@ async def _dispatch(run, transport, stage, deadline, *, actor=None, **kwargs):
         value = task.result()
         if run.cancel.is_set():
             raise _Stopped
+        check_dispatch(run)
         _journal(run, stage, "completed", attempt=sequence, http_status=200)
         return value
     except _Stopped:

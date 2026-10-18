@@ -82,7 +82,8 @@ def printing_items(entries):
     """One frozen item shape for filtered, set and custom printing checklists."""
     return [
         {
-            "label": f"{p['name']} · {p['set_name']} #{p['collector_number']}",
+            "label": f"{p['name']} · {p['set_name']} #{p['collector_number']}"
+            + (" · " + p["variant_label"] if p.get("parent_printing_id") else ""),
             "printing_ids": [p["id"]],
             "unresolved": bool(p["unresolved_fields"]),
             "edition": p["edition"],

@@ -2,10 +2,35 @@
 {% block title %}Price Hunter · Dex{% endblock %}
 {% block body_class %}hunter-page{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="/collection-assets/hunter.css?v=hunt06">
+<link rel="stylesheet" href="/collection-assets/hunter.css?v=hunt09">
 <div id="hunter-app" class="hunter">
-  <header class="hunter-heading"><div><p class="hunter-eyebrow"><a href="/shopping/">Shopping</a></p><h1>Price Hunter</h1><p>Find singles and loose lots. Review what’s useful, including cards you own.</p></div><nav aria-label="Shopping tools"><a href="/shopping/">Search cards</a><a href="/shopping/check/">Check a listing/lot</a><a href="/shopping/calculator/">Manual calculator</a></nav></header>
+  <div class="hunter-heading"><div><p class="hunter-eyebrow"><a href="/shopping/">Shopping</a></p><h1>Price Hunter</h1><p>Find singles and loose lots. Review what’s useful, including cards you own.</p></div><nav aria-label="Shopping tools"><a href="/shopping/">Search cards</a><a href="/shopping/check/">Check a listing/lot</a><a href="/shopping/calculator/">Manual calculator</a></nav></div>
   {{ hunter_initial|json_script:"hunter-initial" }}
+  {% if hunter_initial.usage_settings.owner %}
+  <section id="hunter-usage" class="hunter-usage" aria-labelledby="hunter-usage-title">
+    <h2 id="hunter-usage-title">Hunter usage</h2>
+    <p id="hunter-usage-status" role="status" aria-live="polite">Checking your selected limits…</p>
+    <p id="hunter-usage-capacity"></p>
+    <details id="hunter-usage-settings"><summary>Usage settings</summary>
+      <p>Only you can select these limits. Hunt, Continue acquisition and selected official details use provider operations. Sign-in to the provider also counts when needed. Each attempted operation counts before it is sent, including failed, uncertain or stopped requests.</p>
+      <form id="hunter-usage-form">
+        <div class="hunter-usage-fields">
+          <label for="hunter-usage-enabled">Acquisition<select id="hunter-usage-enabled" required><option value="">Choose enabled or paused</option><option value="true">Enabled</option><option value="false">Paused</option></select></label>
+          <label for="hunter-usage-per-hunt">Operations per Hunt<input id="hunter-usage-per-hunt" type="number" min="1" max="15" step="1" required inputmode="numeric" aria-describedby="hunter-usage-bounds"></label>
+          <label for="hunter-usage-daily">Operations across all Hunts per day<input id="hunter-usage-daily" type="number" min="1" max="1000" step="1" required inputmode="numeric" aria-describedby="hunter-usage-bounds"></label>
+          <label for="hunter-usage-timezone">Daily window timezone<select id="hunter-usage-timezone" required><option value="">Choose a timezone</option><option value="America/New_York">Eastern Time (New York)</option><option value="America/Chicago">Central Time (Chicago)</option><option value="America/Denver">Mountain Time (Denver)</option><option value="America/Phoenix">Arizona Time (Phoenix)</option><option value="America/Los_Angeles">Pacific Time (Los Angeles)</option><option value="America/Anchorage">Alaska Time (Anchorage)</option><option value="Pacific/Honolulu">Hawaii Time (Honolulu)</option><option value="UTC">Coordinated Universal Time (UTC)</option></select></label>
+          <label for="hunter-usage-recurring">New daily capacity<select id="hunter-usage-recurring" required><option value="">Choose once or recurring</option><option value="false">This daily window only</option><option value="true">Repeat each day until paused or expired</option></select></label>
+          <label for="hunter-usage-expiry-mode">Policy expiry<select id="hunter-usage-expiry-mode" required><option value="">Choose an expiry</option><option value="none">Until paused</option><option value="at">At a chosen date and time</option></select></label>
+          <label id="hunter-usage-expiry-label" for="hunter-usage-expiry" hidden>Stop at (your browser’s local time)<input id="hunter-usage-expiry" type="datetime-local"></label>
+        </div>
+        <p id="hunter-usage-bounds" class="hunter-note">Choose 1–15 operations per Hunt and 1–1,000 across the day. All tabs and concurrent Hunts share the daily limit. Usage already consumed stays counted when you edit limits or timezone.</p>
+        <p class="hunter-note">Daily windows follow local midnight in the selected timezone, including daylight-saving changes. A new day provides capacity only when you select repeat each day. Browsing, filters, seller reveal, local review, comparisons, Back and reopening use no provider operations.</p>
+        <div class="hunter-actions"><button id="hunter-usage-save" type="submit" class="primary">Save usage settings</button><button id="hunter-usage-pause" type="button" disabled>Pause acquisition now</button></div>
+        <p id="hunter-usage-feedback" role="status" aria-live="polite"></p>
+      </form>
+    </details>
+  </section>
+  {% endif %}
   <form id="hunter-form">
     {% csrf_token %}
     <div class="hunter-controls"><label for="hunter-scope">Look for<select id="hunter-scope"><option value="singles">Singles</option><option value="lots">Lots</option><option value="both" selected>Both</option></select></label><button id="hunter-start" type="submit" class="primary" disabled>Hunt</button><button id="hunter-stop" type="button" disabled>Stop</button></div>
@@ -27,5 +52,5 @@
   <noscript><p>Enable JavaScript for Price Hunter. <a href="/shopping/">Local Shopping search</a> and the <a href="/shopping/calculator/">manual calculator</a> remain available.</p></noscript>
 </div>
 <script src="/collection-assets/hunter-review.js?v=hunt06" defer></script>
-<script src="/collection-assets/hunter.js?v=hunt06" defer></script>
+<script src="/collection-assets/hunter.js?v=hunt09" defer></script>
 {% endblock %}

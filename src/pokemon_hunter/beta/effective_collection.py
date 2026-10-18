@@ -527,7 +527,9 @@ def project(actor, *, catalog=None, active=None, pending=None):
             row["owned_variant"] = variant_event["owned_variant"]
             if collection_defaults.variant_exception(row, {c["id"]: c for c in active}, by_id):
                 row["owned_variant"] = None
-            row["owned_variant_printing_ids"] = collection_defaults.variant_printing_ids(row, catalog)
+            row["owned_variant_printing_ids"] = collection_defaults.variant_printing_ids(
+                row, catalog, attested_ids=variant_event["identity"].get("candidate_printing_ids", [])
+            )
         if row["established_total_quantity"] is not None and row["established_total_quantity"] < len(
             row["current_copy_ids"]
         ):

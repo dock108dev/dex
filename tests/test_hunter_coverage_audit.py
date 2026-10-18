@@ -99,6 +99,15 @@ def test_read_only_audit_uses_broad_catalog_and_never_exposes_source_content(
     assert report["reference_coverage_by_printing"]["unpriced"] == 2
     assert sum(report["reference_coverage_by_printing"].values()) == len(entries)
     assert report["customer_writes"] == report["provider_operations"] == 0
+    groups = report["reference_coverage_groups"]
+    assert groups["calculator_eleven_sets"]["catalog_printings"] == 0
+    assert groups["outside_calculator_eleven_sets"]["catalog_printings"] == 3
+    assert groups["pokemon"]["catalog_printings"] == 3
+    assert groups["identified_species_above_251"]["catalog_printings"] == 2
+    assert groups["trainer_energy_or_other"]["catalog_printings"] == 0
+    assert groups["species_number_unavailable"]["catalog_printings"] == 0
+    for group in groups.values():
+        assert sum(group[state] for state in audit_module.STATES) == group["catalog_printings"]
     rendered = json.dumps(report)
     assert all(
         text not in rendered

@@ -47,6 +47,10 @@ SUMMARY_FIELDS = (
     "identity_status",
     "variant_count",
     "published_variant_count",
+    "catalog_identity_count",
+    "evidenced_variant_count",
+    "unspecified_identity_count",
+    "variant_count_policy",
     "catalog_available",
 )
 
@@ -158,6 +162,15 @@ def build_groups(rows, *, pokemon_game_ids=None):
                 pokemon_dex=_species(first, pokemon_game_ids),
                 identity_status="resolved",
                 _children=sorted(children, key=lambda row: row["id"]),
+                catalog_identity_count=len(children),
+                evidenced_variant_count=sum(
+                    bool(row.get("parent_printing_id") or row.get("attributes", {}).get("parent_printing_id"))
+                    for row in children
+                ),
+                unspecified_identity_count=sum(
+                    all(row.get(k) is None for k in ("edition", "finish", "variant")) for row in children
+                ),
+                variant_count_policy="Evidenced physical variants exclude their unspecified parent; each numbered card appears once",
             )
         )
         printing_to_group.update({row["id"]: group_id for row in children})
@@ -228,9 +241,17 @@ def project(actor=None):
             by_literal.setdefault(key, []).append(assertion)
     for group in built["groups"]:
         children = group["_children"]
+        parents = {row.get("parent_printing_id") for row in children if row.get("parent_printing_id")}
+        physical = [row for row in children if row["id"] not in parents]
         group.update(
-            variant_count=len(children),
-            published_variant_count=sum(row["id"] in published_ids for row in children),
+            variant_count=len(physical),
+            published_variant_count=sum(row["id"] in published_ids for row in physical),
+            catalog_identity_count=len(children),
+            evidenced_variant_count=sum(bool(row.get("parent_printing_id")) for row in children),
+            unspecified_identity_count=sum(
+                all(row.get(k) is None for k in ("edition", "finish", "variant")) for row in children
+            ),
+            variant_count_policy="Evidenced physical variants exclude their unspecified parent; each numbered card appears once",
             catalog_available=any(row["id"] in published_ids for row in children),
         )
         group["_published_ids"] = published_ids.intersection(row["id"] for row in children)
@@ -388,12 +409,6 @@ def _list(snapshot, raw, scope=None):
             continue
         if filters.get("language") and filters["language"] != group["language"]:
             continue
-        if (
-            query
-            and query
-            not in " ".join(group[field] for field in ("name", "set_name", "collector_number")).casefold()
-        ):
-            continue
         children = [
             child
             for child in group["_children"]
@@ -406,10 +421,19 @@ def _list(snapshot, raw, scope=None):
                 not filters.get(field) or child.get(field) == filters[field]
                 for field in ("edition", "finish", "variant")
             )
+            and all(
+                token
+                in (
+                    " ".join(group[field] for field in ("name", "set_name", "collector_number"))
+                    + " "
+                    + child.get("variant_label", "")
+                ).casefold()
+                for token in query.split()
+            )
         ]
         if not matching:
             continue
-        if any(filters.get(field) for field in ("edition", "finish", "variant")):
+        if query or any(filters.get(field) for field in ("edition", "finish", "variant")):
             matching_children[group["id"]] = sorted(matching)
         matched.append(group)
     first_field = {"set": "set_name", "name": "name", "number": "collector_number"}[filters["sort"]]

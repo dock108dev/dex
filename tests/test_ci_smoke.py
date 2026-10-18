@@ -43,6 +43,8 @@ def wheel(tmp_path, *, omit=None, extra=None):
         "templates/beta/lot_calculator.html",
         "retained_guide_admission.json",
         "shopping_math.py",
+        "hunter_policy.py",
+        "hunter_coverage.py",
     ],
 )
 def test_missing_runtime_asset_fails_with_required_check_in_report(tmp_path, missing):
@@ -60,6 +62,9 @@ def test_missing_runtime_asset_fails_with_required_check_in_report(tmp_path, mis
         "pokemon_hunter/data/.env",
         "pokemon_hunter/data/config/pokedex_251.json",
         "pokemon_hunter/inventory.db",
+        "pokemon_hunter/data/hunter-policy.json",
+        "pokemon_hunter/data/hunter-usage.jsonl",
+        "pokemon_hunter/data/hunter-policy.lock",
     ),
 )
 def test_packaging_private_state_cannot_produce_success(tmp_path, private_file):

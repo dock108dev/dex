@@ -33,13 +33,13 @@ def revocations():
 
 
 def read(path):
-    if path.is_symlink() or not path.is_file() or path.stat().st_size > rules.MAX_BYTES:
+    if path.is_symlink() or not path.is_file() or path.stat().st_size > rules.MAX_RELEASE_BYTES:
         raise ValueError("Snapshot file missing, linked or over the finite byte limit")
     with path.open("rb") as stream:
-        data = stream.read(rules.MAX_BYTES + 1)
-    if len(data) > rules.MAX_BYTES:
+        data = stream.read(rules.MAX_RELEASE_BYTES + 1)
+    if len(data) > rules.MAX_RELEASE_BYTES:
         raise ValueError("Snapshot exceeds the finite byte limit")
-    return json.loads(data)
+    return json.loads(data, object_pairs_hook=rules.unique_object, parse_constant=rules.invalid_constant)
 
 
 def private_mkdir(path):

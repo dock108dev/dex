@@ -217,7 +217,10 @@ def dashboard(request):
     ]
     data["printing_details"] = {
         p["id"]: {
-            **{k: p[k] for k in ("set_name", "edition", "finish", "variant")},
+            **{
+                k: p[k]
+                for k in ("set_name", "edition", "finish", "variant", "variant_label", "parent_printing_id")
+            },
             "reference_image": images.get(p["id"]),
         }
         for p in entries

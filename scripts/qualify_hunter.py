@@ -19,6 +19,7 @@ from uuid import UUID
 from pokemon_hunter import reference_policy
 from pokemon_hunter.beta import price_snapshot_contract as rules
 from pokemon_hunter.beta import price_snapshot_sources
+from pokemon_hunter.beta.lot_calculator import SETS as CALCULATOR_SETS
 
 MAX_CATALOG_ROWS = 200_000
 MAX_LEGACY_ROWS = 100_000
@@ -48,7 +49,7 @@ def read_json(path):
     if len(raw) > rules.MAX_BYTES:
         raise AuditFailure("Oversized audit input")
     try:
-        return json.loads(raw)
+        return json.loads(raw, object_pairs_hook=rules.unique_object, parse_constant=rules.invalid_constant)
     except (ValueError, UnicodeError):
         raise AuditFailure("Malformed audit input") from None
 
@@ -199,6 +200,15 @@ def snapshot_metadata(root, entries, now):
         parts.append((package, rules.digest(package.get("contract"))))
     else:
         raise AuditFailure("Unsupported local release")
+    if sum(len(part.get("records", [])) for part, _ in parts) > rules.MAX_RELEASE_ROWS:
+        raise AuditFailure("Combined observation ceiling exceeded")
+    if (
+        sum(len(part.get("contract", {}).get("mappings", {})) for part, _ in parts)
+        > rules.MAX_RELEASE_MAPPINGS
+    ):
+        raise AuditFailure("Combined mapping ceiling exceeded")
+    if sum(rules.serialized_bytes(part) for part, _ in parts) > rules.MAX_RELEASE_BYTES:
+        raise AuditFailure("Combined source byte ceiling exceeded")
     for part, digest in parts:
         source_state = _source_state(
             part,
@@ -293,15 +303,40 @@ def audit(root, *, now=None, legacy_sha256=LEGACY_SHA256):
         root, entries, now.date(), expected_sha256=legacy_sha256
     )
     coverage = Counter()
+    groups = {
+        key: Counter()
+        for key in (
+            "calculator_eleven_sets",
+            "outside_calculator_eleven_sets",
+            "pokemon",
+            "trainer_energy_or_other",
+            "identified_species_above_251",
+            "species_number_unavailable",
+        )
+    }
     metadata = Counter()
     sets = set()
     for pid, printing in entries.items():
         choices = snapshots[pid] | legacy[pid]
-        coverage[next((state for state in STATES if state in choices), "unpriced")] += 1
+        selected_state = next((state for state in STATES if state in choices), "unpriced")
+        coverage[selected_state] += 1
         sets.add(printing["set_id"])
         number = printing["attributes"].get("pokemon_dex")
+        scope = (
+            "calculator_eleven_sets"
+            if printing["set_name"] in CALCULATOR_SETS
+            else "outside_calculator_eleven_sets"
+        )
+        groups[scope][selected_state] += 1
+        card_type = (
+            "pokemon" if printing["attributes"].get("supertype") == "Pokémon" else "trainer_energy_or_other"
+        )
+        groups[card_type][selected_state] += 1
         if type(number) is int and number > 251:
             metadata["species_above_251_printings"] += 1
+            groups["identified_species_above_251"][selected_state] += 1
+        if type(number) is not int:
+            groups["species_number_unavailable"][selected_state] += 1
         if printing["attributes"].get("supertype") != "Pokémon":
             metadata["trainer_energy_or_other_printings"] += 1
         if printing.get("language") != "en":
@@ -315,6 +350,10 @@ def audit(root, *, now=None, legacy_sha256=LEGACY_SHA256):
         "audited_at": now.isoformat(),
         "catalog": {"printings": len(entries), "sets": len(sets), **metadata},
         "reference_coverage_by_printing": {state: coverage[state] for state in STATES},
+        "reference_coverage_groups": {
+            key: {"catalog_printings": sum(counts.values()), **{state: counts[state] for state in STATES}}
+            for key, counts in groups.items()
+        },
         "unmapped_reference_identities": {
             "snapshot": len(snapshot_unmapped),
             "retained": len(legacy_unmapped),
@@ -330,6 +369,9 @@ def audit(root, *, now=None, legacy_sha256=LEGACY_SHA256):
             "bytes_per_json_file": rules.MAX_BYTES,
             "snapshot_rows_per_source": rules.MAX_ROWS,
             "snapshot_sources": MAX_SOURCES,
+            "combined_snapshot_rows": rules.MAX_RELEASE_ROWS,
+            "combined_snapshot_mappings": rules.MAX_RELEASE_MAPPINGS,
+            "combined_snapshot_bytes": rules.MAX_RELEASE_BYTES,
             "retained_rows": MAX_LEGACY_ROWS,
         },
         "private_content_retained": False,
@@ -339,6 +381,7 @@ def audit(root, *, now=None, legacy_sha256=LEGACY_SHA256):
             "Eligible means a locally admitted dated reference, with seller identity and condition applicability still required.",
             "Removed expired/withdrawn shards have unknown historical record counts; source counts remain explicit.",
             "Coverage counts the published local catalog once and does not bound marketplace acquisition.",
+            "Coverage groups overlap; species-number metadata is not a complete all-generation catalog denominator.",
         ],
     }
 

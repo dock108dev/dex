@@ -17,6 +17,7 @@ DOCS = (
     "docs/UI_DESIGN.md",
     "docs/catalogs.md",
     "docs/hunts.md",
+    "docs/hunter-browser-workflow.md",
     "docs/photo-entry.md",
     "docs/artwork.md",
     "docs/card-groups.md",

@@ -127,7 +127,10 @@ class TraversalAllowance:
     def __post_init__(self):
         if (
             not isinstance(self.id, str)
-            or not re.fullmatch(r"hunt-04-[a-z0-9][a-z0-9-]{0,80}", self.id)
+            or not (
+                re.fullmatch(r"hunt-04-[a-z0-9][a-z0-9-]{0,80}", self.id)
+                or self.id == "hunt-07-completion-v1"
+            )
             or any(
                 type(getattr(self, key)) is not int or not 0 <= getattr(self, key) <= 1000
                 for key in TRAVERSAL_LIMIT_KEYS
@@ -135,6 +138,9 @@ class TraversalAllowance:
             or self.total < sum(getattr(self, key) for key in ("oauth", "browse", "detail", "resolution"))
             or self.auction + self.buy_it_now < self.browse
             or self.lots > self.total
+            or self.id == "hunt-07-completion-v1"
+            and self.limits
+            != dict(oauth=1, browse=12, detail=2, resolution=0, total=15, auction=8, buy_it_now=4, lots=8)
         ):
             raise ValueError("Choose an explicitly authorized finite traversal allowance")
 
@@ -200,6 +206,14 @@ def consume_traversal(root, run_id, stage, lane=None, *, dispatch_id, allowance=
     Concurrent workers cannot admit that operation twice. There is no refund,
     reset, day boundary or hidden allowance fallback.
     """
+    from .hunter_policy import OrdinaryAllowance
+
+    if type(allowance) is OrdinaryAllowance:
+        from . import hunter_policy
+
+        return hunter_policy.consume(
+            root, run_id, stage, lane, dispatch_id=dispatch_id, allowance=allowance, scope=scope
+        )
     if (
         type(allowance) is not TraversalAllowance
         or stage not in {"oauth", "browse", "detail", "resolution"}
@@ -248,6 +262,12 @@ def consume_traversal(root, run_id, stage, lane=None, *, dispatch_id, allowance=
 
 def remaining_traversal(root, allowance=None):
     """Read only. Disabled production configuration reports zero capacity."""
+    from .hunter_policy import OrdinaryAllowance
+
+    if type(allowance) is OrdinaryAllowance:
+        from . import hunter_policy
+
+        return hunter_policy.remaining(root, allowance)
     if allowance is None:
         return dict.fromkeys(TRAVERSAL_LIMIT_KEYS, 0)
     target = traversal_path(root, allowance)
@@ -259,3 +279,10 @@ def remaining_traversal(root, allowance=None):
         fcntl.flock(stream, fcntl.LOCK_SH)
         counts, _ = _traversal_counts(stream, allowance)
     return {key: max(0, value - counts[key]) for key, value in allowance.limits.items()}
+
+
+def is_traversal_allowance(allowance):
+    """Historical fixed and deliberately selected ordinary policies are distinct."""
+    from .hunter_policy import OrdinaryAllowance
+
+    return type(allowance) in {TraversalAllowance, OrdinaryAllowance}

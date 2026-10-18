@@ -282,8 +282,10 @@ def main():
         import uvicorn
 
         from .asgi import get_asgi_application
+        from .hunter_installed import configure
         from .price_snapshots import expiry_worker
 
+        configure()
         price_stop = threading.Event()
         price_worker = threading.Thread(target=expiry_worker, args=(price_stop,), daemon=True)
         price_worker.start()
@@ -292,9 +294,13 @@ def main():
             import threading
 
             from .scan_worker import run
+            from .scans import select_current_process
 
+            select_current_process()
             stop = threading.Event()
-            worker = threading.Thread(target=run, args=(stop,), daemon=True)
+            worker = threading.Thread(
+                target=run, args=(stop,), kwargs={"selected_scans_only": True}, daemon=True
+            )
             worker.start()
 
         try:

@@ -14,6 +14,32 @@ COLUMNS = ("raw", "8", "9", "10")
 IDENTITY = ("set_id", "collector_number", "language", "edition", "finish", "variant", "catalog_version")
 MAX_BYTES = 16 * 1024 * 1024
 MAX_ROWS = 10000
+# A source remains a 10,000-row / 16-MiB independently admitted shard. The
+# measured frozen inventory has 21,291 numbered records and 27,636 explicit
+# combinations. Even appending all to 7,653 originals stays below 65,536; the
+# composed row and 128-MiB budgets are qualified independently of source shards.
+MAX_CATALOG_ROWS = 65536
+MAX_CATALOG_BYTES = 128 * 1024 * 1024
+MAX_RELEASE_ROWS = 65536
+MAX_RELEASE_MAPPINGS = 65536
+MAX_RELEASE_BYTES = 128 * 1024 * 1024
+
+
+def serialized_bytes(value):
+    return len(json.dumps(value, sort_keys=True, separators=(",", ":")).encode())
+
+
+def unique_object(pairs):
+    value = {}
+    for key, item in pairs:
+        if key in value:
+            raise ValueError("Duplicate snapshot JSON key")
+        value[key] = item
+    return value
+
+
+def invalid_constant(value):
+    raise ValueError("Nonfinite snapshot JSON number")
 
 
 def digest(value):
@@ -92,7 +118,7 @@ def contract(value):
         if field.get("unit") != "USD_decimal" or type(field.get("zero_is_value")) is not bool:
             raise ValueError("Original decimal USD unit and zero meaning required")
     mappings = value.get("mappings")
-    if not isinstance(mappings, dict) or not mappings:
+    if not isinstance(mappings, dict) or not 1 <= len(mappings) <= MAX_ROWS:
         raise ValueError("Independently reviewed exact provider mappings required")
     return value
 
@@ -101,6 +127,8 @@ def validate(package, entries, *, now=None):
     now = now or datetime.now(timezone.utc)
     if isinstance(package, dict) and package.get("schema") == "dex-price-snapshot-v2":
         return validate_sources(package, entries, now=now)
+    if serialized_bytes(package) > MAX_BYTES:
+        raise ValueError("Source snapshot exceeds the finite byte ceiling")
     if (
         not isinstance(package, dict)
         or set(package) != {"schema", "version", "release_month", "contract", "expires_at", "records"}
@@ -245,8 +273,10 @@ def validate_sources(package, entries, *, now):
     contracts, rows = package["contracts"], package["records"]
     if not isinstance(contracts, dict) or not 1 <= len(contracts) <= 32:
         raise ValueError("One to 32 independent source contracts required")
-    if not isinstance(rows, list) or not 1 <= len(rows) <= MAX_ROWS:
+    if not isinstance(rows, list) or not 1 <= len(rows) <= MAX_RELEASE_ROWS:
         raise ValueError("Snapshot needs a finite, nonempty record set")
+    if serialized_bytes(package) > MAX_RELEASE_BYTES:
+        raise ValueError("Combined release exceeds the finite byte ceiling")
     seen = set()
     for row in rows:
         if not isinstance(row, dict) or row.get("contract_id") not in contracts:
@@ -260,6 +290,9 @@ def validate_sources(package, entries, *, now):
             raise ValueError("Each source requires its own contract and expiry")
         if not isinstance(value["contract"], dict) or key != value["contract"].get("review_id"):
             raise ValueError("Contract identity conflicts with its independently reviewed source")
+    mappings = [contract(value["contract"])["mappings"] for value in contracts.values()]
+    if sum(len(value) for value in mappings) > MAX_RELEASE_MAPPINGS:
+        raise ValueError("Combined release exceeds the finite mapping ceiling")
     for source in source_packages(package).values():
         validate(source, entries, now=now)
     return package

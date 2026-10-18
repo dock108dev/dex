@@ -27,5 +27,5 @@ def test_hunter_main_client_contracts():
     assert evidence["engineering_fixtures_only"] is True
     assert evidence["customer_root_access"] is False
     assert evidence["provider_operations"] == 0
-    assert evidence["passed"] >= 20
+    assert evidence["passed"] >= 22
     assert all(case["status"] == "passed" for case in evidence["cases"])

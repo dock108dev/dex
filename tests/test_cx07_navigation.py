@@ -2,7 +2,9 @@
 
 import shutil
 import subprocess
+from datetime import timedelta
 from pathlib import Path
+from unittest.mock import patch
 from urllib.parse import urlencode
 
 import pytest
@@ -42,6 +44,11 @@ def test_home_storage_binding_changes_between_accounts_and_auth_sessions(cx):
     assert second["account_id"] == cx["member"].user_id
     assert first["navigation_binding"] != second["navigation_binding"]
     assert cx["a"].session.session_key not in str(first)
+    from django.utils import timezone
+
+    with patch("django.utils.timezone.now", return_value=timezone.now() + timedelta(hours=2)):
+        renewed = cx["a"].get("/api/navigation/home/", {"destination": "/cards/"}).json()
+        assert renewed["navigation_binding"] == first["navigation_binding"]
     cx["a"].logout()
     assert cx["a"].get("/api/navigation/home/").status_code == 302
 

@@ -1,0 +1,446 @@
+{
+  "schema": "dex-hunter-shop04-minimum-v1",
+  "tables": {
+    "auth_group": [
+      "id",
+      "name"
+    ],
+    "auth_group_permissions": [
+      "id",
+      "group_id",
+      "permission_id"
+    ],
+    "auth_permission": [
+      "id",
+      "content_type_id",
+      "codename",
+      "name"
+    ],
+    "auth_user": [
+      "id",
+      "password",
+      "last_login",
+      "is_superuser",
+      "username",
+      "last_name",
+      "email",
+      "is_staff",
+      "is_active",
+      "date_joined",
+      "first_name"
+    ],
+    "auth_user_groups": [
+      "id",
+      "user_id",
+      "group_id"
+    ],
+    "auth_user_user_permissions": [
+      "id",
+      "user_id",
+      "permission_id"
+    ],
+    "axes_accessattempt": [
+      "id",
+      "user_agent",
+      "ip_address",
+      "username",
+      "http_accept",
+      "path_info",
+      "attempt_time",
+      "get_data",
+      "post_data",
+      "failures_since_start"
+    ],
+    "axes_accessattemptexpiration": [
+      "access_attempt_id",
+      "expires_at"
+    ],
+    "axes_accessfailurelog": [
+      "id",
+      "user_agent",
+      "ip_address",
+      "username",
+      "http_accept",
+      "path_info",
+      "attempt_time",
+      "locked_out"
+    ],
+    "axes_accesslog": [
+      "id",
+      "user_agent",
+      "ip_address",
+      "username",
+      "http_accept",
+      "path_info",
+      "attempt_time",
+      "logout_time",
+      "session_hash"
+    ],
+    "b1_private_resources": [
+      "id",
+      "user_id",
+      "kind",
+      "payload"
+    ],
+    "binders": [
+      "id",
+      "user_id",
+      "name",
+      "revision"
+    ],
+    "catalog_aliases": [
+      "game",
+      "language",
+      "alias",
+      "identity_key"
+    ],
+    "catalog_audit": [
+      "id",
+      "actor_id",
+      "event",
+      "object_id",
+      "detail",
+      "created"
+    ],
+    "catalog_batches": [
+      "id",
+      "user_id",
+      "package",
+      "package_hash",
+      "state",
+      "baseline",
+      "outcomes",
+      "created"
+    ],
+    "catalog_heads": [
+      "set_id",
+      "import_id"
+    ],
+    "catalog_imports": [
+      "id",
+      "user_id",
+      "package",
+      "package_hash",
+      "set_id",
+      "state",
+      "baseline",
+      "preview",
+      "after_hash",
+      "created"
+    ],
+    "catalog_requests": [
+      "id",
+      "identity_key",
+      "state",
+      "decision",
+      "revision",
+      "merged_into"
+    ],
+    "catalog_sets": [
+      "id",
+      "game_id",
+      "name",
+      "language",
+      "region",
+      "aliases",
+      "release_metadata",
+      "catalog_version",
+      "coverage_status",
+      "publication_state"
+    ],
+    "catalog_submissions": [
+      "id",
+      "request_id",
+      "user_id",
+      "origin",
+      "origin_id",
+      "hints",
+      "share_photos",
+      "resolution_op",
+      "created"
+    ],
+    "collection_drafts": [
+      "id",
+      "user_id",
+      "schema",
+      "revision",
+      "state",
+      "input_json",
+      "input_hashes",
+      "created_at",
+      "updated_at",
+      "expires_at",
+      "confirmed_operation_id",
+      "review_operation_id"
+    ],
+    "collection_generations": [
+      "user_id",
+      "value"
+    ],
+    "collection_goals": [
+      "id",
+      "user_id",
+      "name",
+      "kind",
+      "version",
+      "definition",
+      "revision"
+    ],
+    "collection_operations": [
+      "id",
+      "user_id",
+      "kind",
+      "request",
+      "plan",
+      "state",
+      "changes",
+      "generation",
+      "created"
+    ],
+    "collection_replays": [
+      "user_id",
+      "fingerprint",
+      "draft_id",
+      "operation_id"
+    ],
+    "django_content_type": [
+      "id",
+      "app_label",
+      "model"
+    ],
+    "django_migrations": [
+      "id",
+      "app",
+      "name",
+      "applied"
+    ],
+    "django_session": [
+      "session_key",
+      "session_data",
+      "expire_date"
+    ],
+    "external_mappings": [
+      "provider",
+      "entity_kind",
+      "external_id",
+      "internal_id"
+    ],
+    "games": [
+      "id",
+      "game_key",
+      "name",
+      "adapter_version",
+      "capabilities",
+      "release_state"
+    ],
+    "goal_templates": [
+      "id",
+      "game_id",
+      "version",
+      "rules"
+    ],
+    "import_batches": [
+      "id",
+      "user_id",
+      "source_hash",
+      "importer_version",
+      "state"
+    ],
+    "import_records": [
+      "batch_id",
+      "legacy_id",
+      "printing_id",
+      "copy_id",
+      "source_json"
+    ],
+    "migration_issues": [
+      "id",
+      "batch_id",
+      "legacy_id",
+      "kind",
+      "detail"
+    ],
+    "owned_copies": [
+      "id",
+      "user_id",
+      "printing_id",
+      "provisional_identity",
+      "binder_id",
+      "condition",
+      "purchase_amount",
+      "purchase_currency",
+      "purchase_date",
+      "notes",
+      "grading_company",
+      "grade",
+      "certificate",
+      "batch_id",
+      "legacy_id",
+      "first_edition_selected",
+      "state",
+      "revision",
+      "source_copy_id"
+    ],
+    "ownership_declarations": [
+      "id",
+      "user_id",
+      "source_sha256",
+      "source_text",
+      "reconciliation",
+      "revision"
+    ],
+    "printings": [
+      "id",
+      "set_id",
+      "collector_number",
+      "language",
+      "edition",
+      "finish",
+      "variant",
+      "unresolved_fields",
+      "attributes",
+      "provenance",
+      "publication_state"
+    ],
+    "private_archives": [
+      "batch_id",
+      "user_id",
+      "path",
+      "sha256",
+      "content"
+    ],
+    "saved_hunts": [
+      "batch_id",
+      "user_id",
+      "legacy_id",
+      "created",
+      "demo",
+      "request",
+      "raw",
+      "coverage"
+    ],
+    "saved_pack_research": [
+      "id",
+      "user_id",
+      "name",
+      "created_at",
+      "goal_id",
+      "snapshot",
+      "snapshot_sha256"
+    ],
+    "scan_jobs": [
+      "id",
+      "user_id",
+      "state",
+      "mode",
+      "fixture",
+      "result",
+      "attempts",
+      "started",
+      "created",
+      "operation_id",
+      "copy_id",
+      "error",
+      "reserved_usd",
+      "cost_usd",
+      "latency",
+      "version",
+      "model",
+      "selection"
+    ],
+    "scan_photos": [
+      "id",
+      "job_id",
+      "user_id",
+      "content"
+    ],
+    "schema_versions": [
+      "version"
+    ],
+    "sealed_bridges": [
+      "printing_id",
+      "catalog_id",
+      "import_id"
+    ],
+    "sealed_coverage": [
+      "id",
+      "data",
+      "publication_state"
+    ],
+    "sealed_expansions": [
+      "id",
+      "data",
+      "publication_state"
+    ],
+    "sealed_guaranteed": [
+      "id",
+      "data",
+      "publication_state"
+    ],
+    "sealed_imports": [
+      "id",
+      "actor_id",
+      "provider",
+      "version",
+      "package_hash",
+      "package",
+      "state",
+      "baseline",
+      "after_hash"
+    ],
+    "sealed_mappings": [
+      "provider",
+      "language",
+      "kind",
+      "external_id",
+      "internal_id"
+    ],
+    "sealed_memberships": [
+      "id",
+      "data",
+      "publication_state"
+    ],
+    "sealed_observations": [
+      "id",
+      "data",
+      "publication_state"
+    ],
+    "sealed_offers": [
+      "id",
+      "data",
+      "publication_state"
+    ],
+    "sealed_packs": [
+      "id",
+      "data",
+      "publication_state"
+    ],
+    "sealed_printings": [
+      "id",
+      "data",
+      "publication_state"
+    ],
+    "sealed_products": [
+      "id",
+      "data",
+      "publication_state"
+    ],
+    "sealed_sources": [
+      "id",
+      "data",
+      "publication_state"
+    ],
+    "sealed_species": [
+      "id",
+      "data",
+      "publication_state"
+    ],
+    "users": [
+      "id",
+      "auth_subject",
+      "login_name",
+      "role",
+      "state"
+    ]
+  }
+}

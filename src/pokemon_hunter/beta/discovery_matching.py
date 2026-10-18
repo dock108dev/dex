@@ -44,15 +44,34 @@ def _phrase(value):
     return re.escape(literal(value)).replace(r"\ ", r"\s+")
 
 
-def set_claimed(printing, text):
+def set_spans(printing, text):
+    """Literal set-alias positions, including the Base Set / Base Set 2 rule."""
     text = canonical_query(literal(text))
+    spans = []
     for name in set_names(printing):
         pattern = r"(?<!\w)" + _phrase(name) + r"(?!\w)"
         if name.casefold() == "base set":
             pattern += r"(?!\s*2\b(?!\s*/))"
-        if re.search(pattern, text, re.I):
-            return True
-    return False
+        spans.extend(match.span() for match in re.finditer(pattern, text, re.I))
+    return sorted(set(spans))
+
+
+def set_claimed(printing, text):
+    return bool(set_spans(printing, text))
+
+
+def without_sets(printings, text):
+    """Keep literal set names out of product heuristics, never identity checks.
+
+    A confirmed single from Legendary Collection does not become a loose lot
+    because its set contains the word 'Collection'. Seller product claims outside
+    those exact aliases, including a separate 'lot' or 'sealed', remain visible.
+    """
+    text = canonical_query(literal(text))
+    spans = {span for printing in printings for span in set_spans(printing, text)}
+    for start, end in sorted(spans, reverse=True):
+        text = text[:start] + " " * (end - start) + text[end:]
+    return text
 
 
 def name_spans(printing, text):

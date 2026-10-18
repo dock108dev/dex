@@ -2,6 +2,7 @@
 
 import json
 
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import render
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
@@ -14,6 +15,7 @@ from . import (
     navigation,
     shopping,
     shopping_views,
+    store,
 )
 from .card_group_views import query
 from .collection_views import body, endpoint
@@ -106,10 +108,51 @@ def home(request):
         authority=dict(account_id=who.user_id, generation=collection.generation(who), binding=binding),
         navigation={key: raw[key] for key in ("run", "review") if key in raw},
     )
+    from . import hunter_profile
+
+    initial["usage_settings"] = {
+        "owner": hunter_profile.current() is None and store.verified(who).role == "owner"
+    }
+    if initial["usage_settings"]["owner"]:
+        from . import hunter_policy
+
+        initial["usage_settings"]["policy"] = hunter_policy.status(who)
     response = render(request, "beta/hunter.html", dict(hunter_initial=initial, hunter_return=back))
     response["Cache-Control"] = "private, no-store"
     response._dex_owned_artwork = image_bindings.enabled()
     return response
+
+
+@endpoint
+@require_http_methods(["GET", "POST"])
+def usage(request):
+    """Owner-selected ordinary usage; this route never starts acquisition."""
+    from . import hunter_policy
+
+    who, _ = principal(request)
+    if store.verified(who).role != "owner":
+        raise PermissionDenied
+    if request.GET:
+        raise ValueError("Usage settings take no replacement query fields")
+    try:
+        value = (
+            hunter_policy.select(who, body(request))
+            if request.method == "POST"
+            else hunter_policy.status(who)
+        )
+    except (OSError, ValueError):
+        response = _private_json(
+            {
+                "error": "Usage settings were not confirmed. Check availability to load the current settings, "
+                "then choose whole-number limits, a timezone and a future expiry if needed. "
+                "No marketplace search was started.",
+                "code": "hunter_usage_unavailable",
+            },
+            request,
+        )
+        response.status_code = 400
+        return response
+    return _private_json(value, request)
 
 
 @endpoint
@@ -130,7 +173,10 @@ def catalog(request):
         for p in hunter_lots._catalog(who)
         if not discovery_matching.unavailable(p)
         and all(
-            token in " ".join([p["name"], p["set_name"], p["collector_number"]]).casefold()
+            token
+            in " ".join(
+                [p["name"], p["set_name"], p["collector_number"], p.get("variant_label", "")]
+            ).casefold()
             for token in tokens
         )
     ]

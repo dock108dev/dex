@@ -23,6 +23,7 @@ from . import (
     discovery_matching,
     hunter,
     hunter_catalog,
+    hunter_coverage,
     listing_details,
     shopping,
     store,
@@ -226,6 +227,8 @@ def parse(raw, printings, *, detail=None, _index=None):
     combined_clues = dc._clues(dict(title=combined_text))
     literal_names = discovery_matching.literal_candidates(index.candidates(combined_clues), combined_text)
     product_claims = discovery_matching.without_names(literal_names, combined_text)
+    exact_sets = [p for p in literal_names if discovery_matching.evidence(p, combined_clues)["matched"]]
+    product_claims = discovery_matching.without_sets(exact_sets, product_claims)
     if dc.product_kind(product_claims) == "unsupported":
         raise ValueError(
             "Unsupported sealed, mystery, random or curated product; contents valuation unavailable"
@@ -595,6 +598,13 @@ def _compare(actor, raw, proposal, corrections, entries, records=None):
         ],
         quantities_reconciled=reconciled,
         complete_delivered_comparison=complete,
+        comparison_diagnostics=hunter_coverage.lot_diagnostics(
+            reconciled=reconciled,
+            unknown_contents=unknown,
+            unpriced_units=result["coverage"]["unpriced_units"],
+            costs=costs,
+            reference_count=len(scenario["references"]),
+        ),
         label="Complete delivered reference comparison"
         if complete
         else "Priced subtotal; incomplete lot comparison",
@@ -697,9 +707,18 @@ def read(actor, session_key, review_id, *, _context=None):
         entries,
         records=_context["records"] if _context else None,
     )
-    source = _source(actor, session_key, value["origin"])
+    current_source = _source(actor, session_key, value["origin"])
+    if current_source["raw"] != source["raw"] or current_source["created"] != source["created"]:
+        raise collection.Conflict("Listing changed while reviewing lot contents; reload")
+    source = current_source
     if collection.generation(actor) != generation:
         raise collection.Conflict("Catalog changed while reviewing lot contents; reload")
+    with _lock:
+        current = _reviews.get(str(review_id))
+        if current is None or current["owner"] != value["owner"]:
+            raise Http404
+        if current["revision"] != value["revision"]:
+            raise collection.Conflict("Lot review changed while preparing comparison; reload")
     return _bounded_response(
         dict(
             review_id=str(review_id),
@@ -822,7 +841,7 @@ def detail_intent(actor, session_key, run_id, result_ids):
         allowance = source.get("_allowance")
     capacity = hunter_budget.remaining_traversal(discovery._owner(actor, session_key)[0], allowance)
     enabled = (
-        type(allowance) is hunter_budget.TraversalAllowance
+        hunter_budget.is_traversal_allowance(allowance)
         and capacity["detail"] >= len(requests)
         and capacity["lots"] >= len(requests)
         and capacity["total"] >= len(requests)
@@ -843,7 +862,7 @@ def detail_intent(actor, session_key, run_id, result_ids):
         action_seconds=discovery.OVERALL_SECONDS,
         max_response_bytes=2 * 1024 * 1024,
         parser_text_bytes=MAX_TEXT_BYTES,
-        ledger_identity=allowance.id if type(allowance) is hunter_budget.TraversalAllowance else None,
+        ledger_identity=allowance.id if hunter_budget.is_traversal_allowance(allowance) else None,
         stop="Cancel independently, consume uncertain attempts and suppress late publication",
         transfer="Future detail adapter must preserve the earlier of summary and detail creation/expiry",
     )

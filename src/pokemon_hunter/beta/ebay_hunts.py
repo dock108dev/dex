@@ -21,6 +21,11 @@ class LiveHuntError(Exception):
 
 
 def configuration_root():
+    from .hunter_profile import current
+
+    selected = current()
+    if selected is not None and selected.configuration_root is not None:
+        return selected.configuration_root
     return Path(settings.PROJECT)
 
 

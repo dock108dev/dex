@@ -38,9 +38,18 @@ def catalog_entries(query="", set_id="", include_archived=False, *, published_on
         row["attributes"] = json.loads(row["attributes"])
         row["unresolved_fields"] = json.loads(row["unresolved_fields"])
         row["name"] = row["attributes"].get("name", "Unidentified card")
+        from .catalog_variants import display
+
+        display(row)
     return [
         r
         for r in result
         if (not set_id or r["set_id"] == set_id)
-        and query.casefold() in (r["name"] + " " + r["collector_number"] + " " + r["set_name"]).casefold()
+        and all(
+            token
+            in (
+                r["name"] + " " + r["collector_number"] + " " + r["set_name"] + " " + r["variant_label"]
+            ).casefold()
+            for token in query.casefold().split()
+        )
     ]

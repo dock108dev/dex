@@ -84,6 +84,14 @@ function setup(responder) {
 const cases = [];
 async function check(name, run) {await run(); cases.push({name, status: 'passed'});}
 (async () => {
+  await check('lot comparison explains overlapping missing-input diagnostics with ordinary text', async () => {
+    const value = response();
+    value.comparison.comparison_diagnostics = {reasons: ['Loose-lot contents still need review.', 'Tax and other costs remain unknown.']};
+    const t = setup(() => value); t.client.open(value);
+    assert(t.container.textContent.includes('Loose-lot contents still need review.'));
+    assert(t.container.textContent.includes('Tax and other costs remain unknown.'));
+    assert.equal(t.calls.length, 0);
+  });
   await check('opening review is local and seller text cannot execute markup', async () => {
     const t = setup(() => response()); t.client.open(response());
     assert.equal(t.calls.length, 0); assert(t.container.textContent.includes('<img src=x onerror=alert(1)>'));

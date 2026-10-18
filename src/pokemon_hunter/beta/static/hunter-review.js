@@ -17,7 +17,7 @@
   };
   const identityLabel = card => [card?.name || 'Unresolved card', card?.set_name,
     card?.collector_number ? '#' + card.collector_number : '',
-    [card?.language, card?.edition, card?.finish, card?.variant].filter(Boolean).join(' / '),
+    card?.variant_label || card?.attributes?.variant_label || [card?.language, card?.edition, card?.finish, card?.variant].filter(Boolean).join(' / '),
   ].filter(Boolean).join(' · ');
   const money = (amount, currency = 'USD') => amount === null || amount === undefined || amount === '' ? 'Unknown' : amount + ' ' + (currency || 'currency unknown');
 
@@ -262,6 +262,7 @@
       for (const row of compared.unpriced_matches || []) comparisonArea.append(h('p',
         `${identityLabel(identities.get(row.printing_id))} · ${row.quantity} unpriced: ${row.reason || 'No applicable admitted reference'}`));
       for (const limitation of compared.limitations || []) comparisonArea.append(h('p', limitation));
+      for (const reason of compared.comparison_diagnostics?.reasons || []) comparisonArea.append(h('p', reason, 'hunter-comparison-reason'));
       const refs = h('details'); refs.append(h('summary', 'Reference dates, scope and applicability'));
       for (const ref of compared.references || []) refs.append(h('p',
         `${money(ref.amount, ref.currency)} · ${ref.date_basis || 'Reference date'}: ${ref.as_of || 'Unknown'} · Valuation date: ${ref.valuation_as_of || 'Unknown'} · Captured: ${ref.captured_at || 'Unknown'} · Expires: ${ref.expires_at || 'Unknown'} · ${ref.condition || 'Condition unknown'} · ${ref.language || 'Language unknown'} · ${ref.edition || 'Edition unknown'} · ${ref.finish || 'Finish unknown'} · Conditional physical applicability`));

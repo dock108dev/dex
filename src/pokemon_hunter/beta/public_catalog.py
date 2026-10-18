@@ -21,6 +21,9 @@ CARD_FIELDS = (
     "catalog_version",
     "coverage_status",
     "unresolved_fields",
+    "variant_label",
+    "parent_printing_id",
+    "numbered_card_id",
 )
 
 

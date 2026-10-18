@@ -146,6 +146,12 @@ def fingerprint(value):
 
 
 def validate(raw):
+    from . import catalog_additions, catalog_variants
+
+    if isinstance(raw, dict) and raw.get("schema_version") == catalog_additions.SCHEMA:
+        return catalog_additions.validate(raw)
+    if isinstance(raw, dict) and raw.get("schema_version") == catalog_variants.SCHEMA:
+        return catalog_variants.validate(raw)
     package = Package.model_validate(raw).model_dump()
     if package["reconcile_legacy_set"] is None:
         del package["reconcile_legacy_set"]
@@ -214,6 +220,12 @@ def identity_rows(package, sid, provider, printing_ids=None):
 
 
 def rows_for(package):
+    from . import catalog_additions, catalog_variants
+
+    if package["schema_version"] == catalog_additions.SCHEMA:
+        return catalog_additions.rows_for(package)
+    if package["schema_version"] == catalog_variants.SCHEMA:
+        return catalog_variants.rows_for(package)
     key = identity(package["game"], package["set_key"], package["language"])
     from . import catalog_reconcile
 
@@ -313,6 +325,7 @@ def rows_for(package):
                 publication_state="published",
             )
         )
+    catalog_variants.guard_replacement(snapshot(sid), cards)
     return setrow, cards
 
 
@@ -325,6 +338,33 @@ def get(actor, key):
     for f in ("package", "baseline", "preview"):
         row[f] = json.loads(row[f])
     return row
+
+
+def reviewed_rows(publication):
+    """Exact retained review membership, independent of later catalog growth.
+
+    A frozen goal references an existing trusted journal, not a fresh import of
+    its source against today's family. Baseline and preview contain the rows that
+    were actually reviewed; reconstructing them never assigns a newer sibling.
+    """
+    package = publication["package"]
+    package = json.loads(package) if isinstance(package, str) else package
+    if (
+        publication["state"] not in {"published", "rolled-back"}
+        or fingerprint(package) != publication["package_hash"]
+    ):
+        raise ValueError("Retained catalog review unavailable or changed")
+    baseline, preview = publication["baseline"], publication["preview"]
+    baseline = json.loads(baseline) if isinstance(baseline, str) else baseline
+    preview = json.loads(preview) if isinstance(preview, str) else preview
+    approved = {r["id"]: r for r in baseline["cards"]}
+    for row in preview["archived"]:
+        approved.pop(row["id"], None)
+    for change in preview["updated"]:
+        approved[change["after"]["id"]] = change["after"]
+    for row in preview["added"]:
+        approved[row["id"]] = row
+    return [dict(row) for row in approved.values() if row["publication_state"] == "published"]
 
 
 @transaction.atomic
@@ -401,6 +441,19 @@ def aliases(package):
 @transaction.atomic
 def transition(actor, key, action):
     op = get(actor, key)
+    if op["package"]["schema_version"] == "dex-catalog-additions-v1" and action in {
+        "verify",
+        "publish",
+        "rollback",
+    }:
+        current = {r["id"]: r for r in snapshot(op["set_id"])["cards"]}
+        expected_ids = {r["id"] for r in op["baseline"]["cards"]}
+        if op["state"] in {"published", "rolled-back"}:
+            expected_ids.update(r["id"] for r in op["preview"]["added"])
+        if set(current) != expected_ids:
+            raise inv.Conflict("Catalog identities, including archived additions, changed after review")
+        if any(current.get(r["id"]) != r for r in op["baseline"]["cards"]):
+            raise inv.Conflict("An original identity, including archived rows, changed after review")
     if action == "verify":
         if op["state"] == "verified":
             return op
@@ -422,7 +475,12 @@ def transition(actor, key, action):
             raise inv.Conflict("Catalog changed after verification; preview a new version")
         p = validate(op["package"])
         setrow, cards = rows_for(p)
-        aliases(p)
+        from .catalog_additions import SCHEMA as ADDITIONS
+        from .catalog_variants import SCHEMA as VARIANTS
+
+        additive = p["schema_version"] in {VARIANTS, ADDITIONS}
+        if not additive:
+            aliases(p)
         adapter = ADAPTERS[p["game"]]
         inv.execute(
             "INSERT INTO games VALUES(%s,%s,%s,%s,%s,%s) ON CONFLICT DO NOTHING",
@@ -437,23 +495,29 @@ def transition(actor, key, action):
         )
         mapping = store.rows(
             "SELECT internal_id FROM external_mappings WHERE provider=%s AND entity_kind='set' AND external_id=%s",
-            [p["provider"] + ":" + p["language"], p["set_key"]],
+            [p["provider"] + ":" + p["language"], p.get("source_set_key", p["set_key"])],
         )
         if mapping and mapping[0]["internal_id"] != setrow["id"]:
             raise ValueError("Source set identity conflict")
         inv.execute(
             "INSERT INTO external_mappings VALUES(%s,'set',%s,%s) ON CONFLICT DO NOTHING",
-            [p["provider"] + ":" + p["language"], p["set_key"], setrow["id"]],
+            [p["provider"] + ":" + p["language"], p.get("source_set_key", p["set_key"]), setrow["id"]],
         )
         if p.get("reconcile_legacy_set"):
             inv.execute(
                 "INSERT INTO external_mappings VALUES('legacy','set',%s,%s) ON CONFLICT DO NOTHING",
                 [p["reconcile_legacy_set"], setrow["id"]],
             )
-        write("catalog_sets", setrow)
-        inv.execute("UPDATE printings SET publication_state='archived' WHERE set_id=%s", [op["set_id"]])
+        old_cards = {r["id"]: r for r in op["baseline"]["cards"]}
+        if not additive:
+            write("catalog_sets", setrow)
+            inv.execute("UPDATE printings SET publication_state='archived' WHERE set_id=%s", [op["set_id"]])
         for row in cards:
+            if additive and old_cards.get(row["id"]) == row:
+                continue
             write("printings", row)
+            if additive and row["id"] in old_cards:
+                continue
             provenance = json.loads(row["provenance"])
             inv.execute(
                 "INSERT INTO external_mappings VALUES(%s,'printing',%s,%s) ON CONFLICT DO NOTHING",
@@ -467,15 +531,22 @@ def transition(actor, key, action):
             "UPDATE catalog_imports SET state='published',after_hash=%s WHERE id=%s",
             [catalog_hash(snapshot(op["set_id"])), key],
         )
-        inv.execute(
-            "UPDATE catalog_requests SET state='published',revision=revision+1 WHERE identity_key=%s AND merged_into IS NULL",
-            [identity(p["game"], p["set_key"], p["language"])],
-        )
+        if not additive:
+            inv.execute(
+                "UPDATE catalog_requests SET state='published',revision=revision+1 WHERE identity_key=%s AND merged_into IS NULL",
+                [identity(p["game"], p["set_key"], p["language"])],
+            )
     elif action == "rollback":
         if op["state"] == "rolled-back":
             return op
         if op["state"] != "published" or catalog_hash(snapshot(op["set_id"])) != op["after_hash"]:
             raise inv.Conflict("Only the unchanged current publication can be rolled back")
+        from .catalog_variants import guard_rollback
+
+        guard_rollback(op)
+        from .catalog_additions import guard_rollback as guard_addition_rollback
+
+        guard_addition_rollback(op)
         inv.execute("UPDATE printings SET publication_state='archived' WHERE set_id=%s", [op["set_id"]])
         inv.execute("UPDATE catalog_sets SET publication_state='archived' WHERE id=%s", [op["set_id"]])
         for row in op["baseline"]["sets"]:
@@ -490,6 +561,9 @@ def transition(actor, key, action):
             [catalog_hash(snapshot(op["set_id"])), key],
         )
         p = op["package"]
+        if p["schema_version"] == "dex-catalog-additions-v1":
+            audit(actor, "import-" + action, key, {})
+            return get(actor, key)
         inv.execute(
             "UPDATE catalog_requests SET state='needs-evidence',decision='Coverage rolled back; your copy is retained',revision=revision+1 WHERE identity_key=%s AND merged_into IS NULL",
             [identity(p["game"], p["set_key"], p["language"])],

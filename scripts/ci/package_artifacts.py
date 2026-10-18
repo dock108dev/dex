@@ -28,6 +28,7 @@ REQUIRED_FILES = (
     "pokemon_hunter/beta/price_snapshot_contract.py",
     "pokemon_hunter/beta/market_identity.py",
     "pokemon_hunter/beta/tcgcsv_snapshot.py",
+    "pokemon_hunter/beta/tcgcsv_offline.py",
     "pokemon_hunter/beta/shopping.py",
     "pokemon_hunter/beta/shopping_inputs.py",
     "pokemon_hunter/beta/shopping_math.py",
@@ -41,6 +42,9 @@ REQUIRED_FILES = (
     "pokemon_hunter/beta/discovery.py",
     "pokemon_hunter/beta/hunter.py",
     "pokemon_hunter/beta/hunter_budget.py",
+    "pokemon_hunter/beta/hunter_policy.py",
+    "pokemon_hunter/beta/hunter_coverage.py",
+    "pokemon_hunter/beta/hunter_installed.py",
     "pokemon_hunter/beta/hunter_catalog.py",
     "pokemon_hunter/beta/hunter_query.py",
     "pokemon_hunter/beta/hunter_views.py",
@@ -106,6 +110,9 @@ PRIVATE_NAMES = {
     "credentials.json",
     "market_values.json",
     "price-contracts.json",
+    "hunter-policy.json",
+    "hunter-usage.jsonl",
+    "hunter-policy.lock",
     "active.json",
 }
 

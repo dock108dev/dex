@@ -4,6 +4,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+from .hunter_profile import apply_settings
 from .staging_config import configuration, profile
 
 STAGING = profile() == "staging"
@@ -32,6 +33,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "pokemon_hunter.beta.local_sessions.LocalSessionRenewalMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "axes.middleware.AxesMiddleware",
 ]
@@ -76,8 +78,11 @@ CSRF_COOKIE_NAME = "dex_b1_csrf"
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Strict"
 CSRF_COOKIE_SAMESITE = "Strict"
-SESSION_COOKIE_AGE = 3600
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+# Ordinary local sign-in survives browser closure and renews through Django's
+# existing session lifecycle without rotating the session/navigation identity.
+SESSION_COOKIE_AGE = 30 * 24 * 60 * 60
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_SAVE_EVERY_REQUEST = False
 # HTTP is permitted only on the fixed loopback listener, never hosted.
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
@@ -112,3 +117,7 @@ if STAGING:
     MIDDLEWARE[0] = "pokemon_hunter.beta.security.StagingMiddleware"
     B2_ENABLED = PARITY_ENABLED = B3_ENABLED = B4_ENABLED = True
     DATA_UPLOAD_MAX_MEMORY_SIZE = 2_000_000
+
+# The guarded operator selects this process-local profile only after preflight.
+# Ordinary local/staging startup cannot activate it through environment or HTTP.
+apply_settings(globals())

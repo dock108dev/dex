@@ -1,18 +1,22 @@
 .hunter { max-width: 1160px; margin: 0 auto; padding: 24px; overflow-wrap: anywhere; }
 .hunter *, .hunter-page main { min-width: 0; }
 .hunter-heading, .hunter-controls, .hunter-actions, .hunter-results-heading { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-.hunter-heading { justify-content: space-between; align-items: start; margin-bottom: 28px; }
+.hunter-heading { justify-content: space-between; align-items: start; margin-bottom: 20px; }
 .hunter-heading nav { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+.hunter-heading nav a, .hunter-heading nav a:visited { color: #9c1c30; }
+.hunter-heading nav a:hover { color: #701020; }
 .hunter a { display: inline-flex; align-items: center; min-height: 44px; }
 .hunter-heading h1 { margin-bottom: 12px; }
 .hunter-eyebrow { margin-bottom: 4px; }
 .hunter-controls { align-items: end; margin-bottom: 16px; }
 .hunter-controls label { flex: 1 1 180px; max-width: 360px; }
-.hunter button { white-space: normal; overflow-wrap: anywhere; max-width: 100%; }
+.hunter button { white-space: normal; overflow-wrap: anywhere; max-width: 100%; background: #fff; color: var(--ink); border-color: #979aa1; }
+.hunter button.primary, #hunter-review-compare { background: #ac2336; border-color: #ac2336; color: #fff; }
+.hunter button:disabled { background: #e8e8eb; color: #666; border-color: #c8c8cd; }
 .hunter-scope, .hunter-note { color: var(--muted); }
 #hunter-status { margin-top: 18px; font-weight: 600; }
 #hunter-status[data-error="true"] { color: var(--danger); }
-#hunter-progress { margin: 24px 0; padding: 18px 0; border-block: 1px solid var(--line); }
+#hunter-progress { margin: 18px 0; padding: 12px 0; border-block: 1px solid var(--line); }
 .hunter-results-heading { justify-content: space-between; margin: 24px 0 16px; align-items: end; }
 .hunter-results-heading label { max-width: 360px; flex: 1 1 200px; }
 .hunter-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin: 18px 0; }
@@ -33,6 +37,13 @@
 .hunter summary { min-height: 44px; padding: 10px 0; cursor: pointer; font-weight: 600; }
 .hunter details { margin-top: 16px; }
 .hunter-help { margin-top: 28px; }
+.hunter-usage { margin: 20px 0; padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.hunter-usage h2 { margin: 0 0 10px; font-size: 1.15rem; }
+.hunter-usage-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 18px 0; }
+.hunter-usage-fields label { display: flex; flex-direction: column; gap: 6px; }
+.hunter-usage-fields [hidden] { display: none; }
+#hunter-usage-status { font-weight: 600; }
+#hunter-usage-feedback[data-error="true"] { color: var(--danger); }
 #hunter-review, #hunter-details { margin-top: 24px; }
 .hunter-review-card, .hunter-review-row { border-block-start: 1px solid var(--line); padding: 18px 0; }
 .hunter-review-grid, .hunter-review-fields, .hunter-review-costs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
@@ -50,7 +61,7 @@
 .hunter :focus-visible { outline: 3px solid #b11628; outline-offset: 3px; }
 @media (max-width: 700px) {
   .hunter { padding: 16px; }
-  .hunter-cards, .hunter-review-grid, .hunter-review-fields, .hunter-review-costs { grid-template-columns: minmax(0, 1fr); }
+  .hunter-cards, .hunter-review-grid, .hunter-review-fields, .hunter-review-costs, .hunter-usage-fields { grid-template-columns: minmax(0, 1fr); }
   .hunter-fields { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 380px) {

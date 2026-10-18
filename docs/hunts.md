@@ -1,5 +1,406 @@
 # Shopping and eBay discovery
 
+## Additive existing-set delivery — October 17, 2026
+
+The compatible numbered-extension package is installed. All **51 passing packages /
+5,101 new parents** from the selected 52-set / 5,102-record cohort are published.
+Actual catalog: **22,389 identities / 187 sets, 4,722 eligible / 17,667 unpriced**.
+Every old set row/version, printing/variant/archive, mapping/alias, owner declaration,
+207 copies, three frozen goals and prior reference decision is preserved. All new
+rows are unowned/unpriced with edition/finish/variant unknown. Metadata creates no
+copy, exact ownership, frozen membership or new price.
+
+The distinct `dex-catalog-additions-v1` path preserves the original set version and
+uses immutable extension provenance/full enumeration. Same-package replay, stale
+state, mapping/identity conflicts and numbered-parent rollback dependencies are
+qualified. Six native checkpoints used explicit mode, ten-set limits and fresh
+confirmations. All 59 schemas are unchanged; 51 head pointers intentionally advance.
+One ordinary signed-session hourly renewal preserves key/owner/navigation meaning.
+
+**Precise holds:** Detective Pikachu's one Trainer addition awaits reconciliation
+of existing `1/18`–`18/18` identities with literal retained `1`–`18` source numbers.
+Generations' separate 117-record hold retains `g1` as Gym Heroes. Other retained
+source/species gaps and the October 6 cutoff remain explicit. The passing cohort
+is complete; do not restart the 52-set workflow.
+
+No provider, price or artwork request, new source admission, usage-setting change,
+eBay enabling or external deployment occurred. S6 retains the same 300 exact targets,
+six groups/routes and **0 consumed / 14 remaining**, with the original October 18
+resource/publisher-build gates. The next selected pricing action is that finite
+refresh when its real gates permit. Owner acceptance remains separate.
+
+[Combined closeout](../reports/catalog-additive-batch-20261017/closeout.md),
+[installed verification](../reports/catalog-additive-batch-20261017/installed-qualification.json),
+[exact holds](../reports/catalog-additive-batch-20261017/holds.json),
+[current S6 continuation](../reports/catalog-additive-batch-20261017/s6-continuation.md).
+
+Earlier sections below retain their dated evidence and historical counts.
+
+## Historical 117-set catalog batch installed — October 17, 2026
+
+The actual installation now contains **17,288 identities / 187 sets** following
+publication of all 117 selected sets / 9,419 numbered records. Local admitted
+reference coverage remains **4,722 eligible**, with **12,566 unpriced** and the
+same **4,694 observations / seven sources**. Catalog matching scope grows without
+new prices, provider requests or Hunter usage-setting changes. All existing
+ownership/goals/reference decisions and Safari session continuity are preserved.
+9,418 additions are unowned; one already explicit Eevee #84 / Dark Explorers
+owner declaration remains broad presence, without new copy/variant ownership.
+All new physical descriptors remain unknown. See the
+[current catalog closeout](../reports/catalog-batch-20261017/closeout.md).
+
+The historical next catalog branch was the [52-set additive batch](../reports/catalog-batch-20261017/next-batch-handoff.md).
+Generations retains its exact alias hold. S6's final metadata-only binding retains
+the same 300 targets / 14 total requests / zero consumed, with its original actual
+resource/build/history gates. Use the [current continuation](../reports/catalog-batch-20261017/s6-continuation.md).
+Catalog metadata supplies no new comparison value or owner acceptance.
+
+## Installed sign-in and independent catalog/reference branch — October 17, 2026
+
+Ordinary local sign-in now persists for 30 days with hourly rolling renewal and
+stable session/navigation identity. The owner root and cookie/secret identity are
+preserved. The owner's ordinary Safari session survived tab close/reopen, server
+restart and full Safari quit/relaunch after one completed sign-in. Staging and Hunter
+leases/source expiry/budgets retain their separate policies. Exact installed
+qualification and evidence are in the [delivery closeout](../reports/local-auth-catalog-capacity-20261017/closeout.md).
+
+CATALOG-C1/A measured the October 6 retained source at 205 physical sets / 21,291
+English records and prepared a reviewed 115-record first broader publication.
+REFERENCE-R2/A's finite catalog lookup, selected batches and combined release
+capacity were implemented, qualified and installed before C1/B's actual publication.
+The 115 Black & White and subsequent 101 BW Black Star Promos parents bring actual
+coverage to **4,722/7,869**, with **3,147 unpriced** and the same **4,694
+observations/seven sources**.
+Ownership, frozen goals and original identities remain unchanged. No provider
+request, source import or usage setting selection occurred. See the
+[current publication closeout](../reports/catalog-bwp-20261017/closeout.md) and
+[next additive existing-set batch](../reports/catalog-batch-20261017/next-batch-handoff.md).
+Broader CATALOG-C1 and expanded REFERENCE-R2 import remain open.
+
+The reviewed package is published: **101 BW Black Star Promos parents**, 93 Pokémon (74
+above 251), eight Trainer and zero Energy. Reproducible package bytes, a separate
+literal source checker, collision checks and disposable native publication passed.
+Actual native publication and installed query-only checks preserve all old references,
+ownership and frozen goals. All 101 additions are unowned, unpriced and physically
+unspecified. A fresh private protected backup passed. Safari's session remains
+intact, including a separately reconciled ordinary hourly renewal; no restart or
+login exercise occurred. Zero provider operations occurred. S6's metadata binding
+now includes this publication while retaining the exact prior targets/history/ceiling.
+
+S6 is rebound through separate metadata review to wheel `4488bbea1f637e7386c24ebfafc627d4c4b49b9aed9989b6b09153e3dcff2749`.
+Its 300 targets, 14-request ceiling, zero consumed accounting, October 18 daily
+resource window and strictly newer build requirement are unchanged. Follow the
+[current successor continuation](../reports/catalog-batch-20261017/s6-continuation.md); its catalog binding includes C1/B and `bwp`, and historical artifacts
+remain intact. No polling, schedule or replacement allowance was created.
+
+## HUNT-11/S6 selected refresh — open October 17, 2026
+
+The owner selected one exact 300-child ordinary refresh, capped at 14 source
+requests. Preparation, target/parent verification, separate metadata review,
+resource-specific pacing and refresh-mapping helper qualification passed.
+**Zero requests consumed, zero references added; S6 remains open.** All six groups
+were downloaded October 17, so the genuine daily refresh constraint still blocks
+capture. The selected window opens **October 18 at 20:04:24.557753 UTC / 4:04 p.m.
+Eastern**, subject to later matching history, with a strictly newer build than
+`2026-10-16T20:05:27+00:00`. Build availability is unknown.
+
+The amended explicit `selected_groups` cadence derives timing from matching
+resource attempts/reservations; historical global-plan policy remains intact.
+Both mapping tools now support refresh with frozen exact products/subtypes and
+cannot substitute a sibling. The exact helpers passed 326 socket-blocked tests
+against installed S5 dependencies. Ordinary runtime/package, 59 tables, owner
+state, seven sources and 4,694 observations are unchanged. Coverage remains
+4,722/7,036 originals and 0/617 children, 4,722/7,653 overall. Signed-in browser
+review and owner acceptance remain unverified. No schedule or renewed allowance.
+Use the already-selected [S6 continuation](../reports/catalog-batch-20261017/s6-continuation.md)
+and [current closeout](../reports/hunt-11-s6-20261017/closeout.md).
+
+## HUNT-11/S5 delivered variant representation — October 17, 2026
+
+Ordinary Dex now preserves **660 unspecified parents** and offers **617 separately
+evidenced children** for the 305 explicit-alternative parents. All 355 parents
+without variant detail stay unspecified. Broad discovery retains the family;
+literal edition/finish/special queries distinguish its children. An ordinary
+first-edition comparison needs explicit seller edition and finish evidence plus
+an applicable admitted reference. Ambiguous sellers stay ambiguous, special
+variants cannot collapse into ordinary products, and parent/sibling prices do
+not transfer. One provider item remains one offer and one deal contribution.
+Hunt, Continue, Stop, local review and Back retain their finite behavior.
+
+The original **4,722 eligible / 7,036** and 2,314 baseline gaps remain unchanged.
+All 617 new identities are unpriced, making 7,653 total identities and 2,931 total
+unpriced. The active release still contains 4,694 observations across seven
+sources with their original dates, expiry and source lifecycle. No catalog
+publication was counted as price evidence. Ownership, original mappings, all
+three actual frozen goals and their completion meaning survive.
+
+The exact S5 wheel is installed at the same real root and URL; see
+[local development](local-development.md#existing-installations). Its 1,072
+socket-blocked tests and actual installed read-only checks passed. The public
+catalog displays the children. A signed-in interactive walkthrough remains
+unverified because available browsers have no owner session. Fixtures remain
+engineering evidence only; owner acceptance stays separate.
+
+S5 consumed **zero provider operations**. All 63 S3 consumed scopes and historical
+accounting survive. eBay acquisition remains disabled and numeric limits
+unselected. The selected finite ordinary refresh covers **300** reviewed first-edition
+children across six groups, ceiling **14** requests, subject to existing pacing,
+newer-build, source-use and admission requirements. No capture ran in S5. Execute
+the [current S6 continuation](../reports/catalog-batch-20261017/s6-continuation.md); keep the other
+317 child gaps and 320/246/42/1,046 baseline cohorts separate. See
+[S5 closeout](../reports/hunt-11-s5-20261017/closeout.md).
+
+## HUNT-11/S4 local identity reconciliation — October 17, 2026
+
+All **660** final S3 ambiguous identities have reproducible per-printing evidence
+and dispositions. **355** retained card records supply no variant field; **305**
+describe multiple variants without assigning the existing numbered identity to
+one. No ingestion or crosswalk defect justifies a canonical change. All 660 retain
+unknown edition/finish/variant and their existing IDs. Normal, Unlimited, rarity,
+shared product IDs and an absent stamp cannot select a physical printing.
+
+Coverage remains **4,722 eligible / 7,036**, with **2,314 unpriced** and the same
+4,694 observations/seven sources. S4 used zero provider operations and made no
+customer-state or installed-code change. All 63 consumed group scopes remain
+consumed; Hunter remains disabled and numeric limits unselected. No S4 identity
+is ready for a new price capture: the exact refresh handoff is empty, ceiling zero.
+The next engineering work is the bounded parent/variant representation handoff,
+using the 305 explicit-alternative and 355 missing-detail cohorts; broader catalog
+expansion and the other 320/246/42/1,046 gaps remain separately measured.
+
+See [S4 closeout](../reports/hunt-11-s4-20261017/closeout.md) and
+[catalog evidence rules](catalogs.md#hunt-11s4-retained-variant-evidence).
+
+## HUNT-11/S3 actual current-catalog fill — October 17, 2026
+
+The actual installation now has **4,722 eligible reference identities / 7,036
+printings**, up from 1,516, with **2,314 unpriced**. Four selected batches across
+63 groups consumed exactly **134 HTTP 200 requests**: 126 product/price GETs and
+eight build checks, with zero new group metadata or eBay requests. All 4,432 frozen
+targets were independently reviewed; 3,206 exact references were additively
+activated. The current release contains **4,694 observations across seven sources**,
+preserving the original 1,488 observations and their dates, expiry and withdrawal.
+Eligible Trainer/Energy coverage is now 37/185 and 14/36 respectively.
+
+The remaining gap is 1,226 selected source/mapping/subtype cases, 42 compatible
+reserved-group gaps and 1,046 unsupported applicability cases. Literal named forms,
+edition/finish ambiguities and unsupported distributions remain explicit. English
+set denominators and the separate Radiant Collection `RC25` subset were reviewed
+against retained authoritative catalog evidence; the Raichu Trainer Kit half and
+Legendary Treasures ordinary/RC assignments remain distinct.
+
+Each completed batch was reviewed, imported, audited and cleaned before proceeding.
+All actual build pairs agree at October 16, 20:05:27 UTC; separate October 17 capture
+times remain recorded and provider valuation time remains null. These are dated,
+condition-mixed references. Hunter acquisition remains disabled and numeric settings
+unchanged. The same customer process and S1 installed package remain running, with
+all 59 database tables and protected state preserved. Raw source files and temporary
+manifests/packages were removed; managed observations retain ordinary lifecycle.
+This slice adds reference coverage and does not establish seller-specific fit,
+complete delivered costs, owner acceptance or genuine Hunt evidence.
+
+See [the S3 closeout](../reports/hunt-11-s3-20261017/closeout.md) and
+[current snapshot procedure](price-snapshots.md#hunt-11s3-current-catalog-fill--october-17-2026).
+
+## HUNT-11/S2 executed snapshot import — October 17, 2026
+
+The selected Aquapolis 1397 / Expedition 1375 initial fill completed **six source
+requests, all HTTP 200**, receiving 355 products and 660 product/subtype price rows
+in 527,110 bytes. Independent review reconciled all 559 local targets: **546 unique
+approved mappings**, ten unsupported variants and three actual subtype gaps.
+The installed snapshot engine validated and atomically activated all 546 new
+references. A fresh audit measures **1,516 eligible identities / 7,036 printings**,
+with **5,520 unpriced** and 1,488 snapshot observations from three admitted sources.
+All 901 earlier vintage observations and 41 Silver Tempest observations retain
+their original dates, expiry and independent source lifecycle.
+
+The owner corrected the project's blanket wait between every partial download.
+Initial fill now permits explicitly selected, never-reserved groups from the same
+or a newer cached publication. All selected groups are durably reserved before
+dispatch, including failed or uncertain selections; changing a label or date cannot
+repeat them. Ordinary refresh retains the daily reservation interval and requires
+a strictly newer publisher build, without requiring builds to be 24 hours apart.
+Real-clock, finite-plan, pacing, Stop, response and storage checks still apply.
+This distinction supports completing an initial cached snapshot; it does not enable
+repeated per-group refreshes or erase historical consumption. The earlier October 18 temporal stop
+and unexecuted plan remain historical evidence under
+`reports/hunt-11-s2-first-batch/`.
+
+Both build checks returned **October 16, 2026 at 20:05:27 UTC**. Capture completed
+October 17 at 19:37:14.340985 UTC; provider valuation time remains unknown. The new
+source expires November 16 at 00:00 UTC under the existing UTC date-age boundary.
+Raw product/price files and the temporary manifest were removed after import;
+admitted normalized prices remain only in managed source shards. No new eBay
+request, Hunt, sign-in, runtime replacement or numeric policy selection occurred.
+Hunter remains disabled. Reference eligibility establishes neither a complete
+delivered comparison nor a bargain, resale EV or owner acceptance.
+
+Evidence, the corrected selected plan and actual preservation/coverage results are
+in [the S2 closeout](../reports/hunt-11-s2-executed-20261017/closeout.md). The
+collector correction passed 121 socket-blocked tests; the mapping helper passed
+40 native checks. These supplement the unchanged installed S1 package evidence.
+
+## HUNT-11/S1 scaled snapshot preparation — October 17, 2026
+
+HUNT-11/S1 qualifies finite batch preparation and installs the compatible reverse-holo
+update in ordinary Dex. The exact runtime and final installation verification
+are in [local development](local-development.md#existing-installations) and
+`reports/hunt-11-s1-20261017/closeout.md`. At S1 close, the denominator was
+**7,036 printings / 68 local sets: 970 eligible and 6,066 unpriced**. S1 added no
+price coverage and performed zero new provider/feed operations, source imports
+or activations. S2's actual import and current coverage are recorded above.
+eBay acquisition remains disabled and ordinary numeric limits remain unselected.
+
+The retained-metadata inventory binds 67 local sets to 68 source groups, including
+the split Legendary Treasures groups; one Miscellaneous Promos printing remains
+ambiguous. Group bindings cannot establish product/subtype matches. S1 proposed
+Aquapolis 1397 then Expedition 1375, six GET attempts including two build checks
+and no extra group request. The original proposal's global cooldown was corrected
+before S2 executed the explicitly selected initial fill. The
+[bounded plan](price-snapshots.md#hunt-11s1-scaled-preparation-and-compatible-delivery)
+retains exact order, ceilings, Stop, consumption and post-capture review limits.
+S2 measured those two groups; other product/subtype matches and broader source
+coverage remain unmeasured until their own selected capture and review.
+
+The owner subsequently selected downloaded cached price snapshots for private
+local comparison. The published [TCGCSV download/cache guidance](https://tcgcsv.com/docs)
+and [FAQ](https://tcgcsv.com/faq) support the selected access route. The earlier
+blanket requirement for a bespoke permission letter was a project assumption,
+not an established legal prerequisite. This scoped source review is not a claim
+that every upstream term applies or that every possible downstream use is licensed.
+
+The fixed five-request Silver Tempest pilot completed HTTP 200 throughout:
+255 products and 392 price rows, 400,988 decoded bytes, with equal aware publisher
+build stamps before/after. Forty-one exact Normal/Holofoil references were
+independently mapped and activated through the existing installed snapshot engine.
+All 901 previous snapshot observations were preserved. The pilot's fresh audit measured
+**970 eligible identities / 7,036 printings**, with 6,066 unpriced. Thirty-one
+additional reverse candidates still need a future selected capture and review;
+eleven special variants and eight unmatched printings remain excluded. This is
+one pilot set, not complete catalog coverage. S1's reverse-compatible code cannot
+recover their excluded prices because the pilot's raw inputs were deleted.
+
+The new explicit product/subtype mapping adapter produces ordinary source-sharded
+v2 packages and metadata-only coverage projections from already permitted inputs.
+Existing admission, source competition, expected-current atomic activation,
+expiry and independent withdrawal remain authoritative. Ambiguous/unmapped or
+incompatible variants remain gaps. See [offline integration and future procedure](price-snapshots.md#hunt-11-broader-references-offline-integration)
+and the separate [catalog target](catalogs.md#broader-english-catalog-target).
+
+The pilot imported prices into the prior HUNT-09/10 runtime without a customer
+restart or code installation. S1 separately delivers the compatible local runtime
+and preserves the owner's **Leave acquisition disabled** choice. The source
+import is separate from marketplace acquisition. Broad marketplace retrieval stays across
+supported years/generations; it is not restricted to priced identities. Unknown
+shipping/tax/other costs and unresolved lot contents remain independent of eligible
+reference coverage. Source build is October 16, 2026; valuation time remains
+unknown and the reference is condition mixed. No per-card dynamic pricing was
+added. Exact download/import/preservation evidence is under
+`reports/snapshot-download-20261017/`; earlier HUNT-11 reports remain historical.
+Genuine repeated use and owner acceptance stay open.
+
+Remaining engineering is tracked in the Desktop `dex_next_steps.md`: further
+HUNT-11 work expands actual references beyond the completed two-group batch,
+using exact product/subtype review and bounded selected captures;
+CATALOG-C1 publishes the broader English Pokémon universe described in
+[catalog targets](catalogs.md#broader-english-catalog-target); REFERENCE-R2 extends
+exact reference mappings and release capacity to that measured universe. HUNT-12
+adds supported completed-sale guidance independently. These are separate from the
+already delivered Hunter UI and temporary lot review.
+If the frozen universe exceeds current catalog/import limits, qualify the
+REFERENCE-R2 capacity extension before publishing that larger catalog. Exact
+candidate/package/security verification is a named QA-01/R1 delivery task; old
+hosted results retain their original revision scope.
+
+## Completed-sale guidance
+
+The owner also selected eBay sold-price comparables as an additional planned
+source for singles, graded cards and later other cards. Current proven Browse
+access is active-listing access; sold-history entitlement remains unverified.
+Keep actual sale prices, asking prices and cached market references distinct.
+See [sold-price capabilities and matching requirements](sales-comparables.md).
+
+## Everyday Price Hunter — October 17, 2026
+
+**HUNT-09 and HUNT-10 engineering and protected ordinary delivery are complete.**
+Their everyday policy and interface persist through the compatible HUNT-11/S1
+update at the same root and port. Its installed interpreter is
+`/Users/michaelfuscoletti/.local/share/dex/runtimes/hunt-11-s1-delivered-20261017/bin/python`.
+Wheel SHA-256: `99cb6162440cf6ba062acb2042ddcccb1924474be5bc5f34e05a8fa20065ac4d`.
+HUNT-01–08 and LOT-01 remain completed historical scopes; owner acceptance stays
+separate. The owner selected **Leave acquisition disabled** after delivery.
+No ordinary policy or numeric capacity was selected; no provider operation occurred.
+At the HUNT-09/10 delivery, the signed-in screen showed blank settings and
+disabled Hunt. My Cards, Shopping, Check availability, Back and reopening passed
+without acquisition. S1's installed verification remains its separate evidence.
+
+The owner can later open **Hunter → Usage settings** and deliberately select
+acquisition enabled/paused, 1–15 operations per Hunt, 1–1,000 shared daily
+operations, timezone, one window or daily recurrence, and expiry. These are
+validation ceilings, not selected defaults. Hunt, Continue and selected official
+details each consume their dispatched requests; provider authentication also
+counts when needed. Failed, uncertain and stopped in-flight requests stay consumed.
+Local inspection, paging, reveal, filters, comparisons and Back remain free of
+acquisition. Daily capacity renews only under explicitly selected recurrence.
+
+Every explicit Hunt captures its own window, parent, ceiling and original lease.
+Concurrent Hunts share durable daily accounting. Pause, expiry, withdrawal and
+reductions apply before sends and publication. Timezone edits preserve prior
+usage conservatively; local calendar midnights include daylight-saving changes.
+Clock rollback and invalid accounting disable acquisition. History is append-only
+with a separate tail anchor. Compatible updates have a qualified package rebind;
+routine qualified updates need no new numeric selection. See
+[everyday policy operations](operations.md#everyday-hunter-policy).
+
+Comparison coverage now separates fetched, retained, eligible singles, loose lots,
+matched identities, admitted references and complete comparisons. Overlapping
+reasons explain identity conflicts, unavailable references, unknown costs and
+unresolved lot contents. Exact Legendary Collection singles no longer become
+lots solely from the set name; contradictory literal set claims withhold a
+reference. Unknown costs remain unknown and conditional references remain distinct.
+At HUNT-09/10 delivery, the metadata-only audit found 929 eligible reference
+identities among 7,036 indexed printings, with 6,107 unpriced and no source change
+in that interval. The subsequent snapshot pilot raised coverage to 970, followed
+by S2's measured 1,516 eligible identities above. The erased HUNT-08 corpus cannot
+be retrospectively reclassified.
+
+The historical HUNT-09/10 installed package passed 772 focused offline tests;
+Chromium passed 32 checks, 12 layouts and four measured doubled-text states on
+disposable data.
+Real repeated provider Hunts and in-flight Stop remain unobserved for this
+policy because acquisition was left disabled. No bargain, current price,
+complete actual comparison or owner acceptance is claimed. Its original evidence
+and instructions remain in `reports/hunt-09-10-20261017/closeout.md` and
+`reports/hunt-09-10-20261017/owner-instructions.md`.
+
+## Historical HUNT-08 installation — October 17, 2026
+
+HUNT-08 is delivered through the ordinary startup helper at the existing customer
+root and `http://127.0.0.1:8011/`. Shopping links to Price Hunter. The delivered
+successor wheel is `3ab5caa9e9cd84e7551cd8a2c7d534239da5056b4f9265ba3fb982a7a61bded9`;
+its ordinary startup and installed finite-authority binding have their own focused
+qualification. The HUNT-07 UI assets are unchanged. Deferred photo batches remain
+uninstalled as a capability; startup does not resume unselected recognition jobs.
+
+The owner separately approved one installed 15-operation check. One Both Hunt,
+five explicit Continues and two selected exact details all completed HTTP 200:
+one OAuth, twelve Browse and two details. The twelve pages yielded 2,368
+observations, 2,358 unique identities, ten duplicates, 800 retained summaries and
+1,558 skipped identities. Eleven pages were advisory-truncated. Zero fully
+comparable results were observed; actual lots retained unresolved contents.
+Local inspection, paging/filter/reveal, lot comparison, Back/focus and reopening
+added no provider requests. Independent detail Stop and parent clearing passed;
+network in-flight suppression and deliberate printing corrections retain their
+separate offline evidence. No justified live printing correction was available.
+
+All 59 tables, measured fields and whole database bytes match the fresh baseline.
+Credentials, source lifecycle and original consumed ledgers are preserved. The
+new allowance is exhausted, closed and expired; no standing future capacity is
+selected. Stop erased the temporary corpus. The ordinary installed runtime remains
+available, with acquisition disabled. Owner acceptance remains open. See the
+`reports/hunt-08-20261017/closeout.md` and
+`reports/hunt-08-20261017/owner-instructions.md`.
+
 ## Price Hunter screen and temporary review
 
 `/shopping/hunter/` is the authenticated Hunter journey, linked from Shopping and
@@ -7,8 +408,8 @@ its tools navigation. Choose Singles, Lots or Both and explicitly Hunt. No goal,
 wanted list or card entry is required. It retains US/English Pokémon TCG across
 all years/generations, including owned cards and supported Trainer/Energy singles.
 The captured auction window is the next 24 hours; available Buy It Now offers are
-separate. Production acquisition remains unavailable until a trusted finite
-allowance is separately authorized. An unavailable screen is not an empty search.
+separate. Ordinary acquisition remains unavailable until the owner selects usage limits
+in the installed settings. Historical qualification profiles retain their finite allowances. An unavailable screen is not an empty search.
 
 The screen shows progress, limited coverage, image-led received results and dated
 backend comparisons. Applicable BIN, conditional BIN and auction scenarios keep
@@ -59,13 +460,175 @@ Missing, blocked or broken images keep fixed neutral space and readable identity
 Seller text is rendered as text. Existing visual card search, assisted listing
 checks and manual calculator remain available independently.
 
-HUNT-06 qualifies this journey only with disposable engineering fixtures and fake
-provider transport. Exact source/package/browser evidence is retained under
-`reports/hunt-06-20261016/`. The customer installation remains SHOP-04. HUNT-07 must
-rebind the integrated candidate and pass offline/runtime/security gates before
-presenting the retained future-live plan for separate authorization. Genuine lot
-flow, HUNT-08 delivery and owner acceptance remain open. Reference coverage remains
-929 eligible identities among 7,036 printings independently of listing outcomes.
+HUNT-06's disposable engineering and fake-transport evidence is retained under
+`reports/hunt-06-20261016/`. HUNT-07's integrated offline checks and separately
+selected bounded genuine journey are complete; their observed limits are recorded
+below. These earlier qualification records preceded HUNT-08 delivery above.
+Owner acceptance remains open. HUNT-07's measured reference coverage was 929
+eligible identities among 7,036 printings, independently of listing outcomes;
+HUNT-08 acquired no new reference data.
+
+## HUNT-07 offline integration and execution boundary
+
+HUNT-07 rechecks the integrated source/package and adds joined fake-transport
+traversal, lot review, explicit detail/shared-accounting, expiry, authority and
+reference-lifecycle cases. Integrated tests reproduced publication races when a
+continuation completed during comparison or a correction completed during a
+review read. Result/review publication now checks the current observation and
+review revision; changed inputs fail closed for a local reread. A concurrent
+parent Stop returns its current stopped state. Check availability can explicitly
+reload current received results without acquiring, and current allowance counts
+disable a new Hunt when capacity is exhausted.
+
+Its fresh actual-state preservation baseline captures
+all current database tables in a single query-only transaction, schema, stable
+file/sidecar hashes, runtime/configuration and independent journals. This new
+baseline does not retroactively prove HUNT-06's unknown slice-start preservation
+or identify the writer of its authentication/session changes. Never restore an
+older database to make evidence agree.
+
+At this historical boundary, production traversal was disabled. SHOP-04 had no Hunter implementation, and
+ordinary candidate startup starts source expiry and may start the configured scan
+worker. The explicit guarded operator is `scripts/hunter_boundary.py`, backed by
+`beta.hunter_operator`, `hunter_profile` and `hunter_transition`. Its hash-pinned
+bootstrap checks wheel and installed members before importing application code;
+read-only preflight binds both runtime trees/dependencies, launcher/profile,
+canonical root/origin, compatible schema, expected active account, private
+configuration, startup pointers and immutable root-hashed allowance. Preflight
+creates neither authorization nor capacity nor a consumed ledger.
+
+The selected profile exposes ordinary sign-in/session/CSRF, Hunter pages/APIs,
+reviewed assets/artwork and temporary review actions. Only expiry starts in the
+background; recognition, bulk/photo/catalog mutation, collection mutation and
+other acquisition routes are unavailable server-side. One exact Both Hunt and
+explicit Continue/selected detail actions use the unchanged plan. Missing,
+withdrawn or expired independent runtime/provider authorization suppresses new
+dispatch and late publication. Local reads, comparison, review, Back/reopening
+and independent Stops add no capacity or requests.
+
+The owner selected the exact same-root/same-port transition on October 17. It
+stopped SHOP-04, protected current state excluding all managed snapshots, ran the
+isolated candidate and returned to unchanged compatible SHOP-04 using latest state.
+One OAuth and two Browse operations completed; continuation/lots/details were not
+reached before browser-context loss. That attempt is closed and its three consumed
+operations remain permanent. A durable pending marker supports handback-only
+recovery; handback never overlays a database, ledger or registry.
+The full operator contract, exact commands and qualification are in
+`reports/hunt-07-boundary-20261016/`. A copied root or another port cannot replace
+this production proposal. The first attempt's missing observations were addressed
+by the separately selected completion execution below. Offline qualification alone
+activates no future-live capacity; HUNT-08 delivery and owner acceptance remain open.
+
+The security reconciliation distinguishes source fixes from the installed runtime:
+the candidate carries the reviewed probe fixes; original SHOP-04 probe modules
+remain older. Source-only photo/bulk modules do not establish an installed feature
+or resume deferred real-photo work. Reconcile and deliver selected repairs through
+HUNT-08 only after its prerequisites. Exact HUNT-07 evidence is retained under
+`reports/hunt-07-20261016/`; current source/member identity and current hosted
+revision evidence keep separate scopes.
+
+### Browser interruption and forward qualification
+
+The [retained-tab procedure](hunter-browser-workflow.md) binds ordinary sign-in,
+resumed browser work, explicit Continue, local lot review and independent Stop to
+the original tab. Current browser documentation requires renewing handoff marks
+each turn. The historical method chronology contains no renewal after the owner's
+asynchronous reply, but also no established completed-turn/cleanup event before
+the loss. Its exact cause remains unresolved. Fresh tabs correctly lack another
+tab's opaque Hunt history.
+
+The October 17 offline recovery pass reproduced a separate stale-handle defect:
+the real missing-run response is HTML 404, and JSON parsing discarded its status.
+The client now preserves that status so its existing unavailable path clears the
+stale handle/results and refuses Continue without acquisition. No backend or
+operator behavior changed. The repaired client is repeat-packaged and qualified
+in a fresh isolated wheel; the original executed package remains historical.
+Evidence under
+`reports/hunt-07-browser-recovery-20261017/` separates real browser reconnect/API
+observations, simulated turn cleanup and existing fake-transport lifecycle checks.
+No actual provider operation or runtime transition is selected by this work.
+
+The old execution proposal is evidence of completed work. Its operator/profile
+binds only the original plan ID and exact limits; editing an identity document
+cannot authorize or execute a new plan. The later completion binding below has
+its own exact candidate/proposal. Preserve the old closed selections, consumed
+records and erased-corpus boundary. The later selected completion execution is
+recorded below; HUNT-08 and owner acceptance remain open.
+
+### HUNT-07 completion binding
+
+The narrow completion binding adds only the reviewed `hunt-07-completion-v1`
+identity beside the original fixed plan. Its fixed maximum is one OAuth,
+twelve Browse and two exact selected details: fifteen additional operations.
+The prior one OAuth/two Browse remain permanently consumed and closed, for an
+eighteen-operation total across these two completed HUNT-07 intervals. Earlier
+campaigns remain independent.
+
+The strict completion-plan JSON binds the same Both ordering, captured UTC window,
+available-BIN meaning, original limits and lease. The first Continue reaches the
+first lots auction/BIN pair. Its predecessor linkage pins the original proposal,
+wheel, closed-selection receipt and root-hashed three-record ledger. Preflight
+reads the predecessor bytes and semantic counts without creating capacity. The
+trusted acquisition check revalidates that linkage before admission/send and
+publication. Modified history fails closed; handback-only recovery skips mutable
+ledger health without restoring or resetting any state.
+
+The restricted profile receives its fixed plan only from the verified operator.
+An untouched entire completion allowance and one explicit Both Hunt are required;
+even an OAuth-only uncertain admission prevents a replacement start. Details
+retain their verified parent allowance. No HTTP field, environment setting or
+fallback identity can select arbitrary plans, limits, roots or provider URLs.
+Production remains disabled outside independent exact runtime/provider selection.
+
+The completion proposal and offline package/refusal/browser evidence are under
+`reports/hunt-07-completion-binding-20261017/`. Preparing them creates no actual
+authorization, customer ledger, provider request or runtime transition. Preserve
+the repaired HTML 404 handling and [retained-tab procedure](hunter-browser-workflow.md).
+The exact proposal was subsequently selected and executed as recorded below. Its
+completed command and either campaign's consumed capacity cannot be reused.
+
+### Completed bounded genuine qualification — October 17
+
+The owner selected the exact completion transition and `hunt-07-completion-v1`.
+The frozen wheel SHA-256 is
+`ceb3abbb1df16abfa49cc07202b6ac2d98ae0d49e84dc2e52c56c71a6f7726eb`;
+proposal SHA-256 is
+`eb602c52d7c9a75ec270cf0f2c53685fc2a4ff21587c122cb1f6f567c6a758d9`.
+This bounded genuine gate completes HUNT-07. Guide edits after execution are not
+part of those frozen candidate bytes. Exact evidence and the next delivery handoff
+are under `reports/hunt-07-completion-live-20261017/`.
+
+One Both Hunt and five explicit Continues retained the original tab, run, UTC
+window and lease. One OAuth, twelve Browse and two selected exact official details
+completed HTTP 200: singles auction four/BIN two and lots auction four/BIN two.
+Every captured page returned 200 summaries and was advisory-truncated. The 2,400
+observations reconcile to 2,391 unique identities plus nine duplicates; 800 were
+retained and 1,591 skipped at the retention cap. Fifty retained offers were locally
+rejected. The other 750 comprise 13 conditional, 15 matched-unpriced, 134 ambiguous,
+161 unmatched and 427 unsupported results, with zero fully comparable offers.
+This is partial marketplace coverage and no bargain or resale-EV proof.
+
+Local paging, filtering, seller reveal, lot analysis, comparison, Back/focus and
+reopening added no acquisition. One actual lot had no proposals and 100 unresolved
+cards; another had three unresolved proposals, no included exact printing and a
+remainder of seven. No justified contents correction was available, so deliberate
+correction was not exercised live; its qualified offline evidence remains separate.
+Unknown identities and contents were not invented to produce a complete valuation.
+
+Stop details was selected while the UI showed loading, but transport had completed;
+an actual in-flight network Stop/late-response race was not observed. Offline
+suppression evidence retains that scope. Parent Stop cleared temporary results and
+dependent reviews. The operator returned to ordinary SHOP-04 at the original root
+and port using latest state. Schema and 55 of 59 tables match the fresh baseline;
+the four changes are `auth_user.last_login`, one access-log row, one session row and
+sequence bookkeeping consistent with observed sign-in. Runtime, helper,
+configuration, protected collection state and source lifecycle match. Original
+journal prefixes and the prior three consumed operations are preserved; the new
+fifteen remain permanently consumed, with no remaining capacity or new allowance.
+
+Historical tab-loss cause and HUNT-06's missing start-state/writer evidence remain
+unresolved. The completed genuine gate does not install Hunter or provide owner
+acceptance. That historical SHOP-04 state was subsequently updated by HUNT-08 above.
 
 ## One visual Pokémon, card and eBay search
 
@@ -400,8 +963,8 @@ Broader source coverage remains independent; HUNT-05 ranking is described below.
 `hunter.summary_lease` preserves available seller summary/identity clues and the
 original temporary lifetime for LOT-01. Lots remain unsupported for single-card
 valuation; contents proposals and explicit detail contracts are described below.
-The screen and review are implemented in HUNT-06 above; HUNT-07/08 retain
-integrated genuine qualification and actual customer installation.
+The screen and review are implemented in HUNT-06 above; HUNT-07's bounded genuine
+qualification and HUNT-08 ordinary installed delivery are complete; owner acceptance remains separate.
 
 Public query sources are recorded as `hunter_query.PUBLIC_SOURCES`. Engineering
 qualification and exact identities are retained locally under
@@ -457,16 +1020,18 @@ under `reports/hunt-02-03-20261016/`. They are fabricated engineering cases, not
 replay of HUNT-01's erased 400 genuine summaries. This slice performed zero provider
 operations and left the installed SHOP-04 runtime and exhausted HUNT-01 allowance
 unchanged. The later backend and screen contracts extend this baseline.
-Integrated genuine qualification, customer delivery and owner acceptance remain open. `summary_lease` and the reusable local
-identity/reference boundary retain their original account/session and expiry
-contracts for LOT-01 and HUNT-06.
+The later bounded genuine qualification is recorded above. Customer delivery and
+owner acceptance remain open. `summary_lease` and the reusable local identity/
+reference boundary retain their original account/session and expiry contracts for
+LOT-01 and HUNT-06.
 
 ## HUNT-04/05 and LOT-01 backend contracts
 
 The October 16 backend candidate adds bounded traversal, opportunity ranking and
 local lot contents proposals. Qualification uses disposable engineering roots;
-SHOP-04 remains the customer installation. Hunter UI, prefilled review/images,
-genuine traversal/details, installation and owner acceptance remain separate gates.
+SHOP-04 remains the customer installation. HUNT-06 supplies UI and prefilled
+review/images; the completed HUNT-07 gate above supplies bounded genuine traversal/
+detail evidence. Installation and owner acceptance remain separate gates.
 No new provider allowance is active: `hunter_budget.TRAVERSAL_ALLOWANCE` is `None`.
 The exhausted HUNT-01 identity and ledger remain unchanged without rollover/refund.
 
@@ -554,8 +1119,10 @@ Exact source/package evidence, measurements, retained failures and the executabl
 HUNT-06 integration/future-live plans are retained under
 `reports/hunt-04-05-lot-01-20261016/`. These are backend engineering contracts;
 the screen and LOT-01 review/image/provenance integration are implemented by
-HUNT-06 above. Genuine actual-flow evidence remains HUNT-07. Current coverage stays 929 eligible identities / 7,036 printings;
-no catalog or price-source acquisition occurred.
+HUNT-06 above. The later bounded actual-flow evidence is recorded in HUNT-07 above.
+At that backend qualification, coverage was 929 eligible identities / 7,036
+printings; no catalog or price-source acquisition occurred in that slice. The
+October 17 snapshot pilot above subsequently raised eligible coverage to 970.
 
 ## Selected Price Hunter requirements
 
@@ -687,12 +1254,12 @@ explicit and counted within the new budget. Existing saved research remains sepa
 
 The first implementation is a bounded listing sweep joined to the existing database.
 Finite orchestration, local identity/reference adapters, matching, lot parsing,
-contents comparison and UI are implemented and qualified offline. Integrated
-genuine qualification and installed delivery remain required. New catalog or
+contents comparison and UI are implemented and qualified offline, with bounded
+integrated genuine qualification and HUNT-08 ordinary installed delivery complete. New catalog or
 reference acquisition is separate work only where measured gaps require it. The active
-remaining slices belong in the Desktop Next Steps tracker. This documentation pass
-does not start provider acquisition, refresh prices, create a scheduler or change
-the installed app. The separate [legacy watcher](legacy-watcher.md) is not a
+remaining slices belong in the Desktop Next Steps tracker. The installed check
+consumed its separately approved finite allowance and is closed. No standing
+future acquisition capacity or unattended scheduler is selected. The separate [legacy watcher](legacy-watcher.md) is not a
 drop-in hunter: its storage, automatic enrichment and notifications differ from
 temporary Shopping results.
 

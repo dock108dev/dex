@@ -121,6 +121,7 @@ def load(path, *, now=None):
     if not seal or seal.get("sha256") != rules.digest(value):
         raise ValueError("Snapshot bytes changed after version validation")
     contracts, rows = {}, []
+    source_bytes, mapping_count = 0, 0
     for digest, meta in value["sources"].items():
         if blocked(version, digest):
             continue
@@ -136,19 +137,33 @@ def load(path, *, now=None):
         ) != (version, value["release_month"], meta["expires_at"]):
             raise ValueError("Source contract or release identity changed")
         storage.reviewed(part)
-        rules.validate(part, storage.entries(), now=now)
+        source_size = rules.serialized_bytes(part)
+        source_bytes += source_size
+        mapping_count += len(rules.contract(part["contract"])["mappings"])
+        if (
+            source_size > rules.MAX_BYTES
+            or len(part["records"]) > rules.MAX_ROWS
+            or source_bytes > rules.MAX_RELEASE_BYTES
+            or mapping_count > rules.MAX_RELEASE_MAPPINGS
+            or len(rows) + len(part["records"]) > rules.MAX_RELEASE_ROWS
+        ):
+            raise ValueError("Stored source composition exceeds the finite release capacity")
         key = part["contract"]["review_id"]
         contracts[key] = dict(contract=part["contract"], expires_at=part["expires_at"])
         rows.extend(dict(row, contract_id=key) for row in part["records"])
     if not rows:
         return None
-    return dict(
+    combined = dict(
         schema="dex-price-snapshot-v2",
         version=version,
         release_month=value["release_month"],
         contracts=contracts,
         records=rows,
     )
+    # Validate both independent shards and the combined row/mapping/byte budget.
+    # Read the full catalog once; renewal of authentication cannot change it.
+    rules.validate(combined, storage.entries(), now=now)
+    return combined
 
 
 def drop(version, digest):
