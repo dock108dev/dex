@@ -4,6 +4,36 @@ Shopping combines local catalog browsing, explicit eBay actions and dated-refere
 comparisons. Catalog and reference coverage are partial. Missing identity, costs or
 reference values stay unknown. The app never buys, bids or guarantees a bargain.
 
+## Active owner direction — Shopping repair first, October 18, 2026
+
+The current experience is not accepted as usable Shopping. The next priority is
+to show what a listing is and why it deserves attention. This correction replaces
+earlier identity/reveal preferences; descriptions below document existing behavior
+and contracts, not completion of this repair.
+
+Provide a visual feed with two compatible priorities: **Find my missing cards**
+using the actual collection, and **Find underpriced listings** across the selected
+collecting scope, including owned cards and without requiring manual card entry,
+a wanted list or a goal. Let the owner choose which leads and show both reasons
+when applicable. Missing-card relevance remains useful without a valuation;
+price-opportunity claims require an applicable, dated comparison and honest costs.
+Current bids are provisional, not final bargains. Do not infer completed-sale value
+from active asking prices or label an unsupported comparison a discount.
+
+Show identities, set/numbers, seller titles and available images immediately.
+Repair external listing links, add time remaining and auction end date/time, and
+fix missing/slow/flickering images with stable loading/fallback space. Distinguish
+seller photos from catalog scans. Lead results with price, shipping, known total
+and a short reason to look; expand technical comparison details on demand.
+Simplify repeated setup/copy and make discovery and Hunter a coherent product loop.
+
+Diagnose and verify on the actual installation; confirm current asset/reference
+availability separately from presentation defects. Preserve customer state,
+finite explicit acquisition, Stop, accounting and source rights. This plan does
+not enable acquisition or grant new capacity. Installed verification and owner
+feedback remain required after focused engineering checks. See the first priority
+in `/Users/michaelfuscoletti/Desktop/dex_next_steps.md` for repair acceptance.
+
 ## Everyday Price Hunter
 
 Use **Hunter → Usage settings** to enable/pause acquisition and explicitly select
@@ -130,9 +160,9 @@ establish every edition/finish. Search is read-only for inventory and goals.
 Search starts only on explicit action. **Stop** cancels acquisition and suppresses
 late publication. **Next results** continues the captured choices and next catalog
 queries, deduplicating across batches. Edited choices require a new search. Filters,
-reveal, Back and reopening perform no provider requests. Titles, identities and seller
-links respect reveal preferences; seller text proposes identity, without physical
-verification.
+reveal, Back and reopening perform no provider requests. The active repair direction
+requires titles, identities and seller links to be visible immediately; seller text
+proposes identity, without physical verification.
 
 ## Comparisons and temporary results
 

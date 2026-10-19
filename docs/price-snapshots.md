@@ -122,3 +122,46 @@ durable noncontent accounting constrain selected resources, pacing, byte limits,
 Stop and uncertainty. Restart, rename, failed attempts and app restore never renew
 consumed capacity. Hard-coded finite qualification allocations are not reusable
 provider budgets. See [operations](operations.md#snapshot-retention-and-backups).
+
+## Beta population accepted — coverage work stopped
+
+Imported from the Desktop tracker during the October 18 documentation cleanup.
+This is a historical closeout/decision, not a fresh verification. The active
+Shopping repair in [Shopping](hunts.md#active-owner-direction--shopping-repair-first-october-18-2026)
+and the Desktop Next Steps plan govern current work. Historical next actions below
+do not reactivate deferred work or establish installed delivery.
+
+**Owner decision:** the current catalog and reference population is good enough
+for the beta. Stop pursuing the remaining percentage. Further real data pipeline,
+coverage expansion and residual identity/pricing campaigns are deferred until the
+owner chooses to resume them. REFERENCE-R3/RESIDUAL-1 is **parked**, not the next
+assignment. No further preparation, native catalog publication or acquisition is
+needed merely to improve the current coverage number.
+
+Historical pre-recovery delivery measurements follow. The old root below was
+subsequently deleted; managed prices were not recovered. These measurements do not
+establish current availability; see [recovery](local-development.md#existing-installations).
+
+At that delivery:
+
+- **33,083 identities / 187 sets; 19,365 eligible / 13,718 unpriced** — **58.5%**,
+  roughly 60%, accepted by the owner as the current beta population.
+- **23,355 observations / 22 independently managed sources**. Active release
+  `2af89c05-d3a2-49d7-b325-ad3304c59304`.
+- **207 active copies / three frozen goals**, protected customer state and all
+  59 database tables/schemas preserved.
+- Root `/Users/michaelfuscoletti/dex-private/b2-parity-20260928/review-local`,
+  normal URL `http://127.0.0.1:8011/`. Last verified runtime:
+  `/Users/michaelfuscoletti/.local/share/dex/runtimes/catalog-additive-release-20261017/bin/python`;
+  wheel SHA-256 `115a336d4e36df4a64e268f587311810f71bc8f4a7396471d601c21290b2609f`.
+- R3/ACQUIRE-1 delivered 6,117 new observations/eligible children, with **98/98
+  requests consumed**. REFRESH-1 and S6 are also exhausted. No standing allowance,
+  retry, pipeline, schedule or polling follows from those completed selections.
+
+These are delivery measurements, not a new runtime audit performed by this tracker
+edit. Existing dated-reference/conditional/unpriced labels and normal source expiry
+and withdrawal behavior remain intact. Population acceptance does not change them.
+
+Actual delivered closeout: `reports/reference-r3-acquire1-20261018/closeout.md`,
+coverage: `reports/reference-r3-acquire1-20261018/coverage-final.json`,
+preservation: `reports/reference-r3-acquire1-20261018/preservation-summary.json`.

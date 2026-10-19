@@ -145,3 +145,58 @@ never reset reservations to retry an uncertain model request. The worker and acc
 paths enforce image lifetime; hard termination may leave private temporary files.
 See [photo storage](photo-entry.md#storage-and-shared-review) and
 [failure handling](ERROR_HANDLING.md).
+
+## Deferred — resume only on later owner direction
+
+Imported from the Desktop tracker during the October 18 documentation cleanup.
+This is a historical closeout/decision, not a fresh verification. The active
+Shopping repair in [Shopping](hunts.md#active-owner-direction--shopping-repair-first-october-18-2026)
+and the Desktop Next Steps plan govern current work. Historical next actions below
+do not reactivate deferred work or establish installed delivery.
+
+- **Real data pipelines and further reference acquisition/refresh automation**,
+  source integration/operationalization, sold-history capability and HUNT-12.
+- **REFERENCE-R3/RESIDUAL-1 and coverage/identity expansion:** the 319 unpriced
+  children, two S6 missing prices, 13,399 unpriced parents and retained
+  edition/denominator/physical/product holds remain recorded limitations. Their
+  ledgers are preserved, not an active engineering queue. No target coverage
+  percentage remains to be achieved for beta.
+- **Catalog policy/remainder:** Detective Pikachu, Generations aliases and other
+  retained-source/physical/catalog gaps. No new catalog campaign for this beta.
+- **Photo onboarding and recognition expansion:** ON-02/D3 and ON-02/DEL remain
+  owner-deferred. Revisit relevant model lifecycle facts when that work resumes or
+  if an actually used recognition feature needs maintenance; historical notices
+  are not treated as current verified facts.
+- **Graded/sold-price modeling, resale EV, other games/countries and broader
+  product expansion**, unattended Hunts/notifications and public/hosted release.
+- Historical full collection/Shopping/photo combined-delivery and full-goal
+  acceptance branches remain separate from the narrower current beta scope.
+
+None of these deferred items blocks use or evaluation of the selected current beta.
+A future resumption starts from actual latest state and preserved source rights,
+reservations and histories, without resetting or replaying consumed selections.
+
+## Operating rules for the active beta
+
+Imported from the Desktop tracker during the October 18 documentation cleanup.
+This is a historical closeout/decision, not a fresh verification. The active
+Shopping repair in [Shopping](hunts.md#active-owner-direction--shopping-repair-first-october-18-2026)
+and the Desktop Next Steps plan govern current work. Historical next actions below
+do not reactivate deferred work or establish installed delivery.
+
+Use the ordinary installation and real current state for interactive work. Preserve
+customer data and any existing authenticated session; never reseed or substitute
+a copied/synthetic customer installation. Keep reference dates, conditional market
+meaning, missing prices, unknown costs and partial lot coverage honest.
+
+The recorded batch-1 supplemental full-source check sequencing deviation remains
+in the delivered closeout. It passed; it does not create a new coverage campaign.
+Future relevant admission changes must put complete checks before activation.
+
+Update only the selected beta work and fix observed issues. No automatic residual
+repair, pipeline work, acquisition, schedules, purchase/bid or deployment is selected.
+
+Pre-scope tracker archive: `reports/reference-r3-acquire1-20261018/tracker-before-beta-scope.md`
+retains the earlier full backlog and historical evidence. The owner's current scope
+above replaces its active priorities; historical next handoffs are not instructions
+to resume deferred work. Repository operating guides were updated before this tracker.

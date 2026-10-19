@@ -130,3 +130,45 @@ recognition accuracy, price freshness or owner acceptance. Full static typing,
 JavaScript line coverage and comparable changed-code/performance trend budgets
 are not established gates. Native measurements remain visible without invented
 baselines or deltas. See [development](local-development.md#testing).
+
+## CI maintenance review — October 17, 2026
+
+Imported from the Desktop tracker during the October 18 documentation cleanup.
+This is a historical closeout/decision, not a fresh verification. The active
+Shopping repair in [Shopping](hunts.md#active-owner-direction--shopping-repair-first-october-18-2026)
+and the Desktop Next Steps plan govern current work. Historical next actions below
+do not reactivate deferred work or establish installed delivery.
+
+Local CI maintenance is complete: repaired the hosted PTY descriptor-limit and
+retired Shopping-navigation failures, valid-local-ingress transport setup and
+catalog replacement-guard query budgets. Added test-only fast fixture hashing
+with explicit production-KDF verification, stall/slow-test diagnostics, explicit
+Bash execution, portable maintained documentation checks and bounded sdist roots
+with an explicit wheel-from-sdist identity comparison. Existing required names,
+security policy, platform coverage and reporting identity gates remain.
+
+**3,324 full-suite tests passed, no skips, in 323.35 seconds**; coverage is
+87.564% lines / 79.192% branches. Workflow/source/clean-export checks, native
+reporting contracts, 68 renderer cases, repeat builds, fresh Python 3.12 install
+(43 HTTP assertions), Chromium (51 states / 21 checks), PostgreSQL 17.11
+(5 integration checks) and security scans passed. Gitleaks/pip-audit found zero;
+Bandit found 72 nonblocking and zero blocking findings. Native warnings and
+initial failures/interruption remain retained; no comparable trend baseline or
+flake diagnosis is claimed. Disposable PostgreSQL was removed.
+
+[CI guide and full check map](CI.md#ci-maintenance-review--october-17-2026)
+records responsibilities, exact candidate/evidence limits, native reports,
+service eligibility and bounded historical health. Local evidence is under
+`dex/reports/ci-review-20261017/`. The pass began at `d144265`; independent commits
+advanced the checkout to `92b9f8b`, followed by local test/document repairs.
+No commit, push, workflow dispatch, branch setting, integration activation,
+provider operation, customer installation or owner data change was made by this
+pass. Customer beta priorities and deferred scope remain unchanged.
+
+**Status: LOCALLY READY — HOSTED UNVERIFIED.** Next CI action, when publication is
+requested: publish the reviewed final candidate and inspect all required checks
+on its exact SHA/run/attempt. Final hosted Linux/macOS matrix/summary rendering
+and the scheduled application-container build remain unverified. Branch protection
+was observed absent; enforcement of `CI / Required checks` is recommended after
+that exact candidate passes, and was not applied. This is engineering validation,
+not customer acceptance or a release.

@@ -140,3 +140,32 @@ accounting and clock rollback fail closed. Restoring the app must not restore ol
 acquisition allowances or price revocations. Temporary results are not saved,
 exported or logged. See [operations](operations.md) and
 [recovery](ERROR_HANDLING.md).
+
+## Security maintenance review — October 17, 2026
+
+Imported from the Desktop tracker during the October 18 documentation cleanup.
+This is a historical closeout/decision, not a fresh verification. The active
+Shopping repair in [Shopping](hunts.md#active-owner-direction--shopping-repair-first-october-18-2026)
+and the Desktop Next Steps plan govern current work. Historical next actions below
+do not reactivate deferred work or establish installed delivery.
+
+The separately requested security pass closes a **medium-severity ingress resource
+hardening gap**: disallowed local Host/Origin/peer/forwarded requests are rejected
+before Django reads or spools an upload. ASGI and middleware share the local policy;
+duplicate Host/Origin and blank Origin are refused. Canonical local clients,
+CSRF/auth/account boundaries, upload caps and staging's separate ingress remain.
+See [security findings and remaining work](SECURITY.md#security-maintenance-review--october-17-2026).
+
+**100 focused tests passed** for ingress/upload limits, shared browser security,
+local sessions and original-app regressions; affected compilation, Ruff lint/format
+and diff whitespace checks passed. One existing Starlette TestClient deprecation
+warning remains. No dependency advisory, hosted CI, full security campaign or live
+walkthrough was run. Tests use disposable state/in-process clients.
+
+This is source-only maintenance alongside preserved existing work. No customer data,
+credentials, installed package, runtime, provider capacity or source rights changed;
+no acquisition, migration, publication or release occurred. A future compatible
+installed successor needs its own qualification/preservation evidence. Aggregate
+upload concurrency/duration limits and deployment/dependency verification remain
+separate follow-ups described in the security guide. Ordinary beta priorities and
+all deferred data-pipeline decisions remain unchanged.

@@ -126,3 +126,32 @@ because the action has already recorded an uncertain outcome; no late result is
 published and no retry follows. Keep the journal and diagnostics together when
 investigating. A failed journal write can leave only the earlier admitted/in-flight
 record: that is incomplete accounting, never evidence of unused capacity.
+
+## error-handling source maintenance — October 17, 2026
+
+Imported from the Desktop tracker during the October 18 documentation cleanup.
+This is a historical closeout/decision, not a fresh verification. The active
+Shopping repair in [Shopping](hunts.md#active-owner-direction--shopping-repair-first-october-18-2026)
+and the Desktop Next Steps plan govern current work. Historical next actions below
+do not reactivate deferred work or establish installed delivery.
+
+The separately requested abend-handling pass tightened Shopping background failure
+observability, redacted listing-worker errors, preserved primary errors during async
+response/client cleanup, and recorded cancelled dispatches as uncertain while safely
+consuming late task outcomes. It preserves explicit Stop, consumed accounting and
+no automatic retries. Existing deliberate fallbacks and cleanup/re-raise boundaries
+remain in place. See [implemented recovery behavior](ERROR_HANDLING.md).
+
+Validation: **270 focused tests passed** across error handling, discovery, listing
+checks, Hunter, lot analysis, traversal and traversal accounting; affected Python
+syntax, Ruff lint/format and diff whitespace checks passed. Tests used disposable
+state/fake transports, with no provider requests or owner-data access. Pre-existing
+snapshot script/test and documentation changes were preserved.
+
+This is source-only maintenance on baseline
+`d144265df0eb132d836186a2441c23d9096d2d0b`; no package build, installed update,
+runtime restart, migration, publication or customer walkthrough was performed.
+The installed candidate recorded above retains its identity and qualification.
+A compatible installed successor and genuine cancellation observation remain
+separate from these technical checks. Ordinary beta use remains the next practical
+step; no deferred data campaign or standing acquisition allowance is reopened.

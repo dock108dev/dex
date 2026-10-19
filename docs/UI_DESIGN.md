@@ -216,3 +216,32 @@ text, keyboard focus, long names, unavailable images and slow/error states. Cove
 collection versus Library, current versus frozen progress, deliberate confirmation,
 Stop and Back/reopen without new acquisition. Automated or synthetic checks do not
 establish real recognition accuracy, source freshness or marketplace outcomes.
+
+## Shopping interface review — October 17, 2026
+
+Imported from the Desktop tracker during the October 18 documentation cleanup.
+This is a historical closeout/decision, not a fresh verification. The active
+Shopping repair in [Shopping](hunts.md#active-owner-direction--shopping-repair-first-october-18-2026)
+and the Desktop Next Steps plan govern current work. Historical next actions below
+do not reactivate deferred work or establish installed delivery.
+
+Implemented a source presentation pass for Shopping and Price Hunter: compact
+catalog choices, main Hunt/Stop controls before setup, quieter ready-state usage,
+clearer price hierarchy and expandable comparison reasons. Dates, unknown costs,
+partial coverage, deliberate usage selection and provider/account/Stop contracts
+remain. Saved research/Packs remain in More Shopping tools. Enlarged text wraps
+without overlapping thumbnail labels.
+
+[Matched before/after review](UI_DESIGN.md#shopping-interface-review--october-17-2026)
+records rendered 1280/390/320px engineering previews, 200% text, long content,
+unavailable artwork, keyboard settings/reasons, Stop and availability recovery.
+**55 focused tests and 14 browser checks passed**; syntax, preview-script
+compile/lint/format and diff whitespace passed. Zero real provider operations.
+The guarded preview helper's disposable port also reaches the new ASGI local guard;
+production ingress policy remains unchanged.
+
+The owner explicitly permitted a synthetic layout preview in this request. These
+are fabricated engineering captures, not customer demonstrations or genuine offers.
+The actual installation, owner data, source rights and existing edits remain
+untouched. A compatible installed successor, genuine artwork/offer observation and
+new-user/owner acceptance remain separate; no release or commercial-readiness claim.

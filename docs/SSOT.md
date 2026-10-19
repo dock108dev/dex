@@ -202,3 +202,36 @@ Photo batches retain independent jobs, reservations and deletion tombstones whil
 binding selected crops through ordinary collection confirmation. See
 [photo storage and shared review](photo-entry.md#storage-and-shared-review) and
 [photo rows in collection review](effective-collection.md#photo-rows-in-the-shared-review).
+
+## SSOT source maintenance — October 17, 2026
+
+Imported from the Desktop tracker during the October 18 documentation cleanup.
+This is a historical closeout/decision, not a fresh verification. The active
+Shopping repair in [Shopping](hunts.md#active-owner-direction--shopping-repair-first-october-18-2026)
+and the Desktop Next Steps plan govern current work. Historical next actions below
+do not reactivate deferred work or establish installed delivery.
+
+Completed the current-source authority review and a bounded HTTP input repair.
+`beta/request_inputs.py` now owns single-valued GET/form decoding; existing
+`card_group_views.query` callers use the same function export. Public catalog,
+guest/private Pack lookup and lookup save delegate before projection/storage.
+Repeated selectors and unsupported fields now fail explicitly instead of choosing
+the last value or silently ignoring fields. Domain value, account, scope-version,
+CSRF and save authorities remain with their existing services.
+
+**119 focused tests passed**, no skips; 70-case affected baseline passed and ten
+new route regressions reproduced the bypasses before repair. Six shared-policy
+cases protect delegation, duplicate/unknown refusal and unchanged valid blanks.
+Focused compilation, Ruff lint/format, maintained source/guide checks and diff
+whitespace passed. No full CI, packaging or interactive app validation was run.
+[Authority map](SSOT.md#scalar-request-authority) and
+SSOT review: `reports/ssot-enforcement-20261017/review.md` record domain owners,
+removed fallback paths and retained compatibility rationale. Local evidence is
+under `dex/reports/ssot-enforcement-20261017/`.
+
+Source baseline `b7b84f6` was clean. No owner-data access, provider requests,
+installation/runtime changes, migration, commit, push or release occurred. The
+installed candidate and beta priorities above remain unchanged. A future installed
+successor needs its own preservation and qualification. Capability-marker retirement
+and historical acquisition-profile removal require separate support/recovery work;
+they are not an automatic new beta queue or a way to renew consumed capacity.
