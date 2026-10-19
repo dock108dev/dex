@@ -47,7 +47,7 @@ from scripts.tcgcsv_capture_history import _read_private_json as _read_private_j
 from scripts.tcgcsv_capture_transport import _request_deadline, transport
 from scripts.tcgcsv_capture_transport import _Response as _Response
 
-ACTUAL_ROOT = Path("/Users/michaelfuscoletti/dex-private/b2-parity-20260928/review-local")
+ACTUAL_ROOT = Path("/Users/michaelfuscoletti/Desktop/dex/.local/customer")
 PILOT = "hunt11-five-request-v1"
 AUTHORIZATION = "if you can download the data from the site we should do that; we dont need dynamic pricing just snapshots"
 TOTAL_LIMIT = 24 * MIB

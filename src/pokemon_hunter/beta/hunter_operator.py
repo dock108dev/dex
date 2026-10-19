@@ -31,7 +31,7 @@ PREDECESSOR_LEDGER_SHA256 = "453f940e7afe239378aa31e426e9ea9b5d0d4d1ec7349700076
 PREDECESSOR_CLOSURE_SHA256 = "0405bcfc86ad0c9855a009587c75e39d5364aaabe4c8360e56f9055a6ed5e0b8"
 HOST, PORT = "127.0.0.1", 8011
 PROFILE = "hunter-execution-v1"
-ACTUAL_ROOT = Path("/Users/michaelfuscoletti/dex-private/b2-parity-20260928/review-local")
+ACTUAL_ROOT = Path("/Users/michaelfuscoletti/Desktop/dex/.local/customer")
 REQUIRED = {
     table: set(columns)
     for table, columns in json.loads(Path(__file__).with_name("hunter_execution_schema.json").read_text())[

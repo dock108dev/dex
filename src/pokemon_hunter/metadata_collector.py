@@ -47,8 +47,8 @@ CEILINGS = dict(
 )
 PLAN = "tcgcsv-pokemon-groups-first-v1"
 # Keep the compatibility location: the independent journal is durable request accounting.
-OWNER_ROOT = Path.home() / "dex-private" / "b2-parity-20260928" / "review-local"
-LEDGER = OWNER_ROOT.parents[1] / ".dex-tcgcsv-metadata" / "attempts.json"
+OWNER_ROOT = Path.home() / "Desktop" / "dex" / ".local" / "customer"
+LEDGER = OWNER_ROOT.parent / ".dex-tcgcsv-metadata" / "attempts.json"
 
 
 class Rejected(ValueError):

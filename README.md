@@ -18,6 +18,10 @@ never buys, bids or treats a listing as proof of ownership.
 
 ## Quickstart: existing installation
 
+On this Mac, open `Dex.command` in this repo. Customer data lives in
+`.local/customer/`; all of `.local/` is Git-ignored. The launcher reuses the
+installed runtime and opens [Dex](http://127.0.0.1:8011/).
+
 Reuse the existing installation and its compatible runtime; check whether it is
 already serving before starting another process. Follow
 [existing-installation startup](docs/local-development.md#existing-installations)

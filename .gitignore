@@ -185,3 +185,6 @@ config/market_values.json
 /config/sealed/2026-10-04-151/hashes.json
 /config/sealed/2026-10-04-151/missing-18.json
 /config/sealed/2026-10-05-det1/normalization.json
+
+# Actual customer installation and independent private state.
+/.local/

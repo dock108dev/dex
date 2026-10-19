@@ -16,6 +16,23 @@ uv sync --locked --extra dev
 
 ## Existing installations
 
+Current actual customer root (recovered October 18, 2026):
+`/Users/michaelfuscoletti/Desktop/dex/.local/customer`.
+The entire `.local/` directory is Git-ignored. `Dex.command` uses the tracked
+`scripts/start_local.py` helper. Open `Dex.command` in the repo
+or use the existing installed runtime at
+`/Users/michaelfuscoletti/.local/share/dex/runtimes/catalog-additive-release-20261017/bin/python`.
+The URL remains `http://127.0.0.1:8011/`.
+
+Recovered from the genuine R3 batch-3 protected backup: 207 copies, three goals,
+59 tables, authentication secret and configuration. Managed price snapshots were
+excluded from backups and are unavailable; artwork currently shows unavailable
+fallbacks. Recovery made no provider requests or credential resets. Original
+backups remain outside the repo. Recovery provenance and retained independent
+accounting are in `.local/recovery.json` and `.local/recovery-evidence/`.
+Historical root-bound acquisition documents do not authorize this new root.
+Preserve recovered ledgers and do not reuse consumed acquisition capacity.
+
 An existing installation has a private data root and a compatible installed Python
 runtime. Use those paths, rather than a checkout environment, for ordinary use:
 
