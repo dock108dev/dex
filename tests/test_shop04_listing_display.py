@@ -71,10 +71,20 @@ def test_seller_image_csp_is_page_specific_and_single_directive():
 
     from pokemon_hunter.beta.security import secure_response
 
-    ordinary = secure_response(HttpResponse())
-    assert "i.ebayimg.com" not in ordinary["Content-Security-Policy"]
-    discovery = HttpResponse()
+    ordinary = secure_response(HttpResponse(charset="utf-8"))
+    assert "https://i.ebayimg.com" not in ordinary["Content-Security-Policy"].split()
+    discovery = HttpResponse(charset="utf-8")
     discovery._dex_discovery_images = True
     discovery = secure_response(discovery)
     csp = discovery["Content-Security-Policy"]
-    assert csp.count("img-src") == 1 and "https://i.ebayimg.com" in csp and "*" not in csp
+    directives = [part.split() for part in csp.split(";")]
+    assert [parts for parts in directives if parts and parts[0] == "img-src"] == [
+        [
+            "img-src",
+            "'self'",
+            "https://assets.tcgdex.net",
+            "https://raw.githubusercontent.com",
+            "https://i.ebayimg.com",
+        ]
+    ]
+    assert "*" not in csp

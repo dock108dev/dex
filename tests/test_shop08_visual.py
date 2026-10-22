@@ -31,7 +31,16 @@ def test_selected_inspection_orders_offer_before_optional_identifier_and_editor(
     assert text.index('id="offer-overview"') < text.index('id="listing-identifier"')
     assert '<details id="listing-tools" class="check-panel">' in text
     assert '<details id="review-editor" class="check-panel review-editor">' in text
-    assert "i.ebayimg.com" in response["Content-Security-Policy"]
+    directives = [part.split() for part in response["Content-Security-Policy"].split(";")]
+    assert [parts for parts in directives if parts and parts[0] == "img-src"] == [
+        [
+            "img-src",
+            "'self'",
+            "https://assets.tcgdex.net",
+            "https://raw.githubusercontent.com",
+            "https://i.ebayimg.com",
+        ]
+    ]
     assert "private, no-store" in response["Cache-Control"]
     manual = workspace["a"].get("/shopping/check/").content.decode()
     assert '<details id="listing-tools" class="check-panel" open>' in manual

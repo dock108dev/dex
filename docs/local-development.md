@@ -31,6 +31,39 @@ instead of starting a second one. A foreground server stops with Ctrl-C. The ser
 binds only to loopback and rejects foreign Host/Origin and forwarded headers.
 Changing the checkout environment does not update an installed wheel.
 
+### Recorded customer delivery
+
+The established customer root is
+`/Users/michaelfuscoletti/Desktop/dex/.local/customer`, recovered October 18, 2026.
+The latest retained installed closeout is SHOP-10, October 20, at port 8011, using
+`/Users/michaelfuscoletti/.local/share/dex/runtimes/shop-10-20261020/bin/python`.
+This is a delivery record, not a fresh process observation. Verify the actual root,
+listener and selected interpreter before any interactive session or update.
+
+SHOP-10 used Python 3.12.15, with all 69 dependency versions matching SHOP-09;
+248 installed application members and ten served assets matched its package.
+Wheel SHA-256: `a614a5974bded685c70870b3fbe0586b09a8fb0d0a4bbb9b0ab25e3a2940d616`.
+Installed tree SHA-256: `7a560f769ed0aaf6bbd1dda0ec05d5164229d0b2506c1ee9db5238b9122a8afc`.
+The private installed PROJECT configuration link was preserved; never print secrets.
+No migration ran. The record preserves 207 copies, seven declarations, three goals,
+protected configuration and independent history. Only normal session renewal and
+sanitized provider accounting changed. Its 3 OAuth/5 Browse operations completed;
+review/save/Back made no provider requests. These are historical counts, not current
+collection totals or available capacity.
+
+Retained local evidence: `reports/shop-10-20261020/closeout.md`,
+`candidate-manifest.json`, `final-preservation.json`, `session-renewal.json` and
+`rollback.md` in that directory. Protected backup:
+`/Users/michaelfuscoletti/.local/share/dex/backups/shop-10-20261020`.
+SHOP-09 was retained for rollback. Verify recovery artifacts before use and never
+restore older consumed accounting or excluded managed price content.
+
+SHOP-06 recovered an Apple system-Python/Xcode-license startup failure by selecting
+Dex's supported interpreter for both launcher stages. No license was accepted and
+no database restore was needed. Its historical backup includes a functional
+previous-interpreter launcher; do not restore the blocked system-Python wrapper.
+Current launcher instructions below govern startup; historical PIDs are not targets.
+
 ### macOS launcher
 
 `Dex.command` uses `DEX_APP_PYTHON`, or the ignored `.local/runtime/bin/python`
@@ -186,3 +219,29 @@ See [snapshot contracts and lifecycle](price-snapshots.md) for source admission,
 activation, expiry and withdrawal. Import performs no acquisition; some current-price
 reads prune managed files. [Operations](operations.md#snapshot-retention-and-backups)
 describes backup exclusions and independent revocation/accounting state.
+
+## Source maintenance evidence
+
+The following completed source work is distinct from installed SHOP-10. Current
+source includes its implementation; retained results qualify only their recorded
+candidates. No newer installed delivery is established by these records.
+
+| Work | Completed implementation and recorded verification |
+| --- | --- |
+| SSOT enforcement, October 20 | Shared listing amount/rounding and timestamp admission; invalid shipping preserves valid price; inert query category parameter removed. `reports/ssot-enforcement-20261020/review.md` records 424 focused tests, 32 new cases and 11 reproduced failures, compilation/lint/docs checks. Scoped digest `6bdb09bf8049d0d2876355eceea931ef35e7fe25927dd6c8718c0dc7c1e14cef`. Domain decisions remain in [SSOT](SSOT.md#listing-value-authority). |
+| Interface candidate, October 20 | Adjacent Search/Stop, aligned refinements, clearer amounts and offer-first inspection. `reports/interface-20261020/review.md` and `review.html`: 32 focused pytest checks including 26 discovery/14 inspection client cases, ten browse groups and nine matched-preview groups. Digest `84b273137cb40b04884ad108ab5b7b97a5d799ebb59f1699cb567e8dc37a03ae`. Controlled synthetic 1280/390/320px and 200% text previews, not customer usability; 390px results position changed from 1,485 to 817px. [Interface design](UI_DESIGN.md#shopping) describes this source presentation. |
+| CI maintenance, October 20–21 | Minimum-runtime distribution, compatibility/browser checks and dependency updates. [CI evidence](CI.md#recorded-local-qualification) owns the local/hosted distinction. |
+| Repository cleanup, October 21 | `discovery_contracts.py` and `hunter_lot_parser.py` separate checked types and bounded parsing; compatible public imports, package guards and behavior-grouped tests remain. Former tracker reported 247 focused checks in worktree/clean export, preserved 57 existing test functions and digest `c77da4c4fb3bcfcdbc2f3517d127bbce9154fe062fba51ec0c338018dcd489a8`. Its referenced `reports/repository-cleanup-20261021/` directory is absent at this reconciliation; those test/digest/preservation claims are tracker-only, not independently verified evidence. |
+
+The first two available reports record no customer-root access, installed update,
+provider operations or migration. Their manifests and source deltas remain local
+historical evidence. The cleanup tracker reported nine edits/four additions with
+573 incoming files reconciled; the missing report prevents checking that claim.
+
+At the October 21 documentation reconciliation, checkout HEAD is `32d6f9f`
+(`Enhance Dex.command and update dependencies`), beyond the CI report's `f333366`
+base. The old statements that HEAD/index remained unchanged describe those prior
+passes only. Current source includes the extracted modules; their presence does not
+prove the missing cleanup results or qualify the whole current commit. Recover
+missing evidence or rerun appropriate exact-candidate checks if successor delivery
+is requested. Do not reuse earlier CI or installed-package results as current proof.

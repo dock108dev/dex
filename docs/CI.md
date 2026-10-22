@@ -153,3 +153,36 @@ an arbitrary budget. Windows launcher support, hosted Linux ARM, container OS
 vulnerability scanning, TLS/proxy qualification, signing and publication are outside
 these checks. JavaScript, CSS and templates ship in the Python wheel; there is no
 independent frontend bundle or generated-source regeneration step.
+
+## Recorded local qualification
+
+The October 20–21 review in local `reports/ci-review-20261020/review.md` records
+**LOCALLY READY — HOSTED UNVERIFIED** for candidate digest
+`6c0af40d713321ed3f311b06d4d9c1dd18be278ad307ffe3cfcfbf1be4311a4d`, based on
+`f333366`. Its native summaries, manifest, source delta and preservation record
+bind the evidence; they are ignored local artifacts, not checkout prerequisites.
+
+Recorded passes: 3,469 full offline tests, 223 final focused checks, 121 minimum
+runtime checks, 68 renderer cases, clean export/build/reproducible wheels, fresh
+Python 3.12 installed smoke with 43 HTTP assertions, Chromium (51 states and 31
+checks), PostgreSQL 17.11 (five checks) and Linux ARM container smoke. Gitleaks and
+pip-audit reported zero findings; Bandit retained 72 nonblocking and zero blocking
+findings. Warnings and initial failures remain in evidence. Disposable cleanup
+completed; 573 incoming files reconciled (554 unchanged, 19 changed, none missing).
+No installed customer update, provider request, publication or settings change was
+part of that review.
+
+The read-only review sampled 30 completed hosted runs and observed no main protection
+or rulesets at that time. It did not qualify that candidate on hosted Linux/macOS,
+Python 3.12/3.13, Linux x86_64 containers, summary rendering or branch enforcement.
+Current checkout HEAD `32d6f9f` is later; neither earlier local nor hosted success
+qualifies this successor automatically. Hosted status has not been refreshed by the
+documentation cleanup.
+
+When publication is requested, release/CI engineering must select the exact final
+candidate, run applicable local checks, publish under that authorization, inspect
+complete exact-SHA PR/main checks and one complete compatibility attempt, and retain
+run/attempt identities and failures. Use Re-run all jobs for a fresh attempt. Only
+then consider requiring the observed aggregate on main, with separate owner settings
+authorization. This conditional publication work is not a blocker to owner review
+of the already delivered SHOP-10 product.

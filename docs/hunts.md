@@ -4,6 +4,108 @@ Shopping combines local catalog browsing, explicit eBay searches and dated-refer
 comparisons. Catalog and reference coverage are partial. Missing identities, costs
 and reference values stay unknown. The app never buys, bids or guarantees a bargain.
 
+## Completion goal and owner direction
+
+The agreed local Shopping goal is repeated **Pokémon/card name → optional set →
+recognizable mixed-lot listings → seller → continue browsing**, with explicit
+More/Stop, optional inspection/editing and reliable Back. Missing or owned Pokémon
+must also lead to actual card choices and that search, retaining checked context.
+Exact printing, goal, wanted list, budget and valuation are not prerequisites.
+This is the October 20 search-first direction, not a claim that every private-beta
+journey or future ranking idea is complete.
+
+Representative regression inputs are Hypno Fossil, Jolteon, Lapras Fossil, Articuno,
+Gengar Fossil, Venusaur, Moltres, Pokemon Jungle Jolteon, Pokemon Jungle, Alakazam,
+Pokemon Cards, Hypno, Chansey, Kangaskhan Jungle, Scyther and Gyarados Base.
+Venasaur/Venusaur and Gyrados/Gyarados must offer a deliberate original-text choice.
+These examples are regression inputs, not an automatic provider batch.
+
+The owner authorized end-to-end local engineering, ordinary app updates, real
+Shopping Search/More and necessary official details within existing request limits
+and safeguards. Earlier zero-operation handoffs and repeated operation-allocation
+approval requirements are superseded. Preserve customer state, credentials,
+accounting, source rights and finite capacity; authorization does not reset capacity
+or authorize purchases, scraping or deployment. Usefulness acceptance belongs to
+the owner. This documentation cleanup performs no acquisition or runtime update.
+
+## Delivered Shopping slices and evidence
+
+Reconciled October 21, 2026 from retained closeouts. SHOP-04/05's source-only status
+was superseded by SHOP-06 delivery and SHOP-07 genuine qualification. SHOP-08/09/10
+then refined that installed loop. Historical report instructions are not current
+execution gates. Reports below are local ignored evidence paths relative to the
+repository; maintained usage contracts in this guide do not depend on those files.
+
+| Slice | Completed result | Retained verification and boundary |
+| --- | --- | --- |
+| SHOP-04 | Named mixed-lot search, optional refinements, spelling choices, immediate recognizable offers, checked seller images/links, shared auction timing and finite deduplicated More/Stop. | `reports/shop-04-20261020/closeout.md`: 467 affected tests, 88 package/artwork tests, 19 final continuation cases, ten controlled browser groups and 43 isolated package HTTP assertions. Controlled evidence, not a customer walkthrough. |
+| SHOP-05 | Missing/owned Pokémon → Library → card → Shopping; separate internal details and seller actions; current/frozen, printing, supported set and Back context preserved. | `reports/shop-05-20261020/closeout.md`: 855 focused tests, 88 package/artwork tests, ten navigation and ten search browser groups, 43 package HTTP assertions; 220 packaged source files matched. |
+| SHOP-06 | Combined successor installed through the ordinary launcher on supported Python 3.12.15; source/installed differences reconciled. | `reports/shop-06-20261020/closeout.md`: 1,067 affected plus 293 preceding-maintenance tests, 43 smoke assertions, 248 package files/nine assets matched, 59-table preservation. Actual Hypno/card/frozen-goal navigation observed; marketplace checks followed in SHOP-07. |
+| SHOP-07 | Genuine Search/More/seller/details/review/Back/Stop loop; batched name matching, selected-offer review and retained results while More loads. | `reports/shop-07-20261020/closeout.md` and `actual-journeys.md`: 510 installed tests, 23 client checks, 43 smoke assertions and real Hypno Fossil/Jolteon/Pokemon Jungle journeys. Owner confirmation of the browse loop is recorded in the former tracker and SHOP-08 closeout. |
+| SHOP-08 | Larger seller photos, compact results, offer-first Inspect and unchanged-review save skipping. | `reports/shop-08-20261020/closeout.md`: 517 installed checks plus final affected/client checks, package smoke and genuine desktop/narrow seller/Inspect/Back/Stop observations. Revised visual usefulness remained owner review. |
+| SHOP-09 | Faster checked restoration, subset image binding and deferred optional exploration; edits and missing/frozen policy preserved. | `reports/shop-09-20261020/closeout.md`: 560 installed tests, 26 discovery/ten inspection client cases and 43 smoke assertions. Actual unchanged Back improved from 14.090 to 1.737 seconds (20 offers), 15.716 to 2.346 (39). Edited saves remained slow and led to SHOP-10. |
+| SHOP-10 | Reviewed-ID validation, one checked offer context per save and shared latest-revision autosave/Back writer; failed saves retain edits and block navigation. | `reports/shop-10-20261020/closeout.md`: 373 installed tests, 14 inspection/26 discovery client cases, 43 smoke assertions; 248 package members/220 source members/ten assets matched. Genuine edits survived reopening. |
+
+SHOP-10's comparable actual edited Back samples improved from 5.629 to 2.786 seconds
+with 20 offers and 8.287 to 4.230 with 39; save POST samples fell from 3.098/5.373 to
+1.140/1.612 seconds. Unchanged expanded Back took 1.660 seconds. These are variable
+host-load samples, not latency guarantees. Local validation/restoration can pause.
+SHOP-09's earlier 11.424-second edited sample is not SHOP-10's comparison baseline.
+
+The report directories retain candidate manifests, package identities and commands;
+installed delivery reports also retain preservation and rollback records. SHOP-04's `incoming-hunts.patch` preserves the
+October 20 pre-implementation audit: signed-out observation and source/installed
+differences were diagnostic, not genuine Shopping qualification. The initial broken
+seller/flicker report's precise cause was not established; SHOP-07 later observed
+working admitted seller links, photos and timing. Unknown references/contents and
+unsupported image URLs still remain unknown or use fallback. No whole-lot bargain,
+fresh-price coverage or universal marketplace availability is claimed.
+
+## Owner usefulness review
+
+Engineering implementation and required local verification for the defined installed
+loop are complete in the retained SHOP-10 evidence. Final usefulness acceptance is
+open. Verify the [actual installation](local-development.md#existing-installations)
+before a new session; the October 20 prepared tab and process IDs are historical.
+
+Use Search eBay with Hypno/Fossil, Mixed lots and Ending soon; browse, open seller,
+return, More, Inspect lot, Review cards and costs, edit, Back and reopen. Confirm
+that the edit and browsing position survive; finish with Stop. Try Jolteon or
+Pokemon Jungle as useful. From a missing Pokémon, Explore cards → card details →
+Shopping → Back should preserve context. Review whether repeated searching, photos,
+seller/card links and waiting are acceptable. Record the owner's explicit acceptance
+or concrete friction against the observed runtime; engineer observations cannot
+supply that decision. Do not run every example as a required live campaign.
+
+## Deferred backlog and conditional delivery
+
+These follow-ups are outside the completed installed-loop goal. They are not active
+implementation slices until owner feedback or a delivery/publication request selects
+scope. Existing capability does not imply that these refinements are accepted.
+
+- Missing-card versus supported-value priority and overlap, including owned cards
+  without manual entry, wanted lists or goals: owner sets priorities; frontend and
+  comparison/integration engineering then define checks. Dated applicable values
+  and honest costs are required; auction bids stay provisional.
+- Broader missing-Pokémon layout and ranking refinements: owner feedback first;
+  frontend/product engineering implements the agreed change. No redesign is approved.
+- Deliver the newer source successor: QA/local integration engineering reconciles
+  the exact cumulative source, qualifies package/security/navigation/Stop behavior,
+  backs up protected state, installs compatibly, verifies package/served assets and
+  preserved collection/configuration/accounting, retains rollback, and exercises
+  affected actual journeys before owner review. Source-only checks do not satisfy
+  this delivery. See [source maintenance evidence](local-development.md#source-maintenance-evidence).
+- Publication and hosted CI: release/CI engineering binds checks to the selected
+  exact SHA and a complete compatibility attempt; owner separately decides release
+  and repository enforcement. See [CI qualification](CI.md#recorded-local-qualification).
+- Historical capability/acquisition-profile retirement: separate support/recovery
+  decision before implementation, preserving origins, saved data and consumed use.
+
+The old tracker referred generically to other beta journeys without identifying
+active slices or a broader completion contract. This reconciliation does not mark
+those journeys complete or reactivate them. They require explicit scope before
+becoming an execution plan. No reference-coverage campaign is required here.
+
 ## Search and browse
 
 Type a Pokémon or card name, optionally choose a set, and select **Search eBay**.
