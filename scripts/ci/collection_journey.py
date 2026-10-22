@@ -5,6 +5,7 @@ import time
 
 from scripts.ci.discovery_journey import exercise as discovery_journey
 from scripts.ci.listing_journey import exercise as listing_journey
+from scripts.ci.shop04_journey import exercise as named_search_journey
 
 
 def exercise(url, root, output):
@@ -67,22 +68,25 @@ def exercise(url, root, output):
             expect(page.locator("[data-dex-species]")).to_have_count(251)
             page.locator("[data-dex-species]").first.click()
             expect(page.locator("#your-cards-heading")).to_be_visible()
-            expect(page.locator(".species-detail-heading #species-shopping")).to_be_visible()
+            expect(page.get_by_role("region", name="Your Cards").locator("#species-shopping")).to_be_visible()
             capture("consumer-species")
             passed("all 251 Pokémon and normal species page with contextual Find", started)
 
             started = time.monotonic()
             page.locator("#species-shopping").click()
             expect(page.locator(".discovery-context")).to_contain_text("Finding cards")
+            page.locator(".discovery-local > summary").click()
             expect(page.locator("#catalog-cards [data-group]").first).to_be_visible()
             expect(page.locator("#discovery-query")).not_to_have_value("")
             page.locator("#shopping-back").click()
             expect(page.locator("#your-cards-heading")).to_be_visible()
             page.locator("#species-shopping").click()
+            page.locator(".discovery-local > summary").click()
             expect(page.locator("#catalog-cards [data-group]").first).to_be_visible()
             passed("contextual visual Shopping preserves selected Pokémon and collection Back", started)
 
             started = time.monotonic()
+            page.get_by_text("More Shopping tools", exact=True).click()
             page.get_by_role("link", name="Manual calculator", exact=True).click()
             expect(page.locator("#cards")).not_to_have_attribute("aria-busy", "true")
             if page.locator("#show-all").count():
@@ -116,9 +120,10 @@ def exercise(url, root, output):
             checks.extend(listing_journey(page, url, output))
 
             started = time.monotonic()
-            page.goto(url + "/cards/?species=252")
-            expect(page.locator("#card-retry")).to_be_visible()
-            page.get_by_role("link", name="Back to cards", exact=True).click()
+            invalid = page.request.get(url + "/cards/?species=252")
+            assert invalid.status == 400
+            assert invalid.json()["recovery_url"] == "/cards/"
+            page.goto(url + invalid.json()["recovery_url"])
             expect(page.locator("#card-group-list")).to_be_visible()
             page.locator('.app-header [data-navigation-tab="/card-library/"]').click()
             expect(page.locator('.app-header [data-navigation-tab="/card-library/"]')).to_have_attribute(
@@ -127,6 +132,12 @@ def exercise(url, root, output):
             if page.locator('.app-header [aria-current="page"]').count() != 1 or errors:
                 raise AssertionError("Current navigation or renderer boundary failed")
             passed("invalid filter recovery and one active Library navigation target", started)
+            # Keep the owner-priority named search/More/Stop/seller loop in required CI.
+            # Run last: its controlled response/image routes live until context teardown.
+            checks.extend(
+                {"name": name, "status": "PASS", "evidence_class": "controlled engineering responses"}
+                for name in named_search_journey(page, url, output)
+            )
             report["status"] = "PASS"
         except Exception as error:
             report["failure"] = type(error).__name__

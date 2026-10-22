@@ -226,7 +226,7 @@ def coverage(actor, profile="current"):
             published_records=sum(r["published_records"] for r in values),
         ),
         explanation=(
-            "Current application coverage uses the reviewed pinned D6 universe as of its original source time. "
+            "Current application coverage uses the reviewed pinned catalog universe as of its original source time. "
             if profile == "current"
             else "Historical October 4 universe. "
         )

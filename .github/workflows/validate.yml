@@ -3,7 +3,7 @@ name: Shared validation
   workflow_call:
     inputs:
       compatibility:
-        description: Include Ubuntu Python 3.13
+        description: Include Python 3.12 on both supported OSes and Ubuntu Python 3.13
         type: boolean
         default: false
     outputs:
@@ -90,7 +90,8 @@ jobs:
   behavior:
     name: Behavior (${{ matrix.os }}, Python ${{ matrix.python }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 30 # Whole current suite, including copied-state setup and branch coverage.
+    # Minimum-runtime full suites took 24-30+ minutes in the October 18 sample.
+    timeout-minutes: ${{ matrix.python == '3.12' && 45 || 30 }}
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
@@ -132,7 +133,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(inputs.compatibility && '[{"os":"ubuntu-24.04","python":"3.14"},{"os":"macos-15","python":"3.14"},{"os":"ubuntu-24.04","python":"3.13"}]'
+        include: ${{ fromJSON(inputs.compatibility && '[{"os":"ubuntu-24.04","python":"3.14"},{"os":"macos-15","python":"3.14"},{"os":"ubuntu-24.04","python":"3.13"},{"os":"ubuntu-24.04","python":"3.12"},{"os":"macos-15","python":"3.12"}]'
           || '[{"os":"ubuntu-24.04","python":"3.14"},{"os":"macos-15","python":"3.14"}]') }}
   distribution:
     name: Fresh distribution
@@ -159,7 +160,8 @@ jobs:
         rebuilt=("$RUNNER_TEMP/dex-from-sdist"/*.whl)
         [[ ${#rebuilt[@]} -eq 1 ]]
         cmp "${wheel[0]}" "${rebuilt[0]}"
-        uv venv --python 3.14 "$RUNNER_TEMP/dex-wheel"
+        # Every PR must install/start on the actual declared minimum runtime.
+        uv venv --python 3.12 "$RUNNER_TEMP/dex-wheel"
         uv export --locked --no-dev --no-emit-project --format requirements-txt --output-file "$RUNNER_TEMP/runtime-requirements.txt" > /dev/null
         uv pip sync --python "$RUNNER_TEMP/dex-wheel/bin/python" --require-hashes "$RUNNER_TEMP/runtime-requirements.txt"
         uv pip install --python "$RUNNER_TEMP/dex-wheel/bin/python" --no-deps "${wheel[0]}"
@@ -329,7 +331,7 @@ jobs:
       run: |-
         python3 scripts/ci/report.py aggregate --needs-json "$NEEDS_JSON" --output reports/ci/gate/metrics.json --required quality --required behavior --required distribution --required browser --required security --required staging \
           --report-directory reports/ci/children \
-          --expect-job-reports "Source quality=1" --expect-job-reports "Behavior=${{ inputs.compatibility && 3 || 2 }}" \
+          --expect-job-reports "Source quality=1" --expect-job-reports "Behavior=${{ inputs.compatibility && 5 || 2 }}" \
           --expect-job-reports "Staging PostgreSQL=1" --expect-job-reports "Fresh distribution=1" --expect-job-reports "Synthetic browser journeys=1" --expect-job-reports "Security and dependencies=1"
         echo "result=PASS" >> "$GITHUB_OUTPUT"
     - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

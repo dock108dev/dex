@@ -235,8 +235,7 @@
   }
   function countdown(row) {
     if (!row.buying_options?.includes('AUCTION')) return row.buying_options?.includes('FIXED_PRICE') ? 'Buy It Now · currently available when observed' : 'Unsupported offer';
-    const end = new Date(row.ends_at), left = end.getTime() - Date.now();
-    return !Number.isFinite(left) ? 'Auction · end time unknown' : left <= 0 ? 'Auction ended · comparison unavailable' : `Auction · ends in ${Math.floor(left / 3600000)}h ${Math.floor(left % 3600000 / 60000)}m · ${end.toLocaleString()}`;
+    return window.DexAuctionTime?.(row.ends_at) || 'Auction · end time unknown';
   }
   function card(row, inspect = false) {
     const token = epoch, id = row.id, identity = row.proposed_identity;

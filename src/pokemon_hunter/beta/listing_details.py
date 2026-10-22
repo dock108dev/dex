@@ -9,7 +9,8 @@ from datetime import datetime
 from urllib.parse import parse_qs, urlsplit
 
 from . import discovery_comparison as dc
-from . import shopping
+from . import listing_prices, shopping
+from .discovery_listing import end_timestamp, seller_image
 
 _NUMBER = r"[1-9][0-9]{8,14}"
 _REST = re.compile(rf"v1\|({_NUMBER})\|(0|{_NUMBER})")
@@ -85,12 +86,11 @@ def validate_response(identifier, raw):
     ):
         raise ValueError("This parent listing needs an exact variation URL or REST ID.")
     end = raw.get("itemEndDate")
-    if end:
-        try:
-            ended = datetime.fromisoformat(end.replace("Z", "+00:00")) <= datetime.now(shopping.TZ)
-        except (ValueError, TypeError):
-            raise ValueError("Listing availability could not be resolved.") from None
-        if ended:
+    if end is not None:
+        checked_end = end_timestamp(end)
+        if checked_end is None:
+            raise ValueError("Listing availability could not be resolved.")
+        if datetime.fromisoformat(checked_end) <= datetime.now(shopping.TZ):
             raise ValueError("This listing has ended. Manual and in-person checks remain available.")
     if any(
         r.get("estimatedAvailabilityStatus") in {"OUT_OF_STOCK", "UNAVAILABLE"}
@@ -111,35 +111,6 @@ def _text(value, maximum=500):
     return str(value or "")[:maximum]
 
 
-def _money(value):
-    if not isinstance(value, dict) or not re.fullmatch(r"[A-Z]{3}", str(value.get("currency", ""))):
-        return {"amount": None, "currency": None}
-    try:
-        amount = shopping.math.money(shopping.math.amount(value.get("value")))
-    except (ValueError, TypeError):
-        amount = None
-    return dict(amount=amount, currency=value["currency"])
-
-
-def prices(raw):
-    """Keep an auction observation separate from the optional buy-now amount.
-
-    Browse's ``price`` is never used as a fallback for a missing current bid.
-    Neither amount establishes a winning bid or final purchase cost.
-    """
-    options = raw.get("buyingOptions", [])
-    auction = "AUCTION" in options
-    buy_now = _money(raw.get("price")) if "FIXED_PRICE" in options else _money(None)
-    bid = _money(raw.get("currentBidPrice")) if auction else _money(None)
-    return dict(
-        buying_options=[option for option in ("AUCTION", "FIXED_PRICE") if option in options],
-        current_bid=bid,
-        buy_now=buy_now,
-        price=bid if auction else buy_now,
-        price_kind="current_bid" if auction else "current_asking_price",
-    )
-
-
 def details(identifier, raw):
     item = validate_response(identifier, raw)
     aspects = [
@@ -149,7 +120,8 @@ def details(identifier, raw):
     ]
     condition = _text(raw.get("condition"))
     descriptors = raw.get("conditionDescriptors", [])[:30]
-    # These are claims only. Never render seller description/HTML or remote images.
+    # These are claims only. Never render seller description/HTML. The separately
+    # admitted official CDN photo below remains temporary under this offer's lease.
     evidence = " ".join(a["name"] + ": " + a["value"] for a in aspects)
     condition += " " + " ".join(
         _text(a.get("name"))
@@ -202,22 +174,16 @@ def details(identifier, raw):
         for r in raw.get("estimatedAvailabilities", [])
         if type(r.get("estimatedAvailableQuantity")) is int
     ]
-    shipping = [_money(s.get("shippingCost")) for s in raw.get("shippingOptions", []) if isinstance(s, dict)]
-    # Country-only estimates may be absent or disagree by service. Never invent free shipping.
-    unique = {(s["amount"], s["currency"]) for s in shipping}
-    shipping = (
-        dict(zip(("amount", "currency"), next(iter(unique))))
-        if len(unique) == 1
-        else dict(amount=None, currency=None)
-    )
     parsed = parse_identifier(item)
     return dict(
         item_id=item,
         item_url=f"https://www.ebay.com/itm/{parsed['legacy']}"
         + (f"?var={parsed['variation']}" if parsed["variation"] != "0" else ""),
         title=_text(raw.get("title")),
-        **prices(raw),
-        shipping=shipping,
+        seller_image=seller_image(raw.get("image")),
+        ends_at=end_timestamp(raw.get("itemEndDate")),
+        **listing_prices.prices(raw),
+        shipping=listing_prices.detail_shipping(raw),
         condition=condition[:1000].strip(),
         aspects=aspects,
         seller_lot_size=size,

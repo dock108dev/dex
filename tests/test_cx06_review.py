@@ -360,7 +360,6 @@ def test_review_two_level_species_card_return_preserves_list_context_without_sel
         "/pokedex/?scroll=١",
         "/pokedex/?q=a&q=b",
         "/pokedex/2/?goal=a&goal=b",
-        "/pokedex/2/?generation=12",
         "/pokedex/2/?child=foreign",
         "/pokedex/2/?return=%2Fpokedex%2F3%2F",
         "/pokedex/2/?return=%2Fpokedex%2F%3Freturn%3D%2Fpokedex%2F",

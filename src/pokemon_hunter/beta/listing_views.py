@@ -3,7 +3,7 @@
 from django.shortcuts import render
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
-from . import discovery_views, navigation, shopping, shopping_views
+from . import discovery_views, image_bindings, navigation, shopping, shopping_views
 from . import listing_check as checks
 from .card_group_views import query
 from .collection_views import body, endpoint
@@ -28,6 +28,7 @@ def home(request):
         ),
     )
     response["Cache-Control"] = "private, no-store"
+    response._dex_discovery_images = image_bindings.enabled()
     return response
 
 

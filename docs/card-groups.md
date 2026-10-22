@@ -217,11 +217,13 @@ account binding, never a caller-selectable authority. Public group output omits 
 Generation and account must both match the active frontend context before a late
 response can be rendered.
 
-Canonical HTML detail accepts a `return` destination only at `/cards/` or
-`/card-library/`. It allows the ordinary list-filter keys excluding `scope` and
-`generation`, plus ASCII integer `scroll` from 0 through 10000000. Duplicate and
-unknown keys, unsupported filter values, external URLs, fragments and literal
-control characters reject. Return context never selects a child or becomes part
+Canonical HTML detail accepts a bounded `return` to My Cards, Card Library,
+canonical Pokémon pages and Shopping. Each destination uses its existing finite
+field validator; Library page context can retain generation, goal/version and a
+species return. ASCII integer `scroll` ranges from 0 through 10000000. Duplicate
+and unknown keys, unsupported values, external URLs, fragments and literal control
+characters reject. Every referenced private target is reauthorized; stale retained
+generation or goal version conflicts. Return context never selects a child or becomes part
 of group identity; optional `child` retains independent strict membership checks.
 Normal canonical links omit `child`. Explicit child links retain their exact
 archived/unavailable context.
@@ -266,3 +268,20 @@ each request, without a shared private cache. Artwork descriptors are bound only
 for a returned page/detail after filtering and pagination. Filter-option reads
 bind no images. Counts, conflict handling, archived context, exact identity and
 account/generation checks remain unchanged.
+
+## Connected Shopping returns
+
+Species Explore cards opens the indexed Card Library with `species`, optional
+single `set`, checked `generation`, explicit `goal`/`version` when selected and a
+validated species `return`. These page-only context fields do not become catalog
+filters. Search/filter/pagination and Clear filters retain that original return.
+A Library/card return reauthorizes the referenced goal/version and generation.
+
+Shopping catalog choices expose separate selection buttons and **Card details**
+links to canonical groups. Only an explicitly chosen child enters the card route.
+A bounded `/shopping/` return contains user query/refinements, collection context,
+scroll/focus and an opaque temporary run handle. It contains no seller content,
+prices or imagery. Card details' Shopping action reuses this original state.
+Restoration rereads the existing authenticated temporary service without acquiring
+or renewing its lease. See [connected entry](hunts.md#connected-pokémon-and-card-entry)
+for scope changes and qualification boundaries.

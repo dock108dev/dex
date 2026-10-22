@@ -18,8 +18,8 @@ from . import (
 FIELDS = {"species", "group", "child", "goal", "version", "generation", "return", "missing"}
 
 
-def resolve(who, raw, *, legacy_goal=False):
-    who = store.verified(who)
+def validate_identity(raw, *, legacy_goal=False):
+    """Share finite identity syntax with return validation; this never grants authority."""
     if set(raw) - FIELDS:
         raise ValueError("Choose supported Shopping context fields")
     if any(
@@ -46,6 +46,13 @@ def resolve(who, raw, *, legacy_goal=False):
         card_groups._integer(raw["species"], "species", 1, 251)
     if "version" in raw and not re.fullmatch(r"[0-9a-f]{64}", raw["version"]):
         raise ValueError("Choose an exact retained goal version")
+    if "generation" in raw:
+        card_groups._integer(raw["generation"], "collection generation", 0, 10**18)
+
+
+def resolve(who, raw, *, legacy_goal=False):
+    who = store.verified(who)
+    validate_identity(raw, legacy_goal=legacy_goal)
     generation = collection.generation(who)
     if (
         "generation" in raw
@@ -109,7 +116,7 @@ def resolve(who, raw, *, legacy_goal=False):
         result.update(
             kind="printing" if child else "group",
             label=f"Finding {group['name']} · {group['set_name']} #{group['collector_number']}"
-            + (f" · {child['id']}" if child else " · Choose a printing"),
+            + (" · Explicit printing selected" if child else " · No exact printing selected"),
             group=group["id"],
             child=child["id"] if child else None,
             printing_ids=[row["id"] for row in detail["variants"] if row["available"]],

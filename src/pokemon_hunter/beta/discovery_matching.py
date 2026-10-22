@@ -7,6 +7,7 @@ physical-card verification, and no price or acquisition scope is selected here.
 
 import re
 import unicodedata
+from functools import lru_cache
 
 from .discovery_search import canonical_query
 
@@ -74,17 +75,44 @@ def without_sets(printings, text):
     return text
 
 
+@lru_cache(maxsize=16384)
+def _name_pattern(name):
+    # Only retained catalog names are cached, never seller text or results.
+    return re.compile(r"(?<![\w'’])" + _phrase(name) + r"(?![\w'’])", re.I)
+
+
 def name_spans(printing, text):
     text = literal(text)
     spans = []
     for name in names(printing):
-        for match in re.finditer(r"(?<![\w'’])" + _phrase(name) + r"(?![\w'’])", text, re.I):
+        for match in _name_pattern(name).finditer(text):
             # A plain Pikachu cannot stand in for Dark/Light/owner's Pikachu.
             prefix = text[max(0, match.start() - 80) : match.start()].strip()
             if re.search(r"(?:dark|light|\w+['’]s)\s*$", prefix, re.I):
                 continue
             spans.append(match.span())
     return sorted(set(spans))
+
+
+class NameIndex:
+    """Evaluate each distinct retained name/alias family once per summary.
+
+    This only removes rows with no literal name. The existing longest-name,
+    set, number, sibling and conflict checks still decide every identity.
+    """
+
+    def __init__(self, printings):
+        self.printings = printings
+        self.families = {}
+        for index, printing in enumerate(printings):
+            self.families.setdefault(names(printing), []).append(index)
+
+    def candidates(self, clues):
+        found = set()
+        for indices in self.families.values():
+            if name_spans(self.printings[indices[0]], clues["text"]):
+                found.update(indices)
+        return [self.printings[index] for index in sorted(found)]
 
 
 def literal_candidates(printings, text):

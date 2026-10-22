@@ -427,9 +427,7 @@ def execute_real(preflight):
 
 
 def main(argv=None):
-    cli = argparse.ArgumentParser(
-        description="SHOP-01D separate real probe; offline remains the default module."
-    )
+    cli = argparse.ArgumentParser(description="Explicit real eBay probe; offline remains the default module.")
     commands = cli.add_subparsers(dest="command", required=True)
     run = commands.add_parser(
         "execute", help="requires reviewed facts and explicit owner selection; no retries"

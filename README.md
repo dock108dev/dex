@@ -18,9 +18,9 @@ never buys, bids or treats a listing as proof of ownership.
 
 ## Quickstart: existing installation
 
-On this Mac, open `Dex.command` in this repo. Customer data lives in
-`.local/customer/`; all of `.local/` is Git-ignored. The launcher reuses the
-installed runtime and opens [Dex](http://127.0.0.1:8011/).
+Use the existing data root and its installed runtime. On macOS, the optional
+`Dex.command` launcher uses a [local runtime link or environment setting](docs/local-development.md#macos-launcher).
+Private installation data and launcher configuration are excluded from Git.
 
 Reuse the existing installation and its compatible runtime; check whether it is
 already serving before starting another process. Follow
@@ -50,14 +50,14 @@ before changes; never reseed an existing installation.
 - Private photo entry, manual matching and optional configured recognition.
 - Reviewed catalog publication, product contents and dated seller observations.
 - Explicit Shopping searches, assisted listing checks and delivered-price/reference
-  comparisons, with discovery identities hidden until reveal. New results are
-  temporary; existing saved hunt research remains available.
+  comparisons. Listings and checked seller links appear immediately; new results
+  are temporary, while existing saved hunt research remains available.
 - Vintage Shopping lots with separate included quantities and wanted targets,
   four independent guide-value scenarios and rights-permitted saved comparisons.
 
 Real-card recognition accuracy is unmeasured; all-era variant coverage and current
-buying availability remain incomplete. Unknown identity, stock, shipping and coverage stay
-visible. Recognition providers and eBay require separate configuration.
+buying availability remain incomplete. Unknown identity, stock, shipping and
+coverage stay visible. Recognition providers and eBay require separate configuration.
 Shopping uses dated, admitted retained references and privately activated source
 snapshots. Scheduled acquisition is unavailable. Missing values remain unpriced.
 

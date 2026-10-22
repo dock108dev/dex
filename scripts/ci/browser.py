@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import traceback
 import urllib.error
 import urllib.request
 import uuid
@@ -86,7 +87,13 @@ def prepare_journey(root):
 
 def run(output):
     output.mkdir(parents=True, exist_ok=True)
-    (output / "report.json").write_text(json.dumps({"status": "FAIL", "checks": []}) + "\n")
+
+    def checkpoint(name):
+        (output / "report.json").write_text(
+            json.dumps({"status": "FAIL", "checks": [], "failed_check": name}) + "\n"
+        )
+
+    checkpoint("disposable fixture initialization")
     started = time.monotonic()
     with tempfile.TemporaryDirectory(prefix="dex-ci-browser-") as temporary:
         temporary = Path(temporary)
@@ -153,6 +160,7 @@ def run(output):
                     raise TimeoutError("Synthetic browser server did not become ready in 30 seconds")
                 # The existing harness reads provider-calls.json beside its output directory.
                 captures = temporary / "captures"
+                checkpoint("public/member browser journey")
                 subprocess.run(
                     [
                         sys.executable,
@@ -170,6 +178,7 @@ def run(output):
                     timeout=180,
                 )
                 report = json.loads((captures / "report.json").read_text())
+                checkpoint("collection, Shopping search and listing review journeys")
                 report["checks"] = collection_journey(base, root, captures)
                 report["status"] = report["result"]
                 report["duration_seconds"] = round(time.monotonic() - started, 3)
@@ -215,6 +224,7 @@ if __name__ == "__main__":
         try:
             run(args.output.resolve())
         except Exception as error:
+            traceback.print_exc()
             path = args.output.resolve() / "report.json"
             report = json.loads(path.read_text()) if path.exists() else {}
             report.update(status="FAIL", failure=type(error).__name__)

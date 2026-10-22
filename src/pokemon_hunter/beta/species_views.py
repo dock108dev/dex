@@ -42,9 +42,14 @@ def projection(request):
 
 
 def _species_context(raw):
-    if set(raw) - {"goal", "scroll", "return"}:
+    if set(raw) - {"goal", "version", "generation", "scroll", "return"}:
         raise ValueError("Choose supported species context")
     species_projection.filters({"goal": raw.get("goal", "")})
+    from . import shopping_context
+
+    shopping_context.validate_identity(
+        {k: v for k, v in raw.items() if k in {"goal", "version", "generation"}}, legacy_goal=True
+    )
     if "scroll" in raw:
         from . import card_groups
 
@@ -91,6 +96,10 @@ def home(request, dex=None):
             who = actor(request)
             if raw.get("goal"):
                 species_projection._scope(who, raw["goal"])
+            if dex is not None:
+                from . import navigation
+
+                navigation.authorize_destination(who, request.get_full_path())
             return collection_views.private_home(request)
         # Public consumers never acquire private fields or ownership from missing fields.
         if raw.get("goal") or raw.get("owned") not in {None, "", "all"}:
@@ -110,6 +119,10 @@ def home(request, dex=None):
             )
         return render(
             request, "beta/public_species.html" if dex is not None else "beta/public_pokedex.html", context
+        )
+    except collection.Conflict:
+        return JsonResponse(
+            {"error": "Collection or saved goal changed; reopen the Pokémon view."}, status=409
         )
     except ValueError:
         return render(

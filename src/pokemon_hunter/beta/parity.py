@@ -29,7 +29,7 @@ def evidence(filename, default):
     return json.loads(path.read_text()) if path.is_file() else default
 
 
-def projection(actor):
+def projection(actor, *, include_presentation=True):
     active = service.copies(actor)
     by_printing = {}
     for copy in active:
@@ -98,7 +98,8 @@ def projection(actor):
     data["totals"] = {**totals(data), "physical_copies": len(active)}
     data["catalog"] = catalog
     data["ambiguous_card_aliases"] = ambiguous_aliases
-    data["valuation"] = estimates(active, catalog)
+    if include_presentation:
+        data["valuation"] = estimates(active, catalog)
     effective = effective_collection.project(actor, catalog=catalog, active=active)
     data["effective_collection"] = effective
     assertions = {row["id"]: row for row in effective["cards"]}
@@ -113,6 +114,16 @@ def projection(actor):
             exact_printing_owned=presence["exact_printing_owned"],
             effective_identity_status=presence["identity_status"],
         )
+    for key, item in data["pokedex"].items():
+        item["qualified_copy_species_owned"] = item["dex_owned"]
+        item["effective_species_present"] = effective["species"][key]["present"]
+        item["collection_owned"] = item["effective_species_present"]
+        item["dex_owned"] = item["effective_species_present"]
+    # Acquisition/comparison needs current ownership and frozen-goal inputs, not
+    # the overview's artwork, valuation or declaration presentation. Recompute
+    # the same authorized ownership above; never cache private projections.
+    if not include_presentation:
+        return data
     from .ownership_declarations import summary
 
     declaration = summary(actor)
@@ -140,10 +151,6 @@ def projection(actor):
             row["reference_images"] = [
                 r for r in item["reference_images"] if r["set_name"] == row["set_name"]
             ]
-        item["qualified_copy_species_owned"] = item["dex_owned"]
-        item["effective_species_present"] = effective["species"][key]["present"]
-        item["collection_owned"] = item["effective_species_present"]
-        item["dex_owned"] = item["effective_species_present"]
     data["ownership_declaration"] = declaration
     return data
 

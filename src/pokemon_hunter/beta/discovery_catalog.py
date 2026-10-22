@@ -238,3 +238,53 @@ def search(who, raw):
         if fractions
         else "",
     )
+
+
+def entry_refinements(who, raw, context):
+    """Map checked collection UI scope to one set, without inventing provider filters."""
+    from urllib.parse import parse_qsl, urlsplit
+
+    from . import species_scope
+
+    inherited = {}
+    destination = context["return_url"]
+    for _ in range(7):
+        if not destination:
+            break
+        parts = urlsplit(destination)
+        fields = dict(parse_qsl(parts.query, keep_blank_values=True))
+        if parts.path in {"/pokedex/", "/cards/", "/card-library/"}:
+            # Nearest supported set wins; broader criteria still need explaining.
+            for key, value in fields.items():
+                if (
+                    value
+                    and key not in inherited
+                    and key in species_scope.KEYS | {"language", "edition", "variant"}
+                ):
+                    inherited[key] = value
+        destination = fields.get("return", "")
+    notes = []
+    selected = species_scope.values(inherited.get("set", ""))
+    # No inherited collection set needs a full ownership/group projection.
+    # Use the same published catalog authority only when a set must be mapped.
+    sets = {(row["set_id"], row["set_name"]) for row in collection.catalog(who)} if selected else set()
+    mapped = next((name for key, name in sets if len(selected) == 1 and selected[0] in {key, name}), None)
+    initial = dict(raw)
+    if mapped:
+        initial.setdefault("set_id", mapped)
+        if initial["set_id"] not in {mapped, selected[0]}:
+            notes.append("The selected card/search set replaces the original collection set.")
+    elif selected:
+        notes.append(
+            "Shopping uses one supported set at a time. The original multiple or unavailable sets "
+            "are not applied to this search."
+        )
+    unsupported = set(inherited) - {"set"}
+    if unsupported:
+        notes.append(
+            "Other collection card filters are not applied in Shopping. "
+            "Search words and Shopping choices define this search."
+        )
+    if notes:
+        notes.append("Back retains your original collection filters.")
+    return initial, " ".join(notes)

@@ -118,6 +118,7 @@ def exercise(page, base, output):
                 page.goto(base + "/shopping/")
                 expect(page.locator("#discovery-search")).to_be_enabled()
                 expect(page.locator("#find-deals")).to_have_attribute("aria-pressed", "true")
+                page.get_by_text("Search options", exact=True).click()
                 page.locator("#find-missing").click()
                 page.locator("#discovery-goal").select_option("engineering-goal")
                 expect(page.locator("#missing-policy")).to_contain_text("Frozen goal:")

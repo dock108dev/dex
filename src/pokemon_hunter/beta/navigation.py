@@ -114,12 +114,17 @@ def authorize_destination(who, value):
         check_generation(raw, result)
         if result.get("public") is not False:
             raise ValueError("This collection destination is unavailable")
-    if parts.path == "/shopping/":
+    if (
+        parts.path == "/shopping/"
+        or parts.path in {"/cards/", "/card-library/"}
+        or (parts.path.startswith("/pokedex/") and parts.path != "/pokedex/")
+    ):
         from . import shopping_context
 
         shopping_context.resolve(
             who,
             {key: value for key, value in raw.items() if key in shopping_context.FIELDS and key != "return"},
+            legacy_goal=parts.path != "/shopping/",
         )
     if "return" in raw:
         authorize_destination(who, raw["return"])

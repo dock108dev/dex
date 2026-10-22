@@ -439,10 +439,10 @@ def preflight(identity_path, expected_identity, *, handback=False):
         str(Path(saved_handback["python"]).parent.parent),
     }
     if not isinstance(runtime_trees, dict) or set(runtime_trees) != required_runtimes:
-        raise Refusal("Candidate and SHOP-04 runtime identities are required")
+        raise Refusal("Candidate and ordinary runtime identities are required")
     for runtime, expected in runtime_trees.items():
         if runtime_tree_identity(runtime) != expected:
-            raise Refusal("Candidate or saved SHOP-04 runtime bytes changed")
+            raise Refusal("Candidate or saved ordinary runtime bytes changed")
     configuration_root = _path(identity["configuration_root"], directory=True)
     for file in (
         configuration_root / ".env",
@@ -624,7 +624,7 @@ def main():
 
                 def wait_for_completion(adapter):
                     input(
-                        "Hunter is ready at the ordinary origin. Press Enter to Stop and return to SHOP-04.\n"
+                        "Hunter is ready at the ordinary origin. Press Enter to Stop and return to the ordinary application.\n"
                     )
 
                 result = run_transition(plan, selected, adapter, wait_for_completion)

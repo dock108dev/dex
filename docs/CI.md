@@ -1,40 +1,45 @@
 # Continuous integration and testing
 
-CI checks source quality, behavior, distribution, browser journeys, security and
-PostgreSQL integration. It uses disposable state and controlled providers; it does
-not validate a user's collection, live marketplace results or a hosted deployment.
+CI checks source quality, behavior, packaging, browser journeys, security and
+PostgreSQL integration using disposable state and controlled providers. It does
+not validate personal collections, live marketplace results or a hosted deployment.
 
 ## Workflows
 
 | Workflow / job | Responsibility | Trigger |
 | --- | --- | --- |
-| `tests.yml` → `validate.yml` | Required validation and aggregate | Pull request, push to `main` |
-| `validate.yml` / `quality` | actionlint, Ruff, compilation, shipped JS/docs and renderer contracts | Reusable validation |
-| `validate.yml` / `behavior` | Full pytest, socket guard, JUnit and line/branch coverage | Reusable validation |
-| `validate.yml` / `distribution` | Repeat builds, wheel-from-sdist comparison, fresh hash-locked installation and smoke checks | Reusable validation |
-| `validate.yml` / `browser` | Public/member journeys, narrow/enlarged layouts, keyboard and recovery | Reusable validation |
-| `validate.yml` / `security` | Gitleaks CLI, Bandit and locked dependency audit | Reusable validation |
-| `validate.yml` / `staging` | Disposable PostgreSQL migration, sessions, CSRF and transaction checks | Reusable validation |
-| `validate.yml` / `gate` | Required same-run result/report aggregation | After validation jobs, including failures |
-| `assurance.yml` | Validation plus compatibility runtimes, image build and bounded health metadata | Sunday 09:23 UTC; manual `full` or `compatibility` |
+| `tests.yml` → `validate.yml` | Shared validation and required aggregate | Pull request and push to `main` |
+| `validate.yml / quality` | actionlint, Ruff, compilation, shipped JS/docs and renderer contracts | Shared validation |
+| `validate.yml / behavior` | Full pytest, socket guard, JUnit and line/branch coverage | Shared validation |
+| `validate.yml / distribution` | Repeat builds, wheel-from-sdist equality, empty hash-locked install and smoke checks | Shared validation |
+| `validate.yml / browser` | Public/member, collection, Shopping and listing-review journeys | Shared validation |
+| `validate.yml / security` | Gitleaks, Bandit, locked dependency audit and license metadata | Shared validation |
+| `validate.yml / staging` | Disposable PostgreSQL migration, sessions, CSRF and transactions | Shared validation |
+| `validate.yml / gate` | Required native report and job-result aggregation | Always after the validation jobs |
+| `assurance.yml / ci` | Shared validation with optional compatibility matrix | Sunday 09:23 UTC; manual `full` or `compatibility` |
+| `assurance.yml / container` | Non-publishing image build and non-root installed imports without networking | Schedule or manual `compatibility` |
+| `assurance.yml / health` | Bounded Actions history and storage metadata | Schedule or manual; advisory collection |
 
-Normal behavior entries are Ubuntu 24.04 and macOS 15, both using Python 3.14.
-Compatibility adds Ubuntu Python 3.13. Matrix fail-fast is disabled. Other required
-jobs use Ubuntu Python 3.14 and Node 24 where needed. Python 3.12 remains the
-declared package minimum but is no longer exercised in CI.
-Behavior has a 30-minute job limit; pytest reports slow tests and emits diagnostic
-stacks after a 90-second stall. The diagnostic does not terminate the test.
+Normal behavior entries use Ubuntu 24.04 and macOS 15 with Python 3.14. Compatibility
+adds Ubuntu Python 3.13 and both OSes on Python 3.12. Every PR also installs and
+compiles the fresh package on the declared minimum Python 3.12. Other jobs use
+Ubuntu and Python 3.14, with Node 24 where needed. Matrix fail-fast is disabled.
+Behavior has a 30-minute limit, or 45 minutes on the minimum runtime; pytest prints
+slow-test timings and diagnostic stacks after a 90-second stall without terminating
+the test. Package inputs and tool versions are defined by the workflows, composite
+setup action, `pyproject.toml` and `uv.lock`.
 
-The scheduled image build checks non-root imports with networking disabled and
-never publishes an image. Manual `full` intentionally omits the image and additional
-runtime combinations. Health telemetry is advisory and samples at most 30 completed
-runs from 30 days, separating event/workflow groups. It does not infer flakiness
-from one failed run or claim a missing measurement is zero.
+Manual `full` runs normal validation, without the additional runtimes or image.
+Schedules use default-branch source and may be delayed or dropped. They do not
+qualify another PR. There are no path filters that can strand the required check.
+PRs validate the proposed merge; main runs validate merged state. Superseded PR
+runs cancel; main/scheduled runs do not cancel unrelated work. Merge queues are
+not configured by these workflows; add `merge_group` before requiring queue gates.
 
 ## Local checks
 
-For focused development, install the `dev` extra and select relevant tests. For
-socket guards, coverage, browser and scan tooling, also install `ci`:
+Install only the extras needed for the work. Basic development uses `dev`; socket
+guards, coverage, browser and security tools also require `ci`:
 
 ```sh
 uv sync --locked --extra dev --extra ci
@@ -45,7 +50,10 @@ uv run --no-sync python scripts/ci/source.py
 uv run --no-sync pytest -q --disable-socket --allow-unix-socket
 ```
 
-Use Node 24 (`.nvmrc`) for the maintained renderer contracts:
+For a small change, select the relevant test files instead of running the full suite.
+`source.py` checks shipped JavaScript syntax and maintained Markdown links, including
+section anchors. Generated reports cannot satisfy a required documentation link.
+The renderer contracts also run independently:
 
 ```sh
 node scripts/verify_cx05_races.js
@@ -53,122 +61,95 @@ node scripts/verify_cx06_races.js
 node scripts/verify_cx06_source_tools.js
 ```
 
-Names in these script paths are stable entry points. They test current authority,
-stale-response and recovery behavior, rather than defining separate product modes.
+These stable script names test current request authority, stale responses and
+recovery. They do not select historical product modes. Synthetic account fixtures
+use a test-only fast password hasher; production hashing has a dedicated check and
+installed smoke uses the actual default.
 
-`scripts/ci/source.py` validates shipped JavaScript and maintained Markdown links,
-including section fragments. Generated `reports/` must not satisfy portable guide
-links. Keep private installation paths and local working notes out of maintained
-docs. `tests/test_ci_source.py` covers missing, generated and malformed references.
+## Browser, package and service checks
 
-Synthetic account fixtures temporarily use a fast test hasher. A dedicated test
-checks Django's production PBKDF2 default, and installed smoke uses real hashing.
-No product configuration enables the test hasher. Tests must still enforce account,
-CSRF, session and mutation boundaries.
-
-## Browser and service checks
-
-Install the locked Playwright browser when a browser check is needed:
+Inspect arguments and side effects before running integration tools:
 
 ```sh
 uv run --no-sync playwright install chromium
 uv run --no-sync python scripts/ci/browser.py --help
-uv run --no-sync python scripts/ci/staging.py --help
 uv run --no-sync python scripts/ci/smoke.py --help
+uv run --no-sync python scripts/ci/staging.py --help
 ```
 
-Inspect arguments and side effects before launching these tools. Browser checks
-create synthetic private state and block provider operations. PostgreSQL checks
-require a disposable service and empty destination. Distribution checks install a
-built wheel in a separate runtime, verify package inputs and run against generated
-state. Never point engineering harnesses at a personal installation.
+Browser checks create a fresh synthetic root, block acquisition and cover keyboard,
+narrow-screen, enlarged-text, named Search/More/Stop, seller-link and review behavior.
+Failures retain the failing stage, traceback and completed checks. The separate
+Hunter runner `scripts/qualify_hunter_ui.py` owns disposable process setup while
+`hunter_ui_journey.py` owns its ordered browser interactions.
 
-The Hunter-specific runner `scripts/qualify_hunter_ui.py` also creates disposable
-state. It separates process ownership from `hunter_ui_journey.py` and hashes both
-files. Controlled responses test races and image availability without establishing
-real provider behavior. Its guard/unit tests do not require a full browser run.
+Distribution checks validate required files, reject private inputs, compare repeated
+wheels and the wheel rebuilt from the sdist, then install locked runtime dependencies
+in an empty environment. Installed compilation, imports, console entrypoints,
+synthetic initialization, loopback HTTP behavior and cleanup must succeed.
 
-## Reports and permissions
+PostgreSQL checks require an empty disposable database and generated synthetic source.
+They verify copied migration, account isolation, sessions, CSRF, idempotent confirmation,
+undo and occupied-destination refusal. Never point these tools at a personal or
+production installation. Container checks do not publish, sign or deploy anything.
 
-Actions are pinned to full commit hashes; setup uses locked dependencies. Jobs use
-read-only contents permission, disable persisted checkout credentials and do not
-inherit secrets. Health additionally reads Actions metadata. PR runs superseded by
-new work may cancel; main/scheduled runs preserve their configured concurrency rules.
+## Reports and failure policy
 
-Native JUnit, coverage, security and measurement reports feed job summaries and
-sanitized artifacts. Names include run, attempt and matrix identity; workflow files
-set explicit retention. Contributors' text is escaped and artifact contents are
-parsed as bounded data, never executed to render a report. Do not retain credentials,
-private state, unnecessary source archives or bulky routine recordings.
+JUnit, coverage, sanitized security findings and tool measurements feed versioned
+JSON records and native GitHub job summaries. Records include the tested merge SHA,
+PR head, ref/event, run/attempt, runtime, tool versions and actual outcomes. Missing
+values stay unavailable; a previous successful run does not qualify changed source.
 
-The aggregate requires seven native job reports, or eight for compatibility. It
-rejects missing, duplicate, malformed, stale or contradictory reports, unexpected
-skips and cancelled required jobs. Expected test modules must execute; all-skipped
-modules fail. A report's PASS cannot override failed native tests or scan findings.
-Use **Re-run all jobs** so every accepted artifact belongs to the same run attempt;
-rerunning only failed jobs leaves earlier successful artifacts outside that boundary.
+The aggregate expects seven job reports, or ten for compatibility. It rejects
+missing, duplicate, malformed, stale or contradictory evidence, unexpected skips
+and cancellations. Every discovered `tests/test_*.py` module must execute; zero-test
+or all-skipped modules cannot pass. A retained PASS cannot override failed tests,
+blocking findings or a failed measurement. Use **Re-run all jobs** for a new attempt;
+reports from earlier attempts are deliberately rejected.
 
-Security blocks every dependency advisory and secret finding, plus medium/high
-Bandit findings with high confidence. Other Bandit findings remain visible. Tool,
-network lookup and download failures cannot become zero findings. Gitleaks is the
-pinned CLI, not a separate hosted wrapper integration. pip-audit sends dependency
-names/versions to PyPI's advisory service; coverage and static analysis need no
-new external account. See workflow files and `scripts/ci/security.py` for pins.
+Artifacts have unique run/attempt/matrix names. Quality, behavior, distribution,
+security and container reports retain 14 days; browser captures retain seven days;
+health records retain 30. Contributor text is escaped, bounded artifacts are parsed
+as data, and no artifact is executed to render a report. Credentials, personal state
+and unnecessary source archives are excluded.
 
-## Required-check enforcement
+Security blocks every secret and dependency advisory, plus medium/high Bandit
+findings with high confidence. Other findings remain visible. Tool, download or
+advisory-service failures cannot become zero findings. pip-audit sends package
+names/versions to PyPI's advisory service; the other local checks need no external
+analysis account. License metadata is an inventory, not a legal approval.
 
-Workflow configuration does not itself enforce branch protection. Repository
-administrators can require `CI / Required checks` after observing the check name
-on a complete run. A merge queue needs the corresponding event before activation.
-No release, signing or publication workflow is provided.
+Health collection samples at most 30 completed runs from 30 days and separates
+PR/main and workflow groups. Cancelled first attempts stay outside the pass-rate
+denominator. Rerun recovery alone is not a flake diagnosis. Median requires five
+comparable observations and p95 twenty. Job-time sums are resources, not elapsed
+run time or billed minutes. Queue, critical path, billing and per-run storage may
+remain unavailable. An incomplete artifact listing cannot establish total storage.
+Telemetry failure does not erase or block independent correctness results.
+
+## Permissions and repository enforcement
+
+External actions and downloaded tools are pinned; dependency installation is locked.
+Jobs use read-only contents access, disable persisted checkout credentials and do
+not inherit application secrets. Health additionally reads Actions metadata.
+Correctness does not depend on a warm cache. Cache keys include the lockfile,
+platform/architecture and runtime, and PR cache scope is separate from trusted branches.
+There is no privileged `pull_request_target`, artifact-executing `workflow_run` chain,
+or self-hosted PR runner.
+
+Workflow configuration alone does not enforce branch protection. Administrators
+can require the observed `CI / Required checks` check on `main` after a complete
+successful run. Repository settings, service activation and release operations
+remain separate administrative actions. No additional coverage dashboard or
+hosted analysis service is required by the current workflows.
 
 ## Limits
 
-Local execution qualifies only the exercised environment. An older run does not
-qualify changed source, and a synthetic test does not establish provider access,
-recognition accuracy, price freshness or owner acceptance. Full static typing,
-JavaScript line coverage and comparable changed-code/performance trend budgets
-are not established gates. Native measurements remain visible without invented
-baselines or deltas. See [development](local-development.md#testing).
-
-## CI maintenance review — October 17, 2026
-
-Imported from the Desktop tracker during the October 18 documentation cleanup.
-This is a historical closeout/decision, not a fresh verification. The active
-Shopping repair in [Shopping](hunts.md#active-owner-direction--shopping-repair-first-october-18-2026)
-and the Desktop Next Steps plan govern current work. Historical next actions below
-do not reactivate deferred work or establish installed delivery.
-
-Local CI maintenance is complete: repaired the hosted PTY descriptor-limit and
-retired Shopping-navigation failures, valid-local-ingress transport setup and
-catalog replacement-guard query budgets. Added test-only fast fixture hashing
-with explicit production-KDF verification, stall/slow-test diagnostics, explicit
-Bash execution, portable maintained documentation checks and bounded sdist roots
-with an explicit wheel-from-sdist identity comparison. Existing required names,
-security policy, platform coverage and reporting identity gates remain.
-
-**3,324 full-suite tests passed, no skips, in 323.35 seconds**; coverage is
-87.564% lines / 79.192% branches. Workflow/source/clean-export checks, native
-reporting contracts, 68 renderer cases, repeat builds, fresh Python 3.12 install
-(43 HTTP assertions), Chromium (51 states / 21 checks), PostgreSQL 17.11
-(5 integration checks) and security scans passed. Gitleaks/pip-audit found zero;
-Bandit found 72 nonblocking and zero blocking findings. Native warnings and
-initial failures/interruption remain retained; no comparable trend baseline or
-flake diagnosis is claimed. Disposable PostgreSQL was removed.
-
-[CI guide and full check map](CI.md#ci-maintenance-review--october-17-2026)
-records responsibilities, exact candidate/evidence limits, native reports,
-service eligibility and bounded historical health. Local evidence is under
-`dex/reports/ci-review-20261017/`. The pass began at `d144265`; independent commits
-advanced the checkout to `92b9f8b`, followed by local test/document repairs.
-No commit, push, workflow dispatch, branch setting, integration activation,
-provider operation, customer installation or owner data change was made by this
-pass. Customer beta priorities and deferred scope remain unchanged.
-
-**Status: LOCALLY READY — HOSTED UNVERIFIED.** Next CI action, when publication is
-requested: publish the reviewed final candidate and inspect all required checks
-on its exact SHA/run/attempt. Final hosted Linux/macOS matrix/summary rendering
-and the scheduled application-container build remain unverified. Branch protection
-was observed absent; enforcement of `CI / Required checks` is recommended after
-that exact candidate passes, and was not applied. This is engineering validation,
-not customer acceptance or a release.
+Local checks qualify only the exercised environment. Synthetic tests do not prove
+provider access, recognition accuracy, current prices or production behavior.
+Full static typing, JS line coverage, changed-code coverage and comparable performance
+trend budgets are not established gates. Package/image sizes are advisory without
+an arbitrary budget. Windows launcher support, hosted Linux ARM, container OS
+vulnerability scanning, TLS/proxy qualification, signing and publication are outside
+these checks. JavaScript, CSS and templates ship in the Python wheel; there is no
+independent frontend bundle or generated-source regeneration step.

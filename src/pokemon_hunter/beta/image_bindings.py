@@ -24,7 +24,19 @@ def catalog_images(actor, catalog):
     from . import card_groups, image_mappings
 
     game_ids = {row["id"] for row in store.rows("SELECT id FROM games WHERE game_key='pokemon'")}
-    built = card_groups.build_groups(authoritative, pokemon_game_ids=game_ids)
+    requested = {row["id"] for row in catalog}
+    # Keep every sibling in a requested identity group so collisions and variant
+    # ambiguity retain their ordinary checks. Unrelated groups need no images.
+    keys = {
+        tuple(row.get(key) for key in ("game_id", "set_id", "language", "collector_number"))
+        for row in catalog
+    }
+    relevant = [
+        row
+        for row in authoritative
+        if tuple(row.get(key) for key in ("game_id", "set_id", "language", "collector_number")) in keys
+    ]
+    built = card_groups.build_groups(relevant, pokemon_game_ids=game_ids)
     result = {}
     for group in built["groups"]:
         descriptor = image_mappings.card_group_reference(group, group["_children"], pokemon_game_ids=game_ids)
@@ -36,7 +48,8 @@ def catalog_images(actor, catalog):
             pokemon_dex=group["pokemon_dex"],
         )
         for child in group["_children"]:
-            result[child["id"]] = descriptor
+            if child["id"] in requested:
+                result[child["id"]] = descriptor
     store.verified(actor)
     if collection.generation(actor) != generation:
         raise collection.Conflict("Collection changed while binding images; reload")

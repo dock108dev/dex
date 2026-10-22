@@ -241,7 +241,8 @@ def test_shared_catalog_retains_set_alias_and_set_availability_in_one_query(monk
     )
     reads = []
 
-    def rows(query):
+    def rows(query, params):
+        assert params == []
         reads.append(query)
         return [p]
 

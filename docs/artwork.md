@@ -102,3 +102,16 @@ those checked descriptors. Optional descriptors/labels are omitted when needed t
 retain the existing 2 MiB response limit; the UI keeps a neutral fixed image slot.
 No seller-image URLs are constructed. Browser qualification uses controlled image
 responses and does not establish remote availability or seller-photo evidence.
+
+## Temporary Shopping seller photographs
+
+Local authenticated Discovery may display the official Browse summary's checked
+`image.imageUrl` from the exact eBay CDN origin `https://i.ebayimg.com`, using only
+the image path/extension contract in `discovery_listing.seller_image`. This is a
+temporary seller photo, visibly distinct from an admitted catalog reference scan.
+No exact contents, printing, condition or ownership is established. The Discovery
+page adds this single CSP origin; staging and other pages retain their prior policy.
+Images use no-referrer and a fixed loading/failure slot. Unchanged result image
+nodes survive local updates, including failure state. No bytes or URLs enter
+persistent history, exports or browser storage. Unsupported/missing images leave
+readable title, identity proposals and the checked seller destination available.

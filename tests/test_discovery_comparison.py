@@ -324,3 +324,18 @@ def test_base_set_two_cannot_match_base_set_even_with_uuid_catalog_set_id(setup)
     raw["title"] = raw["title"].replace("Base Set", "Base Set 2")
     row = compare(setup, raw)
     assert row["proposed_identity"] is None and row["reference"] is None
+
+
+def test_mixed_category_never_values_whole_lot_as_one_named_card(setup):
+    _, p = active(setup)
+    raw = listing(
+        p,
+        _discovery_category="183455",
+        image={"imageUrl": "https://i.ebayimg.com/images/g/Engineering/s-l500.jpg"},
+    )
+    row = compare(setup, raw)
+    assert row["discovery_kind"] == "mixed_lot" and row["reference"] is None
+    assert row["identity_candidates"] and row["proposed_identity"] is None
+    assert row["seller_image"].startswith("https://i.ebayimg.com/")
+    assert row["item_url"] == raw["itemWebUrl"]
+    assert "whole lot" in row["reason"]

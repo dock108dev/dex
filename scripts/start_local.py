@@ -2,13 +2,16 @@
 
 import os
 import subprocess
+import sys
 import webbrowser
 from pathlib import Path
 
-PYTHON = Path(
-    "/Users/michaelfuscoletti/.local/share/dex/runtimes/catalog-additive-release-20261017/bin/python"
+PYTHON = Path(sys.executable)
+ROOT = (
+    Path(os.environ.get("DEX_APP_ROOT", Path(__file__).resolve().parents[1] / ".local/customer"))
+    .expanduser()
+    .resolve()
 )
-ROOT = Path(__file__).resolve().parents[1] / ".local" / "customer"
 
 
 def main():
@@ -26,7 +29,7 @@ def main():
     if not (ROOT / "B1_ISOLATED").is_file() or not (ROOT / "inventory.db").is_file():
         raise SystemExit("The existing Dex installation is unavailable.")
     os.environ["DEX_PROFILE"] = "local"
-    # The installed app reads the linked project .env. Do not inherit stale key
+    # The installed app reads the configured project .env. Do not inherit stale key
     # overrides from the parent Terminal after the user edits that file.
     for name in ("EBAY_CLIENT_ID", "EBAY_CLIENT_SECRET", "EBAY_DELIVERY_POSTAL_CODE"):
         os.environ.pop(name, None)

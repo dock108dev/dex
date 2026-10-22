@@ -16,9 +16,10 @@ Ordinary card browsing and detail use the main navigation without a duplicate
 collection task bar; collection tools remain in Menu. My Cards also offers a direct
 Add many cards shortcut.
 
-Shopping leads with one image-led local search, quick set choices, Find deals and
-Find missing cards. Explicit eBay search supports singles, loose mixed lots and
-auctions. Check a listing/lot remains available, with links
+Shopping leads with one named eBay search, optional Set, Mixed lots/Singles/Both
+and Order. Stop stays beside Search; local catalog exploration and collection/budget
+options are secondary. Explicit eBay search supports loose mixed lots, singles and
+auctions. Check a listing/lot remains directly available, with secondary links
 to the lot calculator, retained saved finds, Packs to open, independent Pack lookup
 and saved pack research. Classic hunt/missing pages direct new searches to Shopping;
 they do not offer retired live/sample or continuation actions. Packs
@@ -108,6 +109,21 @@ unresolved evidence. Scope values and the editor's expanded state survive valida
 navigation and reload. These are current views; named-view persistence is unavailable.
 
 ## Shopping
+
+The named-search workspace uses aligned common refinements and one Search options
+disclosure for collection, budget and provider preferences. Short selected values
+need no repeated caption; a measured clipped native selection receives its complete
+wrapped caption, including at enlarged text sizes. Desktop quick-set shortcuts share
+the same Set control; narrow layouts retain the direct native selector. Idle readiness
+needs no instructional paragraph. Progress, blockers, errors and Stop remain visible.
+
+Received offers retain stable photo areas and complete titles. The listing amount
+has stronger emphasis than ancillary costs; unknown costs stay explicitly readable.
+Results filters and counts sit together. Inspection leads with the offer, price and
+seller action; review is secondary, and closed setup/research disclosures use simple
+rows instead of separate empty panels. Review inputs stack on narrow screens. The
+zero/unknown remainder distinction stays beside its field; extended help stays in
+one named disclosure. Calculations, temporary retention and source rights are unchanged.
 
 Price Hunter at `/shopping/hunter/` leads with Singles/Lots/Both, Hunt and an
 independent Stop, followed by readable scope/progress and image-led received
@@ -216,32 +232,3 @@ text, keyboard focus, long names, unavailable images and slow/error states. Cove
 collection versus Library, current versus frozen progress, deliberate confirmation,
 Stop and Back/reopen without new acquisition. Automated or synthetic checks do not
 establish real recognition accuracy, source freshness or marketplace outcomes.
-
-## Shopping interface review — October 17, 2026
-
-Imported from the Desktop tracker during the October 18 documentation cleanup.
-This is a historical closeout/decision, not a fresh verification. The active
-Shopping repair in [Shopping](hunts.md#active-owner-direction--shopping-repair-first-october-18-2026)
-and the Desktop Next Steps plan govern current work. Historical next actions below
-do not reactivate deferred work or establish installed delivery.
-
-Implemented a source presentation pass for Shopping and Price Hunter: compact
-catalog choices, main Hunt/Stop controls before setup, quieter ready-state usage,
-clearer price hierarchy and expandable comparison reasons. Dates, unknown costs,
-partial coverage, deliberate usage selection and provider/account/Stop contracts
-remain. Saved research/Packs remain in More Shopping tools. Enlarged text wraps
-without overlapping thumbnail labels.
-
-[Matched before/after review](UI_DESIGN.md#shopping-interface-review--october-17-2026)
-records rendered 1280/390/320px engineering previews, 200% text, long content,
-unavailable artwork, keyboard settings/reasons, Stop and availability recovery.
-**55 focused tests and 14 browser checks passed**; syntax, preview-script
-compile/lint/format and diff whitespace passed. Zero real provider operations.
-The guarded preview helper's disposable port also reaches the new ASGI local guard;
-production ingress policy remains unchanged.
-
-The owner explicitly permitted a synthetic layout preview in this request. These
-are fabricated engineering captures, not customer demonstrations or genuine offers.
-The actual installation, owner data, source rights and existing edits remain
-untouched. A compatible installed successor, genuine artwork/offer observation and
-new-user/owner acceptance remain separate; no release or commercial-readiness claim.

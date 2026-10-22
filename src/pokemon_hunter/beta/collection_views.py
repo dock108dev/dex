@@ -85,9 +85,13 @@ def home(request, key=None):
     return private_home(request)
 
 
-@login_required
+@browsing_endpoint
 def private_home(request):
-    actor(request)
+    who = actor(request)
+    if request.path in {"/cards/", "/card-library/"}:
+        from .navigation import authorize_destination
+
+        authorize_destination(who, request.get_full_path())
     response = render(
         request,
         "beta/b2.html",
@@ -117,6 +121,8 @@ def asset(request, filename):
         "listing_check.js",
         "listing_check.css",
         "discovery.js",
+        "discovery-display.js",
+        "listing-time.js",
         "discovery.css",
         "hunter.js",
         "hunter-review.js",

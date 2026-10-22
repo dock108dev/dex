@@ -820,7 +820,7 @@ class FixtureTransport:
 
 
 def main(argv=None):
-    cli = argparse.ArgumentParser(description="Offline SHOP-01C operator; real execution is unavailable.")
+    cli = argparse.ArgumentParser(description="Offline eBay probe; real execution is unavailable.")
     cli.add_argument(
         "--state-dir", type=Path, required=True, help="private disposable OFFLINE authority directory"
     )

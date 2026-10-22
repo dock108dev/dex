@@ -15,10 +15,7 @@ def test_base_alias_set_override_and_bounded_suffix_are_distinct():
     assert canonical_query("Alakazam base") == "Alakazam Base Set"
     assert submitted_query("Alakazam base", set_name="Base Set 2") == "Alakazam Base Set 2"
     assert submitted_query("Alakazam base 2", set_name="Base Set") == "Alakazam Base Set"
-    assert (
-        submitted_query("Hypno", product_type="mixed_lots", english_vintage=True)
-        == "Hypno lot English vintage"
-    )
+    assert submitted_query("Hypno", english_vintage=True) == "Hypno English vintage"
     query = submitted_query("x" * 200, set_name="Team Rocket", english_vintage=True)
     assert len(query) <= 200 and query.endswith("Team Rocket English")
 

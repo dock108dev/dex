@@ -66,7 +66,7 @@ socket.getaddrinfo = getaddrinfo
 """
 
 IMPORT_PROBE = """
-import hashlib, importlib.metadata, json, sys
+import compileall, hashlib, importlib.metadata, json, sys
 from pathlib import Path
 import pokemon_hunter
 from pokemon_hunter import runtime_data
@@ -76,6 +76,7 @@ package = Path(pokemon_hunter.__file__).resolve().parent
 prefix = Path(sys.prefix).resolve()
 assert package.is_relative_to(prefix), 'Package is outside supplied installation'
 assert package.parent.name != 'src', 'Checkout imports are forbidden'
+assert compileall.compile_dir(package, quiet=1), 'Installed source is incompatible with this Python runtime'
 assert runtime_data.root() == package / 'data', 'Packaged data was not selected'
 for name, sha in expected.items():
     installed = package.parent / name

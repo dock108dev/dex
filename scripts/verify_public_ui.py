@@ -11,7 +11,7 @@ import hashlib
 import json
 import sqlite3
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
 from playwright.sync_api import expect, sync_playwright
 
@@ -250,9 +250,13 @@ def run(root, base, output):
             expect(page.get_by_role("heading", name="#123 Scyther", exact=True)).to_be_visible()
             expect(page.get_by_role("heading", name="Your Cards", exact=True)).to_be_visible()
             expect(page.locator("dialog[open]")).to_have_count(0)
-            expect(page.get_by_role("link", name="Explore Scyther cards", exact=True)).to_have_attribute(
-                "href", "/card-library/?species=123"
-            )
+            explore = page.locator("#species-explore")
+            expect(explore).to_have_accessible_name("Explore cards for Scyther")
+            destination = urlsplit(explore.get_attribute("href"))
+            assert destination.path == "/card-library/"
+            selectors = parse_qs(destination.query)
+            assert selectors["species"] == ["123"] and selectors.get("generation")
+            assert urlsplit(selectors["return"][0]).path == "/pokedex/123/"
             capture(page, width, "member-public-species", full=True)
             data = context.request.get(base + "/api/collection/").json()
             assert len(data["copies"]) == 3 and len(data["goals"]) == 3

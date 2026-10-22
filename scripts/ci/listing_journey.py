@@ -122,12 +122,15 @@ def exercise(page, base, output):
         expect(page.locator("#listing-identifier")).to_have_value(listing["item_id"])
         expect(page.locator("#check-back")).to_have_attribute("href", destination)
         assert not loads
+        page.get_by_text("Seller details and identity notes", exact=True).click()
         assert "Separate buy-now" in page.locator("#listing-details").inner_text()
         page.locator("#discard-listing").click()
         passed("revealed temporary summary and checked return arrive without an eBay detail request")
+        page.locator("#review-editor > summary").click()
         page.get_by_text("Listing reference, tax and other costs", exact=True).click()
         page.locator("#review-title").fill("My reviewed edits")
         page.locator("#review-price").fill("7.25")
+        page.locator("#listing-tools > summary").click()
         page.locator("#listing-identifier").fill(identifier)
         page.locator("#load-listing").click()
         expect(page.locator("#listing-preview")).to_be_visible()
@@ -183,9 +186,9 @@ def exercise(page, base, output):
         expect(page.locator("#check-matches button").first).to_be_visible()
         assert len(loads) == 3
         passed("provider failure preserves review and local card search makes no provider calls")
-        page.locator("#listing-check").get_by_role("link", name="Shopping", exact=True).click()
+        page.locator("#check-back").click()
         expect(page.locator("#discovery-form")).to_be_visible()
-        page.locator(".discovery-links").get_by_role("link", name="Check a listing/lot", exact=True).click()
+        page.get_by_role("link", name="Check a listing/lot", exact=True).click()
         expect(page.locator("#review-title")).to_have_value("Corrected retained title")
         expect(page.locator("#check-results")).not_to_be_visible()
         assert len(loads) == 3

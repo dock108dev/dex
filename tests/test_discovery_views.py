@@ -24,7 +24,7 @@ def test_shopping_front_door_and_contextual_calculator(workspace, monkeypatch):
     assert calculator.status_code == 200 and b"lot_calculator.js" in calculator.content
     assert workspace["a"].get("/shopping/", {"species": "2"}).status_code == 200
     assert workspace["a"].get("/shopping/", {"species": "invalid"}).status_code == 400
-    for filename in ("discovery.js", "discovery.css"):
+    for filename in ("discovery.js", "discovery.css", "discovery-display.js", "listing-time.js"):
         assert workspace["a"].get("/collection-assets/" + filename).status_code == 200
 
 

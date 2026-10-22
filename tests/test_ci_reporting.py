@@ -407,3 +407,30 @@ def test_new_candidate_module_cannot_be_omitted_from_successful_test_report(iden
         '<testsuite><testcase classname="tests.test_existing"/><testcase classname="tests.test_shopping_new"/></testsuite>'
     )
     assert report.main(args) == 0
+
+
+def test_failed_measurement_identifies_the_check_without_rendering_untrusted_markup(identity):
+    measurement = fixture_json(
+        identity / "browser.json",
+        {"status": "FAIL", "failed_check": "Shopping <img src=x> [untrusted](https://example.invalid)"},
+    )
+    assert (
+        report.main(
+            [
+                "job",
+                "--name",
+                "Browser",
+                "--outcome",
+                "browser=failure",
+                "--measurement",
+                str(measurement),
+                "--output",
+                str(identity / "metrics.json"),
+            ]
+        )
+        == 1
+    )
+    summary = (identity / "summary.md").read_text()
+    assert "Failed measurement check: Shopping" in summary
+    assert "&lt;img src=x&gt;" in summary and "<img" not in summary
+    assert "[untrusted](https://example.invalid)" not in summary

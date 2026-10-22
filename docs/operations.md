@@ -17,6 +17,18 @@ authenticated visits. Browser restart does not guarantee a temporary Hunt surviv
 its lease and in-memory results are separate from sign-in. Logout is a POST action;
 expiry, revocation and recovery-link reissue invalidate access.
 
+## Runtime updates and recovery
+
+Keep the private data root separate from the selected installed runtime. Configure
+startup through [local development](local-development.md#existing-installations).
+Changing a checkout environment does not update an installed application.
+
+Before a compatible runtime update, stop the existing server and back up protected
+state as described below. Retain the previous interpreter for rollback. Runtime
+rollback uses current compatible data; never restore older independent acquisition
+journals, revocations or reservations to regain capacity. Schema changes need their
+own migration/restore procedure and are not ordinary startup steps.
+
 ## Everyday Hunter policy
 
 An owner selects enabled/paused state, per-Hunt and shared daily limits, timezone,
@@ -121,7 +133,13 @@ must keep noncontent reservation history.
 
 ## Shopping discovery
 
-Search, Continue and explicitly selected details are acquisition actions. Reveal,
+Named Search/More and explicitly selected details are acquisition actions. Each
+named action uses at most one OAuth and one Browse, 20 summaries, 30-second requests
+and a 75-second action deadline; a named run ends after four Browse pages total
+without renewing its original content lease. Both alternates captured category lanes
+within this same total. Unknown/malformed totals end a lane; errors end continuation.
+Blank-text catalog batches retain their stricter existing ceilings. Reveal remains
+a local compatibility operation; results and reviews are visible without it. Reveal,
 local pages, comparisons, Back and reopening make no provider request. Temporary
 results, references and derived amounts stay out of persistent exports and browser
 storage. Use Stop for active work; do not retry uncertain transport automatically.
@@ -145,58 +163,3 @@ never reset reservations to retry an uncertain model request. The worker and acc
 paths enforce image lifetime; hard termination may leave private temporary files.
 See [photo storage](photo-entry.md#storage-and-shared-review) and
 [failure handling](ERROR_HANDLING.md).
-
-## Deferred — resume only on later owner direction
-
-Imported from the Desktop tracker during the October 18 documentation cleanup.
-This is a historical closeout/decision, not a fresh verification. The active
-Shopping repair in [Shopping](hunts.md#active-owner-direction--shopping-repair-first-october-18-2026)
-and the Desktop Next Steps plan govern current work. Historical next actions below
-do not reactivate deferred work or establish installed delivery.
-
-- **Real data pipelines and further reference acquisition/refresh automation**,
-  source integration/operationalization, sold-history capability and HUNT-12.
-- **REFERENCE-R3/RESIDUAL-1 and coverage/identity expansion:** the 319 unpriced
-  children, two S6 missing prices, 13,399 unpriced parents and retained
-  edition/denominator/physical/product holds remain recorded limitations. Their
-  ledgers are preserved, not an active engineering queue. No target coverage
-  percentage remains to be achieved for beta.
-- **Catalog policy/remainder:** Detective Pikachu, Generations aliases and other
-  retained-source/physical/catalog gaps. No new catalog campaign for this beta.
-- **Photo onboarding and recognition expansion:** ON-02/D3 and ON-02/DEL remain
-  owner-deferred. Revisit relevant model lifecycle facts when that work resumes or
-  if an actually used recognition feature needs maintenance; historical notices
-  are not treated as current verified facts.
-- **Graded/sold-price modeling, resale EV, other games/countries and broader
-  product expansion**, unattended Hunts/notifications and public/hosted release.
-- Historical full collection/Shopping/photo combined-delivery and full-goal
-  acceptance branches remain separate from the narrower current beta scope.
-
-None of these deferred items blocks use or evaluation of the selected current beta.
-A future resumption starts from actual latest state and preserved source rights,
-reservations and histories, without resetting or replaying consumed selections.
-
-## Operating rules for the active beta
-
-Imported from the Desktop tracker during the October 18 documentation cleanup.
-This is a historical closeout/decision, not a fresh verification. The active
-Shopping repair in [Shopping](hunts.md#active-owner-direction--shopping-repair-first-october-18-2026)
-and the Desktop Next Steps plan govern current work. Historical next actions below
-do not reactivate deferred work or establish installed delivery.
-
-Use the ordinary installation and real current state for interactive work. Preserve
-customer data and any existing authenticated session; never reseed or substitute
-a copied/synthetic customer installation. Keep reference dates, conditional market
-meaning, missing prices, unknown costs and partial lot coverage honest.
-
-The recorded batch-1 supplemental full-source check sequencing deviation remains
-in the delivered closeout. It passed; it does not create a new coverage campaign.
-Future relevant admission changes must put complete checks before activation.
-
-Update only the selected beta work and fix observed issues. No automatic residual
-repair, pipeline work, acquisition, schedules, purchase/bid or deployment is selected.
-
-Pre-scope tracker archive: `reports/reference-r3-acquire1-20261018/tracker-before-beta-scope.md`
-retains the earlier full backlog and historical evidence. The owner's current scope
-above replaces its active priorities; historical next handoffs are not instructions
-to resume deferred work. Repository operating guides were updated before this tracker.

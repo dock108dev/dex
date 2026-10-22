@@ -44,18 +44,22 @@ Paths are relative to `src/pokemon_hunter/`.
 | Offer age and eligibility | `beta/offer_filters.py`, using original observation times |
 | Retained-reference admission | `reference_policy.py`; domain services add printing, grade and source-rights checks |
 | Shopping arithmetic and input shapes | `beta/shopping_math.py`, `beta/shopping_inputs.py`; `shopping.py` preserves established validator imports |
+| Official listing money and cost projection | `beta/listing_prices.py`, delegating decimal admission/rounding to `shopping_math`; Discovery, Hunter, official details and Hunter lot reviews share it |
 | Shopping history and original research | `beta/shopping.py:store_payload/reopen/reevaluate`, delegated to by `shopping_views.py` |
 | Lot selection, wants and guide cells | `beta/lot_calculator.py`; `beta/lot_guides.py` projects supplied admitted records |
 | Private price lifecycle | `beta/price_snapshot_contract.py`, `beta/price_snapshots.py`, `beta/price_snapshot_sources.py` |
-| Finite Shopping acquisition | `beta/discovery.py`, `beta/discovery_transport.py`, `beta/listing_check.py` |
+| Shopping input and temporary state types | `beta/discovery_contracts.py`; `discovery.py` preserves the `Choices`/`Run` imports used by Hunter and other callers |
+| Finite Shopping acquisition | `beta/discovery.py`, `beta/discovery_transport.py`, `beta/listing_check.py`; orchestration retains account/session checks, locks, deadlines and accounting |
 | Bulk listings Hunter | `beta/hunter.py`, `hunter_views.py`; `hunter_query.py` checks provider parameters; `hunter_traversal.py` captures finite plans/cursors; `hunter_policy.py` owns ordinary owner-selected usage; `hunter_budget.py` preserves independent finite qualification allowances |
 | Local Hunter identity/reference batches | `beta/hunter_catalog.py` indexes; shared literal `beta/discovery_matching.py` and `discovery_comparison._project`; admitted `lot_calculator.retained_records`, `lot_guides` and `shopping_math` retain lifecycle, source selection and arithmetic; no second store |
 | Hunter opportunity scenarios | `beta/hunter_ranking.py` projects freshly admitted rows through existing Shopping arithmetic and ranks equivalent cost/applicability groups |
 | Hunter screen and review rendering | `beta/templates/beta/hunter.html`, `beta/static/hunter.js`, `hunter-review.js`, `hunter.css`; authenticated `hunter_views` resolves checked image bindings and bounded all-era correction choices; services retain arithmetic and authority |
-| Hunter lot proposals and temporary reviews | `beta/hunter_lots.py` bounded local parser and all-era adapters to `lot_calculator.prepare`; `hunter_lot_details.py` explicit official details share original lease and durable allowance, disabled by default |
+| Hunter lot text and quantity proposals | `beta/hunter_lot_parser.py` interprets supplied authorized text and printing identities; `hunter_lots.parse` remains the compatible export |
+| Hunter temporary lot reviews | `beta/hunter_lots.py` reauthorizes leases and supplies all-era adapters to `lot_calculator.prepare`; `hunter_lot_details.py` explicit official details share original lease and durable allowance, disabled by default |
 | Listing identifiers and response projection | `beta/listing_details.py`; `listing_check.py` retains compatible public imports |
 | Visual local Shopping search | `beta/discovery_catalog.py`, using checked card groups, current/frozen collection scope and image bindings |
-| Captured provider query and product eligibility | `beta/discovery_search.py`; no ownership or reference-value authority |
+| Captured query, category and finite continuation | `beta/discovery_search.py`, `beta/discovery_paging.py`; no ownership or reference-value authority |
+| Temporary listing image/time admission and rendering | `beta/discovery_listing.py`, `beta/static/discovery-display.js`, shared `beta/static/listing-time.js`; safe seller URLs remain in `security.ebay_url` |
 | Discovery applicability and result order | `beta/discovery_comparison.py:compare`; `beta/goal_hunts.py` supplies collection/goal scope |
 | Provider settings and historical hunt projections | `config.py`, `beta/ebay_hunts.py:configuration/status`, `hunt.py`, `beta/hunt_values.py` |
 | Manual bulk drafts and replay identity | `beta/bulk_input.py`, `beta/collection_drafts.py`, `beta/bulk_views.py`, with collection mutation authority |
@@ -88,7 +92,8 @@ contract, read-only history and HTTP/watchdog adapters are the sibling
 `tcgcsv_capture_transport.py` modules. They share one `CaptureRefused` type and
 preserve serialized plans, immutable reservations and fixed historical identities.
 Browser qualification separates `qualify_hunter_ui.py` process ownership from
-`hunter_ui_journey.py`'s ordered checks; both are bound into source evidence.
+`hunter_ui_journey.py`'s ordered checks. The journey retains one browser context,
+held responses and final cleanup.
 See [maintenance conventions](local-development.md#maintenance-conventions) for
 structure, fixture ownership and retained lifecycle boundaries.
 
@@ -162,7 +167,16 @@ See [collection semantics](effective-collection.md) and
 
 `navigation.py` validates finite local destinations and reauthorizes private targets.
 `shopping_context.py` binds species or group/optional child, goal/version, generation
-and return context without inventing ownership or quantities. Client drafts retain
+and return context without inventing ownership or quantities. `validate_identity`
+shares bounded syntax with existing return validation; only `resolve` reauthorizes.
+Card Library retains a checked species return and goal/version/generation. Shopping
+catalog selection and internal Card details are separate controls; detail returns
+reuse the original authenticated Shopping state and temporary handle. The existing
+return validator allows at most six nested edges and 4,096 characters, reauthorizing
+each private object; it never renews result leases or acquires listings.
+`discovery_catalog.entry_refinements` maps inherited single-set context and explains
+unsupported collection criteria. Search refinements stay outside identity fields.
+Client drafts retain
 only permitted user inputs and require explicit comparison after restoration.
 See [navigation and access](UI_DESIGN.md#navigation-and-access),
 [card return context](card-groups.md#list-controls-and-return-context) and
@@ -177,10 +191,36 @@ policy. [Scoped release evidence](catalogs.md#scoped-release-evidence) defines d
 
 ## Shopping discovery
 
-[Shopping](hunts.md) defines visual local search, Search/Stop/Next, singles/loose lots/auctions, reveal, temporary
-results and acquisition ceilings. `discovery_comparison.compare` owns applicability
+[Shopping](hunts.md) defines primary named Search/Stop/More, optional visual local search, singles/loose lots/auctions, immediate recognizable temporary
+results and acquisition ceilings. Named runs use one checked category page per explicit
+action, at most four pages total, preserving original expiry and captured choices.
+Reveal remains a compatibility read action. `discovery_comparison.compare` owns applicability
 and sorting; response projection preserves that order. Authenticated `/api/hunts/`
 POST returns 410; historical schemas and read/reveal routes remain supported.
+
+## Listing value authority
+
+`listing_prices.py` owns supplied official listing amounts, auction/buy-now selection
+and shipping projections. `shopping_math.amount/money` owns decimal strings, precision,
+the amount ceiling and rounding. Discovery comparison, Hunter minimum bids, official
+details and Hunter lot review inputs delegate to this policy; the original watcher's
+`pricing.py` remains specific to its separate threshold/count contract.
+
+Unsupported numeric shapes, precision, negative/nonfinite amounts and amounts above
+the ceiling remain unknown. An invalid shipping amount does not erase a valid listing
+price. An auction's missing current bid never uses its buy-now amount. Foreign detail
+amounts remain labelled display inputs and cannot become USD comparisons.
+
+Two shipping projections remain intentional: a summary can show the cheapest explicit
+supported USD option; review inputs require one agreed amount/currency across supplied
+options. Both use the same amount admission. Unknown shipping never means free.
+`discovery_listing.end_timestamp`, backed by `hunter_query.utc_time`, is the shared
+timestamp admission path. Invalid summary times remain unknown; a supplied invalid
+official-detail end time fails explicitly before the detail can be used.
+
+Search text normalization belongs to `discovery_search.submitted_query` and takes no
+product-category option. Actual Singles/Mixed lots/Both choices remain active through
+`discovery_paging` and the captured acquisition plan.
 
 ## Assisted listing and lot checks
 
@@ -202,36 +242,3 @@ Photo batches retain independent jobs, reservations and deletion tombstones whil
 binding selected crops through ordinary collection confirmation. See
 [photo storage and shared review](photo-entry.md#storage-and-shared-review) and
 [photo rows in collection review](effective-collection.md#photo-rows-in-the-shared-review).
-
-## SSOT source maintenance — October 17, 2026
-
-Imported from the Desktop tracker during the October 18 documentation cleanup.
-This is a historical closeout/decision, not a fresh verification. The active
-Shopping repair in [Shopping](hunts.md#active-owner-direction--shopping-repair-first-october-18-2026)
-and the Desktop Next Steps plan govern current work. Historical next actions below
-do not reactivate deferred work or establish installed delivery.
-
-Completed the current-source authority review and a bounded HTTP input repair.
-`beta/request_inputs.py` now owns single-valued GET/form decoding; existing
-`card_group_views.query` callers use the same function export. Public catalog,
-guest/private Pack lookup and lookup save delegate before projection/storage.
-Repeated selectors and unsupported fields now fail explicitly instead of choosing
-the last value or silently ignoring fields. Domain value, account, scope-version,
-CSRF and save authorities remain with their existing services.
-
-**119 focused tests passed**, no skips; 70-case affected baseline passed and ten
-new route regressions reproduced the bypasses before repair. Six shared-policy
-cases protect delegation, duplicate/unknown refusal and unchanged valid blanks.
-Focused compilation, Ruff lint/format, maintained source/guide checks and diff
-whitespace passed. No full CI, packaging or interactive app validation was run.
-[Authority map](SSOT.md#scalar-request-authority) and
-SSOT review: `reports/ssot-enforcement-20261017/review.md` record domain owners,
-removed fallback paths and retained compatibility rationale. Local evidence is
-under `dex/reports/ssot-enforcement-20261017/`.
-
-Source baseline `b7b84f6` was clean. No owner-data access, provider requests,
-installation/runtime changes, migration, commit, push or release occurred. The
-installed candidate and beta priorities above remain unchanged. A future installed
-successor needs its own preservation and qualification. Capability-marker retirement
-and historical acquisition-profile removal require separate support/recovery work;
-they are not an automatic new beta queue or a way to renew consumed capacity.

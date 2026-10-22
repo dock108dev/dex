@@ -86,7 +86,9 @@ def legacy(request, key):
 def home(request, key):
     raw = query(request, {"child", "generation", "return"})
     if "return" in raw:
-        return_context(raw["return"])
+        from .navigation import authorize_destination
+
+        authorize_destination(actor(request), raw["return"])
     result = card_groups.detail(actor(request), key, selected_child=raw.get("child"))
     check_generation(raw, result)
     response = collection_views.private_home(request)
@@ -99,7 +101,7 @@ def return_context(value, *, list_only=False, _depth=0):
     if (
         not isinstance(value, str)
         or len(value) > 4096
-        or _depth > 2
+        or _depth > 6
         or value != value.strip()
         or any(ord(char) < 32 or ord(char) == 127 for char in value)
     ):
@@ -141,19 +143,35 @@ def return_context(value, *, list_only=False, _depth=0):
             raise ValueError("Choose a canonical Pokémon return destination")
         if not 1 <= int(match[1]) <= 251:
             raise ValueError("Choose a canonical Pokémon return destination")
-        if set(raw) - {"goal", "scroll", "return"}:
+        if set(raw) - {"goal", "version", "generation", "scroll", "return"}:
             raise ValueError("Choose supported species return fields")
         species_projection.filters({"goal": raw.get("goal", "")})
+        from . import shopping_context
+
+        shopping_context.validate_identity(
+            {k: v for k, v in raw.items() if k in {"goal", "version", "generation"}}, legacy_goal=True
+        )
         if "scroll" in raw:
             card_groups._integer(raw["scroll"], "scroll position", 0, 10000000)
         if "return" in raw:
             return_context(raw["return"], list_only=True, _depth=_depth + 1)
     elif not list_only and parts.path in {"/cards/", "/card-library/"}:
-        if set(raw) - (card_groups.FILTERS - {"scope", "generation"} | {"scroll"}):
+        if set(raw) - (card_groups.FILTERS - {"scope"} | {"scroll", "return", "goal", "version"}):
             raise ValueError("Choose each supported return field once")
         scroll = raw.pop("scroll", "0")
         card_groups._integer(scroll, "scroll position", 0, 10000000)
-        card_groups._filters(raw, {"public": False})
+        from . import shopping_context
+
+        shopping_context.validate_identity(
+            {k: v for k, v in raw.items() if k in {"goal", "version", "generation"}}, legacy_goal=True
+        )
+        if "return" in raw:
+            if not urlsplit(raw["return"]).path.startswith("/pokedex/"):
+                raise ValueError("Choose a Pokémon return destination for Card Library")
+            return_context(raw["return"], _depth=_depth + 1)
+        card_groups._filters(
+            {k: v for k, v in raw.items() if k in card_groups.FILTERS - {"generation"}}, {"public": False}
+        )
     elif not list_only and parts.path == "/goals/" and not raw:
         pass
     elif not list_only and parts.path == "/shopping/":

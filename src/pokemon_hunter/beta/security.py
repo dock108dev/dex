@@ -21,10 +21,12 @@ def secure_response(response):
         response[key] = value
     if private_cache:
         response["Cache-Control"] = "private, no-store"
-    if getattr(response, "_dex_owned_artwork", False):
+    if getattr(response, "_dex_owned_artwork", False) or getattr(response, "_dex_discovery_images", False):
         response["Content-Security-Policy"] += (
             "; img-src 'self' https://assets.tcgdex.net https://raw.githubusercontent.com"
         )
+    if getattr(response, "_dex_discovery_images", False):
+        response["Content-Security-Policy"] += " https://i.ebayimg.com"
     return response
 
 

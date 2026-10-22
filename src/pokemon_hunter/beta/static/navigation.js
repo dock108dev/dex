@@ -7,21 +7,29 @@
   let authChannel=null;
   try{if(actor&&binding&&typeof BroadcastChannel==='function')authChannel=new BroadcastChannel('dex-auth-lifecycle');}catch{/* Optional cross-tab notification. Server checks still authorize every request. */}
   function clearPrivateView(){window.invalidateCollectionRequests?.();window.invalidateCardScreens?.();window.invalidateSpeciesScreens?.();document.querySelector('main')?.replaceChildren();document.querySelectorAll('dialog').forEach(dialog=>{if(dialog.open)dialog.close();dialog.replaceChildren();});}
-  function safeDestination(value,depth=0) {
-    if(typeof value!=='string'||!value.startsWith('/')||value.startsWith('//')||value.length>4096||value!==value.trim()||/[\x00-\x1f\x7f]/.test(value)||depth>2)return null;
+  function safeDestination(value,depth=0,allowShopping=false) {
+    if(typeof value!=='string'||!value.startsWith('/')||value.startsWith('//')||value.length>4096||value!==value.trim()||/[\x00-\x1f\x7f]/.test(value)||depth>6)return null;
     try {
       const url=new URL(value,location.origin), group=/^\/card-groups\/dg1-[0-9a-f]{64}\/$/.test(url.pathname), species=/^\/pokedex\/([1-9][0-9]{0,2})\/$/.exec(url.pathname);
-      if(url.origin!==location.origin||url.hash||!['/cards/','/card-library/','/pokedex/'].includes(url.pathname)&&!group&&!species||species&&Number(species[1])>251)return null;
+      if(url.origin!==location.origin||url.hash||!['/cards/','/card-library/','/pokedex/'].includes(url.pathname)&&!(allowShopping&&url.pathname==='/shopping/')&&!group&&!species||species&&Number(species[1])>251)return null;
       if(window.safeSpeciesReturn&&url.pathname.startsWith('/pokedex/'))return window.safeSpeciesReturn(value);
-      if([...url.searchParams].some(([field,value])=>url.searchParams.getAll(field).length!==1||/[\x00-\x1f\x7f]/.test(field+value)||value.length>(field==='return'?4096:160)))return null;
+      if(window.safeCardReturn&&['/cards/','/card-library/'].includes(url.pathname))return window.safeCardReturn(value);
+      if([...url.searchParams].some(([field,value])=>url.searchParams.getAll(field).length!==1||/[\x00-\x1f\x7f]/.test(field+value)||value.length>(field==='return'?4096:url.pathname==='/shopping/'?200:160)))return null;
       if(group){
         if([...url.searchParams.keys()].some(field=>!['child','generation','return'].includes(field)))return null;
-        if(url.searchParams.has('return')){const nested=safeDestination(url.searchParams.get('return'),depth+1);if(!nested||nested.startsWith('/card-groups/'))return null;}
+        if(url.searchParams.has('return')){const nested=safeDestination(url.searchParams.get('return'),depth+1,true);if(!nested||nested.startsWith('/card-groups/'))return null;}
+      }else if(url.pathname==='/shopping/'){
+        const fields=['species','group','child','goal','version','generation','return','missing','run_id','q','set_id','intent','missing_basis','scope','budget','product_type','sort','english_vintage','result_filter','scroll','focus'];
+        if([...url.searchParams.keys()].some(field=>!fields.includes(field)))return null;
+        const options={intent:['deals','missing'],missing_basis:['species','printing'],scope:['all','kanto','johto','rares','bulk'],product_type:['singles','mixed_lots','both'],sort:['best_match','ending_soonest'],english_vintage:['0','1'],result_filter:['all','below','conditional','unpriced']};
+        for(const [field,values] of Object.entries(options))if(url.searchParams.has(field)&&!values.includes(url.searchParams.get(field)))return null;
+        if(url.searchParams.has('return')&&!safeDestination(url.searchParams.get('return'),depth+1,true))return null;
       }else if(window.safeSpeciesReturn&&url.pathname.startsWith('/pokedex/'))return window.safeSpeciesReturn(value);
       else if(window.safeCardReturn&&['/cards/','/card-library/'].includes(url.pathname))return window.safeCardReturn(value);
       return url.pathname+url.search;
     }catch{return null;}
   }
+  window.safeCollectionReturn=value=>safeDestination(value,0,true);
   window.discardNavigationAuthority=(announce=true)=>{
     if(discarded)return;
     discarded=true;successful=false;window.navigationAuthorityDiscarded=true;window.invalidateCollectionRequests?.();
@@ -43,8 +51,8 @@
     if(path.startsWith('/pokedex/'))return 'pokedex';
     if(path.startsWith('/shopping/')||path.startsWith('/packs/')||path==='/lookup/'||['/hunt/','/missing/','/finds/'].includes(path))return 'shopping';
     if(path.startsWith('/card-groups/')){
-      const back=safeDestination(new URLSearchParams(location.search).get('return'));
-      return back?.startsWith('/pokedex/')?'pokedex':back?.startsWith('/card-library/')?'library':'cards';
+      const back=safeDestination(new URLSearchParams(location.search).get('return'),0,true);
+      return back?.startsWith('/shopping/')?'shopping':back?.startsWith('/pokedex/')?'pokedex':back?.startsWith('/card-library/')?'library':'cards';
     }
     return path==='/card-library/'?'library':['/cards/','/collection-tools/','/collection/','/goals/','/overview/'].includes(path)?'cards':'';
   }
@@ -93,6 +101,7 @@
     if(scope?.goal_id&&scope?.version){params.set('goal',scope.goal_id);params.set('version',scope.version);}
     if(typeof data!=='undefined'&&Number.isSafeInteger(data?.effective_collection?.generation))params.set('generation',data.effective_collection.generation);
     const safe=safeDestination(returnTo);if(safe)params.set('return',safe);
+    params.set('product_type','mixed_lots');
     return '/shopping/?'+params;
   };
   window.navigationReady=(async()=>{

@@ -269,6 +269,10 @@ def job(args: argparse.Namespace) -> int:
             + "; ".join(values)
             + "."
         ]
+        if measurement["status"] != "PASS":
+            detail = measurement.get("failed_check") or measurement.get("failure")
+            if detail:
+                lines += [f"Failed measurement check: {markdown(detail)}."]
     if errors or blocking:
         main_blocker = errors[0] if errors else f"{next(iter(blocking))}: {next(iter(blocking.values()))}"
         lines += [

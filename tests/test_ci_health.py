@@ -56,6 +56,7 @@ def test_health_separates_events_cancellations_and_first_attempt_recovery():
     assert pr["suspected_flakes"] is None
     assert metrics["groups"]["primary_branch"]["aggregate"]["sample_size"] == 1
     assert metrics["groups"]["other"]["aggregate"]["sample_size"] == 1
+    assert "per_run_artifact_and_cache_sizes" in metrics["unavailable_metrics"]
 
 
 def test_health_is_bounded_by_window_and_count_and_p95_has_minimum_sample():

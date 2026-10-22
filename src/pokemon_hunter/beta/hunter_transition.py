@@ -232,7 +232,7 @@ class LocalProcessAdapter:
         if file_digest(self.plan.startup_helper) != self.plan.helper_sha256:
             raise TransitionRefused("Saved startup helper changed")
         if file_digest(self.plan.shop_python) != self.plan.shop_python_sha256:
-            raise TransitionRefused("Saved SHOP-04 interpreter changed")
+            raise TransitionRefused("Saved ordinary interpreter changed")
         if schema_digest(self.plan.root) != self.plan.schema_digest:
             raise TransitionRefused("Latest schema incompatible with saved runtime")
 
@@ -324,7 +324,7 @@ connection.close()
         candidate = self._processes(self.plan.candidate_argv)
         listener = self._listener()
         if candidate or (require_shop and (not shop or listener != shop[0])):
-            raise TransitionRefused("Expected ordinary SHOP-04 process required")
+            raise TransitionRefused("Expected ordinary application process required")
         if not require_shop and (shop or listener is not None):
             raise TransitionRefused("Ordinary origin must be free before candidate startup")
 
@@ -533,6 +533,6 @@ connection.close()
             # A previous handback may have started SHOP before interruption.
             # Its exact process must already be serving; never start a duplicate.
             if self._listener() is None:
-                raise HandbackRequired("Existing SHOP-04 process has not become ready")
+                raise HandbackRequired("Existing application process has not become ready")
             return
         self._spawn(self.plan.shop_argv)

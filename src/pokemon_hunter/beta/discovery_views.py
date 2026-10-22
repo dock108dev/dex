@@ -2,6 +2,7 @@
 
 import json
 
+from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
@@ -55,8 +56,9 @@ def home(request):
         group = card_groups.detail(who, context["group"], selected_child=context.get("child"))["group"]
         initial.setdefault("q", group["name"] + " " + group["collector_number"])
         initial.setdefault("set_id", group["set_name"])
-    if context["kind"] in {"goal", "missing"}:
-        initial["intent"] = "missing"
+    if context["kind"] in {"goal", "missing"} or context.get("goal_version"):
+        initial.setdefault("intent", "missing")
+    initial, scope_note = discovery_catalog.entry_refinements(who, initial, context)
     response = render(
         request,
         "beta/discovery.html",
@@ -64,10 +66,12 @@ def home(request):
             "discovery_goals": goals(who),
             "shopping_context": shopping_context.finish(who, context),
             "discovery_initial": initial,
+            "discovery_scope_note": scope_note,
         },
     )
     response["Cache-Control"] = "private, no-store"
     response._dex_owned_artwork = image_bindings.enabled()
+    response._dex_discovery_images = not getattr(settings, "STAGING", False)
     return response
 
 

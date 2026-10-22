@@ -310,7 +310,7 @@ def analyze(payload: Any, now: datetime, primary_branch: str, limit: int) -> dic
             "exact_queue": "API logical run start does not identify runner queue eligibility or runner assignment",
             "critical_path": "job timestamps do not establish the complete dependency graph or runner wait edges",
             "quota_and_billing": "billing/quota endpoints and billing factors are outside this read-only run sample",
-            "artifact_and_cache_sizes": "no artifact/cache metadata endpoints queried by this bounded collector",
+            "per_run_artifact_and_cache_sizes": "repository storage snapshots do not attribute bytes to individual runs",
         },
         "groups": groups,
         "runs": runs,

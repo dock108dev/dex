@@ -149,7 +149,9 @@ Path({str(marker)!r}).write_text(str(Path.cwd()))
 def test_real_subprocess_failures(tmp_path, monkeypatch, body, match):
     fake(tmp_path, monkeypatch, body)
     with pytest.raises(cli.RecognitionError, match=match) as exc:
-        run(tmp_path, timeout=0.3)
+        # Protocol/error cases must reach their output before the separate deadline
+        # contract fires, including a cold Python 3.12 interpreter on a busy runner.
+        run(tmp_path, timeout=0.3 if match == "deadline" else 3)
     assert "SECRET" not in str(exc.value)
 
 

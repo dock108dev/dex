@@ -68,6 +68,12 @@ class Transport:
                     if set(options) != {"hunter"} or query is not None:
                         raise ValueError("Hunter requires its separate checked request")
                     params = checked_params(options["hunter"])
+                elif "named" in options:
+                    from .discovery_paging import checked_params as named_params
+
+                    if set(options) != {"named"} or query is not None:
+                        raise ValueError("Named searches require their checked page")
+                    params = named_params(options["named"])
                 elif set(options) - {"sort"} or options.get("sort", "ending_soonest") not in {
                     "best_match",
                     "ending_soonest",

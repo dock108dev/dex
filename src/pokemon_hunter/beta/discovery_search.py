@@ -29,7 +29,7 @@ def canonical_query(value):
     return " ".join(value.split())
 
 
-def submitted_query(value, *, set_name=None, product_type="both", english_vintage=False):
+def submitted_query(value, *, set_name=None, english_vintage=False):
     value = canonical_query(value)
     if set_name:
         for _, pattern in SET_ALIASES:
@@ -37,8 +37,6 @@ def submitted_query(value, *, set_name=None, product_type="both", english_vintag
         # Known non-alias sets need the same authoritative replacement behavior.
         value = re.sub(re.escape(set_name), " ", value, flags=re.I)
     suffix = [set_name] if set_name else []
-    if product_type == "mixed_lots" and not re.search(r"\b(?:lot|lots|collection|binder)\b", value, re.I):
-        suffix.append("lot")
     if english_vintage:
         if not re.search(r"\benglish\b", value, re.I):
             suffix.append("English")

@@ -43,9 +43,28 @@ def current_species_printing(printing):
     return attributes.get("supertype") == "Pokémon" and type(number) is int and 1 <= number <= 151
 
 
-def catalog(actor, query="", *, include_goals=False, goal_ids=None, include_current=False):
+def catalog(actor, query="", *, include_goals=False, goal_ids=None, include_current=False, printing_ids=None):
     store.verified(actor)
     games = {g["id"] for g in store.rows("SELECT id FROM games WHERE game_key='pokemon'")}
+    entries = (
+        collection.catalog(actor, query)
+        if printing_ids is None
+        else collection.catalog_entries(query, printing_ids=printing_ids)
+    )
+    # For bounded review validation, ordinary vintage/current cards do not need
+    # frozen-goal progress. Goal-only entries still use the established policy.
+    if (
+        printing_ids is not None
+        and goal_ids is None
+        and all(
+            p["game_id"] not in games
+            or p["set_name"] in SETS
+            or include_current
+            and current_species_printing(p)
+            for p in entries
+        )
+    ):
+        goal_ids = set()
     goal_ids = (
         goal_ids
         if goal_ids is not None
@@ -62,7 +81,7 @@ def catalog(actor, query="", *, include_goals=False, goal_ids=None, include_curr
     )
     return [
         p
-        for p in collection.catalog(actor, query)
+        for p in entries
         if p["game_id"] in games
         and (p["set_name"] in SETS or p["id"] in goal_ids or include_current and current_species_printing(p))
     ]

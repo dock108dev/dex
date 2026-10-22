@@ -10,8 +10,10 @@
   const context = readJson('discovery-context'), initial = readJson('discovery-initial');
   let target = {species:context.species || null,group_id:context.group || null,printing_id:context.child || null};
   let intent = initial.intent === 'missing' ? 'missing' : 'deals', run = null, goals = readJson('discovery-goals'), captured = null, sequence = 0;
+  let catalogStarted = false;
   let catalogSequence = 0, catalogTimer = null, localSets = [], catalogOffset = 0, catalogHasMore = false;
   const generation = context.generation;
+  let focusResults = false;
   let timer = null, acquiring = false, stopWanted = false, ready = false, revoked = false;
   let deadline = Infinity, deadlineRun = null, sourceState = null, sourceUnavailable = false, checkingSources = false, lifecycleTimer = null;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
@@ -30,7 +32,7 @@
     try {
       const url = new URL(value, location.origin);
       if (!['https:','http:'].includes(url.protocol) || url.username || url.password) return '';
-      if (ebayOnly && !/(^|\.)ebay\.com$/i.test(url.hostname)) return '';
+      if (ebayOnly && (url.protocol !== 'https:' || url.port && url.port !== '443' || !/(^|\.)ebay\.com$/i.test(url.hostname) || /[\\\x00-\x20\x7f]/.test(value))) return '';
       return url.href;
     } catch { return ''; }
   }
@@ -62,7 +64,7 @@
     return data;
   }
   function choices() {
-    return {intent,goal_id:intent === 'missing' ? $('discovery-goal').value || null : null,missing_basis:intent === 'missing' ? $('discovery-missing-basis').value : 'species',focus:$('discovery-focus').value,budget:$('discovery-budget').value.trim() || null,query:$('discovery-query').value.trim(),set_id:$('discovery-set').value || null,product_type:$('discovery-product-type').value,sort:$('discovery-sort').value,english_vintage:$('discovery-english-vintage').checked,...target,goal_version:intent === 'missing' ? goals.find(row => row.id === $('discovery-goal').value)?.version || null : null,generation,browse_requests:1};
+    return {intent,goal_id:intent === 'missing' ? $('discovery-goal').value || null : null,missing_basis:intent === 'missing' ? $('discovery-missing-basis').value : 'species',focus:$('discovery-focus').value,budget:$('discovery-budget').value.trim() || null,query:$('discovery-query').value.trim(),set_id:$('discovery-set').value || null,product_type:$('discovery-product-type').value,sort:$('discovery-sort').value,english_vintage:$('discovery-english-vintage').checked,...target,goal_version:intent === 'missing' ? (context.query?.goal === $('discovery-goal').value ? context.query.version : goals.find(row => row.id === $('discovery-goal').value)?.version) || null : null,generation,browse_requests:1};
   }
   function signature(value) {
     return JSON.stringify({intent:value.intent || 'deals',goal_id:value.goal_id || '',missing_basis:value.missing_basis || 'species',focus:value.focus || 'all',budget:value.budget == null ? '' : String(value.budget),query:value.query || '',set_id:value.set_id || '',product_type:value.product_type || 'both',sort:value.sort || 'ending_soonest',english_vintage:value.english_vintage !== false,species:value.species || null,group_id:value.group_id || null,printing_id:value.printing_id || null,goal_version:value.goal_version || null,generation:value.generation ?? generation,browse_requests:1});
@@ -70,9 +72,9 @@
   function changed() { return captured !== null && signature(choices()) !== captured; }
   function updateButtons() {
     $('discovery-search').disabled = !ready || revoked || acquiring;
-    $('discovery-stop').disabled = !acquiring || stopWanted || revoked;
+    $('discovery-stop').disabled = (!acquiring && !run?.run_id) || ['stopped','expired'].includes(run?.state) || stopWanted || revoked;
     $('discovery-next').disabled = !run?.has_next || acquiring || changed() || revoked;
-    $('discovery-next-note').textContent = changed() ? 'Choices changed. Search starts a new search with these choices.' : run?.has_next ? 'Continues the captured choices. Starts only when selected.' : run ? 'No further results in this captured search.' : '';
+    $('discovery-next-note').textContent = acquiring && run?.run_id ? 'Loading more… You can keep browsing or Stop.' : changed() ? 'Choices changed. Select Search eBay to start a new search.' : run?.has_next ? 'More from this search.' : run ? 'You’ve reached the end of this search.' : '';
   }
   function selectionCaptions() {
     const captions = {
@@ -81,7 +83,17 @@
       'discovery-goal':goals.find(row => row.id === $('discovery-goal').value)?.name || 'My current collection',
       'discovery-product-type':{both:'Singles and mixed lots',singles:'Singles',mixed_lots:'Loose mixed lots'}[$('discovery-product-type').value],
     };
-    for (const [id,value] of Object.entries(captions)) {const label = $(id + '-caption');if (label) label.textContent = value || '';}
+    const measure = document.createElement('canvas').getContext('2d');
+    for (const [id,value] of Object.entries(captions)) {
+      const label = $(id + '-caption'), select = $(id);
+      if (!label) continue;
+      label.textContent = value || '';
+      if (measure) {
+        measure.font = window.getComputedStyle(select).font;
+        const selected = select.selectedOptions?.[0]?.text || value || '';
+        label.hidden = !value || measure.measureText(selected).width <= select.clientWidth - 52;
+      } else label.hidden = false;
+    }
     $('discovery-quick-sets').querySelectorAll('[data-set]').forEach(button => button.setAttribute('aria-pressed',String(button.dataset.set === $('discovery-set').value)));
   }
   function policy() {
@@ -90,7 +102,7 @@
     $('missing-controls').hidden = !missing;
     $('find-deals').setAttribute('aria-pressed',String(!missing));
     $('find-missing').setAttribute('aria-pressed',String(missing));
-    $('intent-description').textContent = missing ? 'Current collection · Original 151 · missing Pokémon species. Select a frozen goal or exact printings when needed.' : 'Search supported cards automatically, including cards you already own. No goal needed.';
+    $('intent-description').textContent = missing ? 'Current collection · Original 151 · missing Pokémon species. Select a frozen goal or exact printings when needed.' : 'Search by name or broad words, including cards you own. Mixed lots may contain the card; contents are unverified.';
     const goal = goals.find(item => String(item.id) === $('discovery-goal').value);
     $('missing-basis-label').hidden = Boolean(goal);
     const basis = goal?.policy || goal?.definition?.policy;
@@ -107,11 +119,11 @@
     policy();
     captured = signature(choices());
   }
-  function rememberChoices(extra = {}) {
+  function rememberChoices(extra = {}, replace = true) {
     const selected = choices(), url = new URL(location.href);url.searchParams.delete('missing');
     const fields = {q:selected.query,set_id:selected.set_id,intent,missing_basis:selected.missing_basis,scope:selected.focus,budget:selected.budget,product_type:selected.product_type,sort:selected.sort,english_vintage:selected.english_vintage ? '1' : '0',result_filter:$('discovery-filter').value,species:target.species,group:target.group_id,child:target.printing_id,goal:selected.goal_id,version:selected.goal_version,generation,...extra};
     for (const [key,value] of Object.entries(fields)) {if (value == null || value === '') url.searchParams.delete(key);else url.searchParams.set(key,String(value));}
-    history.replaceState(null,'',url.pathname + url.search);
+    if (replace) history.replaceState(null,'',url.pathname + url.search);
     return url.pathname + url.search;
   }
   function reviewReturn(resultId) { return rememberChoices({focus:'offer-' + resultId,scroll:Math.min(10000000,Math.max(0,Math.round(window.scrollY)))}); }
@@ -130,7 +142,7 @@
     const current = sets.find(set => [set.id,set.name].includes(selected));
     if (current) $('discovery-set').value = current.name;
     const quick = ['Base Set','Base Set 2','Jungle','Fossil','Team Rocket'];
-    $('discovery-quick-sets').innerHTML = ['<button type="button" class="secondary" data-set="">All supported sets</button>',...quick.filter(name => sets.some(set => set.name === name)).map(name => `<button type="button" class="secondary" data-set="${esc(name)}">${esc(name)}</button>`)].join('');
+    $('discovery-quick-sets').innerHTML = quick.filter(name => sets.some(set => set.name === name)).map(name => `<button type="button" class="secondary" data-set="${esc(name)}">${esc(name)}</button>`).join('');
     $('discovery-quick-sets').querySelectorAll('[data-set]').forEach(button => {button.setAttribute('aria-pressed',String(button.dataset.set === $('discovery-set').value));button.addEventListener('click',() => {$('discovery-set').value = button.dataset.set;target = {species:target.species,group_id:null,printing_id:null};catalogSearch();updateButtons();});});
   }
   function catalogParams(offset = 0) {
@@ -145,6 +157,7 @@
   async function catalogSearch(more = false) {
     clearTimeout(catalogTimer);const token = ++catalogSequence;
     if (!currentAuthority()) return;
+    catalogStarted = true;
     const offset = more ? catalogOffset + 40 : 0;
     $('catalog-status').textContent = 'Searching your local catalog…';$('catalog-next').disabled = true;
     if (!more) {$('catalog-cards').replaceChildren();$('catalog-variants')?.remove();}
@@ -153,11 +166,9 @@
       if (token !== catalogSequence || revoked) return;
       populateSets(value.sets);
 
-      if (!$('discovery-set').value && value.applied_set_id) {
-        const set = localSets.find(row => row.id === value.applied_set_id);if (set) $('discovery-set').value = set.name;
-      }
+
       const speciesMode = value.mode === 'species', rows = value.results || [];
-      const cards = rows.map(row => speciesMode ? `<article class="catalog-card"><button type="button" id="catalog-species-${row.dex}" data-species="${row.dex}" class="catalog-choice">${localImage(row.species_artwork,row.name,'species')}<span class="catalog-card-text"><strong>${esc(row.name)}</strong><span>#${String(row.dex).padStart(3,'0')} · ${row.current_present ? 'Collected species' : 'Not collected'}</span><span>${row.matching_cards} matching card references · See cards</span></span></button></article>` : `<article class="catalog-card${target.group_id === row.id ? ' selected' : ''}"><button type="button" id="catalog-${esc(row.id)}" data-group="${esc(row.id)}" class="catalog-choice">${localImage(row.reference_image,row.name,'card')}<span class="catalog-card-text"><strong>${esc(row.name)}</strong><span>${esc(row.set_name)} · #${esc(row.collector_number)}</span><span>${row.present ? 'Owned card' : 'Not owned'} · ${row.variant_count} printing${row.variant_count === 1 ? '' : 's'}</span><span>${target.group_id === row.id ? 'Selected card reference' : 'Choose this card'}</span></span></button></article>`).join('');
+      const cards = rows.map(row => speciesMode ? `<article class="catalog-card"><button type="button" id="catalog-species-${row.dex}" data-species="${row.dex}" class="catalog-choice">${localImage(row.species_artwork,row.name,'species')}<span class="catalog-card-text"><strong>${esc(row.name)}</strong><span>#${String(row.dex).padStart(3,'0')} · ${row.current_present ? 'Collected species' : 'Not collected'}</span><span>${row.matching_cards} matching card references · See cards</span></span></button></article>` : `<article class="catalog-card${target.group_id === row.id ? ' selected' : ''}"><button type="button" id="catalog-${esc(row.id)}" data-group="${esc(row.id)}" class="catalog-choice">${localImage(row.reference_image,row.name,'card')}<span class="catalog-card-text"><strong>${esc(row.name)}</strong><span>${esc(row.set_name)} · #${esc(row.collector_number)}</span><span>${row.present ? 'Owned card' : 'Not owned'} · ${row.variant_count} printing${row.variant_count === 1 ? '' : 's'}</span><span>${target.group_id === row.id ? 'Selected card reference' : 'Select this card as a search target'}</span></span></button><a id="catalog-details-${esc(row.id)}" class="catalog-details" data-card-details="${esc(row.id)}" href="/card-groups/${esc(row.id)}/" aria-label="Card details for ${esc(row.name)} · ${esc(row.set_name)} #${esc(row.collector_number)}">Card details</a></article>`).join('');
       if (more) $('catalog-cards').insertAdjacentHTML('beforeend',cards);else $('catalog-cards').innerHTML = cards || '<p class="catalog-empty">No local matches in this scope. Try another Pokémon, set or number. You can still submit a supported eBay search.</p>';
       $('catalog-variants')?.remove();
       if (target.group_id && Array.isArray(value.variants) && value.variants.length) {
@@ -168,6 +179,16 @@
       $('catalog-status').textContent = `${value.total} ${speciesMode ? 'Pokémon' : 'card reference'} match${value.total === 1 ? '' : 'es'} · local catalog only${value.number_note ? '. ' + value.number_note : ''}`;
       $('catalog-cards').querySelectorAll('[data-species]').forEach(button => button.addEventListener('click',() => {target = {species:Number(button.dataset.species),group_id:null,printing_id:null};catalogSearch();updateButtons();}));
       $('catalog-cards').querySelectorAll('[data-group]').forEach(button => button.addEventListener('click',() => {target = {species:null,group_id:button.dataset.group,printing_id:null};const row = rows.find(item => item.id === button.dataset.group);if (row) {$('discovery-query').value = row.name + ' ' + row.collector_number;$('discovery-set').value = row.set_name;}catalogSearch();updateButtons();}));
+      $('catalog-cards').querySelectorAll('[data-card-details]').forEach(anchor => {
+        const destination = (replace = false) => {
+          const id = anchor.dataset.cardDetails, params = new URLSearchParams({generation:String(generation),return:rememberChoices({focus:anchor.id,scroll:Math.min(10000000,Math.max(0,Math.round(window.scrollY)))},replace)});
+          const child = target.group_id === id ? target.printing_id : rows.find(row => row.id === id)?.selected_child;
+          if (child) params.set('child',child);
+          return '/card-groups/' + encodeURIComponent(id) + '/?' + params;
+        };
+        anchor.href = destination();
+        anchor.addEventListener('click',() => {anchor.href = destination(true);});
+      });
       imageFallbacks();selectionCaptions();rememberChoices();
       if (!more && (target.species || target.group_id)) $('catalog-results-title').focus({preventScroll:true});
     } catch (error) {if (token === catalogSequence && !revoked) {$('catalog-status').textContent = error.message;$('catalog-next').disabled = false;}}
@@ -238,28 +259,33 @@
     return result.classification === 'comparable' && result.comparison?.below_reference !== false && result.delivered_total !== null && result.delivered_total !== undefined && Number(result.comparison?.reference_minus_delivered_total) > 0;
   }
   function card(result) {
-    const identity = result.proposed_identity || {}, reference = result.reference;
+    const identity = result.proposed_identity || (result.identity_candidates?.length === 1 ? result.identity_candidates[0] : {}) || {}, reference = result.reference;
     const comparable = result.classification === 'comparable', conditional = result.classification === 'conditional';
     const auction = result.price_kind === 'current_bid' || result.type === 'auction';
     const candidateLabel = result.discovery_kind === 'mixed_lot' ? 'Loose mixed-lot candidate' : result.discovery_kind === 'uncertain' ? 'Possible card or loose lot' : 'Single-card candidate';
     const classification = below(result) ? 'Below reference' : comparable ? 'Comparable' : conditional ? 'Conditional comparison' : 'Unpriced or ambiguous';
-    const art = result.revealed ? artwork(identity.artwork_url) : '';
+    const sellerArt = window.DexDiscoveryDisplay?.sellerImage(result.seller_image) || '';
+    const art = sellerArt || artwork(identity.artwork_url);
+    const artLabel = sellerArt ? 'Seller photo' : 'Catalog reference';
+    const image = `<div class="offer-image" data-source="${esc(art)}">${art ? `<img src="${esc(art)}" alt="${esc(artLabel)}" loading="lazy" decoding="async" referrerpolicy="no-referrer">` : ''}<span class="offer-image-fallback"${art ? ' hidden' : ''}>Image unavailable</span><span class="offer-image-label">${esc(art ? artLabel : 'No seller photo or catalog image')}</span></div>`;
     const metadata = [identity.set_name,identity.collector_number ? '#' + identity.collector_number : '',identity.language,identity.edition,identity.finish].filter(Boolean).map(text).join(' · ');
     const difference = below(result) ? `<p class="difference">${esc(money(result.comparison.reference_minus_delivered_total))} below reference before tax</p>` : '';
     const referenceHtml = reference ? `<div class="reference"><p class="reference-value">${esc(money(reference.amount))} reference · ${esc(reference.as_of || 'date unknown')}</p><p class="reference-basis">${esc(result.basis || 'Reference applicability remains unresolved.')}</p>${difference}<details><summary>Reference dates and applicability</summary><p>Provider valuation date: ${esc(reference.valuation_as_of || 'Unknown')}.</p><p>Captured: ${esc(reference.captured_at || 'Unknown')}.${reference.publisher_built_at ? ' Publisher build: ' + esc(reference.publisher_built_at) + '.' : ''}</p>${reference.expires_at ? `<p>Expires: ${esc(reference.expires_at)}.</p>` : ''}<p>${esc([reference.language,reference.edition,reference.finish,reference.variant,reference.condition,reference.grader,reference.grade === 'raw' ? 'Raw' : reference.grade ? 'Grade ' + reference.grade + ' scenario' : ''].filter(Boolean).map(text).join(' · ') || 'Identity and condition basis unavailable.')}</p>${reference.grade && reference.grade !== 'raw' ? '<p>A grade scenario does not establish an exact slab match.</p>' : ''}${reference.source_version ? `<p>Source version: ${esc(reference.source_version)}.</p>` : ''}${link(reference.source_url) ? `<a href="${esc(link(reference.source_url))}" target="_blank" rel="noopener noreferrer">Reference source</a>` : ''}</details></div>` : `<div class="reference"><p class="reference-value">No applicable reference</p><p>${esc(result.basis || 'An admitted reference could not be applied to this proposed identity.')}</p></div>`;
-    const sellerUrl = result.revealed ? link(result.item_url, true) : '';
-    const seller = result.revealed ? `${result.title ? `<p class="seller-title">${esc(result.title)}</p>` : ''}${sellerUrl ? `<a href="${esc(sellerUrl)}" target="_blank" rel="noopener noreferrer">Open seller listing on eBay</a>` : '<p>Seller link unavailable.</p>'}` : `<button type="button" class="secondary" data-discovery-reveal="${esc(result.id)}">Reveal card and seller listing</button>`;
-    return `<article class="discovery-card" id="offer-${esc(result.id)}" tabindex="-1" data-result="${esc(result.id)}"><div class="discovery-card-heading${art ? '' : ' no-art'}">${art ? `<img src="${esc(art)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">` : ''}<div><span class="discovery-classification ${below(result) ? 'below' : conditional ? 'conditional' : ''}">${esc(classification)}</span><h3>${esc(!result.revealed ? candidateLabel : identity.name || 'Unresolved card identity')}</h3><p class="identity-meta">${esc(!result.revealed ? 'Reveal the proposed card and seller listing.' : metadata || 'Seller text does not establish an exact printing.')}</p></div></div><dl class="discovery-amounts"><div><dt>${auction ? 'Current bid' : 'Listing price'}</dt><dd>${esc(money(result.listing_price))}</dd></div><div><dt>Shipping</dt><dd>${esc(money(result.shipping))}</dd></div><div><dt>Delivered · before tax</dt><dd>${esc(money(result.delivered_total))}</dd></div></dl>${auction ? '<p>Current auction bid; the final price may rise.</p>' : ''}${result.reason ? `<p>${esc(result.reason)}</p>` : ''}${referenceHtml}${result.save_reason ? `<p class="muted">${esc(result.save_reason)}</p>` : ''}<div class="seller">${seller}${result.revealed ? `<a class="review-offer" data-review-id="${esc(result.id)}" href="/shopping/check/?discovery_run=${encodeURIComponent(run.run_id)}&amp;item_id=${encodeURIComponent(result.id)}">Review Ungraded value</a>` : ''}</div></article>`;
+    const sellerUrl = link(result.item_url, true);
+    const seller = `${sellerUrl ? `<a href="${esc(sellerUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Open seller listing on eBay">Open seller</a>` : '<p>Seller link unavailable.</p>'}`;
+    const time = auction ? `<p data-auction-end="${esc(result.ends_at || '')}">${esc(window.DexDiscoveryDisplay?.auctionTime(result.ends_at) || 'Auction · end time unknown')}</p>` : '';
+    return `<article class="discovery-card" id="offer-${esc(result.id)}" tabindex="-1" data-result="${esc(result.id)}"><div class="discovery-card-heading">${image}<div><h3>${esc(result.title || identity.name || candidateLabel)}</h3>${identity.name ? `<p>Proposed: ${esc(identity.name)}</p>` : ''}${metadata ? `<p class="identity-meta">${esc(metadata)}</p>` : ''}${comparable || conditional ? `<span class="discovery-classification">${esc(classification)}</span>` : ''}</div></div><dl class="discovery-amounts"><div><dt>${auction ? 'Current bid' : 'Listing price'}</dt><dd class="${result.listing_price == null ? 'is-unknown' : ''}">${esc(money(result.listing_price))}</dd></div><div><dt>Shipping</dt><dd class="${result.shipping == null ? 'is-unknown' : ''}">${esc(money(result.shipping))}</dd></div><div><dt>Delivered · before tax</dt><dd class="${result.delivered_total == null ? 'is-unknown' : ''}">${esc(money(result.delivered_total))}</dd></div></dl>${time}<div class="seller">${seller}<a class="review-offer" data-review-id="${esc(result.id)}" href="/shopping/check/?discovery_run=${encodeURIComponent(run.run_id)}&amp;item_id=${encodeURIComponent(result.id)}">Inspect lot</a></div><details><summary>Comparison & listing details</summary>${result.reason ? `<p>${esc(result.reason)}</p>` : ''}${referenceHtml}${result.save_reason ? `<p>${esc(result.save_reason)}</p>` : ''}</details></article>`;
   }
+
   function renderCards() {
     pruneLocal();
     const results = Array.isArray(run?.results) ? run.results : [];
     const filter = $('discovery-filter').value;
     const rows = results.filter(result => filter === 'all' || filter === 'below' && below(result) || filter === result.classification);
-    $('discovery-shown').textContent = `${rows.length} of ${results.length} results`;
-    $('discovery-cards').innerHTML = rows.map(card).join('') || `<div class="discovery-empty"><h3>${results.length ? 'No results match this filter' : acquiring ? 'Searching this small batch…' : 'No listings to show'}</h3><p>${results.length ? 'Choose All results to see conditional and unpriced cards.' : acquiring ? 'You can stop acquisition at any time.' : 'This batch may have no matches, incomplete listing identity or unavailable references. Change your scope or search words, or continue when Next results is available. Dex will not search again automatically.'}</p></div>`;
-    $('discovery-cards').querySelectorAll('[data-review-id]').forEach(anchor => anchor.addEventListener('click',() => {anchor.href = '/shopping/check/?' + new URLSearchParams({discovery_run:run.run_id,item_id:anchor.dataset.reviewId,return:reviewReturn(anchor.dataset.reviewId)});}));
-    $('discovery-cards').querySelectorAll('[data-discovery-reveal]').forEach(button => button.addEventListener('click',() => reveal(button)));
+    $('discovery-shown').textContent = `${rows.length} of ${results.length} results${filter === 'all' ? '' : ' · ' + ({below:'Comparable · below reference',conditional:'Conditional comparisons',unpriced:'Unpriced or ambiguous'}[filter] || '')}`;
+    const markup = rows.map(card).join('') || `<div class="discovery-empty"><h3>${results.length ? 'No results match this filter' : acquiring ? 'Searching this small batch…' : 'No listings to show'}</h3><p>${results.length ? 'Choose All results to see conditional and unpriced cards.' : acquiring ? 'You can stop acquisition at any time.' : 'This batch may have no matches, incomplete listing identity or unavailable references. Change your scope or search words, or continue when More results is available. Dex will not search again automatically.'}</p></div>`;
+    if (window.DexDiscoveryDisplay) window.DexDiscoveryDisplay.patch($('discovery-cards'),markup);else $('discovery-cards').innerHTML = markup;
+    $('discovery-cards').querySelectorAll('[data-review-id]').forEach(anchor => {if (anchor.dataset.reviewBound) return;anchor.dataset.reviewBound = '1';anchor.addEventListener('click',() => {anchor.href = '/shopping/check/?' + new URLSearchParams({discovery_run:run.run_id,item_id:anchor.dataset.reviewId,return:reviewReturn(anchor.dataset.reviewId)});});});
   }
   function render(value) {
     if (run !== value) clearResults();
@@ -271,6 +297,9 @@
     const count = Number(value.counts?.summary_count);
     status(value.error || (value.state === 'expired' ? 'This temporary search has expired. Select Search to start a new search.' : value.state === 'stopped' ? 'Search stopped. No further requests will be sent.' : acquiring ? 'Searching a small batch… Stop prevents later requests and results.' : value.state === 'failed' ? 'Search ended after a request failed. No automatic retry.' : `Search complete${Number.isFinite(count) ? ' · ' + count + ' listing summaries checked' : ''}.`),Boolean(value.error) || value.state === 'failed');
     renderCards();updateButtons();checkSources();
+    if (focusResults && !acquiring && value.results?.length) {
+      focusResults = false;requestAnimationFrame(() => {$('discovery-results-title').focus({preventScroll:true});$('discovery-results').scrollIntoView?.({block:'start'});});
+    }
   }
   function rememberRun(id) {
     if (typeof id !== 'string' || !/^[0-9a-f-]{36}$/i.test(id)) return;
@@ -294,12 +323,20 @@
   async function start(next = false) {
     if (acquiring || revoked || !ready || next && (!run?.has_next || changed())) return;
     const prior = run, selected = choices(), token = ++sequence;
-    clearResults(prior);
-    acquiring = true;stopWanted = false;run = null;$('discovery-cards').replaceChildren();$('discovery-results').hidden = true;clearTimeout(timer);updateButtons();
+    const keepBrowsing = next && Boolean(prior.choices?.query);
+    focusResults = !next;
+    if (!keepBrowsing) clearResults(prior);
+    acquiring = true;stopWanted = false;run = keepBrowsing ? prior : null;
+    if (!keepBrowsing) {$('discovery-cards').replaceChildren();$('discovery-results').hidden = true;}
+    clearTimeout(timer);updateButtons();
     status(next ? 'Starting the next results batch…' : 'Starting search…');
     try {
       const value = await request(api,next ? {continuation_run:prior.run_id} : selected);
       if (sequence !== token || revoked) return;
+      // Admission acknowledges the same named run without reprojecting listings.
+      // Keep its received page under the original deadline while polling; local
+      // reference expiry/withdrawal checks continue on these visible results.
+      if (next && value.running && value.run_id === prior.run_id && !value.results?.length) value.results = prior.results;
       run = value;rememberRun(value.run_id);
       captured = next ? captured : signature(selected);
       if (stopWanted) { await stop();return; }
@@ -310,7 +347,7 @@
     }
   }
   async function stop() {
-    if (!acquiring || revoked) return;
+    if ((!acquiring && !run?.run_id) || revoked) return;
     stopWanted = true;clearTimeout(timer);updateButtons();status('Stopping search…');
     if (!run?.run_id) return;
     const token = ++sequence;
@@ -323,36 +360,13 @@
       stopWanted = false;status(error.message + ' Stop was not confirmed. Use Stop again.',true);updateButtons();
     }
   }
-  async function reveal(button) {
-    if (!run?.run_id || revoked) return;
-    const initialRun = run, initialToken = sequence;
-    if (pruneLocal()) renderCards();
-    if (run.state === 'expired') return;
-    await checkSources();
-    if (run !== initialRun || sequence !== initialToken || revoked || run.state === 'expired') return;
-    const token = sequence, runId = run.run_id, resultId = button.dataset.discoveryReveal;
-    button.disabled = true;
-    try {
-      const value = await request(api + encodeURIComponent(runId) + '/reveal/' + encodeURIComponent(resultId) + '/',{});
-      if (sequence !== token || revoked || run?.run_id !== runId) return;
-      if (Array.isArray(value.results)) {
-        const priorState = sourceState, priorUnavailable = sourceUnavailable;
-        clearResults();run = value;captureDeadline(value);sourceState = priorState;sourceUnavailable = priorUnavailable;
-      }
-      else {
-        const result = value.result || value;
-        run.results = run.results.map(row => row.id === resultId ? {...row,...result} : row);
-      }
-      renderCards();if (run.state !== 'expired') status('Seller listing revealed. No new eBay request.');checkSources();
-    } catch (error) { if (sequence === token && !revoked) { status(error.message,true);button.disabled = false; } }
-  }
   function invalidate() {
     revoked = true;++catalogSequence;clearTimeout(catalogTimer);$('catalog-cards').replaceChildren();++sequence;clearTimeout(timer);clearInterval(lifecycleTimer);clearResults();run = null;captured = null;
     $('discovery-cards').replaceChildren();$('discovery-results').hidden = true;
     status('Your session changed. Sign in again to continue.',true);updateButtons();
   }
-  $('discovery-form').addEventListener('submit',event => {event.preventDefault();catalogSearch();});
-  $('discovery-search').addEventListener('click',() => {rememberChoices();start();});
+  $('discovery-form').addEventListener('submit',event => {event.preventDefault();rememberChoices();start();});
+  $('catalog-search').addEventListener('click',() => catalogSearch());
   $('catalog-next').addEventListener('click',() => {if (catalogHasMore) catalogSearch(true);});
   $('catalog-clear-target').addEventListener('click',() => {target = {species:null,group_id:null,printing_id:null};catalogSearch();updateButtons();});
   $('find-deals').addEventListener('click',() => {intent = 'deals';policy();catalogSearch();});
@@ -362,35 +376,58 @@
   $('discovery-filter').addEventListener('change',() => {renderCards();rememberChoices();});
   $('discovery-form').addEventListener('input',policy);
   $('discovery-form').addEventListener('change',event => {policy();if (['discovery-set','discovery-goal','discovery-missing-basis','discovery-focus'].includes(event.target.id)) {if (event.target.id === 'discovery-goal' && $('discovery-goal').value) $('discovery-focus').value = 'all';if (event.target.id === 'discovery-set') target = {species:target.species,group_id:null,printing_id:null};catalogSearch();}});
-  $('discovery-query').addEventListener('input',() => {target = {species:null,group_id:null,printing_id:null};queueCatalog();});
+  let dismissedSpelling = '';
+  function spelling() {
+    const value = $('discovery-query').value;
+    const corrected = value.replace(/\bVenasaur\b/ig,'Venusaur').replace(/\bGyrados\b/ig,'Gyarados');
+    const box = $('discovery-suggestions');box.hidden = corrected === value || dismissedSpelling === value;
+    box.innerHTML = box.hidden ? '' : `<p>Did you mean <strong>${esc(corrected)}</strong>?</p><button type="button" data-spelling="correct">Use ${esc(corrected)}</button> <button type="button" data-spelling="original">Keep ${esc(value)} as typed</button>`;
+    box.querySelectorAll('[data-spelling]').forEach(button => button.addEventListener('click',() => {if (button.dataset.spelling === 'correct') $('discovery-query').value = corrected;dismissedSpelling = $('discovery-query').value;spelling();target = {species:null,group_id:null,printing_id:null};queueCatalog();policy();}));
+  }
+  $('discovery-query').addEventListener('input',() => {spelling();target = {species:null,group_id:null,printing_id:null};queueCatalog();});
   window.addEventListener('dex:authority-revoked',invalidate);
   window.addEventListener('pagehide',() => {++catalogSequence;clearTimeout(catalogTimer);$('catalog-cards').replaceChildren();++sequence;clearTimeout(timer);clearInterval(lifecycleTimer);clearResults();run = null;captured = null;$('discovery-cards').replaceChildren();$('discovery-results').hidden = true;});
   window.addEventListener('pageshow',event => {if (event.persisted) {invalidate();location.reload();}});
   window.addEventListener('popstate',() => location.reload());
   document.addEventListener('visibilitychange',() => {if (pruneLocal()) renderCards();if (!document.hidden) checkSources();});
-  lifecycleTimer = setInterval(() => {if (pruneLocal()) renderCards();checkSources();},1000);
+  lifecycleTimer = setInterval(() => {if (pruneLocal()) renderCards();window.DexDiscoveryDisplay?.tick($('discovery-cards'));checkSources();},1000);
   for (const [field,id] of Object.entries({q:'discovery-query',scope:'discovery-focus',missing_basis:'discovery-missing-basis',budget:'discovery-budget',product_type:'discovery-product-type',sort:'discovery-sort'})) if (initial[field] !== undefined) $(id).value = initial[field];
   if (intent === 'missing' && !initial.scope && !initial.goal) $('discovery-focus').value = 'kanto';
-  if (initial.english_vintage === '0') $('discovery-english-vintage').checked = false;
+  if (initial.english_vintage !== undefined) $('discovery-english-vintage').checked = initial.english_vintage === '1';
   populateSets(initial.set_id ? [{id:initial.set_id,name:initial.set_id}] : []);
   if (initial.set_id) $('discovery-set').value = initial.set_id;
   $('discovery-goal').innerHTML = '<option value="">My current collection</option>' + goals.map(goal => `<option value="${esc(goal.id)}">Frozen goal · ${esc(goal.name)}</option>`).join('');
   if (initial.goal) $('discovery-goal').value = initial.goal;
-  policy();catalogSearch();
+  if (initial.focus?.startsWith('catalog-')) document.querySelector('.discovery-local').open = true;
+  document.querySelector('.discovery-local').addEventListener('toggle',event => {if (event.target.open && !catalogStarted) catalogSearch();});
+  window.addEventListener('resize',selectionCaptions);
+  if (window.ResizeObserver) {
+    const captions = new window.ResizeObserver(selectionCaptions);
+    ['discovery-set','discovery-product-type','discovery-focus','discovery-goal'].forEach(id => captions.observe($(id)));
+  }
+  policy();spelling();
   (async () => {
     const token = sequence;
     try {
-      const metadata = await request(api);
+      // Start local revalidation alongside independent options, not after them.
+      // Capture failure immediately so an early rejected read is never unhandled.
+      const options = request(api);
+      const runId = initial.run_id;
+      const restoring = runId && /^[0-9a-f-]{36}$/i.test(runId);
+      const restored = restoring ? request(api + '?run_id=' + encodeURIComponent(runId)).then(value => ({value}),error => ({error})) : null;
+      const metadata = await options;
       if (sequence !== token || revoked) return;
       goals = Array.isArray(metadata.goals) ? metadata.goals : [];
       $('discovery-goal').innerHTML = '<option value="">My current collection</option>' + goals.map(goal => `<option value="${esc(goal.id)}">Frozen goal · ${esc(goal.name)}</option>`).join('');
       ready = Boolean(metadata.provider?.enabled && metadata.provider?.configured);
-      policy();status(ready ? 'Ready. Search cards locally, then select Find on eBay for listings.' : metadata.note || metadata.reason || metadata.provider?.note || metadata.provider?.reason || 'eBay search is unavailable for this installation.');
+      policy();status(ready ? '' : metadata.note || metadata.reason || metadata.provider?.note || metadata.provider?.reason || 'eBay search is unavailable for this installation.');
       if (initial.goal) $('discovery-goal').value = initial.goal;
-      policy();await catalogSearch();
-      const runId = new URLSearchParams(location.search).get('run_id');
-      if (runId && /^[0-9a-f-]{36}$/i.test(runId)) {
-        const value = await request(api + '?run_id=' + encodeURIComponent(runId));
+      populateSets(metadata.sets);policy();
+      if (restoring) {
+        status('Restoring your search…');
+        const response = await restored;
+        if (response.error) throw response.error;
+        const value = response.value;
         if (sequence !== token || revoked) return;
         restoreChoices(value.choices);render(value);schedule(token);
         for (const [field,id] of Object.entries({q:'discovery-query',scope:'discovery-focus',missing_basis:'discovery-missing-basis',budget:'discovery-budget',product_type:'discovery-product-type',sort:'discovery-sort'})) if (initial[field] !== undefined) $(id).value = initial[field];
@@ -401,9 +438,14 @@
         if (initial.set_id) $('discovery-set').value = localSets.find(row => [row.id,row.name].includes(initial.set_id))?.name || initial.set_id;
         policy();
         if (initial.result_filter) $('discovery-filter').value = initial.result_filter;
-        renderCards();await catalogSearch();
-        requestAnimationFrame(() => {if (initial.scroll) window.scrollTo(0,Number(initial.scroll));if (initial.focus) $(initial.focus)?.focus({preventScroll:true});});
+        renderCards();
       }
+      // Restore received offers and the reading position before optional local
+      // catalog work. No provider content is cached across navigation.
+      requestAnimationFrame(() => {if (!currentAuthority()) return;if (initial.scroll) window.scrollTo(0,Number(initial.scroll));if (initial.focus) $(initial.focus)?.focus({preventScroll:true});});
+      // A closed local explorer does not need another all-catalog ownership read.
+      // Opening it explicitly still uses the ordinary checked local service.
+      if (!catalogStarted && (!restoring || document.querySelector('.discovery-local').open)) await catalogSearch();
     } catch (error) { if (sequence === token && !revoked) status(error.message,true); }
   })();
 })();

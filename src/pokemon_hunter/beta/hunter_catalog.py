@@ -11,18 +11,16 @@ from collections import defaultdict
 from datetime import UTC, datetime
 from decimal import Decimal
 
-from pokemon_hunter.pricing import money as provider_money
-
 from . import (
     collection,
     discovery_comparison,
     discovery_matching,
     hunter_coverage,
     hunter_ranking,
+    listing_prices,
     lot_calculator,
     store,
 )
-from . import shopping_math as math
 from .discovery_search import canonical_query
 
 MAX_ROWS = 400
@@ -162,16 +160,6 @@ def _status(row):
     return "unmatched"
 
 
-def _money(raw):
-    value = provider_money(raw, "USD")
-    if value is None:
-        return None
-    try:
-        return math.money(math.amount(format(value, "f")))
-    except ValueError:
-        return None
-
-
 def compare(actor, raw_rows, *, now=None):
     """Compare at most two 200-summary pages against one authorized local batch.
 
@@ -219,7 +207,7 @@ def compare(actor, raw_rows, *, now=None):
         row.update(
             hunt_status=_status(row),
             observed_at=now.astimezone(UTC).isoformat(),
-            minimum_next_bid=_money(raw.get("minimumPriceToBid"))
+            minimum_next_bid=listing_prices.money(raw.get("minimumPriceToBid"))
             if "AUCTION" in row["buying_options"]
             else None,
             buy_now_available="FIXED_PRICE" in row["buying_options"],

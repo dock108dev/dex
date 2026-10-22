@@ -1,38 +1,72 @@
 # Shopping and eBay discovery
 
-Shopping combines local catalog browsing, explicit eBay actions and dated-reference
-comparisons. Catalog and reference coverage are partial. Missing identity, costs or
-reference values stay unknown. The app never buys, bids or guarantees a bargain.
+Shopping combines local catalog browsing, explicit eBay searches and dated-reference
+comparisons. Catalog and reference coverage are partial. Missing identities, costs
+and reference values stay unknown. The app never buys, bids or guarantees a bargain.
 
-## Active owner direction — Shopping repair first, October 18, 2026
+## Search and browse
 
-The current experience is not accepted as usable Shopping. The next priority is
-to show what a listing is and why it deserves attention. This correction replaces
-earlier identity/reveal preferences; descriptions below document existing behavior
-and contracts, not completion of this repair.
+Type a Pokémon or card name, optionally choose a set, and select **Search eBay**.
+Mixed lots is the default; Singles and Both are alternatives. A goal, exact printing,
+collector number, budget or wanted list is not required. Search options and local
+catalog exploration are optional. Spelling suggestions allow either a correction
+or the original text; neither starts a request automatically.
 
-Provide a visual feed with two compatible priorities: **Find my missing cards**
-using the actual collection, and **Find underpriced listings** across the selected
-collecting scope, including owned cards and without requiring manual card entry,
-a wanted list or a goal. Let the owner choose which leads and show both reasons
-when applicable. Missing-card relevance remains useful without a valuation;
-price-opportunity claims require an applicable, dated comparison and honest costs.
-Current bids are provisional, not final bargains. Do not infer completed-sale value
-from active asking prices or label an unsupported comparison a discount.
+Results show seller titles, checked links, available photographs, price/current bid,
+shipping, known total and auction time. Unpriced and uncertain lots remain browsable.
+Seller photographs, catalog scans and private collection photos have distinct roles.
+A card named in a query or title does not establish the contents or value of a lot.
 
-Show identities, set/numbers, seller titles and available images immediately.
-Repair external listing links, add time remaining and auction end date/time, and
-fix missing/slow/flickering images with stable loading/fallback space. Distinguish
-seller photos from catalog scans. Lead results with price, shipping, known total
-and a short reason to look; expand technical comparison details on demand.
-Simplify repeated setup/copy and make discovery and Hunter a coherent product loop.
+## Named search and continuation
 
-Diagnose and verify on the actual installation; confirm current asset/reference
-availability separately from presentation defects. Preserve customer state,
-finite explicit acquisition, Stop, accounting and source rights. This plan does
-not enable acquisition or grant new capacity. Installed verification and owner
-feedback remain required after focused engineering checks. See the first priority
-in `/Users/michaelfuscoletti/Desktop/dex_next_steps.md` for repair acceptance.
+Named search uses one official Browse category per request: Mixed lots selects
+**183455**, Singles selects **183454**, and Both alternates the two captured lanes.
+Category selection is independent of words such as “lot” in the query.
+
+Search eBay captures text, optional set, category choice and sort. It needs no local
+catalog match. Set overrides replace conflicting recognized aliases, preserving
+Base Set versus Base Set 2. English/vintage words are optional and initially off.
+Venasaur/Venusaur and Gyrados/Gyarados appear as visible suggestions: **Use** changes
+text locally, **Keep as typed** retains it; Search remains a separate explicit action.
+Neither is evidence of seller contents or exact printing identity.
+
+Named Search and each **More results** send one Browse request with at most 20
+summaries. The run stops after **four pages / 80 received summaries total**, on
+conservative exhaustion or on error, whichever comes first. Offsets are server-owned
+multiples of 20. Both captures two category lanes and alternates lots/singles, one request per
+explicit action, within the same four-page total. An exhausted lane is removed.
+A full page and an integer total beyond that page are needed to offer continuation;
+missing/malformed totals end the lane. Provider `next` URLs are never followed.
+
+More accepts only the account/session-bound opaque run handle. It retains the same
+run, captured choices, deduplication set and original 30-minute content expiry.
+Concurrent More cannot fork the cursor or renew its lease. Exact item/variation
+identities deduplicate across pages; distinct variations remain separate. Edited
+acquisition choices require a new Search. Already received listings and filters are
+local; displaying them never acquires another page. Blank-text catalog discovery
+remains a separate finite explicit batch over captured catalog queries, with the
+same checked category transport; it does not page a named query.
+
+Results expose titles, checked HTTPS eBay destinations and supported identity
+proposals immediately. The old Reveal endpoint remains a local compatibility
+operation, with no visibility or review prerequisite. Category-admitted mixed lots
+cannot receive an entire-lot value from one named card, even when the title looks
+like an exact single. Optional inspection/comparison retains the existing quantity,
+reference applicability, account, current/frozen scope and original lease services.
+Unknown shipping, contents and reference values remain unknown and browsable.
+
+Seller photos are temporary official-summary image URLs restricted to the exact
+`https://i.ebayimg.com/images/g/.../s-l<number>.<jpg|jpeg|png|webp>` contract, with no
+query, fragment, credentials, alternate host or port. Only local authenticated
+Discovery pages admit that CSP origin. There is no download, image store, export,
+proxy, retry or fallback acquisition. Catalog scans retain their independently
+checked identity adapter and are visibly labelled separately. Both image types
+keep a fixed fallback area; local result updates preserve unchanged image nodes.
+
+Hunter and Discovery share the countdown helper `listing-time.js`; Discovery also
+validates aware timestamps on the server. Missing, malformed, unzoned or invalid
+calendar/timezone dates show unknown; ended auctions say ended. Current bids remain
+provisional. Seller destinations must pass the shared HTTPS eBay URL validator.
 
 ## Everyday Price Hunter
 
@@ -108,10 +142,47 @@ Missing, blocked or broken images keep fixed neutral space and readable identity
 Seller text is rendered as text. Existing visual card search, assisted listing
 checks and manual calculator remain available independently.
 
+## Connected Pokémon and card entry
+
+A Pokémon page places **Explore cards** and **Search mixed lots for this Pokémon**
+next to Your Cards and its empty state. Both work for owned or missing species.
+Explore opens that species' indexed Card Library choices; named Shopping prefills
+its readable name and mixed lots. Neither link acquires listings or changes ownership.
+No indexed choices and unavailable artwork keep truthful, readable fallback states.
+A declaration of a species never supplies an exact card, quantity, edition or finish.
+
+Library retains its original species return, collection generation and explicitly
+selected goal/version. Its supported single set survives filtering and pagination.
+Shopping maps one inherited supported set; Base Set and Base Set 2 remain independent.
+A visible scope note explains multiple/unavailable sets or other collection card
+criteria that Shopping cannot apply. It also explains a chosen card/search set that
+replaces the original set. Back retains the original collection criteria. These
+are search refinements, separate from `shopping_context.FIELDS`; they do not create
+new provider filters or change current/frozen ownership policy.
+
+Local Shopping tiles have a selection button and a separate **Card details** link.
+Selecting a group does not select its first child. An explicitly chosen printing
+survives Card details and Back. Internal details and external seller listings remain
+separate links with separate keyboard focus. Card details returns to the originating
+Shopping state; its Shopping action reuses that same destination instead of nesting
+repeated return chains. Query, refinements, original collection return, scroll/focus
+and eligible opaque run handle survive. Result content never enters URLs or browser
+storage; restoring a handle rereads the authenticated, session-bound temporary service
+with the original lease. Stopped, expired or unavailable handles do not start another
+search or restore removed results.
+
+Server return validation remains restricted to canonical local destinations and
+finite fields, with a 4,096-character destination bound and at most six nested edges
+for species → Library → card → Shopping → card inspection. It reauthorizes every
+referenced private target and checks retained generation/goal version. Legacy species
+links without a version still open through the existing current policy; new links
+retain the explicit version. Logout, revocation and cross-account result access use
+the existing authentication/navigation boundary.
 
 ## One visual Pokémon, card and eBay search
 
-Shopping starts with local catalog search. Broad Hypno, Alakazam and Gengar names
+Shopping starts with a named eBay search, defaulting to mixed lots. Local catalog
+exploration is available under **Explore local Pokémon and cards**. Broad Pokémon names
 show Pokémon artwork, current collection context and matching-card counts. Choosing
 a Pokémon reveals card references. Detailed names, sets and collector numbers show
 matching card scans with readable set/number labels. Multiple plausible cards and
@@ -132,9 +203,30 @@ filters, scroll and focus survive validated Back navigation. Only finite user UI
 choices and opaque result handles enter URLs; provider content/values do not.
 The secondary manual calculator retains its existing user-input drafts independently.
 
+## Returning from inspection
+
+Inspect → Back keeps received offers and accumulated More results in the existing
+temporary server run. Ordinary deals match current authorized catalog identity
+without rebuilding unused ownership; missing-card and frozen-goal searches retain
+their ownership projection. Image binding processes only requested identity groups,
+including all conflicting siblings. Back still checks authority, context, original
+expiry and source admission, using no marketplace search. Options/run reads start
+together, and a closed local explorer loads when opened. Optional work preserves
+restored scroll/focus after results are usable. Review changes follow the save rules below.
+
+## Edited review saves
+
+Autosave and internal Back share a single writer. Edits made during a pending save
+are coalesced to the latest revision; Back waits for that revision to succeed.
+Failed saves retain the current input and keep the review open. An unchanged review
+needs no write. Server validation reads only the reviewed printing IDs through the
+same publication and eligibility policy, and reuses the selected offer context
+within that save. Later reads revalidate independently; no lease is renewed and
+no provider request is made by saving or Back.
+
 ## Navigation
 
-Open **Shopping** at `/shopping/` for visual local search, **Find deals**,
+Open **Shopping** at `/shopping/` for **Search eBay**, optional visual local search, **Find deals**,
 **Find missing cards** and **Check a listing/lot**. Assisted checks are at `/shopping/check/`; the manual
 calculator is at `/shopping/calculator/`. Contextual collection links retain their checked printing selector and Back destination.
 Saved research and Packs remain reachable. Opening any of these pages does not
@@ -148,8 +240,8 @@ budget, search phrase, set and Kanto/Johto scope narrow the search. Discovery us
 singles, loose mixed lots and supported auctions. Choose Singles / Mixed lots /
 Both and Ending soon / Best match. English/vintage uses search words; US marketplace,
 US listing location and US delivery use supported official fields. Language and
-manufactured-year facets are not guessed. The supplied 1995/1999/2001 web choices
-never become a continuous date rule or change collection membership. Vintage retained
+manufactured-year facets are not guessed. Release-period controls do not change
+collection membership or imply unsupported provider facets. Vintage retained
 reference coverage and all-era catalog browsing remain independent.
 
 **Find missing cards** defaults to **Current collection · Original 151 · species**.
@@ -158,11 +250,12 @@ its captured membership and ownership policy. Broad ownership declarations do no
 establish every edition/finish. Search is read-only for inventory and goals.
 
 Search starts only on explicit action. **Stop** cancels acquisition and suppresses
-late publication. **Next results** continues the captured choices and next catalog
-queries, deduplicating across batches. Edited choices require a new search. Filters,
-reveal, Back and reopening perform no provider requests. The active repair direction
-requires titles, identities and seller links to be visible immediately; seller text
-proposes identity, without physical verification.
+late publication. **More results** continues the same named query/category and original lease,
+within the four-page total described above. Blank-text catalog discovery advances
+its captured catalog queries instead. Edited choices require a new search. Filters,
+Back, review and reopening perform no provider requests. Titles, supported identities
+and checked seller links are visible immediately; seller text proposes identity
+without physical verification.
 
 ## Comparisons and temporary results
 
@@ -181,6 +274,13 @@ grader/grade affect applicability. Generic grade scenarios do not establish exac
 matches. References are dated observations, not fresh quotations or profit estimates.
 Auction current bids, if encountered, do not become final prices.
 
+All current listing consumers use the same bounded Shopping decimal policy. Invalid
+amounts stay unknown independently, so invalid shipping cannot hide a valid asking
+price. Summary shipping shows the cheapest explicit supported USD option; review
+inputs require an agreed amount/currency across the supplied options. Missing auction
+bids never use buy-now prices. Supplied invalid official-detail end times fail with
+an availability error; missing/invalid summary times stay unknown.
+
 Discovery results and provider summaries are temporary server memory. They are never
 written to raw hunt history, browser storage, exports, reports or backups. Saving
 these results is unavailable; the product explains that limitation. Existing saved
@@ -190,9 +290,11 @@ requires a new explicit search. Local reads do not renew source rights.
 
 ## Finite acquisition
 
-Each explicit Search or Next action admits at most **one OAuth and four Browse
-requests**, at most **20 summaries per Browse**, **30 seconds per request** and
-**75 seconds overall**. The normal action uses one Browse request. An independent acquisition deadline
+Each named Search or More action admits at most **one OAuth and one Browse
+request**, at most **20 summaries per Browse**, **30 seconds per request** and
+**75 seconds overall**. Named continuation has a four-Browse total for its original
+30-minute run. The separate blank-text catalog batch retains the existing ceiling
+of one OAuth/four Browse per explicit action; the ordinary client requests one Browse. An independent acquisition deadline
 suppresses late dispatch/publication even when local authorization is slow. Valid tokens can
 be reused. No retries, redirects, reauthentication, hidden pages or fallback calls
 are permitted. Failure ends that action. Admitted, in-flight and uncertain attempts
@@ -242,7 +344,7 @@ Loading opens a preview and keeps your existing review. **Use these details** ex
 replaces its contents/costs; **Keep my review** discards the preview. Available title,
 current bid or asking amount/currency, shipping and condition claims are proposed.
 Buy-now amounts and the owner's planned manual bid remain separately labelled.
-Opening a revealed discovery offer transfers its checked temporary summary and
+Opening a selected discovery offer transfers its checked temporary summary and
 original expiry without another provider operation. Extra official details require
 **Load additional official details**; manual URL/ID entry remains available. Listing stock,
 eBay lot units and seller-stated card count are separate. Proposed ambiguous printings
@@ -374,7 +476,6 @@ Logout, revoked authority, stale collection/goal context and late requests canno
 restore private results to another account. Existing source-status and expiry
 checks remain active. Captured saves remain immutable, and explicit current
 reevaluation creates a separate child. See [navigation and Shopping adapters](SSOT.md#navigation-and-shopping-adapters) for service ownership.
-
 
 ## Limits
 

@@ -35,7 +35,7 @@ function setup(responses, search='') {
   const initial=Object.fromEntries(new URLSearchParams(search));get('discovery-context').textContent=JSON.stringify({generation:7,species:initial.species?Number(initial.species):null,group:initial.group||null,child:initial.child||null});get('discovery-initial').textContent=JSON.stringify(initial);get('discovery-goals').textContent='[]';get('discovery-product-type').value='both';get('discovery-sort').value='ending_soonest';get('discovery-english-vintage').checked=true;
   const location={origin:'http://local.test',href:'http://local.test/shopping/'+search,search,reload(){calls.push({reload:true});}};
   const window={scrollY:0,scrollTo(){},addEventListener(type,fn){events[type]=fn;}};
-  const context={document:{getElementById:get,body:{dataset:{navigationBinding:'binding-test',navigationAccount:'account-test'}},addEventListener(type,fn){events[type]=fn;}},window,location,requestAnimationFrame:fn=>fn(),history:{replaceState(a,b,url){location.href=location.origin+url;}},URL,URLSearchParams,Intl,Date:{now:()=>clockNow,parse:Date.parse},setInterval(fn){intervals.set(++timerId,fn);return timerId;},clearInterval(id){intervals.delete(id);},setTimeout(fn){timers.set(++timerId,fn);return timerId;},clearTimeout(id){timers.delete(id);},fetch:async(url,init)=>{
+  const context={document:{createElement:()=>({getContext:()=>null}),getElementById:get,querySelector:()=>get('local-explorer'),body:{dataset:{navigationBinding:'binding-test',navigationAccount:'account-test'}},addEventListener(type,fn){events[type]=fn;}},window,location,requestAnimationFrame:fn=>fn(),history:{replaceState(a,b,url){location.href=location.origin+url;}},URL,URLSearchParams,Intl,Date:{now:()=>clockNow,parse:Date.parse},setInterval(fn){intervals.set(++timerId,fn);return timerId;},clearInterval(id){intervals.delete(id);},setTimeout(fn){timers.set(++timerId,fn);return timerId;},clearTimeout(id){timers.delete(id);},fetch:async(url,init)=>{
     if (url.startsWith('/api/shopping/discovery/catalog/')) {localCalls.push({url,init});const reply=await (localResponses.shift() || {mode:'cards',results:[],total:0,offset:0,sets:[],has_more:false});return {ok:true,status:200,json:async()=>({...reply,authority:{account_id:'account-test',binding:'binding-test'}})};}
     calls.push({url,init,body:init.body?JSON.parse(init.body):undefined});
     const response=responses.shift();if(response instanceof Error) throw response;
@@ -53,21 +53,21 @@ const passed=[];
     const t=setup([{goals:[],sets:[]}]);await flush();
     assert.equal(t.calls.length,1);assert.equal(t.calls[0].init.method,'GET');
     assert.equal(t.get('discovery-search').disabled,false);
-    assert.match(t.get('intent-description').textContent,/including cards you already own/);
+    assert.match(t.get('intent-description').textContent,/including cards you own/);
     assert.equal(t.timers.size,0);
   });
   await check('explicit start captures defaults and preserves unknown shipping and dates',async()=>{
-    const t=setup([{goals:[]},complete()]);await flush();await t.get('discovery-search').emit('click');await flush();
+    const t=setup([{goals:[]},complete()]);await flush();await t.get('discovery-form').emit('submit');await flush();
     assert.deepEqual(t.calls[1].body,baseChoices);
     const html=t.get('discovery-cards').innerHTML;
-    assert.match(html,/Conditional comparison/);assert.match(html,/Shipping<\/dt><dd>Unknown/);
-    assert.match(html,/Delivered · before tax<\/dt><dd>Unknown/);
+    assert.match(html,/Conditional comparison/);assert.match(html,/Shipping<\/dt><dd[^>]*>Unknown/);
+    assert.match(html,/Delivered · before tax<\/dt><dd[^>]*>Unknown/);
     assert.match(html,/Provider valuation date: Unknown/);assert.match(html,/2020-01-01/);
     assert.doesNotMatch(html,/\$10\.00 below reference/);
     assert.match(t.location.href,/run_id=/);assert.equal(t.timers.size,0);
   });
   await check('local filter and choice edits do not fetch; next uses captured choices',async()=>{
-    const t=setup([{goals:[]},complete(),complete(nextId)]);await flush();await t.get('discovery-search').emit('click');await flush();
+    const t=setup([{goals:[]},complete(),complete(nextId)]);await flush();await t.get('discovery-form').emit('submit');await flush();
     t.get('discovery-filter').value='below';await t.get('discovery-filter').emit('change');
     assert.equal(t.calls.length,2);assert.match(t.get('discovery-cards').innerHTML,/No results match this filter/);
     t.get('discovery-query').value='changed';await t.get('discovery-form').emit('input');
@@ -76,29 +76,56 @@ const passed=[];
     assert.equal(t.get('discovery-next').disabled,false);await t.get('discovery-next').emit('click');await flush();
     assert.deepEqual(t.calls[2].body,{continuation_run:runId});
   });
+  await check('More keeps received listings visible while awaiting its response',async()=>{
+    let finish;const pending=new Promise(resolve=>{finish=resolve;});
+    const first=complete();first.choices={...baseChoices,query:'Hypno Fossil'};
+    const t=setup([{goals:[]},first,pending,{...complete(),choices:first.choices}]);await flush();
+    t.get('discovery-query').value='Hypno Fossil';await t.get('discovery-form').emit('submit');await flush();
+    const before=t.get('discovery-cards').innerHTML;
+    const more=t.get('discovery-next').emit('click');await flush();
+    assert.equal(t.get('discovery-results').hidden,false);
+    assert.equal(t.get('discovery-cards').innerHTML,before);
+    assert.equal(t.get('discovery-stop').disabled,false);
+    assert.match(t.get('discovery-next-note').textContent,/keep browsing/);
+    finish({...complete(runId,[]),choices:first.choices,running:true,state:'running'});await more;await flush();
+    assert.equal(t.get('discovery-cards').innerHTML,before);
+    assert.equal(t.get('discovery-results').hidden,false);
+    assert.equal(t.get('discovery-next').disabled,true);
+    for(const fn of [...t.timers.values()]) await fn();await flush();
+    assert.equal(t.get('discovery-next').disabled,false);
+  });
+  await check('Stop after received results closes continuation without acquiring',async()=>{
+    const t=setup([{goals:[]},complete(),{...complete(runId,[]),state:'stopped',has_next:false}]);await flush();await t.get('discovery-form').emit('submit');await flush();
+    assert.equal(t.get('discovery-stop').disabled,false);
+    await t.get('discovery-stop').emit('click');await flush();
+    assert.equal(t.get('discovery-next').disabled,true);assert.equal(t.get('discovery-stop').disabled,true);
+    assert.match(t.calls[2].url,/stop/);assert.doesNotMatch(t.get('discovery-cards').innerHTML,/Engineering card/);
+  });
   await check('current missing policy and explicit frozen goal remain distinct',async()=>{
     const t=setup([{goals:[{id:'frozen',name:'Retained goal',version:3,policy:'species'}]},complete()]);await flush();
     await t.get('find-missing').emit('click');assert.match(t.get('missing-policy').textContent,/My current collection · missing Pokémon species/);
     t.get('discovery-missing-basis').value='species';await t.get('discovery-form').emit('change');assert.match(t.get('missing-policy').textContent,/missing Pokémon species/);
     t.get('discovery-goal').value='frozen';await t.get('discovery-form').emit('change');
     assert.equal(t.get('missing-basis-label').hidden,true);assert.match(t.get('missing-policy').textContent,/Frozen goal: Retained goal/);
-    await t.get('discovery-search').emit('click');await flush();
+    await t.get('discovery-form').emit('submit');await flush();
     assert.equal(t.calls[1].body.goal_id,'frozen');assert.equal(t.calls[1].body.intent,'missing');
   });
-  await check('reveal uses local endpoint and does not expose hidden listing before action',async()=>{
-    const revealed={...row,title:'Seller engineering title',item_url:'https://www.ebay.com/itm/123',revealed:true};
-    const t=setup([{goals:[]},complete(),revealed]);await flush();await t.get('discovery-search').emit('click');await flush();
-    assert.doesNotMatch(t.get('discovery-cards').innerHTML,/Seller engineering title|ebay.com\/itm/);
-    await t.get('discovery-cards').buttons[0].emit('click');await flush();
-    assert.match(t.calls[2].url,/\/reveal\/one\/$/);assert.match(t.get('discovery-cards').innerHTML,/Seller engineering title/);
+  await check('title identity and checked seller appear immediately without reveal',async()=>{
+    const visible={...row,title:'Seller engineering title',item_url:'https://www.ebay.com/itm/123',revealed:false};
+    const t=setup([{goals:[]},complete(runId,[visible])]);await flush();await t.get('discovery-form').emit('submit');await flush();
+    assert.match(t.get('discovery-cards').innerHTML,/Seller engineering title/);
     assert.match(t.get('discovery-cards').innerHTML,/Open seller listing on eBay/);
-    assert.equal(t.calls.length,3);
+    assert.match(t.get('discovery-cards').innerHTML,/Inspect lot/);
+    assert.doesNotMatch(t.get('discovery-cards').innerHTML,/data-discovery-reveal/);
+    assert.equal(t.calls.length,2);
   });
   await check('stop during admission waits for new run id, never stops a prior run',async()=>{
     let admit;const admission=new Promise(resolve=>{admit=resolve;});
     const stopped={...complete(nextId,[]),state:'stopped',has_next:false};
     const t=setup([{goals:[]},complete(),admission,stopped]);await flush();
-    await t.get('discovery-search').emit('click');await flush();t.get('discovery-next').emit('click');await flush();
+    await t.get('discovery-form').emit('submit');await flush();t.get('discovery-next').emit('click');await flush();
+    assert.equal(t.get('discovery-results').hidden,true);
+    assert.doesNotMatch(t.get('discovery-cards').innerHTML,/Engineering card/);
     await t.get('discovery-stop').emit('click');await flush();assert.equal(t.calls.length,3);
     admit({...complete(nextId),running:true,state:'running'});await flush();
     assert.match(t.calls[3].url,new RegExp(nextId+'/stop/'));assert.doesNotMatch(t.calls[3].url,new RegExp(runId+'/stop/'));
@@ -108,18 +135,18 @@ const passed=[];
   await check('reopening reads the temporary run without acquiring; account revocation clears private results',async()=>{
     const t=setup([{goals:[]},complete()],'?run_id='+runId);await flush();
     assert.equal(t.calls.length,2);assert.ok(t.calls.every(call=>call.init.method==='GET'));
-    assert.match(t.get('discovery-cards').innerHTML,/Single-card candidate/, t.get('discovery-status').textContent);
+    assert.match(t.get('discovery-cards').innerHTML,/Engineering card/, t.get('discovery-status').textContent);
     t.events['dex:authority-revoked']();assert.equal(t.get('discovery-cards').innerHTML,'');assert.equal(t.get('discovery-search').disabled,true);
   });
   await check('ambiguous identities and malicious text remain unpriced escaped text',async()=>{
     const bad={...row,classification:'unpriced',proposed_identity:null,reference:null,reason:'<script>bad</script>',revealed:true,title:'<img src=x onerror=bad()>',item_url:'javascript:bad()'};
-    const t=setup([{goals:[]},complete(runId,[bad])]);await flush();await t.get('discovery-search').emit('click');await flush();
-    const html=t.get('discovery-cards').innerHTML;assert.match(html,/Unresolved card identity/);assert.match(html,/No applicable reference/);
+    const t=setup([{goals:[]},complete(runId,[bad])]);await flush();await t.get('discovery-form').emit('submit');await flush();
+    const html=t.get('discovery-cards').innerHTML;assert.doesNotMatch(html,/Proposed:/);assert.match(html,/No applicable reference/);
     assert.match(html,/&lt;script&gt;/);assert.doesNotMatch(html,/<script>|javascript:|<img src=x/);
   });
   await check('session mismatch and restored page cannot publish private data',async()=>{
     const t=setup([{goals:[]}, {...complete(),authority:{binding:'other-session'}}]);await flush();
-    await t.get('discovery-search').emit('click');await flush();
+    await t.get('discovery-form').emit('submit');await flush();
     assert.equal(t.get('discovery-cards').innerHTML,'');assert.equal(t.get('discovery-search').disabled,true);
     assert.match(t.get('discovery-status').textContent,/session changed/);
     const restored=setup([{goals:[]},complete()],'?run_id='+runId);await flush();
@@ -130,7 +157,7 @@ const passed=[];
     let finish;const late=new Promise(resolve=>{finish=resolve;});
     const active={...complete(),running:true,state:'running'};
     const stopped={...complete(runId,[]),state:'stopped',has_next:false};
-    const t=setup([{goals:[]},active,late,stopped]);await flush();await t.get('discovery-search').emit('click');await flush();
+    const t=setup([{goals:[]},active,late,stopped]);await flush();await t.get('discovery-form').emit('submit');await flush();
     const poll=[...t.timers.values()][0];poll();await flush();
     await t.get('discovery-stop').emit('click');await flush();
     finish(complete(runId,[{...row,revealed:true,title:'Late private listing'}]));await flush();
@@ -143,15 +170,15 @@ const passed=[];
     const denied=['javascript:alert(1)','data:image/svg+xml,bad','http://assets.tcgdex.net/card.png','https://assets.tcgdex.net.evil.test/card.png','https://assets.tcgdex.net@evil.test/card.png','https://evil.test/card.png','https://assets.tcgdex.net:444/card.png','//evil.test/card.png','/\\\\evil.test/card.png'];
     const imageRow=(url,i,revealed=true)=>({...row,id:'art'+i,revealed,proposed_identity:{...row.proposed_identity,artwork_url:url}});
     const rows=[...reviewed.map((url,i)=>imageRow(url,i)),...denied.map((url,i)=>imageRow(url,i+10)),imageRow(reviewed[0],99,false)];
-    const t=setup([{goals:[]},complete(runId,rows)]);await flush();await t.get('discovery-search').emit('click');await flush();
-    const html=t.get('discovery-cards').innerHTML;assert.equal([...html.matchAll(/<img /g)].length,reviewed.length);
+    const t=setup([{goals:[]},complete(runId,rows)]);await flush();await t.get('discovery-form').emit('submit');await flush();
+    const html=t.get('discovery-cards').innerHTML;assert.equal([...html.matchAll(/<img /g)].length,reviewed.length+1);
     for (const url of reviewed) assert.ok(html.includes('src="'+url+'"'));
     assert.doesNotMatch(html,/<img[^>]+src="(?:javascript:|data:|http:|https:\/\/evil|\/\/evil)/);
     assert.match(html,/referrerpolicy="no-referrer"/);
   });
   await check('local reference expiry removes cached values and derivatives without another request',async()=>{
     const input={...row,revealed:true,classification:'comparable',shipping:'0',delivered_total:'10',reference:{...row.reference,amount:'777.77',expires_at:new Date(Date.now()+1000).toISOString()},comparison:{below_reference:true,reference_minus_delivered_total:'767.77'}};
-    const response=complete(runId,[input]);const t=setup([{goals:[]},response]);await flush();await t.get('discovery-search').emit('click');await flush();
+    const response=complete(runId,[input]);const t=setup([{goals:[]},response]);await flush();await t.get('discovery-form').emit('submit');await flush();
     assert.match(t.get('discovery-cards').innerHTML,/777.77|767.77/);
     t.advance(1001);for(const tick of t.intervals.values()) tick();await flush();
     const html=t.get('discovery-cards').innerHTML;assert.doesNotMatch(html,/777.77|767.77|Below reference/);assert.match(html,/Reference expired/);assert.match(html,/\$10.00/);
@@ -162,7 +189,7 @@ const passed=[];
     for(const conflict of [false,true]) {
       const ref={...row.reference,amount:'777.77',snapshot_version:'version-a',source_contract:'source-a',conflicts:conflict?[{source_contract:'source-conflict'}]:[]};
       const input={...row,revealed:true,classification:'comparable',shipping:'0',delivered_total:'10',reference:ref,comparison:{below_reference:true,reference_minus_delivered_total:'767.77'}};
-      const response=complete(runId,[input]);const t=setup([{goals:[]},response,{versions:['version-a'],sources:['source-a','source-conflict']},{versions:conflict?['version-a']:[],sources:['source-a']}]);await flush();await t.get('discovery-search').emit('click');await flush();
+      const response=complete(runId,[input]);const t=setup([{goals:[]},response,{versions:['version-a'],sources:['source-a','source-conflict']},{versions:conflict?['version-a']:[],sources:['source-a']}]);await flush();await t.get('discovery-form').emit('submit');await flush();
       assert.match(t.get('discovery-cards').innerHTML,/777.77/);
       for(const tick of t.intervals.values()) tick();await flush();
       assert.equal(t.calls.at(-1).url,'/api/shopping/price-source-status/');assert.equal(t.calls.at(-1).init.method,'GET');
@@ -173,14 +200,14 @@ const passed=[];
   });
   await check('unavailable managed lifecycle fails closed and later filtering cannot restore values',async()=>{
     const input={...row,revealed:true,reference:{...row.reference,amount:'777.77',snapshot_version:'version-a',source_contract:'source-a'}};
-    const response=complete(runId,[input]);const t=setup([{goals:[]},response,new Error('local unavailable')]);await flush();await t.get('discovery-search').emit('click');await flush();
+    const response=complete(runId,[input]);const t=setup([{goals:[]},response,new Error('local unavailable')]);await flush();await t.get('discovery-form').emit('submit');await flush();
     assert.match(t.get('discovery-cards').innerHTML,/lifecycle could not be checked/);assert.doesNotMatch(t.get('discovery-cards').innerHTML,/777.77/);
     assert.equal(response.results[0].reference,null);await t.get('discovery-filter').emit('change');assert.doesNotMatch(t.get('discovery-cards').innerHTML,/777.77/);
     assert.equal(t.calls.length,3);assert.equal(t.calls[2].url,'/api/shopping/price-source-status/');
   });
   await check('run TTL removes all cached listing data and visibility cannot republish it',async()=>{
     const response={...complete(runId,[{...row,revealed:true,title:'Private temporary title'}]),expires_in_seconds:2};
-    const t=setup([{goals:[]},response]);await flush();await t.get('discovery-search').emit('click');await flush();
+    const t=setup([{goals:[]},response]);await flush();await t.get('discovery-form').emit('submit');await flush();
     assert.match(t.get('discovery-cards').innerHTML,/Private temporary title/);const cached=response.results[0];
     t.advance(2001);t.events.visibilitychange();await flush();
     assert.deepEqual(Object.keys(cached),[]);assert.ok(response.results.every(result=>Object.keys(result).length===0));
@@ -188,33 +215,32 @@ const passed=[];
     assert.match(t.get('discovery-status').textContent,/temporary search has expired/);assert.equal(t.get('discovery-next').disabled,true);
     await t.get('discovery-filter').emit('change');assert.doesNotMatch(t.get('discovery-cards').innerHTML,/Private temporary title/);assert.equal(t.calls.length,2);
   });
-  await check('local run TTL is never renewed by reveal reads',async()=>{
-    const original={...complete(),expires_in_seconds:2};const refreshed={...complete(),expires_in_seconds:2};
-    const t=setup([{goals:[]},original,refreshed]);await flush();await t.get('discovery-search').emit('click');await flush();
-    t.advance(1500);await t.get('discovery-cards').buttons[0].emit('click');await flush();
+  await check('local run TTL is never renewed by filtering',async()=>{
+    const original={...complete(),expires_in_seconds:2};
+    const t=setup([{goals:[]},original]);await flush();await t.get('discovery-form').emit('submit');await flush();
+    t.advance(1500);await t.get('discovery-filter').emit('change');await flush();
     t.advance(501);for(const tick of t.intervals.values()) tick();await flush();
-    assert.match(t.get('discovery-status').textContent,/temporary search has expired/);assert.ok(refreshed.results.every(result=>Object.keys(result).length===0));
+    assert.match(t.get('discovery-status').textContent,/temporary search has expired/);assert.equal(t.calls.length,2);
   });
-  await check('reveal cannot restore a locally withdrawn comparison',async()=>{
+  await check('filtering cannot restore a locally withdrawn comparison',async()=>{
     const input={...row,reference:{...row.reference,amount:'777.77',snapshot_version:'version-a',source_contract:'source-a'}};
-    const initial=complete(runId,[input]);const revealed=complete(runId,[{...input,revealed:true,title:'Allowed seller title'}]);
-    const t=setup([{goals:[]},initial,{versions:['version-a'],sources:['source-a']},{versions:[],sources:[]},revealed]);await flush();await t.get('discovery-search').emit('click');await flush();
+    const initial=complete(runId,[input]);
+    const t=setup([{goals:[]},initial,{versions:['version-a'],sources:['source-a']},{versions:[],sources:[]}]);await flush();await t.get('discovery-form').emit('submit');await flush();
     for(const tick of t.intervals.values()) tick();await flush();assert.doesNotMatch(t.get('discovery-cards').innerHTML,/777.77/);
-    await t.get('discovery-cards').buttons[0].emit('click');await flush();
-    assert.match(t.get('discovery-cards').innerHTML,/Allowed seller title/);assert.doesNotMatch(t.get('discovery-cards').innerHTML,/777.77/);
-    assert.equal(revealed.results[0].reference,null);assert.equal(t.calls.length,5);
+    await t.get('discovery-filter').emit('change');await flush();
+    assert.doesNotMatch(t.get('discovery-cards').innerHTML,/777.77/);assert.equal(initial.results[0].reference,null);
   });
   await check('an unresponsive lifecycle read drops managed values within a bounded local wait',async()=>{
     let finish;const pending=new Promise(resolve=>{finish=resolve;});
     const input={...row,reference:{...row.reference,amount:'777.77',snapshot_version:'version-a',source_contract:'source-a'}};
-    const response=complete(runId,[input]);const t=setup([{goals:[]},response,pending]);await flush();await t.get('discovery-search').emit('click');await flush();
+    const response=complete(runId,[input]);const t=setup([{goals:[]},response,pending]);await flush();await t.get('discovery-form').emit('submit');await flush();
     assert.match(t.get('discovery-cards').innerHTML,/777.77/);t.advance(2001);for(const tick of [...t.timers.values()]) tick();await flush();
     assert.match(t.get('discovery-cards').innerHTML,/lifecycle could not be checked/);assert.doesNotMatch(t.get('discovery-cards').innerHTML,/777.77/);assert.equal(response.results[0].reference,null);
     finish({versions:['version-a'],sources:['source-a']});await flush();assert.doesNotMatch(t.get('discovery-cards').innerHTML,/777.77/);assert.equal(t.calls.length,3);
   });
   await check('local submit, typing and stale catalog responses never acquire listings',async()=>{
     const t=setup([{goals:[]}]);await flush();
-    const before=t.localCalls.length;await t.get('discovery-form').emit('submit');await flush();
+    const before=t.localCalls.length;await t.get('catalog-search').emit('click');await flush();
     assert.equal(t.calls.length,1);assert.equal(t.localCalls.length,before+1);
     let finish;const stale=new Promise(resolve=>{finish=resolve;});t.localResponses.push(stale);
     t.get('discovery-query').value='Hypno';await t.get('discovery-query').emit('input');
@@ -234,7 +260,42 @@ const passed=[];
     assert.equal(t.get('discovery-filter').value,'conditional');assert.equal(t.get('find-missing')['aria-pressed'],'true');
     assert.equal(t.get('offer-one').focused,true);assert.equal(t.get('discovery-next').disabled,true);
     assert.equal(t.calls.length,2);assert.ok(t.calls.every(call=>call.init.method==='GET'));
+    assert.equal(t.localCalls.length,0);t.get('local-explorer').open=true;await t.get('local-explorer').emit('toggle');await flush();
     assert.match(t.localCalls.at(-1).url,/species=94/);assert.match(t.localCalls.at(-1).url,/intent=missing/);
+  });
+  await check('Back restores offers and focus without a closed explorer read; explicit opening stays usable',async()=>{
+    let release;const held=new Promise(resolve=>{release=resolve;});
+    const t=setup([{goals:[]},complete()],'?run_id='+runId+'&focus=offer-one&scroll=1500');
+    t.localResponses.push(held);await flush();
+    assert.match(t.get('discovery-cards').innerHTML,/Engineering card/);
+    assert.equal(t.get('offer-one').focused,true);
+    assert.equal(t.localCalls.length,0);assert.equal(t.calls.length,2);
+    t.get('local-explorer').open=true;await t.get('local-explorer').emit('toggle');await flush();
+    assert.equal(t.localCalls.length,1);assert.equal(t.get('offer-one').focused,true);
+    assert.ok(t.calls.every(c=>c.init.method==='GET'));
+    release({mode:'cards',results:[],total:0,offset:0,sets:[],has_more:false});await flush();
+    assert.equal(t.localCalls.length,1);
+  });
+  await check('return starts metadata and local run revalidation together and rejects late revoked content',async()=>{
+    let release;const held=new Promise(resolve=>{release=resolve;});
+    const t=setup([held,complete()],'?run_id='+runId);await flush();
+    assert.equal(t.calls.length,2);assert.match(t.calls[1].url,/run_id=/);
+    assert.equal(t.get('discovery-cards').innerHTML,'');
+    t.events['dex:authority-revoked']();release({goals:[]});await flush();
+    assert.equal(t.get('discovery-cards').innerHTML,'');assert.equal(t.localCalls.length,0);
+  });
+  await check('an initially open explorer uses one local request across toggle and bootstrap',async()=>{
+    const t=setup([{goals:[]},complete()],'?run_id='+runId+'&focus=catalog-one');
+    await t.get('local-explorer').emit('toggle');await flush();
+    assert.equal(t.localCalls.length,1);assert.equal(t.calls.length,2);
+    assert.match(t.get('discovery-cards').innerHTML,/Engineering card/);
+  });
+  await check('reopening typed preferences preserves explicit English and local spelling assistance',async()=>{
+    const t=setup([{goals:[]}],'?q=Venasaur&english_vintage=1');await flush();
+    assert.equal(t.get('discovery-english-vintage').checked,true);
+    assert.match(t.get('discovery-suggestions').innerHTML,/Use Venusaur/);
+    assert.match(t.get('discovery-suggestions').innerHTML,/Keep Venasaur as typed/);
+    assert.equal(t.calls.length,1);assert.equal(t.calls[0].init.method,'GET');
   });
   assert.doesNotMatch(source,/localStorage|sessionStorage|indexedDB/);
   console.log(JSON.stringify({passed:passed.length,cases:passed,provider_calls:0,customer_data:false}));

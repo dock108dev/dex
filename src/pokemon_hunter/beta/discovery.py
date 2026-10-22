@@ -12,25 +12,24 @@ import threading
 import time
 import uuid
 from copy import deepcopy
-from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
 from threading import Timer
-from typing import Literal
 
 from django.conf import settings
 from django.db import close_old_connections
 from django.http import Http404
-from pydantic import BaseModel, Field, StrictBool, StrictInt, field_validator, model_validator
 
-from . import ebay_hunts, goal_hunts, parity, store
+from . import discovery_paging, ebay_hunts, goal_hunts, parity, store
 from .diagnostics import async_closing, failure
+from .discovery_contracts import MAX_BROWSE as MAX_BROWSE
+from .discovery_contracts import Choices as Choices
+from .discovery_contracts import Run as Run
 from .discovery_search import submitted_query
 from .discovery_transport import ProviderFailure, Transport
 
 MAX_OAUTH = 1
-MAX_BROWSE = 4
 MAX_SUMMARIES = 20
 REQUEST_SECONDS = 30
 OVERALL_SECONDS = 75
@@ -50,69 +49,6 @@ VINTAGE = (
 )
 
 
-class Choices(BaseModel):
-    model_config = {"extra": "forbid"}
-
-    intent: Literal["deals", "missing"] = "deals"
-    missing_basis: Literal["printing", "species"] = "species"
-    goal_id: str | None = Field(default=None, min_length=1, max_length=64)
-    focus: Literal["all", "kanto", "johto", "rares", "bulk"] = "all"
-    budget: Decimal | None = Field(default=None, ge=0, le=10000)
-    query: str = Field(default="", max_length=200)
-    set_id: str | None = Field(default=None, min_length=1, max_length=100)
-    species: StrictInt | None = Field(default=None, ge=1, le=251)
-    group_id: str | None = Field(default=None, pattern=r"^dg1-[0-9a-f]{64}$")
-    printing_id: str | None = Field(default=None, min_length=1, max_length=160)
-    goal_version: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
-    generation: StrictInt | None = Field(default=None, ge=0, le=10**18)
-    product_type: Literal["singles", "mixed_lots", "both"] = "both"
-    sort: Literal["best_match", "ending_soonest"] = "ending_soonest"
-    english_vintage: StrictBool = True
-    browse_requests: StrictInt = Field(default=1, ge=1, le=MAX_BROWSE)
-
-    @field_validator("query")
-    @classmethod
-    def trim(cls, value):
-        return value.strip()
-
-    @model_validator(mode="after")
-    def checked_context(self):
-        if self.species is not None and self.group_id is not None:
-            raise ValueError("Choose a Pokémon or a card group")
-        if self.printing_id is not None and self.group_id is None:
-            raise ValueError("An exact printing requires its checked card group")
-        if self.goal_version and not self.goal_id:
-            raise ValueError("A saved version requires its goal")
-        if self.intent == "missing" and not self.goal_id and "focus" not in self.model_fields_set:
-            self.focus = "kanto"
-        return self
-
-
-@dataclass
-class Run:
-    id: str
-    owner: tuple
-    choices: Choices
-    scope: dict | None
-    queries: list
-    operation: str = "browse"
-    identifier: str | None = None
-    auth_session: str | None = None
-    offset: int = 0
-    raws: list = field(default_factory=list)
-    seen: set = field(default_factory=set)
-    revealed: set = field(default_factory=set)
-    state: str = "queued"
-    error: str | None = None
-    created: float = field(default_factory=time.monotonic)
-    deadline: float | None = None
-    acquired_at: float | None = None
-    timed_out: bool = False
-    counts: dict = field(default_factory=lambda: {"oauth": 0, "browse": 0, "total": 0, "summary_count": 0})
-    cancel: threading.Event = field(default_factory=threading.Event)
-    lock: threading.RLock = field(default_factory=threading.RLock)
-
-
 _runs = {}
 _lock = threading.RLock()
 _journal_lock = threading.Lock()
@@ -127,9 +63,35 @@ def _owner(actor, session_key):
     return str(Path(settings.ROOT).resolve()), actor.user_id, session_key
 
 
-def _candidate_data(actor, choices, scope):
+def _candidate_data(actor, choices, scope, *, ownership=True):
     _context_current(actor, choices)
-    data = goal_hunts.project(actor, parity.projection(actor), scope)
+    if not ownership and choices.intent == "deals" and scope is None:
+        # Deals include every supported card, independently of ownership. Matching
+        # uses catalog identity only; missing/frozen-goal policy still projects
+        # the current account below. Never cache ownership or reference values.
+        from . import collection
+
+        catalog = collection.catalog(actor)
+        aliases = {
+            row["internal_id"]: row["external_id"]
+            for row in store.rows(
+                "SELECT * FROM external_mappings WHERE provider='legacy' AND entity_kind='set'"
+            )
+        }
+        data = dict(
+            catalog=catalog,
+            cards={
+                p["id"]: dict(
+                    p["attributes"],
+                    printing_id=p["id"],
+                    set_id=aliases.get(p["set_id"], p["set_id"]),
+                    set=p["set_name"],
+                )
+                for p in catalog
+            },
+        )
+    else:
+        data = goal_hunts.project(actor, parity.projection(actor, include_presentation=False), scope)
     cards = list(data["cards"].values())
     if choices.species is not None:
         cards = [c for c in cards if c.get("pokemon_dex") == choices.species]
@@ -194,19 +156,14 @@ def _context_current(actor, choices):
             raise collection.Conflict("Saved goal changed; reopen it from Goals")
 
 
-def query_plan(candidates, query="", *, set_name=None, product_type="both", english_vintage=False):
+def query_plan(candidates, query="", *, set_name=None, english_vintage=False):
     if query:
-        return [
-            submitted_query(
-                query, set_name=set_name, product_type=product_type, english_vintage=english_vintage
-            )
-        ]
+        return [submitted_query(query, set_name=set_name, english_vintage=english_vintage)]
     return list(
         dict.fromkeys(
             submitted_query(
                 f"Pokemon {c['name']} {c['collector_number']}",
                 set_name=set_name or c["set_name"],
-                product_type=product_type,
                 english_vintage=english_vintage,
             )
             for c in candidates
@@ -214,10 +171,20 @@ def query_plan(candidates, query="", *, set_name=None, product_type="both", engl
     )
 
 
+def _sets(actor):
+    from . import collection
+
+    store.verified(actor)
+    aliases = {
+        row["internal_id"]: row["external_id"]
+        for row in store.rows("SELECT * FROM external_mappings WHERE provider='legacy' AND entity_kind='set'")
+    }
+    return {aliases.get(p["set_id"], p["set_id"]): p["set_name"] for p in collection.catalog(actor)}
+
+
 def metadata(actor):
     store.verified(actor)
-    data = parity.projection(actor)
-    sets = {c["set_id"]: c["set"] for c in data["cards"].values()}
+    sets = _sets(actor)
     return {
         "provider": ebay_hunts.status(),
         "defaults": Choices().model_dump(mode="json"),
@@ -298,6 +265,11 @@ def _arm_deadline(run):
 
 def _check_acquisition(run, *, authorization=True):
     _acquisition_timeout(run)
+    if run.named_pages is not None and time.monotonic() - run.created >= EPHEMERAL_SECONDS:
+        with run.lock:
+            run.cancel.set()
+            run.raws.clear()
+            run.state = "expired"
     if run.cancel.is_set():
         raise _Stopped
     if authorization:
@@ -324,7 +296,11 @@ def _expire(run_id):
 
 def _scope_label(run):
     if run.choices.intent == "deals":
-        return "Catalog discovery, including cards already owned"
+        return (
+            ("Named search · " + run.choices.query + " · includes owned cards")
+            if run.choices.query
+            else "Catalog discovery, including cards already owned"
+        )
     if run.scope:
         units = "species" if run.scope["definition"]["policy"] == "species" else "exact printings"
         return f"Frozen goal: {run.scope['name']} · missing {units} in its saved checklist"
@@ -346,7 +322,14 @@ def _summary(run):
         "counts": dict(run.counts),
         "queries_total": len(run.queries),
         "queries_completed": run.offset,
-        "has_next": run.state == "complete" and run.offset < len(run.queries),
+        "has_next": run.state == "complete"
+        and (
+            bool(run.named_pages) and run.named_count < discovery_paging.MAX_PAGES
+            if run.named_pages is not None
+            else run.offset < len(run.queries)
+        ),
+        "pages_completed": run.named_count,
+        "page_limit": discovery_paging.MAX_PAGES if run.named_pages is not None else None,
         "continuation_run": run.id,
         "error": run.error,
         "note": "Temporary eBay summaries; seller text proposes identity. Prices exclude tax. References retain their source dates; searching does not refresh them. Results expire when the server restarts or after 30 minutes.",
@@ -354,18 +337,33 @@ def _summary(run):
     }
 
 
-def status(actor, session_key, run_id):
+def _readable(run):
+    return run.state in {"complete", "failed"} or (
+        run.named_pages is not None and bool(run.raws) and run.state in {"queued", "running"}
+    )
+
+
+def status(actor, session_key, run_id, *, selected_result=None):
     run = _lookup(actor, session_key, run_id)
     with run.lock:
         result = _summary(run)
-        if run.cancel.is_set() or run.state not in {"complete", "failed"}:
+        if run.cancel.is_set() or not _readable(run):
             return result
-        raws, revealed = deepcopy(run.raws), set(run.revealed)
+        raws = deepcopy(run.raws)
+    if selected_result is not None:
+        # Review revalidates its one opaque offer, not every previously received
+        # page. Authorization, candidate scope and source lifecycle stay below.
+        raws = [
+            raw
+            for raw in raws
+            if hashlib.sha256((run.id + "\0" + str(raw.get("itemId", ""))).encode()).hexdigest()[:24]
+            == selected_result
+        ]
     # Admission, expiry, withdrawal, rights and current ownership are evaluated on
     # every local read. Restricted guide cells/derivatives are never cached.
     from .discovery_comparison import compare
 
-    candidates = _candidate_data(actor, run.choices, run.scope)
+    candidates = _candidate_data(actor, run.choices, run.scope, ownership=False)
     rows = compare(actor, raws, candidates)
     if run.choices.sort == "ending_soonest":
         positions = {str(raw.get("itemId")): i for i, raw in enumerate(raws)}
@@ -379,21 +377,12 @@ def status(actor, session_key, run_id):
             and kind == "mixed_lot"
             or run.choices.product_type == "mixed_lots"
             and kind == "single"
+            and run.named_pages is None
         ):
             continue
         item_id = str(row.pop("item_id", ""))
         handle = hashlib.sha256((run.id + "\0" + item_id).encode()).hexdigest()[:24]
-        row["id"], row["revealed"] = handle, handle in revealed
-        if not row["revealed"]:
-            for key in ("title", "item_url", "url", "shortDescription"):
-                row.pop(key, None)
-            row["proposed_identity"] = None
-            row["identity_candidates"] = []
-            if row.get("reference"):
-                row["reference"] = {**row["reference"], "source_url": None}
-                row["reference"]["conflicts"] = [
-                    {**conflict, "source_url": None} for conflict in row["reference"].get("conflicts", [])
-                ]
+        row["id"], row["revealed"] = handle, True
         if run.choices.budget is not None:
             minimum = row.get("delivered_total") or row.get("listing_price")
             if minimum is not None and Decimal(minimum) > run.choices.budget:
@@ -401,12 +390,12 @@ def status(actor, session_key, run_id):
         visible.append(row)
 
     with run.lock:
-        if not run.cancel.is_set() and run.state in {"complete", "failed"}:
+        if not run.cancel.is_set() and _readable(run):
             result["results"] = visible
     if not result["results"] and run.state == "complete":
         result["limitation"] = (
             "No supported summaries in this batch matched the selected product and budget choices. "
-            "Imperfect identities can remain unpriced candidates; Next results searches the next captured catalog choice."
+            "Imperfect identities remain browsable without a reference. More results continues only when available."
         )
     return result
 
@@ -422,14 +411,14 @@ def reveal(actor, session_key, run_id, result_id):
 
 
 def review_candidate(actor, session_key, run_id, result_id):
-    """Lease one explicitly revealed summary to review without any new request.
+    """Lease one explicitly selected summary to review without any new request.
 
     Only a checked opaque handle travels in navigation. The caller must preserve
     the original expiry and recheck this lease before exposing provider content.
     """
     run = _lookup(actor, session_key, run_id)
-    current = status(actor, session_key, run_id)
-    row = next((r for r in current["results"] if r["id"] == result_id and r.get("revealed")), None)
+    current = status(actor, session_key, run_id, selected_result=result_id)
+    row = next((r for r in current["results"] if r["id"] == result_id), None)
     if row is None:
         raise Http404
     selected_target = None
@@ -444,7 +433,7 @@ def review_candidate(actor, session_key, run_id, result_id):
             raise Http404
         selected_target = identity(printing)
     with run.lock:
-        if run.cancel.is_set() or run.state not in {"complete", "failed"}:
+        if run.cancel.is_set() or not _readable(run):
             raise Http404
         raw = next(
             (
@@ -487,25 +476,42 @@ def start(actor, session_key, raw, *, auth_session=None):
     owner = _owner(actor, session_key)
     if not isinstance(raw, dict):
         raise ValueError("Choose search options")
+    # Validate the one saved Production configuration locally before a worker is
+    # admitted. Country/postal choices are fixed by the transport, not old YAML.
+    provider, values = ebay_hunts.configuration()
+    if provider.environment != "production":
+        raise ValueError("Find deals needs the saved Production eBay configuration")
+    credentials = (values.get("EBAY_CLIENT_ID"), values.get("EBAY_CLIENT_SECRET"))
+    if not all(credentials):
+        raise ValueError("The saved Production eBay credentials are unavailable")
     continuation = raw.get("continuation_run")
     if continuation:
         if set(raw) != {"continuation_run"}:
             raise ValueError("Start a new search after changing search choices")
         previous = _lookup(actor, session_key, continuation)
         with previous.lock:
-            if previous.state != "complete" or previous.offset >= len(previous.queries):
+            if not _summary(previous)["has_next"]:
                 raise ValueError("No next results remain for this search")
-            run = Run(
-                str(uuid.uuid4()),
-                owner,
-                previous.choices,
-                deepcopy(previous.scope),
-                list(previous.queries),
-                auth_session=previous.auth_session,
-                offset=previous.offset,
-                raws=deepcopy(previous.raws),
-                seen=set(previous.seen),
-            )
+            if previous.named_pages is not None:
+                # Keep one cursor and the ORIGINAL content lease. Concurrent/replayed
+                # More cannot fork a page, renew expiry or reset the overall bound.
+                run = previous
+                run.state = "queued"
+                run.deadline = None
+                run.acquired_at = None
+                run.action_counts = {}
+            else:
+                run = Run(
+                    str(uuid.uuid4()),
+                    owner,
+                    previous.choices,
+                    deepcopy(previous.scope),
+                    list(previous.queries),
+                    auth_session=previous.auth_session,
+                    offset=previous.offset,
+                    raws=deepcopy(previous.raws),
+                    seen=set(previous.seen),
+                )
     else:
         choices = Choices.model_validate(raw)
         # A deal search never needs a selected goal; goal membership applies only
@@ -513,8 +519,19 @@ def start(actor, session_key, raw, *, auth_session=None):
         if choices.intent == "deals" and choices.goal_id:
             raise ValueError("Use Find missing cards to search a frozen goal")
         scope = goal_hunts.snapshot(actor, choices.goal_id)
-        candidates = _candidate_data(actor, choices, scope)
-        set_name = next((c["set_name"] for c in candidates), None) if choices.set_id else None
+        # Named acquisition does not need a catalog/ownership projection before
+        # dispatch. Scope is validated again on every result read and review.
+        _context_current(actor, choices)
+        plain_named = choices.query and scope is None and choices.species is None and choices.group_id is None
+        candidates = [] if plain_named else _candidate_data(actor, choices, scope)
+        set_name = None
+        if choices.set_id:
+            sets = _sets(actor)
+            set_name = sets.get(choices.set_id) or next(
+                (name for name in sets.values() if name == choices.set_id), None
+            )
+            if set_name is None:
+                raise ValueError("Choose an available set")
         run = Run(
             str(uuid.uuid4()),
             owner,
@@ -524,31 +541,25 @@ def start(actor, session_key, raw, *, auth_session=None):
                 candidates,
                 choices.query,
                 set_name=set_name,
-                product_type=choices.product_type,
                 english_vintage=choices.english_vintage,
             )
-            if candidates
+            if candidates or choices.query
             else [],
             auth_session=auth_session,
         )
-    # Validate the one saved Production configuration locally before a worker is
-    # admitted. Country/postal choices are fixed by the transport, not old YAML.
-    provider, values = ebay_hunts.configuration()
-    if provider.environment != "production":
-        raise ValueError("Find deals needs the saved Production eBay configuration")
-    credentials = (values.get("EBAY_CLIENT_ID"), values.get("EBAY_CLIENT_SECRET"))
-    if not all(credentials):
-        raise ValueError("The saved Production eBay credentials are unavailable")
+        if choices.query:
+            run.named_pages = discovery_paging.first_pages(run.queries[0], choices.product_type, choices.sort)
+            run.action_counts = {}
     with _lock:
         for old in _runs.values():
-            if old.owner == owner and old.state in {"queued", "running"}:
+            if old is not run and old.owner == owner and old.state in {"queued", "running"}:
                 old.cancel.set()
                 old.state = "stopped"
                 old.raws.clear()
         _runs[run.id] = run
     _journal(run, "action", "admitted")
     _arm_deadline(run)
-    expiry = Timer(EPHEMERAL_SECONDS, _expire, args=(run.id,))
+    expiry = Timer(max(0, EPHEMERAL_SECONDS - (time.monotonic() - run.created)), _expire, args=(run.id,))
     expiry.daemon = True
     expiry.start()
     if not run.queries:
@@ -608,7 +619,7 @@ async def _dispatch(run, transport, stage, deadline, *, actor=None, **kwargs):
         limits = (
             {"oauth": 1, "browse": 2}
             if run.operation == "hunter"
-            else {"oauth": MAX_OAUTH, "browse": MAX_BROWSE}
+            else {"oauth": MAX_OAUTH, "browse": 1 if run.named_pages is not None else MAX_BROWSE}
             if run.operation == "browse"
             else {"oauth": 1, "detail": 2, "resolution": 2}
         )
@@ -720,18 +731,31 @@ async def _acquire(run, credentials, actor=None):
     deadline = run.deadline
     async with async_closing(transport, "shopping_transport_close_failed"):
         token = await access_token(run, transport, credentials, actor)
-        remaining_queries = run.queries[run.offset : run.offset + run.choices.browse_requests]
+        named = run.named_pages is not None
+        remaining_queries = (
+            [run.named_pages[0]]
+            if named
+            else run.queries[run.offset : run.offset + run.choices.browse_requests]
+        )
         additions = []
         for query in remaining_queries:
+            categories = discovery_paging.CATEGORIES[run.choices.product_type]
+            page = (
+                query
+                if named
+                else discovery_paging.NamedPage(
+                    query, categories[run.offset % len(categories)], run.choices.sort
+                )
+            )
             payload = await _dispatch(
                 run,
                 transport,
                 "browse",
                 deadline,
                 token=token,
-                query=query,
+                query=None,
                 actor=actor,
-                search_options={"sort": run.choices.sort},
+                search_options={"named": page},
             )
             rows = payload.get("itemSummaries", [])
             if (
@@ -749,8 +773,16 @@ async def _acquire(run, credentials, actor=None):
                     if not isinstance(key, str) or not key or key in run.seen:
                         continue
                     run.seen.add(key)
-                    additions.append(row)
+                    additions.append({**row, "_discovery_category": page.category})
                 run.offset += 1
+                if named:
+                    run.named_pages.pop(0)
+                    run.named_count += 1
+                    next_page = discovery_paging.following(query, payload, rows)
+                    if next_page and run.named_count < discovery_paging.MAX_PAGES:
+                        run.named_pages.append(next_page)
+                    if run.named_count >= discovery_paging.MAX_PAGES:
+                        run.named_pages.clear()
     _check_acquisition(run)
     if actor is not None:
         await asyncio.to_thread(_context_current, actor, run.choices)

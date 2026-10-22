@@ -200,7 +200,7 @@ def _context(source):
 
 
 def candidate(actor, session, run_id, result_id):
-    """Project an eligible revealed summary; entering review never loads details."""
+    """Project an eligible selected summary; entering review never loads details."""
     source = d.review_candidate(actor, session, run_id, result_id)
     raw = source["raw"]
     value = _proposals(actor, details(raw.get("itemId"), raw))
@@ -268,6 +268,9 @@ def review(actor, session, value=None, lease=None):
             if value.get("discovery_origin"):
                 source = d.review_candidate(actor, session, **value["discovery_origin"])
                 created = min(created, source["created"])
+                context = _context(source)
+            if time.monotonic() - created >= d.EPHEMERAL_SECONDS:
+                raise ValueError("This temporary review expired. Your edits remain on screen.")
             previous_created = current[0]
             _reviews[owner] = (created, deepcopy(value), current[2])
             if created < previous_created:
@@ -293,7 +296,7 @@ def review(actor, session, value=None, lease=None):
                 raise ValueError(
                     "Loaded details expired or were stopped. Reopen the checker for manual entry."
                 )
-        if current[1] and current[1].get("discovery_origin"):
+        if current[1] and current[1].get("discovery_origin") and context is None:
             try:
                 context = _context(d.review_candidate(actor, session, **current[1]["discovery_origin"]))
             except (Http404, ValueError):
@@ -380,7 +383,6 @@ def validate_review(actor, value):
         raise ValueError("Unknown contents needs a whole quantity or blank.")
     if not isinstance(value["cards"], list) or len(value["cards"]) > 200:
         raise ValueError("At most 200 card identities.")
-    allowed = {p["id"] for p in lot.catalog(actor, include_goals=True, include_current=True)}
     seen = set()
     for row in value["cards"]:
         shopping.fields(
@@ -388,7 +390,7 @@ def validate_review(actor, value):
             {"printing_id", "quantity", "condition", "grade", "grader", "language", "edition", "finish"},
             {"printing_id", "quantity"},
         )
-        if row["printing_id"] not in allowed or row["printing_id"] in seen:
+        if not isinstance(row["printing_id"], str) or row["printing_id"] in seen:
             raise ValueError("Choose a distinct supported printing.")
         seen.add(row["printing_id"])
         if type(row["quantity"]) is not int or not 0 <= row["quantity"] <= 100000:
@@ -398,6 +400,11 @@ def validate_review(actor, value):
                 raise ValueError("Use bounded card attributes.")
     if sum(r["quantity"] for r in value["cards"]) + (unknown or 0) > 100000:
         raise ValueError("At most 100000 cards in one review.")
+    allowed = {
+        p["id"] for p in lot.catalog(actor, include_goals=True, include_current=True, printing_ids=seen)
+    }
+    if seen - allowed:
+        raise ValueError("Choose a distinct supported printing.")
 
 
 def compare(actor, value):

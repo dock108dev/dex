@@ -107,7 +107,6 @@ bytes. Image processing has no storage, admission or ownership authority.
 
 `enable-photo-batches` explicitly adds four local tables and two indexes. Startup
 and GET requests never migrate. For operation and recovery, see
-[local development](operations.md#photo-batch-recovery) and
 [photo-batch recovery](operations.md#photo-batch-recovery).
 
 Sources are metadata-stripped and hashed from oriented pixels. Repeated photos

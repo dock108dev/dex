@@ -1,14 +1,15 @@
 # Local development
 
-The authenticated Django app, original FastAPI app and lot watcher have separate
-entry points and storage. Start with the authenticated app for physical copies,
-accounts and collecting goals. See [architecture](SSOT.md) for service ownership.
+Dex has three separate entry points: the authenticated collection app, the
+[original FastAPI app](ORIGINAL_APP.md), and the [lot watcher](legacy-watcher.md).
+Their data stores do not synchronize. Use the authenticated app for accounts,
+physical copies, collecting goals and Shopping.
 
 ## Requirements
 
-Use Python 3.12 or later, uv and macOS or Linux. Install Node.js 24 from `.nvmrc`
-for JavaScript checks. Windows process handling is unsupported. Commands below
-run from the repository root unless they use an installed interpreter explicitly.
+Use Python 3.12 or later and uv on macOS or Linux. JavaScript checks use Node.js 24
+from `.nvmrc`. Windows process handling is unsupported. Run development commands
+from the repository root:
 
 ```sh
 uv sync --locked --extra dev
@@ -16,25 +17,8 @@ uv sync --locked --extra dev
 
 ## Existing installations
 
-Current actual customer root (recovered October 18, 2026):
-`/Users/michaelfuscoletti/Desktop/dex/.local/customer`.
-The entire `.local/` directory is Git-ignored. `Dex.command` uses the tracked
-`scripts/start_local.py` helper. Open `Dex.command` in the repo
-or use the existing installed runtime at
-`/Users/michaelfuscoletti/.local/share/dex/runtimes/catalog-additive-release-20261017/bin/python`.
-The URL remains `http://127.0.0.1:8011/`.
-
-Recovered from the genuine R3 batch-3 protected backup: 207 copies, three goals,
-59 tables, authentication secret and configuration. Managed price snapshots were
-excluded from backups and are unavailable; artwork currently shows unavailable
-fallbacks. Recovery made no provider requests or credential resets. Original
-backups remain outside the repo. Recovery provenance and retained independent
-accounting are in `.local/recovery.json` and `.local/recovery-evidence/`.
-Historical root-bound acquisition documents do not authorize this new root.
-Preserve recovered ledgers and do not reuse consumed acquisition capacity.
-
-An existing installation has a private data root and a compatible installed Python
-runtime. Use those paths, rather than a checkout environment, for ordinary use:
+An existing installation consists of a private data root and a compatible installed
+Python runtime. Set their paths explicitly; do not initialize or reseed the root:
 
 ```sh
 export DEX_APP_ROOT="/absolute/path/to/existing-dex-root"
@@ -42,19 +26,40 @@ export DEX_APP_PYTHON="/absolute/path/to/installed-runtime/bin/python"
 "$DEX_APP_PYTHON" -I -m pokemon_hunter.beta.cli --root "$DEX_APP_ROOT" serve
 ```
 
-Open [Dex](http://127.0.0.1:8011/). Reuse an existing server on that port rather
-than starting a second one. Stop a foreground server with Ctrl-C. The server binds
-only to loopback and rejects foreign Host/Origin and forwarded headers.
+Open [Dex](http://127.0.0.1:8011/) and use ordinary sign-in. Reuse an existing server
+instead of starting a second one. A foreground server stops with Ctrl-C. The server
+binds only to loopback and rejects foreign Host/Origin and forwarded headers.
+Changing the checkout environment does not update an installed wheel.
 
-Do not run initialization, bootstrap or capability-enablement commands merely to
-start an existing app. Keep its database, authentication secret, configuration,
-photos and independent accounting. Updating the checkout does not update an
-installed wheel. Back up before data-changing updates; see [operations](operations.md).
+### macOS launcher
 
-Root markers such as `B1_ISOLATED` and `B2_ISOLATED` are persisted capability
-contracts. Their historical names do not identify a user's collection as a fixture.
-Startup checks private permissions and existing capabilities; browsing does not
-migrate, seed or reset an installation.
+`Dex.command` uses `DEX_APP_PYTHON`, or the ignored `.local/runtime/bin/python`
+when no interpreter override is supplied. To configure an existing installed
+runtime for double-click startup:
+
+```sh
+mkdir -p .local
+ln -s "/absolute/path/to/installed-runtime" .local/runtime
+```
+
+Do not replace an existing runtime link casually. The link selects code, not data;
+compatible updates need the backup procedure in [operations](operations.md).
+Environment overrides must be available to the process launching `Dex.command`.
+The helper uses `DEX_APP_ROOT`, defaulting to `.local/customer/`, and reuses a
+listener on port 8011. It refuses a missing installation and never seeds one.
+Both the runtime link and default private root are excluded from Git.
+The launcher clears inherited eBay credential/destination overrides so the installed
+app reads its configured private `.env`. Direct CLI startup keeps normal environment
+precedence.
+
+### Storage and capabilities
+
+Keep the database, authentication secret, photos, configuration and independent
+accounting private. Do not run initialization, import, migration or capability
+enablement merely to start an existing installation. Historical marker names such
+as `B1_ISOLATED` and `B2_ISOLATED` are persisted capability contracts; their names
+do not identify a personal collection as a test fixture. Startup checks private
+permissions and enabled capabilities. See [recovery and backups](operations.md).
 
 ## Engineering fixtures
 
@@ -147,6 +152,20 @@ cascade. Client renderers do not own account, possession or price policy.
 `photo_batch_images.py` handles image bytes; `photo_batches.py` owns leases and
 transaction sequencing. Keep Stop, authorization and journals explicit when extracting.
 
+`discovery_contracts.py` defines checked input and ephemeral run types without
+account storage or worker activity. `discovery.py` retains the compatible exports
+and the orchestrator's lock/admission/Stop lifetime. `hunter_lot_parser.py` owns
+bounded seller-text/quantity interpretation; `hunter_lots.py` owns reauthorized
+review leases, corrections and current-reference arithmetic. Parser limits and
+the existing `hunter_lots.parse` import remain available to callers.
+
+The discovery orchestrator keeps account checks, consumed-attempt journals,
+deadline dispatch and final publication together because Stop must synchronize
+with those phases. Hunter review projection stays with its checked lease and
+comparison adapters; splitting its individual result fields would hide the
+revalidation boundary. Photo jobs similarly retain transactional lease/journal
+sequencing, with image processing separate.
+
 Snapshot tooling separates execution from `tcgcsv_capture_contract.py`,
 `tcgcsv_capture_history.py` and `tcgcsv_capture_transport.py`. Execution retains the
 installation lock through reservation, dispatch and terminal accounting. Pilot,
@@ -157,60 +176,13 @@ the ordered journey retains one browser context, held responses and final cleanu
 Packaging selects runtime inputs in `pyproject.toml`; `runtime_data.py` resolves
 source and installed layouts. Keep credentials, personal state and removable prices
 out of Git. Generated checks belong in ignored `reports/`; maintained instructions
-must work without local notes or generated evidence.
+must work without local notes or generated evidence. Specialized acquisition and
+runtime-transition operators remain bound to private reviewed installations; they
+are not general setup commands.
 
 ## Private price snapshots
 
-See [snapshot contracts and lifecycle](price-snapshots.md) for independent source
-admission, preview/validate/activate, expiry and withdrawal. The importer performs
-no network acquisition. Some current-price reads prune managed files; they are not
-read-only inspection helpers. Backup exclusions are in [operations](operations.md).
-
-## repository cleanup — October 17, 2026
-
-Imported from the Desktop tracker during the October 18 documentation cleanup.
-This is a historical closeout/decision, not a fresh verification. The active
-Shopping repair in [Shopping](hunts.md#active-owner-direction--shopping-repair-first-october-18-2026)
-and the Desktop Next Steps plan govern current work. Historical next actions below
-do not reactivate deferred work or establish installed delivery.
-
-Completed source-only cleanup while preserving the preceding SSOT changes.
-Snapshot capture now separates pure plan/response contracts, read-only history
-and one-send transport from the locked execution lifecycle. Its tests are grouped
-by pilot, batch and resource/cadence behavior with shared non-collected fixtures.
-The Hunter qualifier separates process ownership from its ordered browser journey
-and hashes both source files. Existing CLI/import interfaces and all capture test
-functions remain; no acquisition/accounting policy or capacity was changed.
-
-Current startup/recovery guidance now precedes historical delivery records in
-Development/Operations. The obsolete intermediate S6 “open work” instruction is
-explicitly exhausted; its old handoffs remain historical. Architecture and existing
-maintenance conventions explain extraction and retained lifecycle boundaries.
-README remains concise; generated output/private state was already excluded and
-no unnecessary tracked artifacts or index removal were found. No local evidence,
-fixtures, frozen builds or customer data were removed.
-
-**249 focused tests passed**, including a clean source export without ignored
-helpers/evidence; compilation, focused lint/format, CLI help, source/guide links and
-diff whitespace passed. The existing fork warning remains. Function-body/signature
-comparison passed; 540 unrelated incoming files and earlier SSOT content are
-preserved, HEAD unchanged and nothing staged. See
-cleanup review: `reports/repository-cleanup-20261017/review.md` for retained
-structure decisions, commands and evidence. Full CI, packaging and actual browser/
-installed qualification were not run. No commit, push, provider operation, owner-data
-access, installation update or release occurred. Beta priorities remain unchanged.
-
-## Recovery verification boundary — October 18, 2026
-
-The recovery documented under [existing installations](#existing-installations)
-passed SQLite integrity and reconciled 207 copies, three goals and 59 tables.
-Startup defaults and recovered independent acquisition journals were relocated to
-that root; old selections and consumed budgets were not renewed. The former
-`dex-private` root was deleted. The recorded runtime remained unchanged.
-
-The homepage returned HTTP 200 and rendered in the browser; authenticated journeys
-were not verified in that recovery pass. Its signed-out browser observation
-precedes the owner's later Shopping feedback and does not establish current
-session state. Verify process/root, authentication and available assets/references
-when interactive work begins. Recovery did not demonstrate current price coverage
-or working seller-specific comparisons.
+See [snapshot contracts and lifecycle](price-snapshots.md) for source admission,
+activation, expiry and withdrawal. Import performs no acquisition; some current-price
+reads prune managed files. [Operations](operations.md#snapshot-retention-and-backups)
+describes backup exclusions and independent revocation/accounting state.

@@ -6,15 +6,17 @@
   let generation = 0;
   window.invalidateCardScreens = () => { generation++; };
   function safeList(value) {
+    if(typeof value==='string'&&value.startsWith('/shopping/'))return window.safeCollectionReturn?.(value)||null;
     if(window.safeSpeciesReturn){const species=window.safeSpeciesReturn(value);if(species)return species;}
     if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//')) return null;
     try {
       const url = new URL(value, location.origin);
       if (url.origin !== location.origin || !listPaths.includes(url.pathname) || url.hash) return null;
       for (const key of url.searchParams.keys()) {
-        if (![...filterKeys,'scroll'].includes(key) || url.searchParams.getAll(key).length !== 1) return null;
+        if (![...filterKeys,'scroll','return','goal','version','generation'].includes(key) || url.searchParams.getAll(key).length !== 1) return null;
       }
-      if([...url.searchParams.values()].some(value=>value.length>160))return null;
+      if([...url.searchParams].some(([key,value])=>value.length>(key==='return'?4096:160)||/[\x00-\x1f\x7f]/.test(value)))return null;
+      if(url.searchParams.has('return')&&!window.safeSpeciesReturn?.(url.searchParams.get('return')))return null;
       for(const [key,min,max] of [['page',1,Number.MAX_SAFE_INTEGER],['page_size',1,100],['species',1,251]]){const value=url.searchParams.get(key);if(value&&(!/^[0-9]+$/.test(value)||!Number.isSafeInteger(Number(value))||Number(value)<min||Number(value)>max))return null;}
       if(url.searchParams.get('sort')&&!['set','name','number'].includes(url.searchParams.get('sort')))return null;
       const scroll = url.searchParams.get('scroll');
@@ -22,7 +24,7 @@
       return url.pathname + url.search;
     } catch { return null; }
   }
-  function backLabel(value){return value.startsWith('/pokedex/')?'Pokédex':value.startsWith('/card-library/')?'Card Library':'My Cards';}
+  function backLabel(value){return value.startsWith('/shopping/')?'Shopping':value.startsWith('/pokedex/')?'Pokédex':value.startsWith('/card-library/')?'Card Library':'My Cards';}
   window.safeCardReturn=safeList;
   function account() { return data?.effective_collection?.user_id || ''; }
   function storageKey(url) { return 'dex-card-scroll:' + account() + ':' + url; }
@@ -46,7 +48,7 @@
   addEventListener('pagehide', saveScroll);
   function listDestination(path, params) {
     const copy = new URLSearchParams();
-    for (const key of filterKeys) if (params.get(key)) copy.set(key, params.get(key));
+    for (const key of [...filterKeys,'return','goal','version','generation']) if (params.get(key)) copy.set(key, params.get(key));
     return path + (copy.size ? '?' + copy : '');
   }
   function returnWithScroll() {
@@ -73,6 +75,10 @@
     const label = values.find(([value]) => value === selected)?.[1] || '';
     return `<div><label for="cards-sort">Sort</label><select id="cards-sort" name="sort" aria-describedby="cards-sort-value">${values.map(([value,name]) => option(value,name,selected)).join('')}</select><p id="cards-sort-value" class="card-selected-label" ${selected === 'set' ? 'hidden' : ''}>${selected === 'set' ? '' : esc(label)}</p></div>`;
   }
+  function clearDestination(path, params) {
+    const next=new URLSearchParams();for(const key of ['return','goal','version','generation'])if(params.get(key))next.set(key,params.get(key));
+    return listDestination(path,next);
+  }
   function activeFilters(path, params, options) {
     const labels={q:'Search',set:'Set',sort:'Sort',language:'Language',edition:'Edition',finish:'Finish',variant:'Variant',species:'Pokédex number'};
     const names={set:options.sets,language:options.languages,edition:options.editions,finish:options.finishes,variant:options.variants};
@@ -80,7 +86,7 @@
       const value=(names[key]||[]).find(row=>row.id===params.get(key))?.name||params.get(key);
       return `<li>${label}: ${esc(value)}</li>`;
     });
-    return rows.length?`<div class="active-filters" aria-label="Applied card filters"><ul>${rows.join('')}</ul><a href="${path}">Clear filters</a></div>`:'';
+    return rows.length?`<div class="active-filters" aria-label="Applied card filters"><ul>${rows.join('')}</ul><a href="${esc(clearDestination(path,params))}">Clear filters</a></div>`:'';
   }
   function filters(path, params, options) {
     return `<form id="card-filters" method="get" action="${path}" class="card-filter-form browse-controls"><div class="card-core-filters"><div><label for="cards-query">Search</label><input id="cards-query" name="q" type="search" maxlength="160" value="${esc(params.get('q') || '')}" placeholder="Card name, set or number"></div>${select('set','Set',options.sets,params,'All sets')}<button>Search cards</button></div><div class="card-filter-options"><details id="card-advanced-filters"><summary>Sort and variant filters</summary><div class="card-advanced-grid">${sortControl(params)}${select('language','Language',options.languages,params,'All languages')}${select('edition','Edition',options.editions,params,'All editions')}${select('finish','Finish',options.finishes,params,'All finishes')}${select('variant','Variant',options.variants,params,'All variants')}<div><label for="cards-species">Pokédex number</label><input id="cards-species" name="species" type="number" min="1" max="251" value="${esc(params.get('species') || '')}"></div></div><p class="muted">Variant filters identify matching variants; each card and its complete ownership total still appear once.</p><button class="secondary">Apply filters</button></details>${path === '/card-library/' ? imageOptions() : ''}</div>${params.get('page_size') ? `<input name="page_size" type="hidden" value="${esc(params.get('page_size'))}">` : ''}</form>`;
@@ -138,16 +144,19 @@
       params.set('page', String(Math.max(1,result.pages)));params.delete('scroll');
       location.replace(listDestination(path,params));return;
     }
+    const origin=safeList(params.get('return'));
+    const originLink=origin?`<p><a id="library-back" href="${esc(origin)}">Back to ${backLabel(origin)}</a></p><p class="muted">Card Library shows indexed choices with the selected set. Other collection card filters remain on your original page.</p>`:'';
     const unresolved = scope === 'owned' ? collectionUnresolved(result.unresolved) : [];
     const filtered = filterKeys.some(k => !['page','page_size','sort'].includes(k) && params.get(k));
-    const empty = filtered ? '<h2>No matching cards</h2><p>Try a different search or set.</p>' : scope === 'catalog' ? '<h2>Card Library unavailable</h2><p>No supported card metadata is currently available.</p>' : unresolved.length ? '<h2>Your card evidence is retained</h2><p>Some owned cards need identification before they can appear here.</p>' : '<h2>Your collection is empty</h2><p>Find a card in Card Library and add it to your collection.</p><a class="button-link" href="/card-library/">Browse Card Library</a>';
+    const empty = params.get('species') ? '<h2>No indexed cards match this Pokémon and set</h2><p>Card metadata may be unavailable. Return to the Pokémon to search mixed lots by name.</p>' : filtered ? '<h2>No matching cards</h2><p>Try a different search or set.</p>' : scope === 'catalog' ? '<h2>Card Library unavailable</h2><p>No supported card metadata is currently available.</p>' : unresolved.length ? '<h2>Your card evidence is retained</h2><p>Some owned cards need identification before they can appear here.</p>' : '<h2>Your collection is empty</h2><p>Find a card in Card Library and add it to your collection.</p><a class="button-link" href="/card-library/">Browse Card Library</a>';
     const pageHref = page => {const p=new URLSearchParams(params);p.set('page',page);p.delete('scroll');return listDestination(path,p);};
-    $('#content').innerHTML = `<div class="page-title card-list-heading"><div class="card-list-title"><h1>${scope === 'owned' ? 'My Cards' : 'Card Library'}</h1><p id="cards-count" role="status">${result.total} ${filtered ? 'matching ' : ''}${scope === 'owned' ? 'owned' : 'catalog'} ${result.total === 1 ? 'card' : 'cards'}</p></div>${scope === 'owned' ? '<a id="cards-add-many" class="button-link secondary" href="/add-many/">Add many cards</a>' : '<p class="card-library-scope">Owned and unowned cards</p>'}</div>${filters(path,params,options)}${activeFilters(path,params,options)}<div id="card-group-list" class="owned-card-grid">${result.groups.map(g => tile(g,safeList(path+location.search))).join('')}</div>${result.groups.length ? `<nav class="card-pagination" aria-label="Card pages">${result.page > 1 ? `<a class="button-link secondary" rel="prev" href="${esc(pageHref(result.page-1))}">Previous cards</a>` : ''}<span>Page ${result.page} of ${result.pages}</span>${result.page < result.pages ? `<a class="button-link secondary" rel="next" href="${esc(pageHref(result.page+1))}">Next cards</a>` : ''}</nav>` : `<section class="panel empty">${empty}${filtered ? `<a href="${path}">Clear filters</a>` : ''}</section>`}${unresolvedArea(unresolved)}`;
+    $('#content').innerHTML = `${originLink}<div class="page-title card-list-heading"><div class="card-list-title"><h1>${scope === 'owned' ? 'My Cards' : 'Card Library'}</h1><p id="cards-count" role="status">${result.total} ${filtered ? 'matching ' : ''}${scope === 'owned' ? 'owned' : 'catalog'} ${result.total === 1 ? 'card' : 'cards'}</p></div>${scope === 'owned' ? '<a id="cards-add-many" class="button-link secondary" href="/add-many/">Add many cards</a>' : '<p class="card-library-scope">Owned and unowned cards</p>'}</div>${filters(path,params,options)}${activeFilters(path,params,options)}<div id="card-group-list" class="owned-card-grid">${result.groups.map(g => tile(g,safeList(path+location.search))).join('')}</div>${result.groups.length ? `<nav class="card-pagination" aria-label="Card pages">${result.page > 1 ? `<a class="button-link secondary" rel="prev" href="${esc(pageHref(result.page-1))}">Previous cards</a>` : ''}<span>Page ${result.page} of ${result.pages}</span>${result.page < result.pages ? `<a class="button-link secondary" rel="next" href="${esc(pageHref(result.page+1))}">Next cards</a>` : ''}</nav>` : `<section class="panel empty">${empty}${filtered ? `<a href="${esc(clearDestination(path,params))}">Clear filters</a>` : ''}</section>`}${unresolvedArea(unresolved)}`;
     if(scope === 'catalog')bindImageOptions();
     $('#card-filters').onsubmit = event => {
       event.preventDefault();
       const next = new URLSearchParams(new FormData(event.currentTarget));
       for (const key of [...next.keys()]) if (!next.get(key)) next.delete(key);
+      for(const key of ['return','goal','version','generation'])if(params.get(key))next.set(key,params.get(key));
       location.assign(listDestination(path,next));
     };
     for (const key of ['set','language','edition','finish','variant','sort']) {
@@ -268,9 +277,15 @@
     document.querySelectorAll('[data-group-remove]').forEach(button=>button.onclick=()=>{const c=copies.find(c=>c.id===button.dataset.groupRemove);preview('remove',{id:c.id,revision:c.revision},crypto.randomUUID(),{group:g.id,child:c.printing_id});});
     const shopping=document.createElement('a');shopping.id='card-shopping';shopping.textContent=selected?'Find this printing in Shopping':'Find cards in Shopping';
     const shoppingReturn=()=>location.pathname+location.search;
-    let goalScope=null;try{const back=new URL(returnTo,location.origin);const goal=back.searchParams.get('goal');const owned=data.goals?.find(row=>row.id===goal);if(owned)goalScope={goal_id:owned.id,version:owned.version};}catch{/* No implied goal. */}
-    shopping.href=window.collectionShoppingDestination?.(context,goalScope,shoppingReturn())||'/shopping/';
-    shopping.addEventListener('click',()=>{shopping.href=window.collectionShoppingDestination?.(context,goalScope,shoppingReturn())||'/shopping/';});
+    let goalScope=null,destination=returnTo;
+    for(let depth=0;depth<7&&destination;depth++){
+      const back=new URL(destination,location.origin),goal=back.searchParams.get('goal');
+      if(goal){const owned=data.goals?.find(row=>row.id===goal);if(owned)goalScope={goal_id:goal,version:back.searchParams.get('version')||owned.version};break;}
+      destination=back.searchParams.get('return');
+    }
+    const destinationForShopping=()=>returnTo.startsWith('/shopping/')?returnTo:window.collectionShoppingDestination?.(context,goalScope,shoppingReturn())||'/shopping/';
+    shopping.href=destinationForShopping();
+    shopping.addEventListener('click',()=>{shopping.href=destinationForShopping();});
     document.querySelector('.card-related-links').append(shopping);
     window.rememberCollectionDestination?.();
   }

@@ -10,14 +10,13 @@ from datetime import datetime
 from decimal import Decimal
 
 from pokemon_hunter.parser import extract_count
-from pokemon_hunter.pricing import money as provider_money
-from pokemon_hunter.pricing import shipping as provider_shipping
 from pokemon_hunter.security import ebay_url
 
 from . import (
     collection,
     discovery_matching,
     image_bindings,
+    listing_prices,
     lot_calculator,
     lot_guides,
     market_identity,
@@ -25,6 +24,7 @@ from . import (
     store,
 )
 from . import shopping_math as math
+from .discovery_listing import end_timestamp, seller_image
 from .discovery_search import product_kind
 
 _GRADERS = r"PSA|BGS|CGC|SGC"
@@ -377,7 +377,8 @@ def compare(actor, raw_rows, candidates, *, now=None):
             raise ValueError("Discovery catalog differs from authorized metadata")
         printings.append(p)
     records = lot_calculator.retained_records()
-    return _project(actor, raw_rows, printings, records, now=now)
+    names = discovery_matching.NameIndex(printings)
+    return _project(actor, raw_rows, printings, records, now=now, candidates_for=names.candidates)
 
 
 def _project(
@@ -424,6 +425,8 @@ def _project(
         if literal:
             clues = _clues(raw, claim_text=claim_text)
         kind = product_kind(claim_text)
+        if raw.get("_discovery_category") == "183455" and kind != "unsupported":
+            kind = "mixed_lot"
         if kind == "unsupported" and not include_unsupported:
             continue
         matched = _matches(candidates, clues)
@@ -455,20 +458,11 @@ def _project(
         )
         options = raw.get("buyingOptions", [])
         options = options if isinstance(options, list) and all(isinstance(o, str) for o in options) else []
-        auction = "AUCTION" in options
-        price = provider_money(raw.get("currentBidPrice") if auction else raw.get("price"), "USD")
-        shipping = provider_shipping(raw, "USD")
-        # Shopping owns decimal admission and rounding, including upper bounds.
-        try:
-            price = math.money(math.amount(format(price, "f"))) if price is not None else None
-            shipping = math.money(math.amount(format(shipping, "f"))) if shipping is not None else None
-        except ValueError:
-            price, shipping = None, None
-        buy_now = provider_money(raw.get("price"), "USD") if "FIXED_PRICE" in options else None
-        try:
-            buy_now = math.money(math.amount(format(buy_now, "f"))) if buy_now is not None else None
-        except ValueError:
-            buy_now = None
+        observed = listing_prices.prices(raw, currency="USD")
+        auction = observed["price_kind"] == "current_bid"
+        price = observed["price"]["amount"]
+        shipping = listing_prices.summary_shipping(raw)
+        buy_now = observed["buy_now"]["amount"]
         delivered, _ = _arithmetic(price, shipping, None, today, auction=auction)
         row = dict(
             item_id=item_id,
@@ -489,7 +483,8 @@ def _project(
             current_bid=price if auction else None,
             buy_now_price=buy_now,
             buying_options=[o for o in ("AUCTION", "FIXED_PRICE", "BEST_OFFER") if o in options],
-            ends_at=raw.get("itemEndDate") if isinstance(raw.get("itemEndDate"), str) else None,
+            ends_at=end_timestamp(raw.get("itemEndDate")),
+            seller_image=seller_image(raw.get("image")),
             shipping=shipping,
             delivered_total=delivered,
             currency="USD",
