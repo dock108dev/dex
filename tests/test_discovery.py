@@ -258,30 +258,48 @@ def test_request_and_overall_deadlines(discovery):
 def test_overall_watchdog_blocks_slow_authorization_dispatch_and_publication(discovery, slow_call):
     entered, release = threading.Event(), threading.Event()
     calls = 0
+    clock = SimpleNamespace(now=time.monotonic())
+    watchdogs = []
+
+    class ControlledTimer:
+        def __init__(self, interval, callback, args):
+            self.interval, self.callback, self.args = interval, callback, args
+
+        def start(self):
+            watchdogs.append(self)
 
     def authorize(actor):
         nonlocal calls
         calls += 1
         if calls == slow_call:
             entered.set()
-            assert release.wait(2)
+            assert release.wait(10)
 
     FakeTransport.calls = []
     discovery.monkeypatch.setattr(d, "Transport", FakeTransport)
     discovery.monkeypatch.setattr(d, "_authorize", authorize)
-    discovery.monkeypatch.setattr(d, "OVERALL_SECONDS", 0.04)
+    # Reach the selected authorization boundary before expiring acquisition.
+    # Real disk accounting/thread scheduling must not race a 40 ms deadline.
+    # The adjacent timer test exercises actual timer scheduling separately.
+    discovery.monkeypatch.setattr(d, "time", SimpleNamespace(monotonic=lambda: clock.now))
+    discovery.monkeypatch.setattr(d, "Timer", ControlledTimer)
     run = run_for(discovery)
     d._runs[run.id] = run
     thread = threading.Thread(target=d._worker, args=(run, discovery.actor, ("fixture", "secret")))
     thread.start()
     try:
-        assert entered.wait(2)
-        assert run.cancel.wait(0.5)
+        assert entered.wait(5)
+        assert len(watchdogs) == 1
+        watchdog = watchdogs[0]
+        assert watchdog.interval == d.OVERALL_SECONDS
+        clock.now = run.deadline + 1
+        watchdog.callback(*watchdog.args)
+        assert run.cancel.is_set()
         assert run.timed_out and run.state == "failed" and not run.raws
         assert d.status(discovery.actor, "session", run.id)["results"] == []
     finally:
         release.set()
-        thread.join(2)
+        thread.join(5)
     assert not thread.is_alive() and run.state == "failed" and not run.raws
     assert [stage for stage, _ in FakeTransport.calls] == ([] if slow_call == 1 else ["oauth", "browse"])
 
