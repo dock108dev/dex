@@ -227,7 +227,10 @@ product-category option. Actual Singles/Mixed lots/Both choices remain active th
 `listing_details.py` validates supplied identifiers and official response bodies;
 `listing_check.py` owns finite loads and session-private reviews. Comparisons delegate
 to the admitted-reference calculator. See [listing checks](hunts.md#check-a-listinglot)
-and [snapshot lifecycle](price-snapshots.md); temporary review has no save operation.
+and [snapshot lifecycle](price-snapshots.md). Temporary edits are saved to the
+account/session-bound in-memory review through `listing_views.review` and
+`listing_check.review`; autosave/Back share its original lease. Permanent saved
+research and export are unavailable for these temporary reviews.
 
 ## Manual bulk entry
 

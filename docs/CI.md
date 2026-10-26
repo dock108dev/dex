@@ -175,14 +175,46 @@ part of that review.
 The read-only review sampled 30 completed hosted runs and observed no main protection
 or rulesets at that time. It did not qualify that candidate on hosted Linux/macOS,
 Python 3.12/3.13, Linux x86_64 containers, summary rendering or branch enforcement.
-Current checkout HEAD `32d6f9f` is later; neither earlier local nor hosted success
-qualifies this successor automatically. Hosted status has not been refreshed by the
-documentation cleanup.
+Those are historical limits for that candidate. The October 25 reconciliation below
+supersedes the former current-status statement that hosted CI was unverified.
 
-When publication is requested, release/CI engineering must select the exact final
-candidate, run applicable local checks, publish under that authorization, inspect
-complete exact-SHA PR/main checks and one complete compatibility attempt, and retain
-run/attempt identities and failures. Use Re-run all jobs for a fresh attempt. Only
-then consider requiring the observed aggregate on main, with separate owner settings
-authorization. This conditional publication work is not a blocker to owner review
-of the already delivered SHOP-10 product.
+## Current repository qualification
+
+Read-only GitHub inspection on October 25, 2026 found local HEAD and remote `main`
+at `d38be04e4ca9b87caf7b6ce871e3b4deeac48ebe`. Its
+[Tests run 40216437887](https://github.com/dock108dev/dex/actions/runs/40216437887),
+attempt 1, passed all eight jobs, including **CI / Required checks**. The run finished
+at 13:37 Eastern. Source quality, full Ubuntu/macOS Python 3.14 behavior suites,
+fresh distribution with Python 3.12 installed smoke, synthetic browser journeys,
+security/dependencies and PostgreSQL all passed. This is hosted qualification of
+that committed source, not installation or owner acceptance. Later documentation
+edits need their own commit/run before inheriting a hosted result.
+
+The earlier [Scheduled assurance run 40199052958](https://github.com/dock108dev/dex/actions/runs/40199052958),
+attempt 1, used `5b05de2dc1ed96fa5e916ed48315db6c307a4eac` and failed the macOS
+Python 3.12/3.14 behavior jobs, dependency audit and required aggregate. Ubuntu
+Python 3.12/3.13/3.14 and the container job passed on that older source. There is
+**no complete successful compatibility attempt for `d38be04`** in the inspected
+run history. The green normal push run does not cover those additional environments.
+
+Commit `d38be04` changes both `uv.lock` and `tests/test_discovery.py`, despite its
+dependency-only title. It updates filelock 4.0.12 → 4.2.1 and opentelemetry-api
+1.45.0 → 1.45.1, and replaces the slow-authorization test's 40 ms scheduling race
+with a controlled clock/watchdog. The adjacent test retains real-timer coverage;
+production deadlines were not changed. The retained October 25 local repair log
+records 3,477 tests passing with 136 warnings. Its security report records zero
+blocking findings, zero Gitleaks/pip-audit findings and 72 nonblocking Bandit
+findings. These local records are in `reports/ci-repair-20261025/`; the exact-SHA
+hosted run supplies the stronger current commit binding.
+
+At this inspection, GitHub reported `main` as unprotected and returned no repository
+rulesets. A passing aggregate is therefore a result, not an enforced merge rule.
+No workflow was dispatched or rerun and no repository setting was changed by the
+documentation audit.
+
+For a selected source successor or publication candidate, retain the complete
+exact-SHA PR/main results and obtain one complete compatibility attempt for that
+same candidate. Use Re-run all jobs for a fresh attempt; do not combine artifacts
+from different SHAs or attempts. Repository enforcement and publication remain
+separate owner decisions. Current hosted source checks do not remediate the
+[older installed dependencies](local-development.md#installed-maintenance-gap).

@@ -37,8 +37,9 @@ ceilings are not default capacity. Local inspection and filtering do not acquire
 provider data. OAuth, Browse and explicitly selected details count before dispatch;
 failed, stopped and uncertain requests remain consumed.
 
-`beta/hunter_policy.py` owns append-only usage accounting under the root's independent
-`.dex-shopping-discovery` directory. Selection, parent capture and admission share
+`beta/hunter_policy.py` owns append-only usage accounting in
+`ROOT.parent/.dex-shopping-discovery/<root-path-sha256>/everyday/`, beside the
+private root rather than inside it. Selection, parent capture and admission share
 an installation lock; fsync precedes provider I/O. Pause, expiry, reduced limits,
 clock rollback, corrupt accounting and package mismatch block further acquisition.
 Timezone edits preserve prior usage conservatively. Daily renewal requires explicit
@@ -130,6 +131,11 @@ Preserve `.dex-shopping-discovery`, `.dex-tcgcsv-snapshots` and
 `.dex-tcgcsv-metadata` accounting independently. App restore, failure, Stop and
 renaming a selection do not renew consumed provider capacity. Raw capture cleanup
 must keep noncontent reservation history.
+
+Photo-batch admissions, consumed attempts and deletion tombstones are also outside
+the root in `ROOT.parent/.dex-photo-batches/<root-path-sha256>/journal.jsonl`.
+Preserve that journal independently and reapply its current state during recovery;
+a backup of the customer directory alone cannot preserve these protections.
 
 ## Shopping discovery
 

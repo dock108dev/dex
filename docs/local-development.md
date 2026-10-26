@@ -31,6 +31,12 @@ instead of starting a second one. A foreground server stops with Ctrl-C. The ser
 binds only to loopback and rejects foreign Host/Origin and forwarded headers.
 Changing the checkout environment does not update an installed wheel.
 
+For the established `.local/customer` root, use the installed interpreter below.
+Launching checkout code through `.venv` or `uv run` would put this root inside
+that code's `PROJECT`; `beta/settings.py` refuses that layout. The installed
+wheel's `PROJECT` is outside the checkout, so the established root remains valid.
+Do not move, copy or reinitialize the collection to work around this guard.
+
 ### Recorded customer delivery
 
 The established customer root is
@@ -64,6 +70,38 @@ no database restore was needed. Its historical backup includes a functional
 previous-interpreter launcher; do not restore the blocked system-Python wrapper.
 Current launcher instructions below govern startup; historical PIDs are not targets.
 
+### October 25 installation inspection
+
+A read-only inspection found `.local/runtime` still selecting SHOP-10. The
+loopback listener on 8011 was PID 41879, started October 20, with the exact
+SHOP-10 interpreter and `.local/customer` in its command and working directory.
+The root's existing marker/database were present. All 248 installed package files
+matched the retained wheel byte for byte and reproduced the tree hash above.
+These process details are a dated observation, never future process targets.
+
+Current source differs from that wheel in 17 existing application files and adds
+`listing_prices.py`, `discovery_contracts.py` and `hunter_lot_parser.py`. The changes
+include listing-value policy, source maintenance and Shopping presentation.
+The newer interface and source checks must not be described as installed behavior.
+No sign-in, authenticated journey, collection query, price read, provider request,
+restart, migration or runtime update was performed during this inspection.
+
+### Installed maintenance gap
+
+The installed environment's package metadata still reports filelock **4.0.12**
+and opentelemetry-api **1.45.0**. These are the versions flagged by the retained
+October 25 dependency audit; current `uv.lock` selects **4.2.1** and **1.45.1**.
+The successful [current source CI](CI.md#current-repository-qualification) does
+not update or audit that already installed environment. Package presence establishes
+a maintenance gap; exploitability of the active app was not assessed.
+
+Local runtime maintenance must select a compatible dependency-only repair or a
+fully reconciled source successor, validate its actual dependency inventory and
+affected behavior, preserve protected state/accounting, retain rollback and verify
+the installed result through the [runtime update procedure](operations.md#runtime-updates-and-recovery).
+This is separate from new Shopping feature work and the owner's usefulness decision.
+The October 25 documentation audit records the gap without installing a candidate.
+
 ### macOS launcher
 
 `Dex.command` uses `DEX_APP_PYTHON`, or the ignored `.local/runtime/bin/python`
@@ -79,7 +117,10 @@ Do not replace an existing runtime link casually. The link selects code, not dat
 compatible updates need the backup procedure in [operations](operations.md).
 Environment overrides must be available to the process launching `Dex.command`.
 The helper uses `DEX_APP_ROOT`, defaulting to `.local/customer/`, and reuses a
-listener on port 8011. It refuses a missing installation and never seeds one.
+listener on port 8011. Its listener test only detects an occupied port; it does not
+verify that the process belongs to Dex or uses the selected root/runtime. Verify
+the listener's command and root before relying on reuse. With no listener, it
+refuses a missing installation and never seeds one.
 Both the runtime link and default private root are excluded from Git.
 The launcher clears inherited eBay credential/destination overrides so the installed
 app reads its configured private `.env`. Direct CLI startup keeps normal environment
@@ -231,6 +272,7 @@ candidates. No newer installed delivery is established by these records.
 | SSOT enforcement, October 20 | Shared listing amount/rounding and timestamp admission; invalid shipping preserves valid price; inert query category parameter removed. `reports/ssot-enforcement-20261020/review.md` records 424 focused tests, 32 new cases and 11 reproduced failures, compilation/lint/docs checks. Scoped digest `6bdb09bf8049d0d2876355eceea931ef35e7fe25927dd6c8718c0dc7c1e14cef`. Domain decisions remain in [SSOT](SSOT.md#listing-value-authority). |
 | Interface candidate, October 20 | Adjacent Search/Stop, aligned refinements, clearer amounts and offer-first inspection. `reports/interface-20261020/review.md` and `review.html`: 32 focused pytest checks including 26 discovery/14 inspection client cases, ten browse groups and nine matched-preview groups. Digest `84b273137cb40b04884ad108ab5b7b97a5d799ebb59f1699cb567e8dc37a03ae`. Controlled synthetic 1280/390/320px and 200% text previews, not customer usability; 390px results position changed from 1,485 to 817px. [Interface design](UI_DESIGN.md#shopping) describes this source presentation. |
 | CI maintenance, October 20–21 | Minimum-runtime distribution, compatibility/browser checks and dependency updates. [CI evidence](CI.md#recorded-local-qualification) owns the local/hosted distinction. |
+| CI repair, October 25 | `d38be04` updates filelock/opentelemetry-api and makes the slow-authorization watchdog regression deterministic. Retained local log: 3,477 passing tests; security: zero blocking findings. The exact commit's normal hosted CI passed; complete compatibility remains open. See [current qualification](CI.md#current-repository-qualification). |
 | Repository cleanup, October 21 | `discovery_contracts.py` and `hunter_lot_parser.py` separate checked types and bounded parsing; compatible public imports, package guards and behavior-grouped tests remain. Former tracker reported 247 focused checks in worktree/clean export, preserved 57 existing test functions and digest `c77da4c4fb3bcfcdbc2f3517d127bbce9154fe062fba51ec0c338018dcd489a8`. Its referenced `reports/repository-cleanup-20261021/` directory is absent at this reconciliation; those test/digest/preservation claims are tracker-only, not independently verified evidence. |
 
 The first two available reports record no customer-root access, installed update,
@@ -238,10 +280,35 @@ provider operations or migration. Their manifests and source deltas remain local
 historical evidence. The cleanup tracker reported nine edits/four additions with
 573 incoming files reconciled; the missing report prevents checking that claim.
 
-At the October 21 documentation reconciliation, checkout HEAD is `32d6f9f`
+At the October 21 documentation reconciliation, checkout HEAD was `32d6f9f`
 (`Enhance Dex.command and update dependencies`), beyond the CI report's `f333366`
 base. The old statements that HEAD/index remained unchanged describe those prior
 passes only. Current source includes the extracted modules; their presence does not
-prove the missing cleanup results or qualify the whole current commit. Recover
-missing evidence or rerun appropriate exact-candidate checks if successor delivery
-is requested. Do not reuse earlier CI or installed-package results as current proof.
+prove the missing historical cleanup results. By October 25, local and remote main
+had advanced to `d38be04`, with the exact-SHA normal hosted checks recorded in
+[CI](CI.md#current-repository-qualification). Those newer checks establish current
+source evidence without reconstructing the missing 247-check report. Successor
+installation still needs candidate-specific delivery checks; compatibility and the
+installed dependency gap remain separate open work.
+
+## Documentation audit, October 25
+
+Reviewed README, all 16 maintained domain/development guides and the external
+`dex_next_steps.md` against repository history, workflows, relevant service owners,
+routes, limits, retained SHOP-04–10/maintenance evidence and the actual runtime's
+package/process identity. Source-path references were checked for existence;
+image-mapping counts and acquisition/session/upload limits were cross-checked
+against their owners. This is a documentation/source audit, not a claim that every
+domain was exercised in the customer app.
+
+Corrections distinguish green normal hosted CI from incomplete compatibility,
+committed source from installed SHOP-10, installed dependency maintenance from
+feature acceptance, temporary review writes from permanent research, and independent
+journals from root-contained data. The missing cleanup report remains explicitly
+historical and unverified. Historical closeouts were preserved unchanged.
+Fresh audit checks and sanitized observations are retained locally under
+`reports/docs-audit-20261025/`; documentation remains usable without those artifacts.
+The audit's 110 focused socket-guarded tests passed. JavaScript syntax and maintained
+links passed for 21 assets/18 documents; all nine relative next-steps links and their
+anchors passed separately. No application code changed, and the full hosted suite
+was inspected rather than rerun for these documentation edits.

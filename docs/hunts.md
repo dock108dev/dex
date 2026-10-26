@@ -26,11 +26,12 @@ and safeguards. Earlier zero-operation handoffs and repeated operation-allocatio
 approval requirements are superseded. Preserve customer state, credentials,
 accounting, source rights and finite capacity; authorization does not reset capacity
 or authorize purchases, scraping or deployment. Usefulness acceptance belongs to
-the owner. This documentation cleanup performs no acquisition or runtime update.
+the owner. The October 25 documentation audit performed no acquisition or runtime update.
 
 ## Delivered Shopping slices and evidence
 
-Reconciled October 21, 2026 from retained closeouts. SHOP-04/05's source-only status
+Delivery history reconciled October 21, 2026; status checked again October 25.
+SHOP-04/05's source-only status
 was superseded by SHOP-06 delivery and SHOP-07 genuine qualification. SHOP-08/09/10
 then refined that installed loop. Historical report instructions are not current
 execution gates. Reports below are local ignored evidence paths relative to the
@@ -68,6 +69,12 @@ loop are complete in the retained SHOP-10 evidence. Final usefulness acceptance 
 open. Verify the [actual installation](local-development.md#existing-installations)
 before a new session; the October 20 prepared tab and process IDs are historical.
 
+The October 25 audit confirmed the running package still matches SHOP-10, while
+identifying a separate [installed dependency maintenance gap](local-development.md#installed-maintenance-gap).
+That follow-up does not reopen delivered feature slices or supply owner acceptance.
+Record the reviewed runtime explicitly, and repeat affected review if maintenance
+changes it. Newer source presentation is not part of the installed SHOP-10 claim.
+
 Use Search eBay with Hypno/Fossil, Mixed lots and Ending soon; browse, open seller,
 return, More, Inspect lot, Review cards and costs, edit, Back and reopen. Confirm
 that the edit and browsing position survive; finish with Stop. Try Jolteon or
@@ -79,9 +86,11 @@ supply that decision. Do not run every example as a required live campaign.
 
 ## Deferred backlog and conditional delivery
 
-These follow-ups are outside the completed installed-loop goal. They are not active
+These product follow-ups are outside the completed installed-loop goal. They are not active
 implementation slices until owner feedback or a delivery/publication request selects
 scope. Existing capability does not imply that these refinements are accepted.
+The independently identified installed dependency maintenance is already recorded
+as open operational work; it does not require a new feature request.
 
 - Missing-card versus supported-value priority and overlap, including owned cards
   without manual entry, wanted lists or goals: owner sets priorities; frontend and
@@ -95,9 +104,10 @@ scope. Existing capability does not imply that these refinements are accepted.
   preserved collection/configuration/accounting, retains rollback, and exercises
   affected actual journeys before owner review. Source-only checks do not satisfy
   this delivery. See [source maintenance evidence](local-development.md#source-maintenance-evidence).
-- Publication and hosted CI: release/CI engineering binds checks to the selected
-  exact SHA and a complete compatibility attempt; owner separately decides release
-  and repository enforcement. See [CI qualification](CI.md#recorded-local-qualification).
+- Publication and hosted CI: the normal push run for `d38be04` is green; a complete
+  compatibility attempt for that candidate remains unverified. Release/CI engineering
+  binds any selected successor to its own exact-SHA results; owner separately decides
+  release and repository enforcement. See [CI qualification](CI.md#current-repository-qualification).
 - Historical capability/acquisition-profile retirement: separate support/recovery
   decision before implementation, preserving origins, saved data and consumed use.
 
@@ -472,8 +482,10 @@ minutes or until restart. Navigation restores the remaining review lifetime; rea
 edits never renew the lease. Expired provider details cannot be retained under a new
 lease. Stop, expiry and session revocation suppress later dispatch/publication. Local
 search, corrections, reopen, comparison and reference-lifecycle checks use no provider
-operations. Assisted inputs/results are not saved/exported or written to browser storage,
-raw hunt history, logs or backups. The UI explains this restriction; existing saved
+operations. Review edits do save temporarily to server memory so autosave and Back
+can restore them within the original lease. Assisted inputs/results are not saved
+as permanent research, exported or written to browser storage, raw hunt history,
+logs or backups. The UI explains this restriction; existing saved
 research retains its existing rights checks.
 
 Each explicit Load admits at most one OAuth and two combined detail/resolution calls,

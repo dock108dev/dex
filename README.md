@@ -8,6 +8,11 @@ The Python distribution and command-line tool are named `pokemon-hunter`.
 Catalog and product coverage is partial. Seller observations are dated; the app
 never buys, bids or treats a listing as proof of ownership.
 
+Repository guides describe current source contracts. The customer installation
+and its pending maintenance are tracked separately in
+[installed status](docs/local-development.md#october-25-installation-inspection);
+[Shopping](docs/hunts.md#owner-usefulness-review) records the outstanding owner review.
+
 ## Requirements
 
 - Python 3.12 or later and [uv](https://docs.astral.sh/uv/).

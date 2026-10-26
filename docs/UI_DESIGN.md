@@ -5,6 +5,11 @@ Red identifies primary actions and selection. Shared primitives live in
 `beta/static/glass.css`; application styles live in `collection.css` and `public.css`.
 Django templates and plain CSS/JavaScript require no external design workspace.
 
+This guide describes the checkout's interface contracts. The October 20 interface
+maintenance candidate is present in source but is newer than installed SHOP-10;
+see [source maintenance evidence](local-development.md#source-maintenance-evidence).
+Use the actual installed presentation for customer review until a successor is delivered.
+
 ## Navigation and access
 
 The header offers My Cards, Card Library, Pokédex, Shopping and Add Card. The menu
