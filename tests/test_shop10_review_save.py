@@ -106,7 +106,11 @@ def test_save_revalidates_origin_once_and_each_read_revalidates_again(workspace,
     assert listing_check.review(who, "session")["review"] is None
 
 
-def test_expiry_during_validation_cannot_commit_a_new_revision(workspace, monkeypatch):
+@pytest.mark.parametrize("overdue", [0.0, 0.25])
+def test_expiry_during_validation_cannot_commit_a_new_revision(workspace, monkeypatch, overdue):
+    # A real clock can round (start + lifetime) - start just below the deadline.
+    # Binary-exact times exercise the boundary independently of machine uptime.
+    monkeypatch.setattr(listing_check.time, "monotonic", lambda: 1024.0)
     who = workspace["actor"]
     listing_check._reviews.clear()
     opened = listing_check.review(who, "session")
@@ -115,7 +119,9 @@ def test_expiry_during_validation_cannot_commit_a_new_revision(workspace, monkey
 
     def elapsed(actor, value):
         original(actor, value)
-        monkeypatch.setattr(listing_check.time, "monotonic", lambda: before[0] + discovery.EPHEMERAL_SECONDS)
+        monkeypatch.setattr(
+            listing_check.time, "monotonic", lambda: before[0] + discovery.EPHEMERAL_SECONDS + overdue
+        )
 
     monkeypatch.setattr(listing_check, "validate_review", elapsed)
     with pytest.raises(ValueError, match="expired"):
