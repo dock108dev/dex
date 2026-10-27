@@ -75,7 +75,9 @@ def test_authoritative_set_survives_empty_candidates(named):
     named.monkeypatch.setattr(d, "_candidate_data", lambda *args, **kwargs: [])
     result = d.start(named.actor, "session", {"query": "Jolteon base 2", "set_id": "base_set"})
     request = next(kw for stage, kw in named.calls if stage == "browse")["search_options"]["named"]
-    assert request.query == "Jolteon Base Set" and result["state"] == "complete"
+    assert request.query == "Jolteon" and result["state"] == "complete"
+    assert request.set_name == "Base Set"
+    assert paging.checked_params(request)["aspect_filter"] == "categoryId:183455,Set:{Base Set}"
     with pytest.raises(ValueError, match="available set"):
         d.start(named.actor, "session", {"query": "Jolteon", "set_id": "invented"})
 

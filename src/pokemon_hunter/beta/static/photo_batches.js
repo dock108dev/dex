@@ -1,108 +1,74 @@
-/* Private local staging. No browser persistence, hidden inference or automatic retry. */
+/* Selected photos -> one analysis -> human review -> idempotent shared confirmation. */
 (() => {
   'use strict';
   const $=id=>document.getElementById(id);
-  if (!$('photo-workspace')) return;
-  const binding=document.body.dataset.navigationBinding;
-  let batch=null,catalog=[],busy=false,epoch=0,timer=null;
+  if(!$('photo-csrf'))return;
+  let batch=null,catalog=[],busy=false,timer=null,epoch=0,operation=null;
+  const choices=new Map(),binding=document.body.dataset.navigationBinding;
   const node=(tag,text,attrs={})=>{const e=document.createElement(tag);if(text!==null)e.textContent=text;for(const [k,v] of Object.entries(attrs))e.setAttribute(k,v);return e;};
-  const status=t=>{$('photo-status').textContent=t;};
-  const csrf=()=>$('photo-csrf').querySelector('input').value;
-  function erase(){epoch++;clearTimeout(timer);batch=null;$('photo-entry').replaceChildren(node('p','Your session changed. Sign in again to resume your own batch.'));}
-  async function api(path,data){
-    const token=epoch,options={credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}};
-    if(data!==undefined){options.method='POST';options.headers['X-CSRFToken']=csrf();options.headers['X-Dex-Binding']=binding;
+  const status=(text,error=false)=>{$('photo-status').textContent=text;$('photo-status').dataset.error=String(error);if(error)$('photo-status').focus();};
+  const running=()=>!!batch?.stages.some(s=>['queued','processing'].includes(s.state));
+  function lock(value){busy=value;const waiting=value||running();$('photo-entry').querySelectorAll('button,input,select,textarea').forEach(e=>{if(e.id!=='photo-stop')e.disabled=waiting;});$('photo-stop').hidden=!running();}
+  function erase(){epoch++;clearTimeout(timer);batch=null;choices.clear();$('photo-entry').replaceChildren(node('p','Your session changed. Sign in again.'));}
+  async function api(url,data){const current=epoch,options={credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}};
+    if(data!==undefined){options.method='POST';options.headers['X-CSRFToken']=$('photo-csrf').querySelector('input').value;options.headers['X-Dex-Binding']=binding;
       if(data instanceof FormData)options.body=data;else{options.headers['Content-Type']='application/json';options.body=JSON.stringify(data);}}
-    const response=await fetch(path,options);
-    if(response.redirected||response.status===401||response.status===403){erase();throw Error('Sign in again.');}
-    const result=await response.json();if(token!==epoch)throw Error('An older view was discarded.');
-    if(result.binding&&result.binding!==binding){erase();throw Error('Session changed.');}
-    if(!response.ok)throw Error(result.error||'Action unavailable. Reload the saved result before retrying.');
-    return result;
+    const response=await fetch(url,options);if(response.redirected||[401,403].includes(response.status)){erase();throw Error('Sign in again.');}
+    const result=await response.json();if(current!==epoch)throw Error('Session changed.');if(result.binding&&result.binding!==binding){erase();throw Error('Session changed.');}
+    if(!response.ok)throw Error(result.error||'Unable to complete this action. Your collection has not been changed.');return result;
   }
-  function setBusy(value){busy=value;$('photo-workspace').querySelectorAll('button').forEach(e=>{if(e.id!=='photo-stop')e.disabled=value;});$('photo-new').disabled=value;}
-  async function work(fn){if(busy)return;const active=document.activeElement,focus={id:active?.id,crop:active?.closest('[data-crop-id]')?.dataset.cropId,label:active?.getAttribute('aria-label'),text:active?.tagName==='BUTTON'?active.textContent:null};setBusy(true);try{await fn();}catch(e){status(e.message);}finally{if($('photo-workspace')){setBusy(false);let target=focus.id?$(focus.id):null;if(!target&&focus.crop){const card=[...document.querySelectorAll('[data-crop-id]')].find(c=>c.dataset.cropId===focus.crop);target=card&&[...card.querySelectorAll('button,input,select')].find(e=>focus.label?e.getAttribute('aria-label')===focus.label:e.textContent===focus.text);}if(target)target.focus({preventScroll:true});}}}
-  async function act(action,data={}){const result=await api(`/api/photo-batches/${batch.id}/${action}/`,data);batch=result.batch;render();return result;}
-  async function saved(){const r=await api('/api/photo-batches/');$('photo-saved').replaceChildren();r.batches.forEach(b=>{const button=node('button',`${new Date(b.created*1000).toLocaleDateString()} · ${b.state} · ${b.id.slice(0,8)}`,{type:'button'});button.onclick=()=>work(()=>resume(b.id));$('photo-saved').append(button);});}
-  async function resume(id){clearTimeout(timer);const result=await api(`/api/photo-batches/${id}/`);batch=result.batch;history.replaceState(null,'','/add-photos/?batch='+id);render();status('Saved photo state loaded. No analysis or collection change.');poll();}
-  function poll(){clearTimeout(timer);if(!batch||!batch.stages.some(s=>['queued','processing'].includes(s.state)))return;
-    const id=batch.id;timer=setTimeout(async()=>{if(busy){poll();return;}try{const r=await api(`/api/photo-batches/${id}/`);if(batch?.id===id){batch=r.batch;render();poll();}}catch(e){status(e.message);}},1200);}
-  function field(parent,label,type,value){const l=node('label',label),input=node('input',null,{type,'aria-label':label});input.value=value;l.append(input);parent.append(l);return input;}
-  function choose(parent,label,options,current=''){const l=node('label',label),s=node('select',null,{'aria-label':label});options.forEach(([v,t])=>s.append(node('option',t,{value:v})));s.value=current;l.append(s);parent.append(l);return s;}
-  function button(parent,text,fn){const b=node('button',text,{type:'button'});b.onclick=()=>work(fn);parent.append(b);return b;}
-  function manualBox(){return {x:0.05,y:0.05,width:0.4,height:0.8,rotation:0,issues:[]};}
+  async function work(fn){if(busy)return;lock(true);try{await fn();}catch(e){status(e.message,true);}finally{if($('photo-csrf'))lock(false);}}
+  async function action(name,data={}){const r=await api(`/api/photo-batches/${batch.id}/${name}/`,data);if(r.batch)batch=r.batch;return r;}
+  const activePhotos=()=>batch.photos.filter(p=>p.state==='active');
+  function report(op){operation=op;const upload=$('photo-upload-panel');if(upload)upload.open=false;$('photo-results').hidden=true;$('photo-report').hidden=false;const target=$('photo-report-body');target.replaceChildren();
+    const labels={added:'Added',already_owned:'Already owned · skipped',duplicate:'Duplicate · skipped',edition_updated:'First edition checked',needs_review:'Needs review',excluded:'Excluded'};
+    const rows=op.plan.photo_report||[];target.append(node('p',op.state==='undone'?'These changes were undone.':Object.entries(labels).map(([key,label])=>[rows.filter(r=>r.status===key).length,label]).filter(([n])=>n).map(([n,label])=>`${n} ${label.toLowerCase()}`).join(' · ')));
+    for(const r of rows){const title=r.identity?`${r.identity.name} — ${r.identity.set_name} #${r.identity.number}`:'Unidentified card';target.append(node('p',`${title}: ${labels[r.status]}${r.first_edition?' · ✓ First edition':''}.`));}
+    $('photo-undo').hidden=op.state!=='confirmed';status('');$('photo-report').focus();
+  }
+  function suggestion(c){const ids=new Set(c.candidates.map(p=>p.id));const groups=catalog.filter(g=>g.children.some(p=>ids.has(p.id)));if(groups.length!==1)return null;const g=groups[0];const children=g.children.filter(p=>ids.has(p.id));return {group:g,row:children.length===1?{printing_id:children[0].id}:{group_id:g.id,keep_unknown:true}};}
   function render(){
-    $('photo-workspace').hidden=false;$('photo-capacity').textContent=`${batch.source_admissions} of 5 photo admissions used, including removed photos and retakes. ${batch.crops.filter(c=>c.state==='active').length} candidate crops. Unconfirmed expiry: ${new Date((batch.created+7*86400)*1000).toLocaleString()}.`;
-    $('photo-protocol').textContent=`Codex CLI · ${batch.model} · ${batch.attempts}/10 attempts reserved. Batch active time remaining: ${batch.remaining_active_seconds.toFixed(1)} seconds.`;
-    $('photo-duplicates').checked=false;
-    const link=$('photo-review-link');link.hidden=!batch.draft_id;if(batch.draft_id)link.href='/add-many/?draft='+batch.draft_id;
-    $('photo-photos').replaceChildren();
-    for(const [index,p] of batch.photos.entries()){
-      const panel=node('article',null,{'class':'photo-panel'});panel.append(node('h3',`Photo ${index+1} · ${p.state}`),node('p',`${(p.source_bytes/1000000).toFixed(2)} MB source · ${p.remaining_active_seconds.toFixed(1)} active seconds remaining · detection ${p.stage_attempts.detection}/2, identity ${p.stage_attempts.identity}/2 attempts.`));$('photo-photos').append(panel);
-      if(p.state!=='active'||['cancelled','expired','confirmed'].includes(batch.state))continue;
-      button(panel,'Move photo earlier',async()=>{const ids=batch.photos.filter(p=>p.state==='active').map(p=>p.id),at=ids.indexOf(p.id);if(at>0){[ids[at-1],ids[at]]=[ids[at],ids[at-1]];await act('reorder',{revision:batch.revision,photo_ids:ids});}});
-      const retake=field(panel,'Retake file for these same physical objects','file','');retake.accept='image/jpeg,image/png,image/webp';
-      const same=field(panel,'This retake shows the same physical objects; retain their crop IDs for correction','checkbox','');
-      button(panel,'Stage retake of these objects',async()=>{if(!retake.files[0]||!same.checked)throw Error('Select a retake and confirm the same physical objects.');const f=new FormData();f.append('photo',retake.files[0]);f.append('photo_id',p.id);f.append('revision',batch.revision);f.append('same_objects','true');const r=await api(`/api/photo-batches/${batch.id}/retake/`,f);batch=r.batch;render();status('Retake staged; crop IDs retained. Correct and confirm the new layout/count.');});
-      const crops=batch.crops.filter(c=>c.photo_id===p.id&&c.state==='active');
-      const figure=node('div',null,{'class':'photo-source'});figure.append(node('img',null,{src:`/api/photo-batches/${batch.id}/photos/${p.id}/`,alt:`Staged source photo ${index+1}`}));panel.append(figure);
-      let edits=crops.map(c=>({id:c.id,box:{...c.geometry}}));
-      const geometry=node('details');geometry.append(node('summary','Adjust crop boxes and rotations'));const editor=node('div');geometry.append(editor);panel.append(geometry);
-      function draw(){editor.replaceChildren();figure.querySelectorAll('.photo-outline').forEach(e=>e.remove());
-        edits.forEach((entry,i)=>{const outline=node('div',null,{'class':'photo-outline'});outline.append(node('span',String(i+1)));Object.assign(outline.style,{left:entry.box.x*100+'%',top:entry.box.y*100+'%',width:entry.box.width*100+'%',height:entry.box.height*100+'%'});figure.append(outline);
-          const group=node('fieldset');group.append(node('legend',`Photo ${index+1}, box ${i+1}`));const grid=node('div',null,{'class':'photo-grid'});group.append(grid);
-          for(const k of ['x','y','width','height']){const f=field(grid,k+' · normalized 0 to 1','number',entry.box[k]);f.min='0';f.max='1';f.step='.001';f.onchange=()=>{entry.box[k]=Number(f.value);};}
-          const rotation=choose(grid,'Clockwise rotation',[0,90,180,270].map(v=>[String(v),v+'°']),String(entry.box.rotation));rotation.onchange=()=>{entry.box.rotation=Number(rotation.value);};
-          for(const issue of ['glare','overlap','cut_off','unreadable']){const f=field(group,issue.replace('_',' '),'checkbox','');f.checked=entry.box.issues.includes(issue);f.onchange=()=>{entry.box.issues=f.checked?[...new Set([...entry.box.issues,issue])]:entry.box.issues.filter(x=>x!==issue);};}
-          const del=node('button','Delete this box',{type:'button'});del.onclick=()=>{edits.splice(i,1);draw();};group.append(del);editor.append(group);
-        });
-      }
-      draw();
-      button(panel,'Add a manual box',async()=>{if(edits.length>=15)throw Error('Maximum 15 cards per photo; retake a smaller layout.');edits.push({id:null,box:manualBox()});draw();});
-      if(p.proposal.boxes){panel.append(node('p',`Detection: ${p.proposal.status}. Proposals are not confirmed cards.`));button(panel,'Use proposed boxes for correction',async()=>{edits=p.proposal.boxes.map(box=>({id:null,box}));draw();});}
-      button(panel,`Confirm layout and count for photo ${index+1}`,async()=>{await act('layout',{revision:batch.revision,photo_id:p.id,boxes:edits});status('Crop layout confirmed; choose identities manually or explicitly request identity proposals.');});
-      for(const [stage,label] of [['detection','Analyze overview for detection'],['identity','Analyze reviewed crops for identity']]){
-        button(panel,`${label} · photo ${index+1}`,async()=>{if(!$('photo-consent').checked)throw Error('Review the transmission notice and select its consent checkbox first.');await act('analyze',{revision:batch.revision,photo_id:p.id,stage,consent:batch.consent_version});$('photo-consent').checked=false;status('Analysis admitted. Stop remains available.');poll();});}
-      button(panel,'Remove this photo · admission remains used',async()=>{await act('remove',{revision:batch.revision,photo_id:p.id});status('Photo access revoked and unretained bytes removed.');});
-      for(const [i,c] of crops.entries()){
-        const card=node('article',null,{'class':'photo-crop','data-crop-id':c.id});card.append(node('h4',`Photo ${index+1}, crop ${i+1} · ${c.id.slice(0,8)}`),node('img',null,{src:'/scan-photos/'+c.id+'/',alt:`Reviewed crop ${i+1} from photo ${index+1}`}));
-        card.append(node('p','Visible clues: '+(Object.keys(c.proposal).length?[c.proposal.status,...['name','set_name','number','language','edition','finish','variant'].map(k=>c.proposal[k]?k.replace('_',' ')+': '+c.proposal[k]:null).filter(Boolean),c.proposal.reason].filter(Boolean).join(' · '):'None. Manual matching available.')+(c.geometry.issues.length?' · Issues: '+c.geometry.issues.join(', '):'')));
-        const d=choose(card,'Physical copy decision',[['','Choose explicitly'],['different','Different copy · include only after matching'],['same','Same physical card · exclude this duplicate'],['unsure','Not sure · exclude for now']],c.decision);
-        const search=field(card,'Find a catalog card · name, set or number','search','');
-        const select=choose(card,'Supported catalog printing',[['','Unresolved · choose manually']],c.row_json.printing_id||'');
-        function choices(){const q=search.value.toLowerCase();const suggested=new Set(c.candidates.map(p=>p.id));const options=catalog.flatMap(g=>g.children.map(p=>({...p,group:g}))).filter(p=>q?`${p.group.name} ${p.group.set_name} ${p.group.collector_number}`.toLowerCase().includes(q):suggested.has(p.id)||p.id===c.row_json.printing_id).slice(0,100);select.replaceChildren(node('option','Unresolved · choose manually',{value:''}));for(const p of options)select.append(node('option',`${p.group.set_name} · #${p.group.collector_number} ${p.group.name} · ${p.edition??'edition unknown'} / ${p.finish??'finish unknown'} / ${p.variant??'variant unknown'}`,{value:p.id}));select.value=c.row_json.printing_id||'';}
-        choices();search.oninput=choices;
-        const unknown=choose(card,'Or keep catalog variant unknown',[['','Choose a card first'],...catalog.filter(g=>{const q=search.value.toLowerCase();return g.id===c.row_json.group_id||(q&&`${g.name} ${g.set_name} ${g.collector_number}`.toLowerCase().includes(q));}).slice(0,100).map(g=>[g.id,`${g.set_name} #${g.collector_number} ${g.name}`])],c.row_json.group_id||'');
-        search.addEventListener('input',()=>{unknown.replaceChildren(node('option','Unresolved · optional broad card identity',{value:''}));catalog.filter(g=>search.value&&`${g.name} ${g.set_name} ${g.collector_number}`.toLowerCase().includes(search.value.toLowerCase())).slice(0,100).forEach(g=>unknown.append(node('option',`${g.set_name} #${g.collector_number} ${g.name}`,{value:g.id})));});
-        const identityText=node('p');card.append(identityText);
-        function showIdentity(){identityText.textContent=unknown.value?'Chosen card: '+unknown.selectedOptions[0].textContent+' · catalog variant remains unknown.':select.value?'Chosen printing: '+select.selectedOptions[0].textContent:'Identity unresolved. Match manually or exclude this crop.';}
-        select.addEventListener('change',()=>{unknown.value='';showIdentity();});unknown.addEventListener('change',()=>{select.value='';showIdentity();});search.addEventListener('input',showIdentity);showIdentity();
-        const include=field(card,'Include this one physical card','checkbox','');include.checked=!!c.included;
-        const retain=field(card,'Retain this selected crop with its copy after Confirm','checkbox','');retain.checked=!!c.retain;
-        button(card,'Save crop choice',async()=>{const row=unknown.value?{group_id:unknown.value,keep_unknown:true}:select.value?{printing_id:select.value}:{};await act('select',{revision:batch.revision,crop_id:c.id,row,included:include.checked,retain:retain.checked,decision:d.value});status('Human crop choice saved. Nothing added to collection.');});
-        panel.append(card);
-      }
+    const wasHidden=$('photo-results').hidden;
+    choices.clear();$('photo-cards').replaceChildren();$('photo-sources').replaceChildren();$('photo-report').hidden=true;
+    const crops=batch.crops.filter(c=>c.state==='active');$('photo-results').hidden=!crops.length||running();
+    $('photo-summary').textContent=`${crops.length} cards found`;
+    const upload=$('photo-upload-panel');if(upload&&(crops.length||running()))upload.open=false;
+    for(const [i,c] of crops.entries()){
+      const proposed=suggestion(c), row={id:c.id,included:!!proposed,row:proposed?{...proposed.row}:{}};choices.set(c.id,row);
+      const card=node('article',null,{class:'photo-card'}), image=node('img',null,{src:'/scan-photos/'+c.id+'/',alt:`Card ${i+1}`});const thumb=node('div',null,{class:'photo-thumb'}),fallback=node('span','No image');fallback.hidden=true;image.onerror=()=>{image.hidden=true;fallback.hidden=false;};thumb.append(image,fallback);card.append(thumb);
+      const text=node('div',null,{class:'photo-card-details'});card.append(text);$('photo-cards').append(card);
+      const heading=node('h3',proposed?.group.name||c.proposal.name||`Card ${i+1}`);text.append(heading);
+      const identity=node('p',proposed?`${proposed.group.set_name} · #${proposed.group.collector_number}`:'Needs a match');text.append(identity);
+      const observed=[c.proposal.finish,c.proposal.edition].filter(Boolean).map(s=>s.replaceAll('_',' ')).join(' · ');if(observed)text.append(node('p',observed,{class:'photo-muted'}));
+      const owned=node('p',proposed?.group.existing.present?'Already owned — will skip adding another copy.':'');text.append(owned);
+      const includeLabel=node('label','',{class:'photo-include'}),include=node('input',null,{type:'checkbox'});include.checked=row.included;includeLabel.append(include,node('span',' Include'));text.append(includeLabel);include.onchange=()=>{row.included=include.checked;};
+      const corrections=node('details');corrections.append(node('summary','Correct details'));text.append(corrections);
+      const search=node('input',null,{type:'search','aria-label':'Find another card',placeholder:'Search card name, set or number'});corrections.append(search);
+      const select=node('select',null,{'aria-label':'Card match'});corrections.append(select);
+      function options(){select.replaceChildren(node('option','Choose a card',{value:''}));const q=search.value.trim().toLowerCase();const matches=catalog.filter(g=>q?`${g.name} ${g.set_name} ${g.collector_number}`.toLowerCase().includes(q):g.id===proposed?.group.id).slice(0,80);for(const g of matches)select.append(node('option',`${g.name} — ${g.set_name} #${g.collector_number}`,{value:g.id}));select.value=proposed?.group.id||'';}
+      options();search.oninput=options;
+      const firstLabel=node('label',''),first=node('input',null,{type:'checkbox'});first.checked=!!c.row_json.first_edition_selected||['first_edition','1st-edition','1st edition'].includes((c.proposal.edition||'').toLowerCase());firstLabel.append(first,node('span',' First edition stamp visible'));corrections.append(firstLabel);
+      if(first.checked)row.row.first_edition_selected=true;first.onchange=()=>{row.row.first_edition_selected=first.checked;};
+      select.onchange=()=>{const g=catalog.find(g=>g.id===select.value);if(!g){row.included=false;include.checked=false;row.row={};return;}row.row=g.children.length===1?{printing_id:g.children[0].id}:{group_id:g.id,keep_unknown:true};row.row.first_edition_selected=first.checked;row.included=true;include.checked=true;heading.textContent=g.name;identity.textContent=`${g.set_name} · #${g.collector_number}`;owned.textContent=g.existing.present?'Already owned — will skip adding another copy.':'';};
+      if(!proposed){corrections.open=true;text.append(node('p','Choose the correct card, or leave it excluded.'));}
     }
-    $('photo-pairs').replaceChildren();
-    for(const pair of batch.possible_duplicates){
-      const panel=node('article',null,{'class':'photo-panel'});panel.append(node('h3','Possible same physical card'),node('p',`${pair.same_printing?'Matching printing identity. ':''}${pair.similar_pixels?'Similar crop pixels. ':''}These are hints, not physical verification. Review both thumbnails.`));
-      for(const id of [pair.first,pair.second])panel.append(node('img',null,{src:'/scan-photos/'+id+'/',alt:'Duplicate review crop '+id.slice(0,8),width:'120'}));
-      async function decision(id,include,choice){const crop=batch.crops.find(c=>c.id===id);const row={...crop.row_json};for(const k of ['row_id','quantity','action','included','duplicate_decision'])delete row[k];await act('select',{revision:batch.revision,crop_id:id,row,included:include,retain:include&&!!crop.retain,decision:choice});}
-      button(panel,'Same card · keep first and exclude second',async()=>{await decision(pair.second,false,'same');status('Second crop excluded as the same physical card. Review the first crop inclusion separately.');});
-      button(panel,'Different copies · keep both matched cards',async()=>{await decision(pair.first,true,'different');await decision(pair.second,true,'different');status('Both included as different physical copies.');});
-      button(panel,'Not sure · exclude both for now',async()=>{await decision(pair.first,false,'unsure');await decision(pair.second,false,'unsure');status('Both crops excluded for now.');});
-      $('photo-pairs').append(panel);
-    }
-    for(const stage of batch.stages){$('photo-photos').append(node('p',`${stage.stage}: ${stage.state}${stage.error?' · '+stage.error:''}. Active seconds: ${stage.elapsed??'Unknown'}. Reported usage: ${stage.usage&&stage.usage!=='null'?stage.usage:'Unknown'}.`));}
-    if(batch.draft_id||batch.state!=='editing')status('Photo batch '+batch.state+'. Use the shared review/receipt link when available.');
+    for(const p of activePhotos())$('photo-sources').append(node('img',null,{src:`/api/photo-batches/${batch.id}/photos/${p.id}/`,alt:'Original photo',class:'photo-original'}));
+    if(running())status('Identifying the cards…');else if(crops.length)status('');else{const last=batch.stages.at(-1);status(last?.error||'Choose a photo to identify its cards.');}
+    lock(busy);
+    if(wasHidden&&!$('photo-results').hidden)$('photo-results-title')?.focus();
   }
-  $('photo-new').onclick=()=>work(async()=>{const r=await api('/api/photo-batches/create/',{id:crypto.randomUUID()});batch=r.batch;history.replaceState(null,'','/add-photos/?batch='+batch.id);render();await saved();status('Empty photo batch created. Collection unchanged.');});
-  $('photo-upload').onclick=()=>work(async()=>{const f=$('photo-file').files[0];if(!f)throw Error('Select one photo.');if(f.size>8000000)throw Error('Each photo must be at most 8 MB.');const data=new FormData();data.append('photo',f);data.append('revision',batch.revision);const r=await api(`/api/photo-batches/${batch.id}/upload/`,data);batch=r.batch;$('photo-file').value='';render();status('Photo staged locally. No analysis requested.');});
-  // Deliberately bypasses the ordinary busy guard and needs no draft revision.
-  $('photo-stop').onclick=async()=>{try{await act('stop');clearTimeout(timer);status('Stop recorded. Transmitted images cannot be recalled; attempts remain consumed.');}catch(e){status(e.message);}};
-  $('photo-delete-images').onclick=()=>work(async()=>{await act('delete-images');status('Image access revoked and bytes removed. Confirmed collection records remain.');});
-  $('photo-cancel').onclick=()=>work(async()=>{await act('cancel');await saved();status('Cancelled. Image access revoked; cleanup and consumed attempt history retained.');});
-  $('photo-handoff').onclick=()=>work(async()=>{let rows=[];const text=$('photo-manual').value;if(text.trim()){const parsed=await api('/api/bulk/parse/',{input:{source:'csv',text}});rows=parsed.input.rows;}const r=await act('handoff',{revision:batch.revision,duplicates_reviewed:$('photo-duplicates').checked,manual_rows:rows});location.assign('/add-many/?draft='+r.draft.id);});
+  async function refresh(){const r=await api(`/api/photo-batches/${batch.id}/`);batch=r.batch;if(batch.draft_id){const d=await api(`/api/bulk/drafts/${batch.draft_id}/`);if(d.operation&&['confirmed','undone'].includes(d.operation.state)){report(d.operation);return;}status('This batch has an existing review.');$('photo-results').hidden=true;$('photo-status').append(node('a',' Open review',{href:'/add-many/?draft='+batch.draft_id}));return;}render();}
+  function poll(){clearTimeout(timer);if(!running())return;timer=setTimeout(async()=>{try{await refresh();poll();}catch(e){status(e.message,true);}},1000);}
+  async function resume(id){clearTimeout(timer);const r=await api(`/api/photo-batches/${id}/`);batch=r.batch;history.replaceState(null,'','/add-photos/?batch='+id);await refresh();poll();}
+  async function saved(){const r=await api('/api/photo-batches/');$('photo-saved').replaceChildren();for(const b of r.batches){const button=node('button',`${new Date(b.created*1000).toLocaleString()} · ${b.state}`,{type:'button'});button.onclick=()=>work(()=>resume(b.id));$('photo-saved').append(button);}return r.batches;}
+  async function identify(p,notes){await action('analyze',{revision:batch.revision,photo_id:p.id,stage:'photo',consent:batch.consent_version,notes});render();poll();}
+  $('photo-identify').onclick=()=>work(async()=>{const file=$('photo-file').files[0];if(!file)throw Error('Choose a photo first.');if(file.size>8000000)throw Error('Choose a photo under 8 MB.');const notes=$('photo-notes').value;
+    batch=(await api('/api/photo-batches/create/',{id:crypto.randomUUID()})).batch;const data=new FormData();data.append('photo',file);data.append('revision',batch.revision);batch=(await api(`/api/photo-batches/${batch.id}/upload/`,data)).batch;history.replaceState(null,'','/add-photos/?batch='+batch.id);
+    if(batch.state!=='editing'){await refresh();return;}const p=activePhotos().at(-1);if(!p)throw Error('This saved photo is no longer available.');await identify(p,notes);await saved();});
+  $('photo-retry').onclick=()=>work(async()=>{const photos=activePhotos();if(photos.length!==1)throw Error('For this older multi-photo batch, review its saved result or upload one photo.');await identify(photos[0],photos[0].proposal.user_notes||'');});
+  $('photo-confirm').onclick=()=>work(async()=>{const selected=[...choices.values()];if(!selected.some(c=>c.included))throw Error('Select at least one matched card.');const r=await action('confirm-cards',{revision:batch.revision,choices:selected});report(r.operation);await saved();});
+  $('photo-stop').onclick=async()=>{try{await action('stop');clearTimeout(timer);render();status('Analysis stopped.');}catch(e){status(e.message,true);}};
+  $('photo-undo').onclick=()=>work(async()=>{report(await api(`/api/operations/${operation.id}/undo/`,{}));});
   window.addEventListener('dex:authority-revoked',erase);
-  work(async()=>{const r=await api('/api/bulk/catalog/');catalog=r.groups;await saved();const id=new URLSearchParams(location.search).get('batch');if(id)await resume(id);else status('Start or resume a photo batch. Manual entry needs no Codex.');});
+  work(async()=>{catalog=(await api('/api/bulk/catalog/')).groups;const batches=await saved();const id=new URLSearchParams(location.search).get('batch');if(id)await resume(id);else if(batches.length===1&&batches[0].state==='editing')await resume(batches[0].id);else status('');});
 })();

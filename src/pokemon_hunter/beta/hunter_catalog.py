@@ -205,6 +205,16 @@ def compare(actor, raw_rows, *, now=None):
             below_reference=Decimal(asking_delta) > 0 if asking_delta is not None else None,
         )
         row.update(
+            ungraded_single=(
+                row["discovery_kind"] == "single"
+                and not discovery_comparison._clues(raw)["graded"]
+                and not any(
+                    isinstance(a, dict)
+                    and str(a.get("name", "")).casefold() == "graded"
+                    and str(a.get("value", "")).casefold() in {"yes", "true"}
+                    for a in (raw.get("localizedAspects") or [])
+                )
+            ),
             hunt_status=_status(row),
             observed_at=now.astimezone(UTC).isoformat(),
             minimum_next_bid=listing_prices.money(raw.get("minimumPriceToBid"))

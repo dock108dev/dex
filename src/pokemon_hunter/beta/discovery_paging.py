@@ -6,6 +6,7 @@ TOTAL per named run, each requiring Search/More. Both alternates category lanes.
 No returned next URL is fetched, persisted or accepted from the client.
 """
 
+import re
 from dataclasses import dataclass, replace
 
 PAGE_SIZE = 20
@@ -19,6 +20,7 @@ class NamedPage:
     category: str
     sort: str
     offset: int = 0
+    set_name: str | None = None
 
 
 def checked_params(page):
@@ -33,6 +35,15 @@ def checked_params(page):
         or page.offset < 0
         or page.offset >= MAX_PAGES * PAGE_SIZE
         or page.offset % PAGE_SIZE
+        or (
+            page.set_name is not None
+            and (
+                not isinstance(page.set_name, str)
+                or not 1 <= len(page.set_name) <= 100
+                or any(c in page.set_name for c in "{}|,:\\")
+                or any(ord(c) < 32 for c in page.set_name)
+            )
+        )
     ):
         raise ValueError("Choose a checked finite named-search page")
     result = {
@@ -43,13 +54,24 @@ def checked_params(page):
         "offset": page.offset,
         "fieldgroups": "EXTENDED",
     }
+    if page.set_name:
+        result["aspect_filter"] = f"categoryId:{page.category},Set:{{{page.set_name}}}"
     if page.sort == "ending_soonest":
         result["sort"] = "endingSoonest"
     return result
 
 
-def first_pages(query, product_type, sort):
-    return [NamedPage(query, category, sort) for category in CATEGORIES[product_type]]
+def first_pages(query, product_type, sort, *, set_name=None):
+    # Selected set is a seller aspect, not an extra keyword requirement. Keep
+    # the name query like the owner's eBay search; never silently widen a facet.
+    if set_name:
+        query = " ".join(re.sub(re.escape(set_name), " ", query, flags=re.I).split())
+        if not query:
+            query = "Pokemon"
+    pages = [NamedPage(query, category, sort, set_name=set_name) for category in CATEGORIES[product_type]]
+    for page in pages:
+        checked_params(page)
+    return pages
 
 
 def following(page, payload, rows):

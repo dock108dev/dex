@@ -33,6 +33,7 @@ Paths are relative to `src/pokemon_hunter/`.
 | Current possession and nullable card totals | `beta/effective_collection.py:project` |
 | Reviewed ownership and quantity intents | `beta/collection_intents.py:plan/augment_plan/check_undo` through collection preview/confirm/undo |
 | Declaration schemas and source scope | `beta/ownership_declarations.py:header_scope`; parsing, current selection and frozen declaration goals share it |
+| Copy edition identity and selection | `beta/copy_editions.py:is_first/require_first_supported/select`; collection creation/import, bulk resolution and photo additions delegate to it |
 | Finite card defaults | `beta/collection_defaults.py`, through the existing operation journal |
 | Frozen goal membership | `beta/broad_goals.py:species_items`, `beta/goal_filters.py:printing_items`; callers retain their stored eligibility policies |
 | Display groups and literal mutation adapters | `beta/card_groups.py`, `beta/card_group_views.py` |
@@ -63,7 +64,7 @@ Paths are relative to `src/pokemon_hunter/`.
 | Discovery applicability and result order | `beta/discovery_comparison.py:compare`; `beta/goal_hunts.py` supplies collection/goal scope |
 | Provider settings and historical hunt projections | `config.py`, `beta/ebay_hunts.py:configuration/status`, `hunt.py`, `beta/hunt_values.py` |
 | Manual bulk drafts and replay identity | `beta/bulk_input.py`, `beta/collection_drafts.py`, `beta/bulk_views.py`, with collection mutation authority |
-| Photo jobs and batch review | `beta/scans.py`, `scan_worker.py`, `scan_config.py`, `codex_recognition.py`, `photo_batches.py`, `batch_recognition.py` |
+| Photo jobs and batch review | `beta/scans.py`, `scan_worker.py`, `scan_config.py`, `codex_recognition.py`, `photo_batches.py`, `photo_batch_journal.py`, `batch_recognition.py` |
 | Synthetic sealed-offer replay | `beta/refresh.py`; no live acquisition adapter |
 | Bounded group-metadata acquisition | `metadata_collector.py`; explicit fixed TCGCSV group request, independent Stop and consumed reservation |
 | Image identity and private access | `beta/image_mappings.py`, pinned mapping data, `beta/image_bindings.py`; `scans.authorized_photo_rows` owns photo authorization |
@@ -81,8 +82,11 @@ import, which exports the same function; public catalog and guest/private Pack
 lookup use it directly. Lookup save applies `single_values` to its scalar form.
 Repeated fields (even equal or blank values) and unknown allowlisted fields fail
 before projection or saving. Domain owners still validate values and account scope.
-Intentional lists, such as refresh source choices and photo uploads, retain their
-own multi-value schemas.
+Discovery/Hunter status reads, listing-load status and bulk template selection also
+use this boundary. Original Shopping catalog filters reject repeated and unknown
+fields before catalog/reference reads; offset validation precedes those reads too.
+Intentional lists, such as listing/catalog restore IDs, refresh source choices and
+photo uploads, retain their own multi-value schemas.
 
 ## Engineering tool boundaries
 
@@ -239,8 +243,21 @@ drafts, stable replay aliases and explicit separate-batch identity. The complete
 [bulk entry contract](effective-collection.md#manual-bulk-entry) defines formats,
 duplicates, quantities, errors and recovery.
 
+## Copy edition policy
+
+`copy_editions.is_first` recognizes both retained catalog spellings (`first_edition`
+and `1st-edition`) for creation, bulk resolution and import. Import must accept
+an edition that creation can export. `require_first_supported` rejects first-edition
+selection for the retained Base Set 2 and Wizards promo identities; selection and
+import share this restriction. `select` owns per-copy edition uncertainty and
+revision changes. Import still validates its serialized flag and uncertainty fields;
+shared policy does not rewrite an exported identity or silently resolve it.
+
 ## Multiple-card photo batches
 
+`photo_matching.py` owns visible-evidence normalization and catalog suggestions;
+`photo_additions.py` plans photo-specific duplicate skips and edition updates through
+`copy_editions`, with confirmation/Undo still owned by collection transactions.
 Photo batches retain independent jobs, reservations and deletion tombstones while
 binding selected crops through ordinary collection confirmation. See
 [photo storage and shared review](photo-entry.md#storage-and-shared-review) and

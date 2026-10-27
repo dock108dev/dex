@@ -9,7 +9,7 @@ import re
 
 from pokemon_hunter.migration import digest, encode
 
-from . import card_groups, collection, effective_collection, store
+from . import card_groups, collection, copy_editions, effective_collection, store
 from .bulk_formats import (
     ACTIONS as ACTIONS,
 )
@@ -288,6 +288,18 @@ def normalize(actor, data):
                 cert = attrs.get("certificate")
                 if cert and result["included"] and row.get("duplicate_decision") != "skip":
                     certificates.setdefault(cert, []).append(result)
+            first = row.get("first_edition_selected", False)
+            if type(first) is not bool:
+                raise ValueError("First edition must be an explicit checkbox")
+            if first and (action != "add_copies" or not result.get("printing_id")):
+                raise ValueError("Choose a supported printing before checking first edition")
+            if action == "add_copies" and result.get("printing_id"):
+                printing = next(p for p in children if p["id"] == result["printing_id"])
+                first = first or copy_editions.is_first(printing)
+                if first:
+                    copy_editions.select({"revision": 0}, printing, "first_edition")
+            if first:
+                result["first_edition_selected"] = True
             previous = (
                 seen.setdefault(key, [])
                 if result["included"] and row.get("duplicate_decision") != "skip"

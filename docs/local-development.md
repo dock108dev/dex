@@ -31,76 +31,11 @@ instead of starting a second one. A foreground server stops with Ctrl-C. The ser
 binds only to loopback and rejects foreign Host/Origin and forwarded headers.
 Changing the checkout environment does not update an installed wheel.
 
-For the established `.local/customer` root, use the installed interpreter below.
+For a private root under the checkout (such as `.local/customer`), use an installed interpreter.
 Launching checkout code through `.venv` or `uv run` would put this root inside
 that code's `PROJECT`; `beta/settings.py` refuses that layout. The installed
 wheel's `PROJECT` is outside the checkout, so the established root remains valid.
 Do not move, copy or reinitialize the collection to work around this guard.
-
-### Recorded customer delivery
-
-The established customer root is
-`/Users/michaelfuscoletti/Desktop/dex/.local/customer`, recovered October 18, 2026.
-The latest retained installed closeout is SHOP-10, October 20, at port 8011, using
-`/Users/michaelfuscoletti/.local/share/dex/runtimes/shop-10-20261020/bin/python`.
-This is a delivery record, not a fresh process observation. Verify the actual root,
-listener and selected interpreter before any interactive session or update.
-
-SHOP-10 used Python 3.12.15, with all 69 dependency versions matching SHOP-09;
-248 installed application members and ten served assets matched its package.
-Wheel SHA-256: `a614a5974bded685c70870b3fbe0586b09a8fb0d0a4bbb9b0ab25e3a2940d616`.
-Installed tree SHA-256: `7a560f769ed0aaf6bbd1dda0ec05d5164229d0b2506c1ee9db5238b9122a8afc`.
-The private installed PROJECT configuration link was preserved; never print secrets.
-No migration ran. The record preserves 207 copies, seven declarations, three goals,
-protected configuration and independent history. Only normal session renewal and
-sanitized provider accounting changed. Its 3 OAuth/5 Browse operations completed;
-review/save/Back made no provider requests. These are historical counts, not current
-collection totals or available capacity.
-
-Retained local evidence: `reports/shop-10-20261020/closeout.md`,
-`candidate-manifest.json`, `final-preservation.json`, `session-renewal.json` and
-`rollback.md` in that directory. Protected backup:
-`/Users/michaelfuscoletti/.local/share/dex/backups/shop-10-20261020`.
-SHOP-09 was retained for rollback. Verify recovery artifacts before use and never
-restore older consumed accounting or excluded managed price content.
-
-SHOP-06 recovered an Apple system-Python/Xcode-license startup failure by selecting
-Dex's supported interpreter for both launcher stages. No license was accepted and
-no database restore was needed. Its historical backup includes a functional
-previous-interpreter launcher; do not restore the blocked system-Python wrapper.
-Current launcher instructions below govern startup; historical PIDs are not targets.
-
-### October 25 installation inspection
-
-A read-only inspection found `.local/runtime` still selecting SHOP-10. The
-loopback listener on 8011 was PID 41879, started October 20, with the exact
-SHOP-10 interpreter and `.local/customer` in its command and working directory.
-The root's existing marker/database were present. All 248 installed package files
-matched the retained wheel byte for byte and reproduced the tree hash above.
-These process details are a dated observation, never future process targets.
-
-Current source differs from that wheel in 17 existing application files and adds
-`listing_prices.py`, `discovery_contracts.py` and `hunter_lot_parser.py`. The changes
-include listing-value policy, source maintenance and Shopping presentation.
-The newer interface and source checks must not be described as installed behavior.
-No sign-in, authenticated journey, collection query, price read, provider request,
-restart, migration or runtime update was performed during this inspection.
-
-### Installed maintenance gap
-
-The installed environment's package metadata still reports filelock **4.0.12**
-and opentelemetry-api **1.45.0**. These are the versions flagged by the retained
-October 25 dependency audit; current `uv.lock` selects **4.2.1** and **1.45.1**.
-The successful [current source CI](CI.md#current-repository-qualification) does
-not update or audit that already installed environment. Package presence establishes
-a maintenance gap; exploitability of the active app was not assessed.
-
-Local runtime maintenance must select a compatible dependency-only repair or a
-fully reconciled source successor, validate its actual dependency inventory and
-affected behavior, preserve protected state/accounting, retain rollback and verify
-the installed result through the [runtime update procedure](operations.md#runtime-updates-and-recovery).
-This is separate from new Shopping feature work and the owner's usefulness decision.
-The October 25 documentation audit records the gap without installing a candidate.
 
 ### macOS launcher
 
@@ -223,8 +158,9 @@ original app. Preserve the `collection-base.css` then `collection-browse.css`
 cascade. Client renderers do not own account, possession or price policy.
 
 `bulk_formats.py` parses input; `bulk_input.py` resolves account/catalog identity.
-`photo_batch_images.py` handles image bytes; `photo_batches.py` owns leases and
-transaction sequencing. Keep Stop, authorization and journals explicit when extracting.
+`photo_batch_images.py` handles image bytes; `photo_batch_journal.py` owns durable
+append/read operations, tombstones and reservation projection. `photo_batches.py`
+keeps its public journal imports and owns leases and transaction sequencing. Keep Stop, authorization and journals explicit when extracting.
 
 `discovery_contracts.py` defines checked input and ephemeral run types without
 account storage or worker activity. `discovery.py` retains the compatible exports
@@ -238,7 +174,7 @@ deadline dispatch and final publication together because Stop must synchronize
 with those phases. Hunter review projection stays with its checked lease and
 comparison adapters; splitting its individual result fields would hide the
 revalidation boundary. Photo jobs similarly retain transactional lease/journal
-sequencing, with image processing separate.
+sequencing, with image processing and journal storage separate.
 
 Snapshot tooling separates execution from `tcgcsv_capture_contract.py`,
 `tcgcsv_capture_history.py` and `tcgcsv_capture_transport.py`. Execution retains the
@@ -261,54 +197,19 @@ activation, expiry and withdrawal. Import performs no acquisition; some current-
 reads prune managed files. [Operations](operations.md#snapshot-retention-and-backups)
 describes backup exclusions and independent revocation/accounting state.
 
-## Source maintenance evidence
 
-The following completed source work is distinct from installed SHOP-10. Current
-source includes its implementation; retained results qualify only their recorded
-candidates. No newer installed delivery is established by these records.
+## Photo service boundaries
 
-| Work | Completed implementation and recorded verification |
-| --- | --- |
-| SSOT enforcement, October 20 | Shared listing amount/rounding and timestamp admission; invalid shipping preserves valid price; inert query category parameter removed. `reports/ssot-enforcement-20261020/review.md` records 424 focused tests, 32 new cases and 11 reproduced failures, compilation/lint/docs checks. Scoped digest `6bdb09bf8049d0d2876355eceea931ef35e7fe25927dd6c8718c0dc7c1e14cef`. Domain decisions remain in [SSOT](SSOT.md#listing-value-authority). |
-| Interface candidate, October 20 | Adjacent Search/Stop, aligned refinements, clearer amounts and offer-first inspection. `reports/interface-20261020/review.md` and `review.html`: 32 focused pytest checks including 26 discovery/14 inspection client cases, ten browse groups and nine matched-preview groups. Digest `84b273137cb40b04884ad108ab5b7b97a5d799ebb59f1699cb567e8dc37a03ae`. Controlled synthetic 1280/390/320px and 200% text previews, not customer usability; 390px results position changed from 1,485 to 817px. [Interface design](UI_DESIGN.md#shopping) describes this source presentation. |
-| CI maintenance, October 20–21 | Minimum-runtime distribution, compatibility/browser checks and dependency updates. [CI evidence](CI.md#recorded-local-qualification) owns the local/hosted distinction. |
-| CI repair, October 25 | `d38be04` updates filelock/opentelemetry-api and makes the slow-authorization watchdog regression deterministic. Retained local log: 3,477 passing tests; security: zero blocking findings. The exact commit's normal hosted CI passed; complete compatibility remains open. See [current qualification](CI.md#current-repository-qualification). |
-| Repository cleanup, October 21 | `discovery_contracts.py` and `hunter_lot_parser.py` separate checked types and bounded parsing; compatible public imports, package guards and behavior-grouped tests remain. Former tracker reported 247 focused checks in worktree/clean export, preserved 57 existing test functions and digest `c77da4c4fb3bcfcdbc2f3517d127bbce9154fe062fba51ec0c338018dcd489a8`. Its referenced `reports/repository-cleanup-20261021/` directory is absent at this reconciliation; those test/digest/preservation claims are tracker-only, not independently verified evidence. |
+`photo_batch_journal.py` owns durable journal I/O and reservation projection;
+`photo_batches.py` re-exports its existing public functions. Journal reads create
+no files. Locking, fsync and unsettled-attempt charging remain independent of
+recoverable database state.
 
-The first two available reports record no customer-root access, installed update,
-provider operations or migration. Their manifests and source deltas remain local
-historical evidence. The cleanup tracker reported nine edits/four additions with
-573 incoming files reconciled; the missing report prevents checking that claim.
+The photo coordinator retains admission, Stop, publication, deletion and receipt
+sequencing because those transitions share revision checks, leases and transaction
+ordering. Its independent image processing, matching, addition planning and journal
+storage are separate modules. Keep transaction bodies together when refactoring.
 
-At the October 21 documentation reconciliation, checkout HEAD was `32d6f9f`
-(`Enhance Dex.command and update dependencies`), beyond the CI report's `f333366`
-base. The old statements that HEAD/index remained unchanged describe those prior
-passes only. Current source includes the extracted modules; their presence does not
-prove the missing historical cleanup results. By October 25, local and remote main
-had advanced to `d38be04`, with the exact-SHA normal hosted checks recorded in
-[CI](CI.md#current-repository-qualification). Those newer checks establish current
-source evidence without reconstructing the missing 247-check report. Successor
-installation still needs candidate-specific delivery checks; compatibility and the
-installed dependency gap remain separate open work.
-
-## Documentation audit, October 25
-
-Reviewed README, all 16 maintained domain/development guides and the external
-`dex_next_steps.md` against repository history, workflows, relevant service owners,
-routes, limits, retained SHOP-04–10/maintenance evidence and the actual runtime's
-package/process identity. Source-path references were checked for existence;
-image-mapping counts and acquisition/session/upload limits were cross-checked
-against their owners. This is a documentation/source audit, not a claim that every
-domain was exercised in the customer app.
-
-Corrections distinguish green normal hosted CI from incomplete compatibility,
-committed source from installed SHOP-10, installed dependency maintenance from
-feature acceptance, temporary review writes from permanent research, and independent
-journals from root-contained data. The missing cleanup report remains explicitly
-historical and unverified. Historical closeouts were preserved unchanged.
-Fresh audit checks and sanitized observations are retained locally under
-`reports/docs-audit-20261025/`; documentation remains usable without those artifacts.
-The audit's 110 focused socket-guarded tests passed. JavaScript syntax and maintained
-links passed for 21 assets/18 documents; all nine relative next-steps links and their
-anchors passed separately. No application code changed, and the full hosted suite
-was inspected rather than rerun for these documentation edits.
+Photo lifecycle, recognition protocol and confirmation/report tests live in
+`test_photo_batches.py`, `test_photo_recognition.py` and `test_photo_confirmation.py`.
+Their synthetic fixtures are in non-collected `tests/photo_batch_helpers.py`.

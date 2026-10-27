@@ -125,6 +125,7 @@ def asset(request, filename):
         "listing-time.js",
         "discovery.css",
         "hunter.js",
+        "hunter-net.js",
         "hunter-review.js",
         "hunter.css",
         "lot_calculator.js",

@@ -1,4 +1,4 @@
-"""SHOP-04 local search on disposable engineering accounts, without provider I/O."""
+"""Local search on disposable engineering accounts, without provider I/O."""
 
 import json
 

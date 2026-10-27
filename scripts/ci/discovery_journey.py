@@ -117,19 +117,15 @@ def exercise(page, base, output):
                 page.set_viewport_size({"width": width, "height": 900})
                 page.goto(base + "/shopping/")
                 expect(page.locator("#discovery-search")).to_be_enabled()
-                expect(page.locator("#find-deals")).to_have_attribute("aria-pressed", "true")
-                page.get_by_text("Search options", exact=True).click()
-                page.locator("#find-missing").click()
-                page.locator("#discovery-goal").select_option("engineering-goal")
-                expect(page.locator("#missing-policy")).to_contain_text("Frozen goal:")
+                expect(page.get_by_text("Search options", exact=True)).to_be_hidden()
+                page.locator("#discovery-query").fill("Engineering Pokémon with a long card name")
+                page.locator("#discovery-set").select_option("Engineering supported set")
                 page.locator("#discovery-search").click()
                 expect(page.locator(".discovery-card")).to_have_count(2)
                 expect(page.locator(".discovery-card").first).to_contain_text("Unknown")
                 expect(page.locator(".discovery-card").nth(1)).to_contain_text("Current bid")
-                page.locator(".discovery-card details").first.evaluate("e => e.open = true")
-                expect(page.locator(".discovery-card").first).to_contain_text(
-                    "Provider valuation date: Unknown"
-                )
+                # Lots never present a per-card reference as a lot valuation.
+                expect(page.locator(".discovery-card .reference").first).to_be_hidden()
                 if enlarged:
                     page.evaluate("""() => {
                         const sizes=[...document.querySelectorAll('body,body *')].map(e=>[e,parseFloat(getComputedStyle(e).fontSize)]);
@@ -164,10 +160,12 @@ def exercise(page, base, output):
         if len([call for call in calls if call["method"] == "POST"]) != 6:
             raise AssertionError("Unexpected automatic discovery acquisition action")
         if (
-            captured_choices.get("goal_id") != "engineering-goal"
-            or captured_choices.get("intent") != "missing"
+            captured_choices.get("set_id") != "Engineering supported set"
+            or captured_choices.get("intent") != "deals"
+            or captured_choices.get("product_type") != "mixed_lots"
+            or captured_choices.get("sort") != "ending_soonest"
         ):
-            raise AssertionError("Explicit frozen-goal choices were not captured")
+            raise AssertionError("Explicit lot search choices were not captured")
     finally:
         page.unroute("**/api/shopping/discovery/**", boundary)
     return checks

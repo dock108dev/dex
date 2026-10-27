@@ -122,26 +122,26 @@ def exercise(page, base, output):
     )
 
     page.locator("#discovery-query").fill("Jolteon")
-    page.get_by_role("button", name="Search eBay", exact=True).click()
+    page.get_by_role("button", name="Find lots", exact=True).click()
     expect(page.locator(".discovery-card h3")).to_contain_text("Jolteon")
     page.get_by_role("button", name="More results", exact=True).click()
     expect(page.locator(".discovery-card")).to_have_count(2)
     assert actions[-1] == {"continuation_run": run_id}
-    page.locator("#discovery-sort").select_option("best_match")
+    page.locator("#discovery-query").fill("Fossil")
     expect(page.locator("#discovery-next")).to_be_disabled()
-    page.locator("#discovery-sort").select_option("ending_soonest")
+    page.locator("#discovery-query").fill("Jolteon")
     expect(page.locator("#discovery-next")).to_be_enabled()
     checks.append("More submits only captured handle; choice edits require a new Search")
 
     # Keep the actual failed image node during local re-rendering, with its fallback.
     page.locator(".offer-image img").first.evaluate("img => {window.engineeringImage = img;}")
     before = len(actions)
-    page.locator("#discovery-filter").select_option("unpriced")
+    # Directly exercise the retained renderer hook; this is not a visible user action.
+    page.locator("#discovery-filter").evaluate("el => el.dispatchEvent(new Event('change'))")
     assert page.locator(".offer-image img").first.evaluate("img => img === window.engineeringImage")
-    page.locator("#discovery-filter").select_option("all")
     assert len(actions) == before
     expect(page.locator(".offer-image-fallback").first).to_be_visible()
-    assert page.locator(".offer-image-label").first.inner_text().startswith("Seller photo")
+    expect(page.locator(".offer-image img").first).to_have_attribute("alt", "Seller photo")
     checks.append(
         "Local updates preserve image node and failed-image layout; seller imagery explicitly labelled"
     )
@@ -166,6 +166,8 @@ def exercise(page, base, output):
         page.evaluate("scale => document.documentElement.style.fontSize = (scale * 100) + '%'", scale)
         assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), name
         page.locator("#discovery-query").focus()
+        page.keyboard.press("Tab")
+        assert page.evaluate("document.activeElement.id") == "discovery-set"
         page.keyboard.press("Tab")
         assert page.evaluate("document.activeElement.id") == "discovery-search"
         page.evaluate("""() => {
@@ -213,7 +215,8 @@ def exercise(page, base, output):
     page.wait_for_function("() => document.querySelector('.offer-image img')?.naturalWidth > 0")
     expect(page.locator(".offer-image-fallback")).to_be_hidden()
     page.locator(".offer-image img").evaluate("img => window.engineeringImage = img")
-    page.locator("#discovery-filter").select_option("unpriced")
+    # Directly exercise the retained renderer hook; this is not a visible user action.
+    page.locator("#discovery-filter").evaluate("el => el.dispatchEvent(new Event('change'))")
     assert page.locator(".offer-image img").evaluate("img => img === window.engineeringImage")
     checks.append("Controlled image load succeeds and local updates preserve the loaded node")
 

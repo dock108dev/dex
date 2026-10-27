@@ -55,6 +55,7 @@ ASSETS = frozenset(
         "navigation.js",
         "hunter.css",
         "hunter.js",
+        "hunter-net.js",
         "listing-time.js",
         "hunter-review.js",
     }

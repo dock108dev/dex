@@ -2,10 +2,10 @@
 {% block title %}Shopping · Dex{% endblock %}
 {% block body_class %}discovery-page{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="/collection-assets/discovery.css?v=20261026-interface">
+<link rel="stylesheet" href="/collection-assets/discovery.css?v=20261027-interface">
 <div class="discovery" id="discovery">
   <div class="discovery-heading">
-    <h1>Shopping</h1>
+    <h1>Find lots</h1>
     <a class="shopping-check-link" href="/shopping/check/">Check a listing/lot</a>
   </div>
   {% if shopping_context.return_url %}<p><a id="shopping-back" href="{{ shopping_context.return_url }}">Back to collection</a></p>{% endif %}
@@ -14,19 +14,19 @@
   {{ shopping_context|json_script:"discovery-context" }}
   {{ discovery_initial|json_script:"discovery-initial" }}
   {{ discovery_goals|json_script:"discovery-goals" }}
-  <form id="discovery-form">
+  <form id="discovery-form" data-lot-search="true">
     {% csrf_token %}
-    <div class="discovery-searchbox"><label for="discovery-query">Pokémon or card name<input id="discovery-query" name="query" type="search" maxlength="200" placeholder="Name or keywords" autocomplete="off"></label><div class="search-actions"><button id="discovery-search" type="submit" disabled>Search eBay</button><button id="discovery-stop" type="button" class="secondary" disabled>Stop</button></div></div>
+    <div class="discovery-searchbox"><label for="discovery-query">Pokémon or card name<input id="discovery-query" name="query" type="search" maxlength="200" placeholder="e.g. Venusaur" autocomplete="off"></label><div class="discovery-setbar"><label for="discovery-set">Set <span class="optional">optional</span><select id="discovery-set" name="set_id"><option value="">All supported sets</option></select><span id="discovery-set-caption" class="selection-caption">All supported sets</span></label></div><div class="search-actions"><button id="discovery-search" type="submit" disabled>Find lots</button><button id="discovery-stop" type="button" class="secondary" disabled>Stop</button></div></div>
     <div id="discovery-suggestions" role="status" aria-live="polite" hidden></div>
     <div class="discovery-refinements">
-    <div class="discovery-setbar"><label for="discovery-set">Set <span class="optional">optional</span><select id="discovery-set" name="set_id"><option value="">All supported sets</option></select><span id="discovery-set-caption" class="selection-caption">All supported sets</span></label></div>
-    <div class="discovery-controls provider-choices">
+
+    <div class="discovery-controls provider-choices" hidden>
       <label for="discovery-product-type">Find on eBay<select id="discovery-product-type"><option value="mixed_lots">Mixed lots</option><option value="singles">Singles</option><option value="both">Both · mixed lots then singles</option></select><span id="discovery-product-type-caption" class="selection-caption">Singles and mixed lots</span></label>
       <label for="discovery-sort">Order<select id="discovery-sort"><option value="ending_soonest">Ending soon</option><option value="best_match">Best match</option></select></label>
     </div>
     </div>
-    <div id="discovery-quick-sets" class="discovery-quick-sets" aria-label="Quick set choices"></div>
-    <details class="discovery-options"><summary>Search options</summary>
+    <div hidden id="discovery-quick-sets" class="discovery-quick-sets" aria-label="Quick set choices"></div>
+    <details hidden class="discovery-options"><summary>Search options</summary>
     <div class="discovery-intents" aria-label="Shopping task">
       <button type="button" id="find-deals" aria-pressed="true">Find deals</button>
       <button type="button" id="find-missing" aria-pressed="false">Find missing cards</button>
@@ -46,24 +46,24 @@
     <p class="field-help">Only Search eBay and More results request listings. Typing, local browsing and filters make no eBay requests.</p>
     </details>
     <p id="discovery-status" role="status" aria-live="polite" tabindex="-1">Loading search options…</p>
-    <details class="discovery-local"><summary>Explore local Pokémon and cards</summary><button type="button" id="catalog-search" class="secondary">Search local cards</button>
+    <details hidden class="discovery-local"><summary>Explore local Pokémon and cards</summary><button type="button" id="catalog-search" class="secondary">Search local cards</button>
     <section id="catalog-results" class="catalog-results" aria-labelledby="catalog-results-title"><div class="catalog-heading"><h2 id="catalog-results-title" tabindex="-1">Pokémon and cards</h2><button id="catalog-clear-target" type="button" class="secondary" hidden>Show all matching cards</button></div><p id="catalog-status" role="status" aria-live="polite">Loading your local catalog…</p><div id="catalog-cards" class="catalog-cards"></div><button id="catalog-next" type="button" class="secondary" hidden>More local cards</button><p class="field-help">Catalog images do not show the seller’s cards.</p></section>
     </details>
   </form>
   <section id="discovery-results" aria-labelledby="discovery-results-title" hidden>
-    <div class="discovery-results-heading"><div><h2 id="discovery-results-title" tabindex="-1">Results</h2><p id="discovery-scope" class="muted"></p></div>
-    <div class="discovery-filters"><label for="discovery-filter">Show<select id="discovery-filter"><option value="all">All results</option><option value="below">Comparable · below reference</option><option value="conditional">Conditional comparisons</option><option value="unpriced">Unpriced or ambiguous</option></select></label><p id="discovery-shown" class="field-help" role="status"></p></div>
+    <div class="discovery-results-heading"><div><h2 id="discovery-results-title" tabindex="-1">Lots</h2><p hidden id="discovery-scope" class="muted"></p></div>
+    <div class="discovery-filters"><div hidden><label for="discovery-filter">Show<select id="discovery-filter"><option value="all">All results</option><option value="below">Comparable · below reference</option><option value="conditional">Conditional comparisons</option><option value="unpriced">Unpriced or ambiguous</option></select></label></div><p id="discovery-shown" class="field-help" role="status"></p></div>
     </div>
-    <div class="results-notes"><p class="browse-note">Temporary offers · contents unconfirmed · bids may rise.</p><details class="results-guidance"><summary>About these results</summary><p id="discovery-limitation"></p></details></div>
+    <div class="results-notes"><p class="browse-note">US lots · ending soonest. Check seller photos for your card; bids can rise.</p><details hidden class="results-guidance"><summary>About these results</summary><p id="discovery-limitation"></p></details></div>
     <div id="discovery-cards" class="discovery-cards"></div>
     <div class="discovery-actions"><button id="discovery-next" type="button" class="secondary" disabled>More results</button><span id="discovery-next-note" class="field-help"></span></div>
-    <p class="field-help">Seller text proposes a card identity. Confirm the card, edition, finish and condition before deciding. Searching never changes your collection or goals.</p>
+
   </section>
-  <details class="discovery-help"><summary>About these comparisons</summary><p>Search uses a small batch of singles, loose mixed lots and supported auctions. Auction current bids can rise and are not final purchase prices. References keep their original dates; Dex does not refresh guide prices here. A reference may depend on an unconfirmed condition or edition. A generic grade scenario does not verify a slab.</p><p>Shipping is separate from the listing price. A delivered total is shown only when shipping is known. Results may be temporary when source permissions do not allow saving. Reopening and filtering do not search eBay.</p></details>
-  <details class="discovery-help"><summary>More Shopping tools</summary><nav class="discovery-links" aria-label="More Shopping tools"><a href="/shopping/hunter/">Price Hunter</a><a href="/shopping/calculator/">Manual calculator</a><a href="/shopping/legacy/">Saved research</a><a href="/packs/">Packs</a><a href="/finds/">Saved eBay finds</a><a href="/lookup/">Pack lookup</a><a href="/packs/saved/">Saved pack research</a></nav></details>
+  <details hidden class="discovery-help"><summary>About these comparisons</summary><p>Search uses a small batch of singles, loose mixed lots and supported auctions. Auction current bids can rise and are not final purchase prices. References keep their original dates; Dex does not refresh guide prices here. A reference may depend on an unconfirmed condition or edition. A generic grade scenario does not verify a slab.</p><p>Shipping is separate from the listing price. A delivered total is shown only when shipping is known. Results may be temporary when source permissions do not allow saving. Reopening and filtering do not search eBay.</p></details>
+  <details hidden class="discovery-help"><summary>More Shopping tools</summary><nav class="discovery-links" aria-label="More Shopping tools"><a href="/shopping/hunter/">Price Hunter</a><a href="/shopping/calculator/">Manual calculator</a><a href="/shopping/legacy/">Saved research</a><a href="/packs/">Packs</a><a href="/finds/">Saved eBay finds</a><a href="/lookup/">Pack lookup</a><a href="/packs/saved/">Saved pack research</a></nav></details>
   <noscript><p class="discovery-note">Enable JavaScript to use visual search and discovery. The <a href="/shopping/calculator/">listing/lot calculator</a> remains available.</p></noscript>
 </div>
 <script src="/collection-assets/listing-time.js?v=20261020-shop04" defer></script>
 <script src="/collection-assets/discovery-display.js?v=20261020-shop04" defer></script>
-<script src="/collection-assets/discovery.js?v=20261026-interface" defer></script>
+<script src="/collection-assets/discovery.js?v=20261027-lots" defer></script>
 {% endblock %}

@@ -11,7 +11,7 @@ from django.http import Http404
 from pokemon_hunter.inventory import stable_id
 from pokemon_hunter.migration import digest, encode
 
-from . import broad_goals, collection_goals, collection_imports, store
+from . import broad_goals, collection_goals, collection_imports, copy_editions, store
 from .collection_imports import FIELDS
 
 
@@ -72,14 +72,16 @@ def build(
             "batch_id": operation_id,
             "legacy_id": None,
             "first_edition_selected": int(
-                raw.get(
-                    "first_edition_selected", p["edition"] in {"first_edition", "1st-edition"} if p else 0
-                )
+                raw.get("first_edition_selected", copy_editions.is_first(p) if p else 0)
             ),
             "state": "active",
             "revision": 0,
             "source_copy_id": source_id,
         }
+        if kind == "bulk" and raw.get("first_edition_selected") and p:
+            from .copy_editions import select
+
+            row = {**select(row, p, "first_edition"), "revision": 0}
         create("copy", row)
 
     if kind == "collection_correct":
@@ -116,6 +118,9 @@ def build(
         photo_review = draft_guard(actor, draft)
         if photo_review:
             result["photo_review"] = photo_review
+            from .photo_additions import prepare
+
+            prepare(actor, normalized["rows"], owned, catalog_by_id, result)
         result.update(
             bulk=normalized, card_intents=[], draft_id=draft["id"], draft_revision=draft["revision"]
         )
@@ -135,6 +140,7 @@ def build(
                             "printing_id": row["printing_id"],
                             "provisional_identity": row.get("provisional_identity"),
                             **row["attributes"],
+                            **({"first_edition_selected": 1} if row.get("first_edition_selected") else {}),
                         },
                         f"{row['row_id']}:{i}",
                     )
@@ -267,28 +273,10 @@ def build(
                 "revision": before["revision"] + 1,
             }
         elif kind == "edition":
-            selected = request.get("selection")
-            if selected not in {"first_edition", "unresolved"}:
-                raise ValueError("Choose first_edition or unresolved; unchecked never means unlimited")
+            from .copy_editions import select
+
             p = resolve(before["printing_id"])
-            legacy = json.loads(p["provenance"]).get("legacy_id", "")
-            if selected == "first_edition" and legacy.startswith(
-                ("base_set_2-", "wizards_black_star_promos-")
-            ):
-                raise ValueError("This set has no standard first-edition printing")
-            identity = json.loads(before["provisional_identity"] or "{}")
-            unresolved = set(identity.get("unresolved_fields", [])) | set(p["unresolved_fields"])
-            if selected == "first_edition":
-                unresolved.discard("edition")
-            else:
-                unresolved.add("edition")
-            identity.update(edition_selection=selected, unresolved_fields=sorted(unresolved))
-            after = {
-                **before,
-                "first_edition_selected": int(selected == "first_edition"),
-                "provisional_identity": encode(identity),
-                "revision": before["revision"] + 1,
-            }
+            after = select(before, p, request.get("selection"))
             result["warnings"].append(
                 f"{p['name']} #{p['collector_number']} · {p['set_name']}: only this physical copy changes. Finish and variant uncertainty remain; unchecked means edition unresolved."
             )
@@ -463,10 +451,9 @@ def build(
                     selection = identity.get("edition_selection")
                     if selection not in (None, "first_edition", "unresolved"):
                         raise ValueError("Invalid copy edition selection")
-                    expected = selection == "first_edition" if selection else p["edition"] == "first_edition"
-                    legacy = json.loads(p["provenance"]).get("legacy_id", "")
-                    if expected and legacy.startswith(("base_set_2-", "wizards_black_star_promos-")):
-                        raise ValueError("This set has no standard first-edition printing")
+                    expected = selection == "first_edition" if selection else copy_editions.is_first(p)
+                    if expected:
+                        copy_editions.require_first_supported(p)
                     if selection and "first_edition_selected" not in raw:
                         raise ValueError("Copy edition selection requires its explicit first-edition flag")
                     if selection == "unresolved" and "edition" not in identity.get("unresolved_fields", []):

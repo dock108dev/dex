@@ -126,7 +126,7 @@ def test_privileged_worker_retains_explicit_durable_queue_contract(b3):
 
 
 @pytest.mark.parametrize(
-    "selected_only,available,expected", [(True, True, False), (False, False, False), (False, True, True)]
+    "selected_only,available,expected", [(True, True, True), (False, False, False), (False, True, True)]
 )
 def test_worker_keeps_cleanup_and_never_selects_deferred_batch_work(
     b3, monkeypatch, selected_only, available, expected
@@ -138,7 +138,10 @@ def test_worker_keeps_cleanup_and_never_selects_deferred_batch_work(
     monkeypatch.setattr(scan_worker.photo_batches, "cleanup", lambda: calls.append("batch_cleanup"))
     monkeypatch.setattr(scan_worker.photo_batches, "available", lambda: available)
 
-    def batches(_):
+    expected_selection = selected_only
+
+    def batches(_, *, selected_only):
+        assert selected_only is expected_selection
         calls.append("batch_process")
         return False
 

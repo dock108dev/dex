@@ -107,6 +107,7 @@ def original(request, who, key, pid):
 def action(request, who, key, action):
     data = body(request)
     key = str(key)
+    notes = data.pop("notes", "") if action == "analyze" else ""
     fields = {
         "layout": {"revision", "photo_id", "boxes"},
         "select": {"revision", "crop_id", "row", "included", "retain", "decision"},
@@ -117,9 +118,12 @@ def action(request, who, key, action):
         "cancel": set(),
         "remove": {"revision", "photo_id"},
         "handoff": {"revision", "duplicates_reviewed", "manual_rows"},
+        "confirm-cards": {"revision", "choices"},
     }
     if action not in fields or set(data) != fields[action]:
         raise ValueError("Use the exact current photo action fields")
+    if action == "confirm-cards":
+        return dict(operation=batches.confirm_cards(who, key, data["revision"], data["choices"]))
     if action == "layout":
         b = batches.layout(who, key, data["revision"], data["photo_id"], data["boxes"])
     elif action == "select":
@@ -142,6 +146,7 @@ def action(request, who, key, action):
             data["stage"],
             request.session.session_key,
             data["consent"],
+            notes=notes,
         )
     elif action == "reorder":
         b = batches.reorder(who, key, data["revision"], data["photo_ids"])

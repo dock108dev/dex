@@ -10,6 +10,16 @@ import zipfile
 from pathlib import Path, PurePosixPath
 
 REQUIRED_FILES = (
+    "pokemon_hunter/beta/photo_batch_journal.py",
+    "pokemon_hunter/beta/copy_editions.py",
+    "pokemon_hunter/beta/photo_additions.py",
+    "pokemon_hunter/beta/photo_matching.py",
+    "pokemon_hunter/beta/photo_batches.py",
+    "pokemon_hunter/beta/photo_batch_views.py",
+    "pokemon_hunter/beta/static/photo_batches.js",
+    "pokemon_hunter/beta/static/photo_batches.css",
+    "pokemon_hunter/beta/templates/beta/photo_batches.html",
+    "pokemon_hunter/beta/static/hunter-net.js",
     "pokemon_hunter/beta/bulk_input.py",
     "pokemon_hunter/beta/bulk_formats.py",
     "pokemon_hunter/beta/photo_batch_images.py",

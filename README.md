@@ -8,10 +8,9 @@ The Python distribution and command-line tool are named `pokemon-hunter`.
 Catalog and product coverage is partial. Seller observations are dated; the app
 never buys, bids or treats a listing as proof of ownership.
 
-Repository guides describe current source contracts. The customer installation
-and its pending maintenance are tracked separately in
-[installed status](docs/local-development.md#october-25-installation-inspection);
-[Shopping](docs/hunts.md#owner-usefulness-review) records the outstanding owner review.
+The authenticated collection app, original FastAPI app and lot watcher have separate
+storage. See [local development](docs/local-development.md) for startup and
+[Shopping](docs/hunts.md) for acquisition limits and price interpretation.
 
 ## Requirements
 

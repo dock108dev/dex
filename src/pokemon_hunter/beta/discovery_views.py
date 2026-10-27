@@ -92,9 +92,10 @@ def searches(request):
         if request.method == "POST":
             value = discovery.start(who, session, body(request), auth_session=request.session.session_key)
         elif request.GET:
-            if set(request.GET) != {"run_id"} or len(request.GET.getlist("run_id")) != 1:
+            raw = query(request, {"run_id"})
+            if set(raw) != {"run_id"}:
                 raise ValueError("Choose one discovery run")
-            value = discovery.status(who, session, request.GET["run_id"])
+            value = discovery.status(who, session, raw["run_id"])
         else:
             value = {**discovery.metadata(who), "goals": goals(who)}
         return shopping_views.private_json(value, request)

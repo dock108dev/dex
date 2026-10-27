@@ -35,7 +35,14 @@ COLUMNS = (
     "purchase_basis",
     "text_encoding",
 )
-ROW_FIELDS = set(COLUMNS) | {"group_id", "keep_unknown", "included", "duplicate_decision", "literal_text"}
+ROW_FIELDS = set(COLUMNS) | {
+    "group_id",
+    "keep_unknown",
+    "included",
+    "duplicate_decision",
+    "literal_text",
+    "first_edition_selected",
+}
 DEFAULT_FIELDS = {
     "action",
     "game",

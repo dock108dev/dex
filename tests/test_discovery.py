@@ -454,7 +454,8 @@ def test_selected_set_typed_query_and_captured_provider_choices_reach_wire(disco
     assert result["state"] == "complete"
     browse = next(kwargs for stage, kwargs in FakeTransport.calls if stage == "browse")
     assert browse["query"] is None
-    assert browse["search_options"]["named"].query == "Abra Base Set English"
+    assert browse["search_options"]["named"].query == "Abra English"
+    assert browse["search_options"]["named"].set_name == "Base Set"
     assert "2" not in browse["search_options"]["named"].query
     assert browse["search_options"]["named"].sort == "ending_soonest"
     assert browse["search_options"]["named"].category == "183455"

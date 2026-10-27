@@ -548,7 +548,9 @@ def start(actor, session_key, raw, *, auth_session=None):
             auth_session=auth_session,
         )
         if choices.query:
-            run.named_pages = discovery_paging.first_pages(run.queries[0], choices.product_type, choices.sort)
+            run.named_pages = discovery_paging.first_pages(
+                run.queries[0], choices.product_type, choices.sort, set_name=set_name
+            )
             run.action_counts = {}
     with _lock:
         for old in _runs.values():

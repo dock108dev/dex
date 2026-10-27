@@ -279,3 +279,19 @@ def test_stale_reference_and_unknown_shipping_never_claim_complete_comparison(lo
     assert row["shipping"] is None and row["listing_and_shipping_subtotal"] is None
     assert row["delivered_total"] is None and row["delivered_cost_complete"] is False
     assert row["comparison"]["below_reference"] is None
+
+
+@pytest.mark.parametrize("kind", ["raw", "graded", "lot", "aspect"])
+def test_poc_ungraded_single_disposition(local, monkeypatch, kind):
+    p = printing("poc")
+    monkeypatch.setattr(collection, "catalog", lambda *a, **k: [p])
+    monkeypatch.setattr(lot_calculator, "retained_records", lambda: [])
+    raw = listing(p)
+    if kind == "graded":
+        raw["title"] += " PSA 10"
+    elif kind == "lot":
+        raw["title"] += " lot of 5 cards"
+    elif kind == "aspect":
+        raw["localizedAspects"] = [{"name": "Graded", "value": "Yes"}]
+    rows = hunter_catalog.compare(local, [raw], now=OBSERVED)
+    assert rows[0]["ungraded_single"] is (kind == "raw")

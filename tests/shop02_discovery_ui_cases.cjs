@@ -49,6 +49,29 @@ async function flush() {for(let i=0;i<80;i++) await Promise.resolve();}
 async function check(name,test) {await test();passed.push(name);}
 const passed=[];
 (async()=>{
+  await check('lot finder requires a name and ignores hidden legacy refinements',async()=>{
+    const t=setup([{goals:[],sets:[]},complete()]);await flush();
+    t.get('discovery-form').dataset.lotSearch='true';
+    await t.get('discovery-form').emit('submit');await flush();
+    assert.equal(t.calls.length,1);
+    t.get('discovery-query').value='Venusaur';t.get('discovery-set').value='Base Set';
+    t.get('discovery-product-type').value='singles';t.get('discovery-budget').value='1';
+    t.get('discovery-focus').value='bulk';
+    await t.get('discovery-form').emit('submit');await flush();
+    assert.deepEqual(t.calls[1].body,{...baseChoices,query:'Venusaur',set_id:'Base Set',product_type:'mixed_lots',english_vintage:false});
+    assert.equal(t.get('discovery-stop').hidden,true);
+  });
+  await check('lot finder preserves provider order without guessing a single-card identity',async()=>{
+    const result=complete(runId,[{...row,id:'broad',title:'Binder collection'},{...row,id:'target',title:'VenusaurHOLO15/102 three card lot'}]);
+    result.choices={...baseChoices,query:'Venusaur'};
+    const t=setup([{goals:[],sets:[]},result]);await flush();
+    t.get('discovery-form').dataset.lotSearch='true';t.get('discovery-query').value='Venusaur';
+    await t.get('discovery-form').emit('submit');await flush();
+    const html=t.get('discovery-cards').innerHTML;
+    assert.ok(html.indexOf('offer-broad') < html.indexOf('offer-target'));
+    assert.doesNotMatch(html,/Other lots returned by eBay/);
+    assert.doesNotMatch(html,/Proposed:/);
+  });
   await check('opening uses local metadata only; deals require neither goal nor card',async()=>{
     const t=setup([{goals:[],sets:[]}]);await flush();
     assert.equal(t.calls.length,1);assert.equal(t.calls[0].init.method,'GET');
@@ -115,7 +138,7 @@ const passed=[];
     const t=setup([{goals:[]},complete(runId,[visible])]);await flush();await t.get('discovery-form').emit('submit');await flush();
     assert.match(t.get('discovery-cards').innerHTML,/Seller engineering title/);
     assert.match(t.get('discovery-cards').innerHTML,/Open seller listing on eBay/);
-    assert.match(t.get('discovery-cards').innerHTML,/Inspect lot/);
+    assert.match(t.get('discovery-cards').innerHTML,/Assess lot/);
     assert.doesNotMatch(t.get('discovery-cards').innerHTML,/data-discovery-reveal/);
     assert.equal(t.calls.length,2);
   });

@@ -73,9 +73,10 @@ def loads(request):
         shopping.fields(raw, {"identifier"}, {"identifier"})
         result = checks.start(who, session, raw["identifier"], auth_session=request.session.session_key)
     else:
-        if set(request.GET) != {"run_id"} or len(request.GET.getlist("run_id")) != 1:
+        raw = query(request, {"run_id"})
+        if set(raw) != {"run_id"}:
             raise ValueError("Choose one listing load.")
-        result = checks.status(who, session, request.GET["run_id"])
+        result = checks.status(who, session, raw["run_id"])
     return shopping_views.private_json(result, request)
 
 

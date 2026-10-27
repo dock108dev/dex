@@ -1,4 +1,4 @@
-"""HUNT-07 integrated engineering evidence: disposable roots and fake I/O only.
+"""Integrated Hunter contracts: disposable roots and fake I/O only.
 
 These cases join the ordinary Hunter/lot/detail services. Authentication, catalog
 and reference cells are controlled fixtures; provider transport never uses a

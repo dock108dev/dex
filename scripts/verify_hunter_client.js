@@ -70,7 +70,7 @@ class Element {
   }
   async click() {if (!this.disabled) await this.emit('click');}
 }
-function setup(responder, {metadata = META, saved = null, usagePolicy} = {}) {
+function setup(responder, {metadata = META, saved = null, usagePolicy, simple = false} = {}) {
   const calls = [], events = {}, docEvents = {}, historyStates = [], timeouts = new Map(), intervals = new Map(), reviewCalls = [];
   let time = 1800000000000, timerId = 0;
   const doc = {hidden: false, createElement: tag => new Element(tag, doc),
@@ -83,10 +83,12 @@ function setup(responder, {metadata = META, saved = null, usagePolicy} = {}) {
     'hunter-review', 'hunter-details', 'hunter-progress', 'hunter-window', 'hunter-coverage', 'hunter-limitations',
     'hunter-accounting', 'hunter-filter', 'hunter-results-title', 'hunter-detail-load', 'hunter-detail-stop', 'hunter-detail-status'];
   if (usagePolicy !== undefined) ids.push('hunter-usage-form', 'hunter-usage-status', 'hunter-usage-capacity', 'hunter-usage-settings', 'hunter-usage-enabled', 'hunter-usage-per-hunt', 'hunter-usage-daily', 'hunter-usage-timezone', 'hunter-usage-recurring', 'hunter-usage-expiry-mode', 'hunter-usage-expiry-label', 'hunter-usage-expiry', 'hunter-usage-save', 'hunter-usage-pause', 'hunter-usage-feedback');
+  if(simple) ids.push('hunter-net-inputs','net-purchase-tax','net-resale-tax','net-fee-rate','net-postage','net-supplies','net-extra','hunter-usage','hunter-poc-enable');
   const nodes = new Map(ids.map(id => {const node = doc.createElement(id.includes('form') ? 'form' : id.includes('scope') || id.includes('filter') ? 'select' : id.match(/start|stop|recheck|next|continue|load/) ? 'button' : 'section'); node.id = id; return [id, node];}));
   doc.body.append(nodes.get('hunter-app'));
   for (const [id, node] of nodes) if (id !== 'hunter-app') nodes.get('hunter-app').append(node);
   nodes.get('hunter-initial').textContent = JSON.stringify({metadata, authority: auth, ...(usagePolicy === undefined ? {} : {usage_settings: {owner: true, policy: usagePolicy}})});
+  if(simple) {nodes.get('hunter-app').dataset.simple='true';for(const [id,v] of Object.entries({'net-purchase-tax':'0','net-resale-tax':'0','net-fee-rate':'13.25','net-postage':'5','net-supplies':'0.50','net-extra':'0'}))nodes.get(id).value=v;}
   nodes.get('hunter-scope').value = 'both'; nodes.get('hunter-filter').value = 'all';
   nodes.get('hunter-detail-stop').disabled = true; nodes.get('hunter-detail-load').disabled = true;
   const csrf = doc.createElement('input'); csrf.setAttribute('name', 'csrfmiddlewaretoken'); csrf.value = 'fixture-csrf'; nodes.get('hunter-form').append(csrf);
@@ -112,7 +114,7 @@ function setup(responder, {metadata = META, saved = null, usagePolicy} = {}) {
     },
     DexHunterReview: {mount(options) {context.reviewOptions = options; return review;}},
     scrollTo(x, y) {context.scrollY = y;}, console};
-  context.window = context; vm.createContext(context); vm.runInContext(source, context, {filename: sourcePath});
+  context.window = context; vm.createContext(context); if(simple)vm.runInContext(fs.readFileSync(path.join(__dirname,'../src/pokemon_hunter/beta/static/hunter-net.js'),'utf8'),context); vm.runInContext(source, context, {filename: sourcePath});
   const click = async id => {const node = doc.getElementById(id); assert(node, id); await node.click();};
   return {context, calls, events, docEvents, historyStates, reviewCalls, nodes, doc, intervals, timeouts, click,
     async start() {await nodes.get('hunter-form').emit('submit');}, async change(id, value) {nodes.get(id).value = value; await nodes.get(id).emit('change');},
@@ -124,6 +126,17 @@ const cases = [];
 async function check(name, run) {await run(); cases.push({name, status: 'passed'});}
 const ordinary = (url, body) => body && url.endsWith('/stop/') ? projection({state: 'stopped'}) : body ? projection() : url.endsWith('/hunter/') ? META : projection({results: [row()]});
 (async () => {
+  await check('simple POC submits singles and shows raw net without graded rows or reveal controls', async()=>{
+    const raw=row('raw',{ungraded_single:true,listing_price:'33',shipping:'5',price_kind:'current_bid',reference_eligibility:'eligible',reference:{amount:'62',currency:'USD',grade:'raw',as_of:'2026-10-26',captured_at:'2026-10-26T12:00:00Z'},opportunity:{scenarios:[{kind:'current_bid',reference_amount:'62'}]}});
+    const t=setup((url,body)=>body?projection():url.endsWith('/hunter/')?META:projection({results:[raw,row('graded',{ungraded_single:false})]}),{simple:true});
+    await t.ready();await t.start();await t.ready();
+    assert.equal(t.calls.find(c=>c.body && c.url.endsWith('/hunter/')).body.scope,'singles');
+    assert(t.nodes.get('hunter-cards').textContent.includes('$9.88'));
+    assert(!t.doc.getElementById('hunter-result-graded'));
+    assert(!t.nodes.get('hunter-cards').textContent.includes('Reveal seller'));
+    t.nodes.get('net-postage').value='6';await t.nodes.get('hunter-net-inputs').emit('input');
+    assert(t.nodes.get('hunter-cards').textContent.includes('$8.88'));
+  });
   await check('ordinary unconfigured settings select no defaults and never dispatch on incomplete save', async () => {
     const policy = {configured: false, enabled: false, remaining: 0, revision: 0, reason: 'Choose your Hunter usage limits to enable acquisition.'};
     const t = setup(() => ({acquisition_available: false, usage_policy: policy}), {metadata: {acquisition_available: false}, usagePolicy: policy});

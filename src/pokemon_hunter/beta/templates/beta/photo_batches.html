@@ -1,20 +1,25 @@
 {% extends 'beta/base.html' %}
-{% block title %}Add photos · Dex{% endblock %}
+{% block title %}Add from photos · Dex{% endblock %}
+{% block body_class %}photo-page{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="/collection-assets/photo_batches.css">
-<main id="photo-entry">
-<div class="photo-heading"><h1>Add photos</h1><p>Review each physical card, then confirm the complete batch once.</p><a href="/add-many/">Checklist, Paste numbers or CSV</a> · <a href="/add-card/">Back to Add Card</a></div>
-{% if not available %}<p role="alert">Photo batches are unavailable in this installation. Manual bulk entry remains available.</p>{% else %}
+<link rel="stylesheet" href="/collection-assets/photo_batches.css?v=20261027-interface">
+<div id="photo-entry">
+<h1>Add from photos</h1>
+{% if not available %}<p>Photo entry is unavailable. <a href="/add-many/">Add cards manually</a>.</p>{% else %}
 <form id="photo-csrf">{% csrf_token %}</form>
-<p id="photo-status" role="status" aria-live="polite" tabindex="-1">Loading saved photo batches…</p>
-<section class="photo-panel"><h2>Photo batches</h2><div id="photo-saved"></div><button type="button" id="photo-new">Start a separate physical photo batch</button><p>Reopening never analyzes or adds cards. Start a separate batch only for different physical cards.</p></section>
-<div id="photo-workspace" hidden>
-<section class="photo-panel"><h2>1. Add photos</h2><p>Try 12–15 card fronts on a contrasting surface, with visible gaps, all edges and sharp text. Keep cards parallel and lighting diffuse. Use fewer cards or a close-up for glare, overlap or unreadable text. Review the count yourself; a 16th card needs a retake.</p><p>JPEG, PNG or WebP, one frame. Maximum 8 MB and 24 MP per photo, five admissions including retakes, 40 MB and 75 candidate cards per batch. Uploading stages images locally without analysis. Unconfirmed images expire after seven days; edits do not extend this.</p><label>Source photo<input type="file" id="photo-file" accept="image/jpeg,image/png,image/webp"></label><button id="photo-upload" type="button">Stage selected photo locally</button><p id="photo-capacity"></p></section>
-<section class="photo-panel" id="photo-transmission"><h2>2. Review transmission</h2><p>Selected card images and crops are sent through Codex CLI to OpenAI. Review them for personal information. Results can be wrong; you confirm additions. This uses your Codex account capacity. Stop cannot recall images already sent. Manual entry remains available.</p><p id="photo-protocol"></p><p>Each explicit analysis sends one overview (at most 1600px / 2 MB), or the reviewed crops for that photo (at most 15, 1024px / 500 KB each, 7.5 MB combined). No original accompanies the crops. At most ten invocations per batch, two explicit attempts per stage, 75 active seconds per photo and invocation, 180 per batch. No automatic retries. Remaining subscription capacity and monetary cost: Unknown. Codex account policies apply; local cleanup does not establish service deletion or training policy.</p><label><input type="checkbox" id="photo-consent"> I understand and authorize only the images for the analysis button I select.</label><button id="photo-stop" type="button">Stop analysis</button><p>Stop is independent of other controls. Consumed or uncertain attempts remain consumed.</p></section>
-<section class="photo-panel"><h2>3. Review crops and identities</h2><p>Use detection proposals or add boxes manually. Correct each box and rotation, then confirm the layout/count before requesting identities. Editing a layout clears its identity choices. Model output establishes no ownership, authenticity, condition, grade or value. Missing catalog coverage and unreadable cards stay unresolved.</p><div id="photo-photos"></div></section>
-<section class="photo-panel"><h2>4. Review duplicates across photos</h2><p>Compare the numbered thumbnails across all photos. Matching printings do not prove the same physical copy. For the same card, keep one and exclude the other. Keep both only for different physical copies. Not sure: exclude for now. A manually entered row can also represent a crop; exclude one of the pair.</p><div id="photo-pairs"></div><details><summary>Optional manual entries for this batch</summary><p>Use the same dex-onboarding-v1 CSV template from <a href="/api/bulk/template/" download>manual bulk</a>. Each row represents one card with quantity 1 and duplicate_decision different; exclude any row already represented by a crop. Maximum 75 candidate rows including crops.</p><label>Manual CSV<textarea id="photo-manual" rows="4"></textarea></label></details><label><input id="photo-duplicates" type="checkbox"> I reviewed all included crops and manual rows. Each included row is a different physical card.</label><button id="photo-handoff" type="button">Continue to shared Review / Confirm</button><p>No card is added here. Review actual existing holdings, defaults and resulting totals in the ordinary bulk screen, then Confirm once. Its receipt offers Undo. Only explicitly selected individual crops are retained with their copies; group originals are removed at confirmation. Deleted bytes cannot be reconstructed by Undo. Existing backups may retain earlier bytes.</p><a id="photo-review-link" hidden>Resume shared review or receipt</a><button type="button" id="photo-delete-images">Delete all batch images · keep confirmed collection records</button><button type="button" id="photo-cancel">Cancel photo batch and delete its images</button></section>
-</div>
-<script src="/collection-assets/photo_batches.js" defer></script>
+<details class="photo-panel" id="photo-upload-panel" open><summary>New photo</summary><div class="photo-upload-fields">
+<label for="photo-file">Card photo</label><input type="file" id="photo-file" accept="image/jpeg,image/png,image/webp">
+<label for="photo-notes">Card details <span class="photo-muted">Optional</span></label><textarea id="photo-notes" rows="2" maxlength="2000" placeholder="Set names, card numbers, or details you know"></textarea>
+<p class="photo-muted">Identify sends your photo and notes to OpenAI through your signed-in Codex account. Review before adding.</p>
+<button id="photo-identify" type="button">Identify cards</button>
+<details><summary>Photo tips</summary><p>Show the card names and bottom numbers. Up to 15 cards per photo. JPEG, PNG or WebP up to 8 MB. Unconfirmed photos expire after seven days. <a href="/add-many/">Manual entry</a> is also available.</p></details>
+</div></details>
+<div class="photo-feedback"><p id="photo-status" role="status" aria-live="polite" tabindex="-1">Loading…</p>
+<button id="photo-stop" type="button" class="secondary" hidden>Stop</button></div>
+<section id="photo-results" hidden><div class="photo-review-heading"><h2 id="photo-results-title" tabindex="-1">Review cards</h2><p id="photo-summary"></p></div><div id="photo-cards"></div><button id="photo-confirm" type="button">Add selected cards</button><p class="photo-muted">Already owned cards are skipped. First-edition marks update an existing record when it is unambiguous.</p><details><summary>Original photo and retry</summary><div id="photo-sources"></div><button id="photo-retry" type="button" class="secondary">Identify this photo again</button><p>Another analysis sends the photo and notes again and uses account capacity. Nothing is retried automatically.</p></details></section>
+<section id="photo-report" hidden tabindex="-1"><h2>Addition report</h2><div id="photo-report-body"></div><button id="photo-undo" type="button" class="secondary">Undo these changes</button></section>
+<details class="photo-history"><summary>Previous photos</summary><div id="photo-saved"></div></details>
+<script src="/collection-assets/photo_batches.js?v=20261027-interface" defer></script>
 {% endif %}
-</main>
+</div>
 {% endblock %}

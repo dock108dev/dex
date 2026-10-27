@@ -32,3 +32,33 @@ def test_loose_mixed_cards_are_supported_without_mystery_assumption(title):
 )
 def test_unsupported_product_rules_still_apply(title):
     assert product_kind(title) == "unsupported"
+
+
+def test_selected_set_is_a_provider_facet_and_survives_more():
+    from pokemon_hunter.beta.discovery_paging import checked_params, first_pages, following
+
+    pages = first_pages("Venusaur Base Set", "both", "ending_soonest", set_name="Base Set")
+    for page in pages:
+        wire = checked_params(page)
+        assert wire["q"] == "Venusaur"
+        assert wire["aspect_filter"] == f"categoryId:{page.category},Set:{{Base Set}}"
+        assert wire["sort"] == "endingSoonest"
+        assert "itemLocationCountry:US" in wire["filter"]
+        more = checked_params(following(page, {"total": 80}, [{}] * 20))
+        assert more == {**wire, "offset": 20}
+
+
+def test_unselected_set_does_not_invent_a_facet():
+    from pokemon_hunter.beta.discovery_paging import checked_params, first_pages
+
+    wire = checked_params(first_pages("Venusaur", "mixed_lots", "best_match")[0])
+    assert wire["q"] == "Venusaur"
+    assert "aspect_filter" not in wire
+
+
+@pytest.mark.parametrize("set_name", ["Base Set},Game:{Other", "Base|Jungle", "Base\nSet"])
+def test_set_cannot_inject_provider_filters(set_name):
+    from pokemon_hunter.beta.discovery_paging import first_pages
+
+    with pytest.raises(ValueError):
+        first_pages("Venusaur", "mixed_lots", "best_match", set_name=set_name)

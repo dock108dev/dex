@@ -221,10 +221,28 @@ def lot_compare(request):
 @endpoint
 @require_GET
 def catalog(request):
-    data = shopping.browse(actor(request), dict(request.GET.items()))
-    offset = int(request.GET.get("offset", "0"))
+    raw = query(
+        request,
+        {
+            "q",
+            "set",
+            "goal",
+            "missing",
+            "edition",
+            "variant",
+            "value_edition",
+            "condition",
+            "grade",
+            "grader",
+            "value",
+            "sort",
+            "offset",
+        },
+    )
+    offset = int(raw.pop("offset", "0"))
     if not 0 <= offset <= 100000:
         raise ValueError("Invalid card page")
+    data = shopping.browse(actor(request), raw)
     data["total"] = len(data["cards"])
     data["cards"] = data["cards"][offset : offset + 40]
     data["offset"] = offset

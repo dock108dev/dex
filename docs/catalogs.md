@@ -51,7 +51,7 @@ including owned cards, Trainer and Energy singles. Local catalog or pricing gaps
 do not narrow the provider query to an ownership/priced-card allowlist. Unmatched
 offers remain unmatched. Lot proposals use the same literal identity services and
 pass included quantities to the review calculator; a whole lot never receives the
-value of one matching single. See [Hunter](hunts.md#price-hunter-screen-and-temporary-review).
+value of one matching single. See [Hunter](hunts.md#hunter-service-and-temporary-review).
 
 ## Catalog coverage
 

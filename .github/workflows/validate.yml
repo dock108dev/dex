@@ -64,6 +64,8 @@ jobs:
         node scripts/verify_cx05_races.js
         node scripts/verify_cx06_races.js
         node scripts/verify_cx06_source_tools.js
+        node scripts/verify_photo_client.js
+        node scripts/verify_hunter_net.cjs
     - name: Required result report
       if: always()
       env:

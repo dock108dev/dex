@@ -3,6 +3,7 @@
 (() => {
   const $ = id => document.getElementById(id), page = document.body;
   if (!$('hunter-app')) return;
+  const simple = $('hunter-app').dataset.simple === 'true';
   const api = '/api/shopping/hunter/', binding = page.dataset.navigationBinding || '', account = page.dataset.navigationAccount || '';
   const initial = JSON.parse($('hunter-initial')?.textContent || '{}');
   const generation = initial.authority?.generation;
@@ -99,6 +100,7 @@
   }
   function renderUsage(value, fill = false) {
     if (!usageOwner || !authority()) return;
+    const wasConfigured=usagePolicy?.configured;
     usagePolicy = value || {configured: false, enabled: false};
     const p = usagePolicy;
     const hasSettings = p.configured && Number.isInteger(p.per_hunt_limit) && Number.isInteger(p.daily_limit) && typeof p.timezone === 'string';
@@ -110,6 +112,12 @@
     if ($('hunter-usage-window')) $('hunter-usage-window').textContent = hasSettings ? `${p.recurring ? 'Next daily window: ' + usageDate(p.next_window_at, p.timezone) + '.' : 'This window only; a new day does not renew capacity.'} Timezone: ${timezoneLabel}.${p.expires_at ? ' Policy expires ' + usageDate(p.expires_at, p.timezone) + '.' : ''}` : '';
     $('hunter-usage-status').hidden = hasSettings && p.enabled && p.remaining > 0;
     if (!p.configured) $('hunter-usage-settings').open = true;
+    if (simple) {
+      $('hunter-usage').hidden=Boolean(p.configured && p.enabled && p.remaining>0);
+      $('hunter-usage-settings').hidden=!p.configured;
+      if (!wasConfigured && p.configured) $('hunter-usage-settings').open=false;
+      $('hunter-poc-enable').hidden=Boolean(p.configured);
+    }
     if (fill) {
       $('hunter-usage-enabled').value = hasSettings ? String(p.enabled) : '';
       $('hunter-usage-per-hunt').value = hasSettings ? String(p.per_hunt_limit) : '';
@@ -149,6 +157,7 @@
   }
   function buttons() {
     $('hunter-start').disabled = !authority() || !ready() || busy || reading || usageBusy || Boolean(run?.running);
+    if (simple) { $('hunter-scope').value='singles'; $('hunter-stop').hidden=!busy&&!run?.running; $('hunter-recheck').hidden=ready(); }
     $('hunter-scope').disabled = busy || Boolean(run?.running);
     $('hunter-stop').disabled = !authority() || stopped || !busy && !run;
     $('hunter-recheck').disabled = !authority() || busy;
@@ -237,7 +246,40 @@
     if (!row.buying_options?.includes('AUCTION')) return row.buying_options?.includes('FIXED_PRICE') ? 'Buy It Now · currently available when observed' : 'Unsupported offer';
     return window.DexAuctionTime?.(row.ends_at) || 'Auction · end time unknown';
   }
+  function netInputs() {
+    return Object.fromEntries(Object.entries({purchaseTax:'net-purchase-tax',resaleTax:'net-resale-tax',feeRate:'net-fee-rate',postage:'net-postage',supplies:'net-supplies',extra:'net-extra'}).map(([key,id])=>[key,$(id).value]));
+  }
+  function simpleCard(row) {
+    const identity=row.proposed_identity, ref=row.reference, token=epoch;
+    const article=h('article',null,{class:'hunter-card',id:`hunter-result-${row.id}`,tabindex:'-1','data-result':row.id});
+    const head=h('div',null,{class:'hunter-card-head'}), info=h('div');
+    head.append(image(identity?.artwork,identity?.name,()=>active(token)),info);
+    info.append(h('h3',identity?.name || row.title || 'Unmatched card'));
+    if (identity) info.append(h('p',[identity.set_name,identity.collector_number && '#'+identity.collector_number,identity.finish,identity.edition].filter(Boolean).join(' · ')));
+    info.append(h('p',countdown(row),{'data-countdown':row.id}));article.append(head);
+    const amounts=h('dl',null,{class:'hunter-amounts'});
+    field(amounts,row.price_kind==='current_bid'?'Current bid':'Buy It Now',money(row.listing_price));
+    field(amounts,'Shipping to you',money(row.shipping));
+    const result=window.DexHunterNet.estimate(row,netInputs());
+    const raw=ref?.grade==='raw' && row.opportunity?.scenarios?.some(s=>s.reference_amount!=null);
+    field(amounts,'Ungraded reference',raw?money(ref.amount):'Unavailable');
+    field(amounts,result.conditional?'Conditional net estimate':'Potential net',result.net===undefined?'Unavailable':money(result.net/100));article.append(amounts);
+    if (raw) {
+      const stamp=ref.captured_at?new Date(ref.captured_at):null;
+      const captured=stamp && Number.isFinite(stamp.getTime())?stamp.toLocaleString():'not recorded';
+      article.append(h('p',`Price dated ${ref.valuation_as_of || ref.as_of || 'unknown'} · captured ${captured}.`,{class:'hunter-note'}));
+      if (ref.condition) article.append(h('p',`Reference condition: ${ref.condition}.`,{class:'hunter-note'}));
+      try {const url=new URL(ref.source_url);if(url.protocol==='https:' && !url.username && !url.password) article.append(h('a','Price source',{href:url.href,target:'_blank',rel:'noopener noreferrer'}));} catch {}
+    }
+    if (result.net!==undefined) article.append(h('p',`Includes ${money(result.fees/100)} selling fees, ${money(result.tax/100)} purchase tax, ${money(result.postage/100)} resale postage, ${money(result.supplies/100)} supplies and ${money(result.extra/100)} other costs.`,{class:'hunter-note'}));
+    else article.append(h('p',result.reason || 'Estimate unavailable.',{class:'hunter-note'}));
+    if (result.conditional) article.append(h('p','Verify the printing and condition before relying on this estimate.',{class:'hunter-note'}));
+    article.append(h('p',row.title || 'Seller title unavailable.'));
+    const link=sellerLink(row.item_url);if(link)article.append(link);
+    return article;
+  }
   function card(row, inspect = false) {
+    if (simple) return simpleCard(row);
     const token = epoch, id = row.id, identity = row.proposed_identity;
     const article = h('article', null, {class: 'hunter-card', id: `hunter-result-${id}`, tabindex: '-1', 'data-result': id});
     const head = h('div', null, {class: 'hunter-card-head'}), info = h('div');
@@ -294,7 +336,7 @@
     retainFocus();
     const target = $('hunter-cards'), filter = $('hunter-filter').value;
     target.replaceChildren();
-    const selected = rows.filter(row => filter === 'all' || filter === 'priced' && row.reference != null || filter === 'unpriced' && row.reference == null || row.discovery_kind === filter);
+    const selected = rows.filter(row => !simple || row.ungraded_single === true).filter(row => simple || filter === 'all' || filter === 'priced' && row.reference != null || filter === 'unpriced' && row.reference == null || row.discovery_kind === filter);
     for (const row of selected) target.append(card(row));
     if (!selected.length) target.append(h('p', rows.length ? 'No received results match this local view. Show all results to continue browsing.' : 'No eligible results were received in these captured pages. Coverage is limited; an empty batch does not authorize more requests.'));
     $('hunter-results').hidden = view !== 'results'; buttons(); restoreFocus();
@@ -368,7 +410,7 @@
         if (!authority() || token !== epoch) return;
         renderUsage(policy);
       }
-      message(ready() ? 'Choose Singles, Lots or Both, then Hunt. No goal or card entry is needed.' : usageOwner && usagePolicy?.reason || metadata.acquisition_unavailable_reason || 'Hunt is unavailable: choose your usage settings when available. Existing Shopping tools remain available.'); buttons();
+      message(ready() ? (simple ? 'Find ungraded cards ending soon or available now.' : 'Choose Singles, Lots or Both, then Hunt. No goal or card entry is needed.') : usageOwner && usagePolicy?.reason || metadata.acquisition_unavailable_reason || 'Hunt is unavailable: choose your usage settings when available. Existing Shopping tools remain available.'); buttons();
     }
     catch (error) { if (authority() && token === epoch) { message(error.message, true); buttons(); } }
   }
@@ -382,7 +424,7 @@
     try {
       if (!continuation && old?.run_id) await request(api + old.run_id + '/stop/', {});
       if (!active(token)) return;
-      const value = await request(continuation ? api + old.run_id + '/continue/' : api, continuation ? {cursor: old.continuation_cursor} : {scope: $('hunter-scope').value});
+      const value = await request(continuation ? api + old.run_id + '/continue/' : api, continuation ? {cursor: old.continuation_cursor} : {scope: simple ? 'singles' : $('hunter-scope').value});
       if (!active(token)) { if (value.run_id && authority()) await request(api + value.run_id + '/stop/', {}).catch(() => {}); return; }
       run = value; busy = false; deadline = continuation ? deadline : Infinity; bindLease(value); coverage(value); remember(); buttons(); await readResults();
     } catch (error) { if (active(token)) { busy = false; message(error.message, true); buttons(); } }
@@ -527,10 +569,16 @@
   });
   const saved = history.state;
   if (saved?.hunter === 1 && saved.account === account && saved.binding === binding && saved.generation === generation && /^[0-9a-f-]{36}$/.test(saved.run || '')) {
-    $('hunter-scope').value = ['singles', 'lots', 'both'].includes(saved.scope) ? saved.scope : 'both';
+    $('hunter-scope').value = simple ? 'singles' : ['singles', 'lots', 'both'].includes(saved.scope) ? saved.scope : 'both';
     $('hunter-filter').value = ['all', 'single', 'mixed_lot', 'priced', 'unpriced'].includes(saved.filter) ? saved.filter : 'all';
     wantedPages = Math.min(800, Math.max(1, saved.pages | 0)); returnContext = saved.returnContext; run = {run_id: saved.run};
     readResults().then(async () => { if (!run || stopped || !authority()) return; if (saved.view === 'single') await inspectCard(saved.inspect, saved.returnContext?.focus, false); if (saved.view === 'lot' && saved.review) { const nav = ++navigationEpoch, token = epoch, expectedReview = saved.review; view = 'lot'; viewEpoch = epoch; reviewId = saved.review; $('hunter-results').hidden = true; $('hunter-review').hidden = false; try { const value = await request(api + 'lot-review/' + encodeURIComponent(saved.review) + '/'); if (active(token) && nav === navigationEpoch && view === 'lot' && reviewId === expectedReview) review.open(value); } catch (error) { if (active(token) && nav === navigationEpoch) { message(error.message, true); backToResults(true); } } } });
   }
+  if (simple && usageOwner) $('hunter-poc-enable').addEventListener('click',()=>{
+    $('hunter-usage-enabled').value='true';$('hunter-usage-per-hunt').value='3';$('hunter-usage-daily').value='3';
+    $('hunter-usage-timezone').value='America/New_York';$('hunter-usage-recurring').value='false';$('hunter-usage-expiry-mode').value='none';
+    saveUsage();
+  });
+  if (simple) $('hunter-net-inputs').addEventListener('input',()=>{if(run && !stopped && authority()) renderCards();});
   availability(); buttons();
 })();

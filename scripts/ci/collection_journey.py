@@ -5,6 +5,7 @@ import time
 
 from scripts.ci.discovery_journey import exercise as discovery_journey
 from scripts.ci.listing_journey import exercise as listing_journey
+from scripts.ci.photo_journey import exercise as photo_journey
 from scripts.ci.shop04_journey import exercise as named_search_journey
 
 
@@ -75,19 +76,17 @@ def exercise(url, root, output):
             started = time.monotonic()
             page.locator("#species-shopping").click()
             expect(page.locator(".discovery-context")).to_contain_text("Finding cards")
-            page.locator(".discovery-local > summary").click()
-            expect(page.locator("#catalog-cards [data-group]").first).to_be_visible()
+            expect(page.locator(".discovery-local > summary")).to_be_hidden()
             expect(page.locator("#discovery-query")).not_to_have_value("")
             page.locator("#shopping-back").click()
             expect(page.locator("#your-cards-heading")).to_be_visible()
             page.locator("#species-shopping").click()
-            page.locator(".discovery-local > summary").click()
-            expect(page.locator("#catalog-cards [data-group]").first).to_be_visible()
+            expect(page.locator(".discovery-local > summary")).to_be_hidden()
             passed("contextual visual Shopping preserves selected Pokémon and collection Back", started)
 
             started = time.monotonic()
-            page.get_by_text("More Shopping tools", exact=True).click()
-            page.get_by_role("link", name="Manual calculator", exact=True).click()
+            # Retained calculator route remains supported but is no longer linked from lots.
+            page.goto(url + "/shopping/calculator/")
             expect(page.locator("#cards")).not_to_have_attribute("aria-busy", "true")
             if page.locator("#show-all").count():
                 page.locator("#show-all").click()
@@ -98,7 +97,7 @@ def exercise(url, root, output):
             page.locator("#comparison button[value=compare]").click()
             expect(page.locator("#results")).to_be_visible()
             capture("consumer-shopping")
-            passed("secondary manual calculator, local picker and explicit comparison", started)
+            passed("retained calculator route, local picker and explicit comparison", started)
 
             started = time.monotonic()
             for width in (390, 320):
@@ -132,12 +131,15 @@ def exercise(url, root, output):
             if page.locator('.app-header [aria-current="page"]').count() != 1 or errors:
                 raise AssertionError("Current navigation or renderer boundary failed")
             passed("invalid filter recovery and one active Library navigation target", started)
+            checks.extend(photo_journey(page, url, output))
             # Keep the owner-priority named search/More/Stop/seller loop in required CI.
             # Run last: its controlled response/image routes live until context teardown.
             checks.extend(
                 {"name": name, "status": "PASS", "evidence_class": "controlled engineering responses"}
                 for name in named_search_journey(page, url, output)
             )
+            if errors:
+                raise AssertionError("Browser journey produced uncaught JavaScript errors")
             report["status"] = "PASS"
         except Exception as error:
             report["failure"] = type(error).__name__

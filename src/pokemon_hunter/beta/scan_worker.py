@@ -31,10 +31,11 @@ def run(stop=None, *, selected_scans_only=False):
             else:
                 scans.cleanup()
                 photo_batches.cleanup()
-            # Ordinary serve does not select deferred batch recognition. The
-            # separately invoked worker retains explicitly enabled batch work.
+            # Ordinary serve runs only stages explicitly admitted in this process.
+            # Restarting never selects older queued photo work.
             worked = (
-                not selected_scans_only and photo_batches.available() and photo_batches.process_one(stop)
+                photo_batches.available()
+                and photo_batches.process_one(stop, selected_only=selected_scans_only)
             ) or scans.process_one(stop)
         except Exception as exc:
             # Retry the iteration, never a claimed provider call. Log in both profiles.

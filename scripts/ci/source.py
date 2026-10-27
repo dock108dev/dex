@@ -85,8 +85,11 @@ def check_document_links():
 
 
 def check():
-    scripts = sorted((ROOT / "src/pokemon_hunter/beta/static").glob("*.js")) + sorted(
-        (ROOT / "web").glob("*.js")
+    scripts = (
+        sorted((ROOT / "src/pokemon_hunter/beta/static").glob("*.js"))
+        + sorted((ROOT / "web").glob("*.js"))
+        + sorted((ROOT / "scripts").glob("*.js"))
+        + sorted((ROOT / "scripts").glob("*.cjs"))
     )
     if not scripts:
         raise ValueError("No supported JavaScript collected")

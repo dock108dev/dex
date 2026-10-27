@@ -24,9 +24,9 @@
 .discovery-controls .field-help { display:block; }
 .discovery .full { grid-column:1/-1; }
 .discovery #discovery-form { padding:20px; background:#fff; border:1px solid var(--border); border-radius:14px; }
-.discovery-searchbox { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:12px; }
+.discovery-searchbox { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(12rem,1fr) auto; align-items:end; gap:12px; }
 .discovery-searchbox label { font-weight:600; }
-.discovery-searchbox input { display:block; width:100%; max-width:100%; margin-top:6px; font-weight:400; min-height:48px; }
+.discovery-searchbox input, .discovery-searchbox select { display:block; width:100%; max-width:100%; margin-top:6px; font-weight:400; min-height:48px; }
 .search-actions { display:flex; gap:8px; }
 .search-actions button { min-height:48px; }
 .discovery-refinements { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,2fr); gap:16px; align-items:start; margin-top:16px; }
@@ -171,3 +171,13 @@
   .discovery-card .seller { grid-template-columns:minmax(0,1fr); }
 }
 @media(prefers-reduced-motion:reduce) { .discovery * { scroll-behavior:auto!important; } }
+
+/* The lot finder leads with a target and an optional set. */
+.discovery-refinements:has(> .provider-choices[hidden]) { display:none; }
+@media(min-width:601px) and (max-width:900px) {
+  .discovery-searchbox { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+  .discovery-searchbox .search-actions { grid-column:1/-1; }
+}
+.discovery-refinements { grid-template-columns:minmax(0,360px); }
+.discovery .offer-image-label { display:none; }
+.discovery-results-heading { margin-top:24px; }

@@ -110,11 +110,9 @@ stripping, backup access and PostgreSQL operation require deployment-specific
 verification. Locked dependencies are reproducible, not guaranteed vulnerability-free.
 Older private files require a permission review independently of source changes.
 
-The October 25 source dependency repair passed its hosted security job, but the
-installed SHOP-10 environment still contains the previously flagged filelock and
-opentelemetry-api versions. See the [installed maintenance gap](local-development.md#installed-maintenance-gap)
-for verified versions and the pending runtime follow-up. Source scanning does not
-establish remediation or exploitability of a separately installed environment.
+Audit installed dependencies separately from the checkout. Updating `uv.lock` or
+passing source scans does not update a separately installed environment. Apply
+compatible runtime updates using the backup procedure in [operations](operations.md).
 
 Endpoint validation uses fixed responses for domain `ValueError`/`TypeError`;
 dedicated validation types could better distinguish programming errors. Shutdown

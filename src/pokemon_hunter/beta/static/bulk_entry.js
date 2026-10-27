@@ -308,6 +308,7 @@
       let effect=!r.included?'Excluded':r.skipped?'Same copy / skipped':r.noop?'No change':r.errors.length?'Fix errors before including':
         r.action==='add_copies'?`Add ${r.quantity} ${r.quantity===1?'copy':'copies'} · total Unknown · ${r.unresolved_fields.length?'variant unresolved':'qualified catalog identity'}`:
         r.action==='set_total'?`Owned · total ${r.total??'Unknown'} · no copies created`:'Broadly owned · total Unknown · no copies created';
+      if(r.photo_result)effect=r.photo_result.detail+(r.photo_result.first_edition?' · ✓ First edition':'');
       info.append(node('p','After: '+effect));
       if(r.resulting)info.append(node('small',`Result for this card across the batch: ${r.resulting.present?'Owned':'Not owned'} · total ${r.resulting.established_total_quantity??'Unknown'} · ${r.resulting.current_copy_count} current / ${r.resulting.recorded_copy_count} recorded copies · ${r.resulting.exact_variant_count} qualified variants`,{class:'bulk-note'}));
       if(r.attributes)info.append(node('small',Object.entries(r.attributes).filter(([,v])=>v).map(([k,v])=>`${labels[k]||k}: ${v}`).join(' · '),{class:'bulk-note'}));
@@ -328,6 +329,13 @@
     const copies=op.plan.creates.filter(c=>c.kind==='copy').length;
     target.append(node('p',`${op.state==='undone'?'Original batch: ':''}${copies} added copy records · ${op.plan.card_intents.filter(i=>i.kind==='mark_owned').length} cards marked owned · ${op.plan.card_intents.filter(i=>i.kind==='card_quantity').length} card totals · ${op.plan.bulk.rows.filter(r=>!r.included||r.skipped).length} excluded/skipped rows.`));
     if(copies)target.append(node('p','Complete totals became Unknown where copies were added.',{class:'bulk-help'}));
+    if(op.plan.photo_report){
+      const report=op.plan.photo_report,labels={added:'Added',already_owned:'Already owned · skipped',duplicate:'Duplicate · skipped',edition_updated:'First edition checked',needs_review:'Needs review',excluded:'Excluded'};
+      target.append(node('h3',op.state==='undone'?'Original photo report · undone':'Photo addition report'));
+      const counts=Object.entries(labels).map(([key,label])=>[report.filter(r=>r.status===key).length,label]).filter(([n])=>n);
+      target.append(node('p',counts.map(([n,label])=>`${n} ${label.toLowerCase()}`).join(' · ')));
+      const list=node('ul',null);for(const r of report){const title=r.identity?`${r.identity.set_name} · #${r.identity.number} ${r.identity.name}`:r.row_id;const line=node('li',`${title} — ${labels[r.status]}${r.first_edition?' · ✓ First edition':''}. ${r.detail}`);list.append(line);}target.append(list);
+    }
     const record=node('details',null);record.append(node('summary','Receipt record details'),node('p','Operation '+op.id),node('p','Collection generation '+op.generation));
     if(op.plan.photo_review){const p=op.plan.photo_review;target.append(node('p','Selected crops retain private per-copy associations. Deleted images cannot be reconstructed.',{class:'bulk-help'}));record.append(node('p',`Photo batch ${p.batch_id} · excluded crop IDs: ${p.excluded_crops.join(', ')||'None'}.`));}
     const links=node('div',null,{class:'bulk-receipt-links'}),linked=op.plan.bulk.rows.filter(r=>r.url);

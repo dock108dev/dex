@@ -1,4 +1,4 @@
-"""Synthetic HUNT-11 adapter output through existing reference lifecycle.
+"""Synthetic snapshot adapter output through existing reference lifecycle.
 
 No customer state, acquired source records, source permission or live prices are
 fixtures. The normal pytest command blocks external sockets for every case.

@@ -64,7 +64,9 @@
     return data;
   }
   function choices() {
-    return {intent,goal_id:intent === 'missing' ? $('discovery-goal').value || null : null,missing_basis:intent === 'missing' ? $('discovery-missing-basis').value : 'species',focus:$('discovery-focus').value,budget:$('discovery-budget').value.trim() || null,query:$('discovery-query').value.trim(),set_id:$('discovery-set').value || null,product_type:$('discovery-product-type').value,sort:$('discovery-sort').value,english_vintage:$('discovery-english-vintage').checked,...target,goal_version:intent === 'missing' ? (context.query?.goal === $('discovery-goal').value ? context.query.version : goals.find(row => row.id === $('discovery-goal').value)?.version) || null : null,generation,browse_requests:1};
+    const selected = {intent,goal_id:intent === 'missing' ? $('discovery-goal').value || null : null,missing_basis:intent === 'missing' ? $('discovery-missing-basis').value : 'species',focus:$('discovery-focus').value,budget:$('discovery-budget').value.trim() || null,query:$('discovery-query').value.trim(),set_id:$('discovery-set').value || null,product_type:$('discovery-product-type').value,sort:$('discovery-sort').value,english_vintage:$('discovery-english-vintage').checked,...target,goal_version:intent === 'missing' ? (context.query?.goal === $('discovery-goal').value ? context.query.version : goals.find(row => row.id === $('discovery-goal').value)?.version) || null : null,generation,browse_requests:1};
+    if ($('discovery-form').dataset.lotSearch === 'true') Object.assign(selected, {intent:'deals',goal_id:null,goal_version:null,missing_basis:'species',focus:'all',budget:null,product_type:'mixed_lots',sort:'ending_soonest',english_vintage:false});
+    return selected;
   }
   function signature(value) {
     return JSON.stringify({intent:value.intent || 'deals',goal_id:value.goal_id || '',missing_basis:value.missing_basis || 'species',focus:value.focus || 'all',budget:value.budget == null ? '' : String(value.budget),query:value.query || '',set_id:value.set_id || '',product_type:value.product_type || 'both',sort:value.sort || 'ending_soonest',english_vintage:value.english_vintage !== false,species:value.species || null,group_id:value.group_id || null,printing_id:value.printing_id || null,goal_version:value.goal_version || null,generation:value.generation ?? generation,browse_requests:1});
@@ -72,9 +74,10 @@
   function changed() { return captured !== null && signature(choices()) !== captured; }
   function updateButtons() {
     $('discovery-search').disabled = !ready || revoked || acquiring;
+    $('discovery-stop').hidden = !acquiring;
     $('discovery-stop').disabled = (!acquiring && !run?.run_id) || ['stopped','expired'].includes(run?.state) || stopWanted || revoked;
     $('discovery-next').disabled = !run?.has_next || acquiring || changed() || revoked;
-    $('discovery-next-note').textContent = acquiring && run?.run_id ? 'Loading more… You can keep browsing or Stop.' : changed() ? 'Choices changed. Select Search eBay to start a new search.' : run?.has_next ? 'More from this search.' : run ? 'You’ve reached the end of this search.' : '';
+    $('discovery-next-note').textContent = acquiring && run?.run_id ? 'Loading more… You can keep browsing or Stop.' : changed() ? 'Select Find lots to search with these changes.' : run?.has_next ? 'More from this search.' : run ? 'You’ve reached the end of this search.' : '';
   }
   function selectionCaptions() {
     const captions = {
@@ -259,7 +262,7 @@
     return result.classification === 'comparable' && result.comparison?.below_reference !== false && result.delivered_total !== null && result.delivered_total !== undefined && Number(result.comparison?.reference_minus_delivered_total) > 0;
   }
   function card(result) {
-    const identity = result.proposed_identity || (result.identity_candidates?.length === 1 ? result.identity_candidates[0] : {}) || {}, reference = result.reference;
+    const identity = $('discovery-form').dataset.lotSearch === 'true' ? {} : result.proposed_identity || (result.identity_candidates?.length === 1 ? result.identity_candidates[0] : {}) || {}, reference = result.reference;
     const comparable = result.classification === 'comparable', conditional = result.classification === 'conditional';
     const auction = result.price_kind === 'current_bid' || result.type === 'auction';
     const candidateLabel = result.discovery_kind === 'mixed_lot' ? 'Loose mixed-lot candidate' : result.discovery_kind === 'uncertain' ? 'Possible card or loose lot' : 'Single-card candidate';
@@ -272,15 +275,15 @@
     const difference = below(result) ? `<p class="difference">${esc(money(result.comparison.reference_minus_delivered_total))} below reference before tax</p>` : '';
     const referenceHtml = reference ? `<div class="reference"><p class="reference-value">${esc(money(reference.amount))} reference · ${esc(reference.as_of || 'date unknown')}</p><p class="reference-basis">${esc(result.basis || 'Reference applicability remains unresolved.')}</p>${difference}<details><summary>Reference dates and applicability</summary><p>Provider valuation date: ${esc(reference.valuation_as_of || 'Unknown')}.</p><p>Captured: ${esc(reference.captured_at || 'Unknown')}.${reference.publisher_built_at ? ' Publisher build: ' + esc(reference.publisher_built_at) + '.' : ''}</p>${reference.expires_at ? `<p>Expires: ${esc(reference.expires_at)}.</p>` : ''}<p>${esc([reference.language,reference.edition,reference.finish,reference.variant,reference.condition,reference.grader,reference.grade === 'raw' ? 'Raw' : reference.grade ? 'Grade ' + reference.grade + ' scenario' : ''].filter(Boolean).map(text).join(' · ') || 'Identity and condition basis unavailable.')}</p>${reference.grade && reference.grade !== 'raw' ? '<p>A grade scenario does not establish an exact slab match.</p>' : ''}${reference.source_version ? `<p>Source version: ${esc(reference.source_version)}.</p>` : ''}${link(reference.source_url) ? `<a href="${esc(link(reference.source_url))}" target="_blank" rel="noopener noreferrer">Reference source</a>` : ''}</details></div>` : `<div class="reference"><p class="reference-value">No applicable reference</p><p>${esc(result.basis || 'An admitted reference could not be applied to this proposed identity.')}</p></div>`;
     const sellerUrl = link(result.item_url, true);
-    const seller = `${sellerUrl ? `<a href="${esc(sellerUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Open seller listing on eBay">Open seller</a>` : '<p>Seller link unavailable.</p>'}`;
+    const seller = `${sellerUrl ? `<a href="${esc(sellerUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Open seller listing on eBay">View on eBay</a>` : '<p>Seller link unavailable.</p>'}`;
     const time = auction ? `<p data-auction-end="${esc(result.ends_at || '')}">${esc(window.DexDiscoveryDisplay?.auctionTime(result.ends_at) || 'Auction · end time unknown')}</p>` : '';
-    return `<article class="discovery-card" id="offer-${esc(result.id)}" tabindex="-1" data-result="${esc(result.id)}"><div class="discovery-card-heading">${image}<div><h3>${esc(result.title || identity.name || candidateLabel)}</h3>${identity.name ? `<p>Proposed: ${esc(identity.name)}</p>` : ''}${metadata ? `<p class="identity-meta">${esc(metadata)}</p>` : ''}${comparable || conditional ? `<span class="discovery-classification">${esc(classification)}</span>` : ''}</div></div><dl class="discovery-amounts"><div><dt>${auction ? 'Current bid' : 'Listing price'}</dt><dd class="${result.listing_price == null ? 'is-unknown' : ''}">${esc(money(result.listing_price))}</dd></div><div><dt>Shipping</dt><dd class="${result.shipping == null ? 'is-unknown' : ''}">${esc(money(result.shipping))}</dd></div><div><dt>Delivered · before tax</dt><dd class="${result.delivered_total == null ? 'is-unknown' : ''}">${esc(money(result.delivered_total))}</dd></div></dl>${time}<div class="seller">${seller}<a class="review-offer" data-review-id="${esc(result.id)}" href="/shopping/check/?discovery_run=${encodeURIComponent(run.run_id)}&amp;item_id=${encodeURIComponent(result.id)}">Inspect lot</a></div><details><summary>Comparison & listing details</summary>${result.reason ? `<p>${esc(result.reason)}</p>` : ''}${referenceHtml}${result.save_reason ? `<p>${esc(result.save_reason)}</p>` : ''}</details></article>`;
+    return `<article class="discovery-card" id="offer-${esc(result.id)}" tabindex="-1" data-result="${esc(result.id)}"><div class="discovery-card-heading">${image}<div><h3>${esc(result.title || identity.name || candidateLabel)}</h3>${identity.name ? `<p>Proposed: ${esc(identity.name)}</p>` : ''}${metadata ? `<p class="identity-meta">${esc(metadata)}</p>` : ''}${comparable || conditional ? `<span class="discovery-classification"${$('discovery-form').dataset.lotSearch === 'true' ? ' hidden' : ''}>${esc(classification)}</span>` : ''}</div></div><dl class="discovery-amounts"><div><dt>${auction ? 'Current bid' : 'Listing price'}</dt><dd class="${result.listing_price == null ? 'is-unknown' : ''}">${esc(money(result.listing_price))}</dd></div><div><dt>Shipping</dt><dd class="${result.shipping == null ? 'is-unknown' : ''}">${esc(money(result.shipping))}</dd></div><div><dt>Delivered · before tax</dt><dd class="${result.delivered_total == null ? 'is-unknown' : ''}">${esc(money(result.delivered_total))}</dd></div></dl>${time}<div class="seller">${seller}<a class="review-offer" data-review-id="${esc(result.id)}" href="/shopping/check/?discovery_run=${encodeURIComponent(run.run_id)}&amp;item_id=${encodeURIComponent(result.id)}">Assess lot</a></div><details hidden><summary>Comparison & listing details</summary>${result.reason ? `<p>${esc(result.reason)}</p>` : ''}${referenceHtml}${result.save_reason ? `<p>${esc(result.save_reason)}</p>` : ''}</details></article>`;
   }
 
   function renderCards() {
     pruneLocal();
     const results = Array.isArray(run?.results) ? run.results : [];
-    const filter = $('discovery-filter').value;
+    const filter = $('discovery-form').dataset.lotSearch === 'true' ? 'all' : $('discovery-filter').value;
     const rows = results.filter(result => filter === 'all' || filter === 'below' && below(result) || filter === result.classification);
     $('discovery-shown').textContent = `${rows.length} of ${results.length} results${filter === 'all' ? '' : ' · ' + ({below:'Comparable · below reference',conditional:'Conditional comparisons',unpriced:'Unpriced or ambiguous'}[filter] || '')}`;
     const markup = rows.map(card).join('') || `<div class="discovery-empty"><h3>${results.length ? 'No results match this filter' : acquiring ? 'Searching this small batch…' : 'No listings to show'}</h3><p>${results.length ? 'Choose All results to see the other listings.' : acquiring ? 'You can stop acquisition at any time.' : 'Try different keywords or filters, or choose More results when available. No new search starts automatically.'}</p></div>`;
@@ -322,7 +325,9 @@
   }
   async function start(next = false) {
     if (acquiring || revoked || !ready || next && (!run?.has_next || changed())) return;
-    const prior = run, selected = choices(), token = ++sequence;
+    const prior = run, selected = choices();
+    if (!next && $('discovery-form').dataset.lotSearch === 'true' && !selected.query) {status('Enter a Pokémon or card name.');$('discovery-query').focus();return;}
+    const token = ++sequence;
     const keepBrowsing = next && Boolean(prior.choices?.query);
     focusResults = !next;
     if (!keepBrowsing) clearResults(prior);

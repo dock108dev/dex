@@ -4,130 +4,38 @@ Shopping combines local catalog browsing, explicit eBay searches and dated-refer
 comparisons. Catalog and reference coverage are partial. Missing identities, costs
 and reference values stay unknown. The app never buys, bids or guarantees a bargain.
 
-## Completion goal and owner direction
+## Provider integration
 
-The agreed local Shopping goal is repeated **Pokémon/card name → optional set →
-recognizable mixed-lot listings → seller → continue browsing**, with explicit
-More/Stop, optional inspection/editing and reliable Back. Missing or owned Pokémon
-must also lead to actual card choices and that search, retaining checked context.
-Exact printing, goal, wanted list, budget and valuation are not prerequisites.
-This is the October 20 search-first direction, not a claim that every private-beta
-journey or future ranking idea is complete.
+The implementation uses these eBay REST operations:
 
-Representative regression inputs are Hypno Fossil, Jolteon, Lapras Fossil, Articuno,
-Gengar Fossil, Venusaur, Moltres, Pokemon Jungle Jolteon, Pokemon Jungle, Alakazam,
-Pokemon Cards, Hypno, Chansey, Kangaskhan Jungle, Scyther and Gyarados Base.
-Venasaur/Venusaur and Gyrados/Gyarados must offer a deliberate original-text choice.
-These examples are regression inputs, not an automatic provider batch.
+| Dex capability | Current API contract |
+| --- | --- |
+| Application authentication | OAuth client credentials, `/identity/v1/oauth2/token`, `api_scope` |
+| Shopping and Price Hunter searches | `GET /buy/browse/v1/item_summary/search` |
+| Exact listing details | `GET /buy/browse/v1/item/{item_id}` |
+| Numeric listing/variation resolution | `GET /buy/browse/v1/item/get_item_by_legacy_id` |
 
-The owner authorized end-to-end local engineering, ordinary app updates, real
-Shopping Search/More and necessary official details within existing request limits
-and safeguards. Earlier zero-operation handoffs and repeated operation-allocation
-approval requirements are superseded. Preserve customer state, credentials,
-accounting, source rights and finite capacity; authorization does not reset capacity
-or authorize purchases, scraping or deployment. Usefulness acceptance belongs to
-the owner. The October 25 documentation audit performed no acquisition or runtime update.
+The legacy-ID endpoint resolves numeric identifiers through Browse; it does not
+use the traditional XML API. Provider access requires separate configuration.
 
-## Delivered Shopping slices and evidence
+## Find lots
 
-Delivery history reconciled October 21, 2026; status checked again October 25.
-SHOP-04/05's source-only status
-was superseded by SHOP-06 delivery and SHOP-07 genuine qualification. SHOP-08/09/10
-then refined that installed loop. Historical report instructions are not current
-execution gates. Reports below are local ignored evidence paths relative to the
-repository; maintained usage contracts in this guide do not depend on those files.
+The ordinary Shopping page leads with Pokémon/card name, optional set and
+**Find lots**. It searches US mixed lots, ending soonest. Budget, scope, singles,
+comparison filters and repeated disclosure controls are absent from this main flow;
+legacy hidden field values do not narrow the submitted search. Seller photos, title,
+prices/shipping, auction time, View on eBay and Assess lot lead the result cards.
+Single-card identity guesses are omitted from lot previews; assessment remains a
+separate action. No value claim follows from a low current bid alone.
 
-| Slice | Completed result | Retained verification and boundary |
-| --- | --- | --- |
-| SHOP-04 | Named mixed-lot search, optional refinements, spelling choices, immediate recognizable offers, checked seller images/links, shared auction timing and finite deduplicated More/Stop. | `reports/shop-04-20261020/closeout.md`: 467 affected tests, 88 package/artwork tests, 19 final continuation cases, ten controlled browser groups and 43 isolated package HTTP assertions. Controlled evidence, not a customer walkthrough. |
-| SHOP-05 | Missing/owned Pokémon → Library → card → Shopping; separate internal details and seller actions; current/frozen, printing, supported set and Back context preserved. | `reports/shop-05-20261020/closeout.md`: 855 focused tests, 88 package/artwork tests, ten navigation and ten search browser groups, 43 package HTTP assertions; 220 packaged source files matched. |
-| SHOP-06 | Combined successor installed through the ordinary launcher on supported Python 3.12.15; source/installed differences reconciled. | `reports/shop-06-20261020/closeout.md`: 1,067 affected plus 293 preceding-maintenance tests, 43 smoke assertions, 248 package files/nine assets matched, 59-table preservation. Actual Hypno/card/frozen-goal navigation observed; marketplace checks followed in SHOP-07. |
-| SHOP-07 | Genuine Search/More/seller/details/review/Back/Stop loop; batched name matching, selected-offer review and retained results while More loads. | `reports/shop-07-20261020/closeout.md` and `actual-journeys.md`: 510 installed tests, 23 client checks, 43 smoke assertions and real Hypno Fossil/Jolteon/Pokemon Jungle journeys. Owner confirmation of the browse loop is recorded in the former tracker and SHOP-08 closeout. |
-| SHOP-08 | Larger seller photos, compact results, offer-first Inspect and unchanged-review save skipping. | `reports/shop-08-20261020/closeout.md`: 517 installed checks plus final affected/client checks, package smoke and genuine desktop/narrow seller/Inspect/Back/Stop observations. Revised visual usefulness remained owner review. |
-| SHOP-09 | Faster checked restoration, subset image binding and deferred optional exploration; edits and missing/frozen policy preserved. | `reports/shop-09-20261020/closeout.md`: 560 installed tests, 26 discovery/ten inspection client cases and 43 smoke assertions. Actual unchanged Back improved from 14.090 to 1.737 seconds (20 offers), 15.716 to 2.346 (39). Edited saves remained slow and led to SHOP-10. |
-| SHOP-10 | Reviewed-ID validation, one checked offer context per save and shared latest-revision autosave/Back writer; failed saves retain edits and block navigation. | `reports/shop-10-20261020/closeout.md`: 373 installed tests, 14 inspection/26 discovery client cases, 43 smoke assertions; 248 package members/220 source members/ten assets matched. Genuine edits survived reopening. |
+A selected catalog set reaches official Browse as the category's `Set` aspect,
+with the Pokémon/name as the keyword query, rather than merely appending the set to
+keywords. Named continuation preserves the facet. Other catalog set labels may differ from seller taxonomy; no fallback broadening is
+performed. A selected set is seller metadata, not physical content verification.
 
-SHOP-10's comparable actual edited Back samples improved from 5.629 to 2.786 seconds
-with 20 offers and 8.287 to 4.230 with 39; save POST samples fell from 3.098/5.373 to
-1.140/1.612 seconds. Unchanged expanded Back took 1.660 seconds. These are variable
-host-load samples, not latency guarantees. Local validation/restoration can pause.
-SHOP-09's earlier 11.424-second edited sample is not SHOP-10's comparison baseline.
-
-The report directories retain candidate manifests, package identities and commands;
-installed delivery reports also retain preservation and rollback records. SHOP-04's `incoming-hunts.patch` preserves the
-October 20 pre-implementation audit: signed-out observation and source/installed
-differences were diagnostic, not genuine Shopping qualification. The initial broken
-seller/flicker report's precise cause was not established; SHOP-07 later observed
-working admitted seller links, photos and timing. Unknown references/contents and
-unsupported image URLs still remain unknown or use fallback. No whole-lot bargain,
-fresh-price coverage or universal marketplace availability is claimed.
-
-## Owner usefulness review
-
-Engineering implementation and required local verification for the defined installed
-loop are complete in the retained SHOP-10 evidence. Final usefulness acceptance is
-open. Verify the [actual installation](local-development.md#existing-installations)
-before a new session; the October 20 prepared tab and process IDs are historical.
-
-The October 25 audit confirmed the running package still matches SHOP-10, while
-identifying a separate [installed dependency maintenance gap](local-development.md#installed-maintenance-gap).
-That follow-up does not reopen delivered feature slices or supply owner acceptance.
-Record the reviewed runtime explicitly, and repeat affected review if maintenance
-changes it. Newer source presentation is not part of the installed SHOP-10 claim.
-
-Use Search eBay with Hypno/Fossil, Mixed lots and Ending soon; browse, open seller,
-return, More, Inspect lot, Review cards and costs, edit, Back and reopen. Confirm
-that the edit and browsing position survive; finish with Stop. Try Jolteon or
-Pokemon Jungle as useful. From a missing Pokémon, Explore cards → card details →
-Shopping → Back should preserve context. Review whether repeated searching, photos,
-seller/card links and waiting are acceptable. Record the owner's explicit acceptance
-or concrete friction against the observed runtime; engineer observations cannot
-supply that decision. Do not run every example as a required live campaign.
-
-## Deferred backlog and conditional delivery
-
-These product follow-ups are outside the completed installed-loop goal. They are not active
-implementation slices until owner feedback or a delivery/publication request selects
-scope. Existing capability does not imply that these refinements are accepted.
-The independently identified installed dependency maintenance is already recorded
-as open operational work; it does not require a new feature request.
-
-- Missing-card versus supported-value priority and overlap, including owned cards
-  without manual entry, wanted lists or goals: owner sets priorities; frontend and
-  comparison/integration engineering then define checks. Dated applicable values
-  and honest costs are required; auction bids stay provisional.
-- Broader missing-Pokémon layout and ranking refinements: owner feedback first;
-  frontend/product engineering implements the agreed change. No redesign is approved.
-- Deliver the newer source successor: QA/local integration engineering reconciles
-  the exact cumulative source, qualifies package/security/navigation/Stop behavior,
-  backs up protected state, installs compatibly, verifies package/served assets and
-  preserved collection/configuration/accounting, retains rollback, and exercises
-  affected actual journeys before owner review. Source-only checks do not satisfy
-  this delivery. See [source maintenance evidence](local-development.md#source-maintenance-evidence).
-- Publication and hosted CI: the normal push run for `d38be04` is green; a complete
-  compatibility attempt for that candidate remains unverified. Release/CI engineering
-  binds any selected successor to its own exact-SHA results; owner separately decides
-  release and repository enforcement. See [CI qualification](CI.md#current-repository-qualification).
-- Historical capability/acquisition-profile retirement: separate support/recovery
-  decision before implementation, preserving origins, saved data and consumed use.
-
-The old tracker referred generically to other beta journeys without identifying
-active slices or a broader completion contract. This reconciliation does not mark
-those journeys complete or reactivate them. They require explicit scope before
-becoming an execution plan. No reference-coverage campaign is required here.
-
-## Search and browse
-
-Type a Pokémon or card name, optionally choose a set, and select **Search eBay**.
-Mixed lots is the default; Singles and Both are alternatives. A goal, exact printing,
-collector number, budget or wanted list is not required. Search options and local
-catalog exploration are optional. Spelling suggestions allow either a correction
-or the original text; neither starts a request automatically.
-
-Results show seller titles, checked links, available photographs, price/current bid,
-shipping, known total and auction time. Unpriced and uncertain lots remain browsable.
-Seller photographs, catalog scans and private collection photos have distinct roles.
-A card named in a query or title does not establish the contents or value of a lot.
+Provider result order and returned candidates are preserved; broader matches are
+not locally reranked or discarded. Search category and seller metadata do not
+guarantee lot contents.
 
 ## Named search and continuation
 
@@ -135,9 +43,10 @@ Named search uses one official Browse category per request: Mixed lots selects
 **183455**, Singles selects **183454**, and Both alternates the two captured lanes.
 Category selection is independent of words such as “lot” in the query.
 
-Search eBay captures text, optional set, category choice and sort. It needs no local
+Find lots captures text and optional set with the page's mixed-lot category and
+ending-soonest order. The service also supports explicit category and sort choices. It needs no local
 catalog match. Set overrides replace conflicting recognized aliases, preserving
-Base Set versus Base Set 2. English/vintage words are optional and initially off.
+Base Set versus Base Set 2. Compatibility callers can supply English/vintage refinements.
 Venasaur/Venusaur and Gyrados/Gyarados appear as visible suggestions: **Use** changes
 text locally, **Keep as typed** retains it; Search remains a separate explicit action.
 Neither is evidence of seller contents or exact printing identity.
@@ -180,6 +89,39 @@ validates aware timestamps on the server. Missing, malformed, unzoned or invalid
 calendar/timezone dates show unknown; ended auctions say ended. Current bids remain
 provisional. Seller destinations must pass the shared HTTPS eBay URL validator.
 
+## Ungraded Price Hunter
+
+Price Hunter focuses on individual ungraded cards. The ordinary page submits
+Singles, excludes graded/lot results from the ordinary display, and presents card identity,
+current bid/Buy It Now, time remaining, inbound shipping, admitted ungraded reference,
+reference date/capture time/source and potential net. Seller links are immediately
+visible. No graded comparison or bulk calculation is part of this flow.
+
+Potential net is a conditional resale scenario, not probability-weighted EV:
+raw reference minus purchase amount, inbound shipping, purchase tax, resale fees,
+outbound postage, supplies and other costs. Free resale shipping is assumed. The
+calculator implements US non-Store fee assumptions: 13.25% through $7,500 of the fee base,
+2.35% above; $0.30 through a $10 order, otherwise $0.40. Resale buyer tax increases
+fees but is not seller revenue. The fee schedule is described at
+[eBay selling fees](https://www.ebay.com/help/selling/fees-credits-invoices/selling-fees?id=4822).
+Default assumptions are visibly 0% purchase/resale tax, $5 resale postage, $0.50
+supplies, zero other costs. One cost disclosure makes them editable in memory;
+this does not establish actual tax liability or shipping cost. Extra seller charges
+or promotion costs belong in Other costs. Negative estimates stay negative.
+
+Existing reference admission/matching, original source dates and lifecycle remain
+in force. Missing shipping/reference/cost input or expired listings leave net
+unavailable. Conditional references label the estimate conditional. Capture time
+is shown only if actually recorded; reading an old reference is not a fresh price
+check.
+
+Unconfigured owners can explicitly enable a one-day test capped at three operations,
+without recurrence. This only saves usage settings; Find cards remains separate.
+Existing configured policies and all consumed accounting remain authoritative.
+Reopening, cost edits and reviewing its results make no provider requests.
+The underlying service also supports multiple categories; those compatibility
+capabilities do not change the ordinary page's Singles submission.
+
 ## Everyday Price Hunter
 
 Use **Hunter → Usage settings** to enable/pause acquisition and explicitly select
@@ -195,10 +137,10 @@ sends and publication. Timezone changes preserve prior usage conservatively;
 day boundaries account for daylight saving. Clock rollback or invalid accounting
 blocks acquisition. See [policy operations](operations.md#everyday-hunter-policy).
 
-## Price Hunter screen and temporary review
+## Hunter service and temporary review
 
-`/shopping/hunter/` is the authenticated Hunter journey, linked from Shopping and
-its tools navigation. Choose Singles, Lots or Both and explicitly Hunt. No goal,
+`/shopping/hunter/` is the authenticated Hunter page. The service supports Singles,
+Lots or Both, while the ordinary page submits Singles. No goal,
 wanted list or card entry is required. It retains US/English Pokémon TCG across
 all years/generations, including owned cards and supported Trainer/Energy singles.
 The captured auction window is the next 24 hours; available Buy It Now offers are
@@ -291,7 +233,9 @@ links without a version still open through the existing current policy; new link
 retain the explicit version. Logout, revocation and cross-account result access use
 the existing authentication/navigation boundary.
 
-## One visual Pokémon, card and eBay search
+## Compatibility catalog exploration
+
+These retained catalog controls are hidden on the ordinary Find lots page.
 
 Shopping starts with a named eBay search, defaulting to mixed lots. Local catalog
 exploration is available under **Explore local Pokémon and cards**. Broad Pokémon names
@@ -344,7 +288,10 @@ calculator is at `/shopping/calculator/`. Contextual collection links retain the
 Saved research and Packs remain reachable. Opening any of these pages does not
 request provider data, refresh prices or change collection/goals.
 
-## Find deals and missing cards
+## Compatibility deal and missing-card scopes
+
+These service scopes remain available to compatibility callers; the ordinary lot
+finder does not expose their refinements.
 
 **Find deals** generates searches from the supported catalog and includes owned
 cards. It needs neither a goal nor manual card entry. An optional USD spending

@@ -1,4 +1,4 @@
-"""Offline HUNT-10 explanations and reproduced literal matching defects.
+"""Offline comparison explanations and literal matching regressions.
 
 All cases are fabricated engineering inputs. They do not reconstruct the erased
 seller corpus or establish actual reference coverage, freshness or a bargain.

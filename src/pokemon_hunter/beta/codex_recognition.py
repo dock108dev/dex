@@ -300,8 +300,8 @@ def recognize(images, root, cancelled=lambda: False, job_id=None):
             os.close(lock_fd)
 
 
-def recognize_batch(stage, images, root, cancelled, timeout, crop_ids=()):
+def recognize_batch(stage, images, root, cancelled, timeout, crop_ids=(), notes=""):
     """Separate versioned protocol; never alter the existing single-card model/path."""
     from .batch_recognition import recognize
 
-    return recognize(stage, images, root, cancelled, timeout, crop_ids)
+    return recognize(stage, images, root, cancelled, timeout, crop_ids, notes=notes)

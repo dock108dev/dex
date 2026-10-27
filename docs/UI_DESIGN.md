@@ -5,10 +5,8 @@ Red identifies primary actions and selection. Shared primitives live in
 `beta/static/glass.css`; application styles live in `collection.css` and `public.css`.
 Django templates and plain CSS/JavaScript require no external design workspace.
 
-This guide describes the checkout's interface contracts. The October 20 interface
-maintenance candidate is present in source but is newer than installed SHOP-10;
-see [source maintenance evidence](local-development.md#source-maintenance-evidence).
-Use the actual installed presentation for customer review until a successor is delivered.
+This guide describes the source interface. Installed runtimes can differ from the
+checkout; [local development](local-development.md) explains runtime selection.
 
 ## Navigation and access
 
@@ -21,9 +19,10 @@ Ordinary card browsing and detail use the main navigation without a duplicate
 collection task bar; collection tools remain in Menu. My Cards also offers a direct
 Add many cards shortcut.
 
-Shopping leads with one named eBay search, optional Set, Mixed lots/Singles/Both
-and Order. Stop stays beside Search; local catalog exploration and collection/budget
-options are secondary. Explicit eBay search supports loose mixed lots, singles and
+Shopping leads with Pokémon/card name, optional Set and Find lots, in that order.
+The ordinary lot finder uses US mixed lots and ending-soonest order; broader
+controls remain hidden under the ordinary flow. Stop stays beside
+Find lots while a search runs. Explicit eBay search supports loose mixed lots, singles and
 auctions. Check a listing/lot remains directly available, with secondary links
 to the lot calculator, retained saved finds, Packs to open, independent Pack lookup
 and saved pack research. Classic hunt/missing pages direct new searches to Shopping;
@@ -115,11 +114,11 @@ navigation and reload. These are current views; named-view persistence is unavai
 
 ## Shopping
 
-The named-search workspace uses aligned common refinements and one Search options
-disclosure for collection, budget and provider preferences. Short selected values
+The lot finder aligns name, optional Set and Find lots/Stop in one desktop row.
+Narrow layouts preserve that same field-to-action reading order. Hidden broader
+refinements consume no layout space. Short selected values
 need no repeated caption; a measured clipped native selection receives its complete
-wrapped caption, including at enlarged text sizes. Desktop quick-set shortcuts share
-the same Set control; narrow layouts retain the direct native selector. Idle readiness
+wrapped caption, including at enlarged text sizes. The Set control remains a native selector on narrow screens. Idle readiness
 needs no instructional paragraph. Progress, blockers, errors and Stop remain visible.
 
 Desktop received offers pair compact thumbnails with complete titles; narrow
@@ -127,8 +126,7 @@ layouts retain larger loaded photos and reduce unavailable-image placeholders.
 Keep unknown costs readable and preserve access to larger offer imagery in inspection.
 Desktop review costs share an aligned row and local card search sits beside its action;
 these controls stack on narrow screens. Routine counts use neutral separators rather
-than warning surfaces. The October 26 source preview is recorded locally in
-`reports/interface-20261026/review.html`; it is not an installed delivery.
+than warning surfaces.
 
 Received offers retain stable photo areas and complete titles. The listing amount
 has stronger emphasis than ancillary costs; unknown costs stay explicitly readable.
@@ -138,12 +136,10 @@ rows instead of separate empty panels. Review inputs stack on narrow screens. Th
 zero/unknown remainder distinction stays beside its field; extended help stays in
 one named disclosure. Calculations, temporary retention and source rights are unchanged.
 
-Price Hunter at `/shopping/hunter/` leads with Singles/Lots/Both, Hunt and an
-independent Stop, followed by readable scope/progress and image-led received
-results. Coverage/accounting detail is secondary. Local result pages and explicit
-Continue acquisition have distinct labels and request contracts. Disabled
-acquisition explains unavailability before a search. The existing merged visual
-search and calculator remain separate Shopping tools.
+Price Hunter at `/shopping/hunter/` leads with Find cards and an independent Stop.
+The ordinary page searches ungraded singles; editable cost assumptions support a
+conditional net estimate. Unknown inputs leave the estimate unavailable. Usage
+settings and local result pages remain distinct from new acquisition actions.
 
 Temporary lot review leads with Ungraded, quantities and the unresolved remainder.
 Attribute/cost corrections, seller provenance and additional official details are
@@ -153,16 +149,16 @@ focus. Lifecycle reads preserve focused result controls, and independent detail
 Stop remains reachable across Back. Enlarged text and narrow layouts must retain
 readable controls, focus and recovery actions.
 
-Broad Pokémon names show Pokémon artwork and current collection context. Choosing
+The retained catalog explorer shows Pokémon artwork for broad names and current collection context. Choosing
 a Pokémon reveals card references; detailed name/set/number searches show card scans
-and leave plausible printings as choices. All supported sets and quick set buttons
-apply locally and to the submitted eBay phrase. Images never depict seller contents.
+and leave plausible printings as choices. Its set controls apply to local catalog filtering. The ordinary lot finder uses
+a separate seller-set facet for provider search. Images never depict seller contents.
 Local edits and Back never acquire listings.
 
 Species, card and goal Find links carry a server-checked context. A group without
 an explicit child stays at card-reference scope until a printing is deliberately
-selected. Archived or unsupported targets remain unavailable. Entry opens the merged
-visual search; quantities, provider search, comparison and saving remain explicit.
+selected. Archived or unsupported targets remain unavailable. Entry opens the contextual lot finder; provider search, comparison and saving
+remain explicit.
 Current possession and frozen goal policy remain distinct.
 
 The compact assisted review leads with Ungraded and included quantities. Printing,
@@ -206,6 +202,21 @@ rows and row errors retain their meaning. Confirmation still applies exactly the
 reviewed batch. A failed catalog load leaves selection unavailable with focused recovery;
 an in-flight action locks conflicting edits. Close/Escape and Save return focus to
 their respective originating or saved-row controls.
+
+## Photo entry
+
+Add from photos uses the same neutral surfaces, red primary action and readable
+control sizes as Shopping. The working column is limited to 52rem. New photo opens
+on first use, then collapses when analysis or review begins, retaining the file and
+notes. The provider/account disclosure remains beside Identify. Stop and failures
+stay outside the collapsible upload area.
+
+Review leads with card count, images, identity, Include and optional corrections.
+Results receive keyboard focus when first shown. Missing images have an explicit
+fallback; unknown matches remain excluded and open for correction. Import/duplicate
+policy, consent, confirmation and Undo remain unchanged. Empty saved-photo history
+and redundant idle/review instructions are omitted. Reports keep itemized effects;
+retry and Undo use secondary styling.
 
 ## Interaction and accessibility
 

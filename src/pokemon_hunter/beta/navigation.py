@@ -96,7 +96,13 @@ def task_home(request):
         "/add-card/": "Add Card",
         "/administration/": "Administration",
     }
-    response = render(request, "beta/task_home.html", {"task_title": titles[request.path]})
+    from . import photo_batches
+
+    response = render(
+        request,
+        "beta/task_home.html",
+        {"task_title": titles[request.path], "photo_batches": photo_batches.available()},
+    )
     response["Cache-Control"] = "private, no-store"
     return response
 

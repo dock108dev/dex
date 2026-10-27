@@ -197,16 +197,15 @@ def hunts(request):
     if request.method == "POST":
         value = hunter.start(who, binding, body(request), auth_session=request.session.session_key)
     elif request.GET:
-        if set(request.GET) not in ({"run_id"}, {"run_id", "cursor"}) or any(
-            len(request.GET.getlist(key)) != 1 for key in request.GET
-        ):
+        raw = query(request, {"run_id", "cursor"})
+        if "run_id" not in raw:
             raise ValueError("Choose one Hunter run")
         try:
             value = hunter.status(
                 who,
                 binding,
-                request.GET["run_id"],
-                **({"cursor": request.GET["cursor"]} if "cursor" in request.GET else {}),
+                raw["run_id"],
+                **({"cursor": raw["cursor"]} if "cursor" in raw else {}),
             )
         except hunter.InvalidResultCursor:
             response = _private_json(

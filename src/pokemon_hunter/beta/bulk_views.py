@@ -11,6 +11,7 @@ from django.views.decorators.http import require_GET, require_POST
 from . import bulk_input, collection, collection_drafts, effective_collection, navigation, store
 from .asgi import BULK_BODY_LIMIT
 from .collection_views import body
+from .request_inputs import query
 from .views import actor
 
 
@@ -112,10 +113,11 @@ def catalog(request, who):
 def template(request, who):
     content = bulk_input.template()
     if request.GET:
-        if set(request.GET) != {"set"} or len(request.GET.getlist("set")) != 1:
+        raw = query(request, {"set"})
+        if set(raw) != {"set"}:
             raise ValueError("Choose one supported set")
         _, grouped = bulk_input.catalog_state(who)
-        groups = [g for g in grouped["groups"] if g["set_id"] == request.GET["set"]]
+        groups = [g for g in grouped["groups"] if g["set_id"] == raw["set"]]
         if not groups:
             raise ValueError("Choose a supported set")
         content = bulk_input.export_rows(

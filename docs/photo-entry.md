@@ -10,6 +10,28 @@ requires explicit capability enablement on the installation. Opening
 a page never enables a feature, migrates storage or starts recognition. Real-photo
 recognition accuracy remains unmeasured.
 
+## Photo workflow
+
+The active flow is **Identify cards → Review cards → Add selected cards → report**.
+One explicit action sends the normalized original and optional notes through Codex
+CLI. A single structured response proposes both card boxes and identity evidence.
+There is no mandatory detection, crop approval, separate identity request, per-card
+Save button, duplicate-decision form or second bulk-review screen. The final Add
+button confirms the displayed selection using the shared transactional planner.
+Corrections live under **Correct details**; no collection change occurs during
+analysis. Already owned cards are skipped and edition/report/Undo policy below stays
+in force. The legacy detection and cropped-identity service endpoints remain for
+compatibility but are not the ordinary interface.
+
+The direct schema is `dex-photo-identities-v1`, with a bounded list of visible
+identities and normalized card boxes. Glare, sleeves and surface damage are warnings,
+not blanket unreadability. Readable fields survive; obscured fields remain unknown.
+Matching normalizes collector numerators (`5/64` → `5`), language aliases
+(`English` → `en`) and known edition/finish names. Empty catalog variant fields are
+unknown, not contradictions. Known conflicting variants still reject; ambiguous
+broad identities require correction. A model observation does not manufacture exact
+catalog coverage. The original isolation, accounting, Stop and deadline rules remain.
+
 ## Provider configuration
 
 The private root's `scan-config.json` selects a provider:
@@ -132,7 +154,9 @@ automatic resend. Registered payload directories are removed on normal exit; sta
 owned payloads are cleaned after 90 seconds when the shared CLI lock is available.
 Unregistered paths are never swept.
 
-### Photo workflow
+### Compatibility workflow
+
+The following describes retained multi-stage endpoints, not the ordinary photo UI.
 
 | Step | Behavior |
 | --- | --- |
@@ -170,8 +194,8 @@ files outside model access. Reject tool/action events, unexpected crop IDs and l
 or malformed output. An incompatible isolation profile leaves manual entry available
 rather than relaxing permissions. Deadlines are supervised independently of slow
 authorization reads. Account, session and crop revisions must match before dispatch
-and publication. Human-reviewed glare, overlap, cut-off and unreadable flags force
-abstention.
+and publication. Glare/overlap flags warn about image quality; only unreadable identifying evidence
+requires abstention, and readable fields are retained.
 
 Dex uses CLI-managed authentication without reading or copying the authentication
 cache, extracting tokens, changing accounts or treating subscription login as a
@@ -220,3 +244,35 @@ identifiers, not image or model bodies. Deleted bytes cannot be reconstructed by
 undo. Backups may retain old bytes; recovery reapplies current revocations, expiry,
 deletion and consumed attempts before serving or dispatch. Keep private image pixels
 out of source control and public output.
+
+
+## Duplicate handling and saved reports
+
+Photo-linked bulk confirmation treats the same set, card
+name and collector number as one card: an already-present card is skipped, and
+repeated rows within the batch add at most one new copy. Ordinary manual bulk
+entry retains its explicit copy-quantity behavior. The check uses current effective
+ownership, including declarations, and is recomputed at confirmation; intervening
+collection changes require a fresh preview.
+
+A reviewed **First edition stamp visible** checkbox records edition evidence.
+An exact first-edition catalog selection also carries that flag. For an already
+owned card, a single current supported copy can receive the checkmark without
+creating a duplicate. Existing first-edition marks are never cleared by a later
+unchecked photo. If there is no current physical record or several possible ones,
+the report says **Needs review**, with no copy or edition mutation. Unsupported
+first-edition sets still fail validation. For a new card repeated in a batch,
+a reviewed first-edition row takes priority and only one copy is created.
+
+After confirmation the saved **Photo addition report** lists Added, Already owned /
+skipped, Duplicate / skipped, First edition checked, Needs review and Excluded,
+with the card identity and first-edition checkmark. It is retained in the immutable
+operation plan; reopening cannot replay additions. Undo reverses the batch's new
+copies and edition updates together, subject to the ordinary intervening-edit checks.
+It keeps the original report visibly labeled as undone.
+
+Ordinary local serving processes photo stages explicitly admitted in that
+server process. Process-local selection is registered only after admission commits; a restart does
+not select old queued stages or retry consumed attempts. The standalone operator
+worker retains its explicit durable-queue behavior. Stop and authorization guards
+still apply before dispatch and publication.

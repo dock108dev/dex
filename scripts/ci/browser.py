@@ -56,6 +56,10 @@ def prepare_journey(root):
     # Refuse an already enriched root instead of adding duplicate goals/saves.
     if any(len(collection.goals(who)) != 2 for who in (owner, member)):
         raise ValueError("Unmodified fresh demo goals required for browser preparation")
+    from pokemon_hunter.beta import collection_drafts, photo_batches
+
+    collection_drafts.initialize()
+    photo_batches.initialize()
     sealed_catalog.initialize()
     pack_research.initialize()
     if sealed_catalog.records()["products"] or any(pack_research.listing(who) for who in (owner, member)):
