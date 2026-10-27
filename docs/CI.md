@@ -155,3 +155,35 @@ an arbitrary budget. Windows launcher support, hosted Linux ARM, container OS
 vulnerability scanning, TLS/proxy qualification, signing and publication are outside
 these checks. JavaScript, CSS and templates ship in the Python wheel; there is no
 independent frontend bundle or generated-source regeneration step.
+
+
+## Available verification and remaining boundaries
+
+The October 27 local CI review passed 3,526 locked-environment tests, 51 browser
+states plus 33 journey checks, security, reproducible package installation,
+PostgreSQL and a Linux ARM container. The later journal extraction/test split
+passed 164 focused tests, 34 package-guard tests and 25 recognition tests, retaining
+all 46 original test functions. Documentation/link and syntax checks also passed.
+These local records cover their recorded source versions, not every later commit
+or installed runtime. Evidence is local-only in `reports/ci-review-20261027/`
+and `reports/repository-cleanup-20261027/`. The shared policies, journal boundaries
+and test organization are described in [architecture](SSOT.md) and
+[maintenance conventions](local-development.md#maintenance-conventions).
+
+At the October 27 reconciliation, HEAD was `61e9f0a7228b3632a7f9f352f095d01658c2f1f1`.
+[Tests](https://github.com/dock108dev/dex/actions/runs/40571257581) and
+[CodeQL](https://github.com/dock108dev/dex/actions/runs/40571257148) were inspected.
+CodeQL passed; Tests failed in Ubuntu Python 3.14 behavior and the required
+aggregate. The reported discovery deadline test assumed dispatch would start
+within a 50 ms wall-clock window. Its local repair advances a controlled clock
+only after dispatch and checks both timeout limits, cancellation and consumed
+attempt accounting. Production deadlines are unchanged; the repair needs a new
+exact-candidate hosted result. Complete normal and compatibility results must
+be attributed to the chosen source/package candidate. Prior passing `3cd1eb2`
+results do not establish that candidate's result. Documentation edits made during
+reconciliation are not included in those already-running checks.
+
+An earlier tracker referenced an absent `reports/repository-cleanup-20261021/`
+folder. Its historical test-count/preservation claims remain unverified and are
+not needed to reconstruct current source. Use current candidate checks; do not
+reopen completed implementation merely to recreate a missing historical report.

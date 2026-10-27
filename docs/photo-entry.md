@@ -276,3 +276,24 @@ server process. Process-local selection is registered only after admission commi
 not select old queued stages or retry consumed attempts. The standalone operator
 worker retains its explicit durable-queue behavior. Stop and authorization guards
 still apply before dispatch and publication.
+
+
+## Delivered verification and owner review
+
+The October 27 simplified-photo delivery replaced mandatory separate detection and
+identity screens with one original-photo analysis and reviewed confirmation. Its
+source and wheel suites each passed 162 targeted tests; installed client contracts
+and served assets were checked. One supplied two-card image matched Alakazam Base
+Set #1 and Kangaskhan Jungle #5 as holo Unlimited in 9.43 seconds. Confirmation added
+two cards and reload retained the report; that example applied no first-edition flags.
+Duplicate suppression and edition updates have targeted test coverage, not proof
+from that particular two-card journey. The preceding duplicate/report delivery had
+181 focused source/package checks. Dependencies were unchanged in these deliveries.
+
+The local-only `reports/photo-simple-20261027/closeout.md` records this bounded
+observation. It does not establish broad recognition accuracy or owner acceptance.
+For owner review, use the actual installed flow with an explicitly supplied photo
+and authorized analysis: inspect matches and unknowns, correct only when needed,
+review intended additions/skips/edition effects, and confirm only intended changes.
+Check the saved report after reload. Exercise Undo only for an explicitly chosen
+reversible addition. Accept the workflow or record a concrete reproduction.

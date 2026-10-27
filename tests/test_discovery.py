@@ -234,24 +234,39 @@ def test_failure_ends_action_without_retry(discovery, failure):
     assert not run.raws and "CANARY" not in run.error
 
 
-def test_request_and_overall_deadlines(discovery):
+@pytest.mark.parametrize("request_seconds,overall_seconds", [(30, 75), (30, 10)])
+def test_request_and_overall_deadlines(discovery, request_seconds, overall_seconds):
+    clock = SimpleNamespace(now=time.monotonic())
+    cancelled = []
+
     class Slow(FakeTransport):
         calls = []
 
         async def request(self, stage, **kwargs):
             self.calls.append((stage, kwargs["timeout"]))
-            await asyncio.sleep(0.2)
-            return await super().request(stage, **kwargs)
+            # Expire only after dispatch: authorization and durable accounting
+            # must not race a millisecond deadline on a loaded runner.
+            clock.now += kwargs["timeout"] + 1
+            try:
+                await asyncio.Event().wait()
+            except asyncio.CancelledError:
+                cancelled.append(stage)
+                raise
 
     discovery.monkeypatch.setattr(d, "Transport", Slow)
-    discovery.monkeypatch.setattr(d, "REQUEST_SECONDS", 0.03)
-    discovery.monkeypatch.setattr(d, "OVERALL_SECONDS", 0.05)
+    discovery.monkeypatch.setattr(d, "time", SimpleNamespace(monotonic=lambda: clock.now))
+    discovery.monkeypatch.setattr(d, "REQUEST_SECONDS", request_seconds)
+    discovery.monkeypatch.setattr(d, "OVERALL_SECONDS", overall_seconds)
     run = run_for(discovery)
-    began = time.monotonic()
+    # Model an already armed deadline without starting a real watchdog thread.
+    # Separate timer/authorization tests cover that watchdog and pre-send expiry.
+    run.deadline = clock.now + overall_seconds
     d._worker(run, discovery.actor, ("fixture", "secret"))
-    assert time.monotonic() - began < 0.5
     assert run.state == "failed" and run.counts["total"] == 1
-    assert Slow.calls[0][1] <= 0.03
+    assert Slow.calls == [("oauth", min(request_seconds, overall_seconds))]
+    assert cancelled == ["oauth"] and not run.raws
+    records = [json.loads(line) for line in ledger(discovery).read_text().splitlines()]
+    assert [record["state"] for record in records] == ["admitted", "in_flight", "uncertain"]
 
 
 @pytest.mark.parametrize("slow_call", [1, 3])

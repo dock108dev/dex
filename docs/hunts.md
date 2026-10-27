@@ -568,3 +568,53 @@ details do not establish sold-history access or actual sale prices. Dated catalo
 reference values are not sold comparables. Research completed sales separately;
 Dex does not infer entitlement, scrape sale history or turn active asking prices
 into realized values.
+
+
+## Completion requirements and owner review
+
+The local completion goal is a useful Pokémon/card-name → optional set → mixed-lot
+results → seller/assessment → More/edit/Back → Stop loop, with contextual entry
+from missing/owned Pokémon and card choices. Goals, exact printings, wanted lists,
+budgets and valuation are optional. The later requested additions are simple
+photo-to-reviewed-collection entry and ungraded-single Price Hunter with dated raw
+references, time remaining and conditional net after explicit costs. General
+recognition accuracy, fresh-price guarantees and probability-weighted EV are not
+established requirements or demonstrated capabilities.
+
+Owner review uses the actual installed runtime, not an engineering fixture. For
+Shopping, assess search clarity, photos, seller links, preserved context, edits,
+reading position, More and Stop. For Hunter, assess ungraded results, original
+reference dates/source, editable assumptions and unknown-cost abstention. Identify
+the reviewed runtime and explicitly accept each workflow or supply a reproducible
+problem. A problem requires a bounded repair, affected verification/delivery and
+re-review; reporting feedback alone is not acceptance. Provider operations require
+a newly selected finite allowance when prior capacity is consumed.
+
+## Delivered behavior and verification limits
+
+Local delivery records dated October 27 establish that the simplified lot finder
+returned 20 summaries for one explicit name/set search. Its 44 candidate Python
+tests and 28 client cases passed. Original provider ordering is intentional;
+exhaustive API/web parity and stronger relevance filtering were not established.
+The ungraded Hunter delivery preserved photo and lot-finder behavior; 83 candidate
+tests, 29 client cases and arithmetic checks passed. An authorized three-operation
+Hunt consumed all three operations. Observed raw references were dated September
+27 without capture timestamps; no fresh-price confirmation followed. Package
+rebinding preserved policy, parent and consumed-usage accounting.
+
+These are bounded delivery observations, not current process inspection or owner
+acceptance. Supporting records are local-only:
+`reports/lots-simple-20261027/closeout.md` and
+`reports/hunter-poc-20261027/closeout.md`. Running behavior and available capacity
+must be checked again before a new session; do not renew consumed test capacity.
+
+## Optional backlog
+
+Stronger relevance/ranking, missing-page redesign, broader provider/catalog coverage,
+general photo-accuracy evaluation, fresh-price acquisition, graded/bulk Hunter UI,
+and broader EV modeling require separately selected scope. External publication,
+signing and release automation are not prerequisites for the local completion goal.
+Repository branch enforcement is a separate maintainer decision after exact-candidate
+CI passes. Investigation of nonblocking SQLite ResourceWarnings and portable
+configuration for installation-bound operator guards are maintenance follow-ups;
+they become release blockers only if candidate checks expose a concrete failure.

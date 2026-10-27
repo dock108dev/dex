@@ -213,3 +213,28 @@ storage are separate modules. Keep transaction bodies together when refactoring.
 Photo lifecycle, recognition protocol and confirmation/report tests live in
 `test_photo_batches.py`, `test_photo_recognition.py` and `test_photo_confirmation.py`.
 Their synthetic fixtures are in non-collected `tests/photo_batch_helpers.py`.
+
+
+## Recorded runtime maintenance status
+
+The latest delivery record inspected for the October 27 plan reconciliation selects
+`hunter-poc-20261027`, preserving the simplified photo and lot-finder deliveries.
+This is a recorded runtime identity, not a fresh inspection of the running process.
+Before maintenance, resolve the configured runtime and root using the startup
+instructions and inspect its dependency inventory.
+
+The October 25 inventory recorded filelock 4.0.12 and opentelemetry-api 1.45.0;
+retained audit findings flagged those versions. Subsequent photo, lot-finder and
+Hunter delivery records explicitly report no dependency changes. The dependency
+repair therefore remains open unless a newer installed inventory establishes it.
+The old SHOP-10 runtime statement is superseded by later delivery records; its
+dependency inventory remains historical evidence, not a current measurement.
+Evidence is local-only: `reports/docs-audit-20261025/installation-identity.json`
+and the delivery closeouts described in [Shopping](hunts.md#delivered-behavior-and-verification-limits)
+and [photo entry](photo-entry.md#delivered-verification-and-owner-review).
+
+Select a bounded dependency repair preserving delivered behavior, or explicitly
+reconcile a cumulative source successor. Never label a cumulative source update a
+lockfile-only change. Qualify the selected package, preserve rollback and independent
+journals, then follow [runtime updates](operations.md#runtime-updates-and-recovery).
+A code rollback must not restore old consumed capacity or revoked data.
