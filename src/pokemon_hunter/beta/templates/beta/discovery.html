@@ -2,7 +2,7 @@
 {% block title %}Shopping · Dex{% endblock %}
 {% block body_class %}discovery-page{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="/collection-assets/discovery.css?v=20261020-interface">
+<link rel="stylesheet" href="/collection-assets/discovery.css?v=20261026-interface">
 <div class="discovery" id="discovery">
   <div class="discovery-heading">
     <h1>Shopping</h1>
@@ -16,7 +16,7 @@
   {{ discovery_goals|json_script:"discovery-goals" }}
   <form id="discovery-form">
     {% csrf_token %}
-    <div class="discovery-searchbox"><label for="discovery-query">Pokémon or card name<input id="discovery-query" name="query" type="search" maxlength="200" placeholder="Jolteon, Hypno Fossil, Pokémon Cards…" autocomplete="off"></label><div class="search-actions"><button id="discovery-search" type="submit" disabled>Search eBay</button><button id="discovery-stop" type="button" class="secondary" disabled>Stop</button></div></div>
+    <div class="discovery-searchbox"><label for="discovery-query">Pokémon or card name<input id="discovery-query" name="query" type="search" maxlength="200" placeholder="Name or keywords" autocomplete="off"></label><div class="search-actions"><button id="discovery-search" type="submit" disabled>Search eBay</button><button id="discovery-stop" type="button" class="secondary" disabled>Stop</button></div></div>
     <div id="discovery-suggestions" role="status" aria-live="polite" hidden></div>
     <div class="discovery-refinements">
     <div class="discovery-setbar"><label for="discovery-set">Set <span class="optional">optional</span><select id="discovery-set" name="set_id"><option value="">All supported sets</option></select><span id="discovery-set-caption" class="selection-caption">All supported sets</span></label></div>
@@ -47,7 +47,7 @@
     </details>
     <p id="discovery-status" role="status" aria-live="polite" tabindex="-1">Loading search options…</p>
     <details class="discovery-local"><summary>Explore local Pokémon and cards</summary><button type="button" id="catalog-search" class="secondary">Search local cards</button>
-    <section id="catalog-results" class="catalog-results" aria-labelledby="catalog-results-title"><div class="catalog-heading"><h2 id="catalog-results-title" tabindex="-1">Pokémon and cards</h2><button id="catalog-clear-target" type="button" class="secondary" hidden>Show all matching cards</button></div><p id="catalog-status" role="status" aria-live="polite">Loading your local catalog…</p><div id="catalog-cards" class="catalog-cards"></div><button id="catalog-next" type="button" class="secondary" hidden>More local cards</button><p class="field-help">Pokémon artwork and card reference scans identify catalog entries. They do not show a seller’s actual cards. Unavailable images keep their place.</p></section>
+    <section id="catalog-results" class="catalog-results" aria-labelledby="catalog-results-title"><div class="catalog-heading"><h2 id="catalog-results-title" tabindex="-1">Pokémon and cards</h2><button id="catalog-clear-target" type="button" class="secondary" hidden>Show all matching cards</button></div><p id="catalog-status" role="status" aria-live="polite">Loading your local catalog…</p><div id="catalog-cards" class="catalog-cards"></div><button id="catalog-next" type="button" class="secondary" hidden>More local cards</button><p class="field-help">Catalog images do not show the seller’s cards.</p></section>
     </details>
   </form>
   <section id="discovery-results" aria-labelledby="discovery-results-title" hidden>
@@ -65,5 +65,5 @@
 </div>
 <script src="/collection-assets/listing-time.js?v=20261020-shop04" defer></script>
 <script src="/collection-assets/discovery-display.js?v=20261020-shop04" defer></script>
-<script src="/collection-assets/discovery.js?v=20261020-interface" defer></script>
+<script src="/collection-assets/discovery.js?v=20261026-interface" defer></script>
 {% endblock %}

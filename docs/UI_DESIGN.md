@@ -122,6 +122,14 @@ wrapped caption, including at enlarged text sizes. Desktop quick-set shortcuts s
 the same Set control; narrow layouts retain the direct native selector. Idle readiness
 needs no instructional paragraph. Progress, blockers, errors and Stop remain visible.
 
+Desktop received offers pair compact thumbnails with complete titles; narrow
+layouts retain larger loaded photos and reduce unavailable-image placeholders.
+Keep unknown costs readable and preserve access to larger offer imagery in inspection.
+Desktop review costs share an aligned row and local card search sits beside its action;
+these controls stack on narrow screens. Routine counts use neutral separators rather
+than warning surfaces. The October 26 source preview is recorded locally in
+`reports/interface-20261026/review.html`; it is not an installed delivery.
+
 Received offers retain stable photo areas and complete titles. The listing amount
 has stronger emphasis than ancillary costs; unknown costs stay explicitly readable.
 Results filters and counts sit together. Inspection leads with the offer, price and

@@ -37,6 +37,8 @@
 .listing-check #listing-load { padding:4px 0 0; margin:0; border:0; }
 .listing-check #listing-identifier { margin-top:6px; }
 .listing-check #check-review { padding:4px 0 0; }
+.listing-check #check-review>.discovery-controls { grid-template-columns:repeat(4,minmax(0,1fr)); margin-top:16px; }
+.listing-check #review-count { background:transparent; border:0; padding:12px 0; margin:12px 0 0; border-bottom:1px solid var(--border); }
 .listing-check .review-card { display:grid; grid-template-columns:100px minmax(0,1fr); gap:18px; align-items:start; border-top:1px solid var(--border); padding:16px 0; }
 .listing-check .review-card-content { min-width:0; }
 .listing-check .review-card h3 { font-size:1.1rem; line-height:1.45; margin:0 0 12px; overflow-wrap:anywhere; }
@@ -47,9 +49,10 @@
 .listing-check .review-include { display:flex; align-items:center; gap:8px; align-self:end; min-height:44px; }
 .listing-check .review-include input { width:20px; height:20px; min-height:20px; flex:none; }
 .listing-check .review-card-content details { margin:12px 0; }
-.listing-check #check-find { margin:20px 0; }
-.listing-check #check-find button { margin-top:10px; }
-.listing-check #check-query { margin-top:6px; }
+.listing-check #check-find { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:6px 12px; margin:20px 0; }
+.listing-check #check-find label { grid-column:1/-1; }
+.listing-check #check-find button { margin:0; }
+.listing-check #check-query { margin:0; }
 .listing-check #check-matches { display:grid; gap:8px; }
 .listing-check .check-match { display:flex; align-items:center; gap:14px; white-space:normal; min-width:0; text-align:left; }
 .listing-check .check-match>span { min-width:0; overflow-wrap:anywhere; }
@@ -61,6 +64,7 @@
 .listing-check #review-buy-now { overflow-wrap:anywhere; }
 .listing-check .review-help { margin-top:12px; }
 @media(max-width:700px) {
+  .listing-check #check-review>.discovery-controls { grid-template-columns:repeat(2,minmax(0,1fr)); }
   #offer-summary { grid-template-columns:minmax(0,1fr); }
   .offer-photo { min-height:0; aspect-ratio:3/2; }
   .offer-overview-copy { padding:20px; }
@@ -70,7 +74,9 @@
 }
 @media(max-width:600px) {
   .listing-check .check-panel { padding:16px; }
-  .listing-check .discovery-controls { grid-template-columns:minmax(0,1fr); }
+  .listing-check .discovery-controls, .listing-check #check-review>.discovery-controls { grid-template-columns:minmax(0,1fr); }
+  .listing-check #check-find { grid-template-columns:minmax(0,1fr); }
+  .listing-check #check-find button { justify-self:start; }
   .listing-check .discovery-actions>* { max-width:100%; }
   .listing-check .review-card { grid-template-columns:72px minmax(0,1fr); gap:12px; }
   .listing-check .review-card>.review-art { width:72px; min-height:105px; }

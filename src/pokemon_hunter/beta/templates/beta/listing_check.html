@@ -2,8 +2,8 @@
 {% block title %}Check a listing/lot · Dex{% endblock %}
 {% block body_class %}discovery-page inspection-page{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="/collection-assets/discovery.css?v=20261020-interface">
-<link rel="stylesheet" href="/collection-assets/listing_check.css?v=20261020-interface">
+<link rel="stylesheet" href="/collection-assets/discovery.css?v=20261026-interface">
+<link rel="stylesheet" href="/collection-assets/listing_check.css?v=20261026-interface">
 {{ shopping_binding|json_script:'check-binding' }}
 {{ account_id|json_script:'check-account' }}
 {{ listing_entry|json_script:'check-entry' }}
@@ -15,13 +15,13 @@
   <section id="listing-preview" class="check-panel preview-actions" hidden aria-label="Loaded listing preview"><h2 id="listing-preview-heading">Loaded listing</h2><div class="discovery-actions"><button id="use-listing" type="button" class="secondary">Use offer in review</button><button id="discard-listing" type="button" class="secondary">Keep my review</button></div><p id="replacement-note" class="field-help">Uses this offer’s details for your temporary review, replacing existing contents and costs.</p><details><summary>Seller details and identity notes</summary><div id="listing-details"></div><p>Seller claims need checking. Stock and lot units are separate from cards inside the lot.</p></details></section>
   <details id="listing-tools" class="check-panel"{% if not listing_entry %} open{% endif %}><summary>{% if listing_entry %}Load official details or another listing{% else %}Load an eBay listing{% endif %}</summary><form id="listing-load">{% csrf_token %}<label for="listing-identifier">eBay listing URL or item ID</label><input id="listing-identifier" maxlength="2048" placeholder="https://www.ebay.com/itm/…" autocomplete="off"><div class="discovery-actions"><button id="load-listing">Load listing</button><button type="button" class="secondary" id="stop-listing" disabled>Stop</button><a id="manual-entry" href="#check-review">Enter manually / in person</a></div><p class="field-help">Loading official details makes an eBay request. Opening a selected search result does not.</p></form></details>
   <details id="review-editor" class="check-panel review-editor"{% if not listing_entry %} open{% endif %}><summary>Review cards and costs</summary>
-  <section id="check-review" aria-labelledby="review-heading"><h2 id="review-heading" tabindex="-1">Ungraded lot review</h2><p class="field-help">Temporary · up to 30 minutes · not saved or exported.</p>
+  <section id="check-review" aria-label="Ungraded lot review"><h2 id="review-heading" tabindex="-1">Ungraded cards</h2><p class="field-help">Temporary · up to 30 minutes · not saved or exported.</p>
     <div class="discovery-controls"><label><span id="review-price-label">Whole-lot asking price</span><input id="review-price" inputmode="decimal" placeholder="Unknown"></label><label>Amount meaning<select id="review-price-kind"><option value="current_asking_price">Asking / buy-now price</option><option value="current_bid">Auction current bid</option></select></label><label>Shipping<input id="review-shipping" inputmode="decimal" placeholder="Unknown"></label><label>Unrecognized cards in this lot<input id="review-unknown" type="number" min="0" max="100000" placeholder="Unknown" aria-describedby="unknown-cards-help"><span id="unknown-cards-help" class="field-help">Enter 0 only if every card is identified.</span></label></div>
     <p id="review-buy-now" class="field-help" hidden></p>
     <p id="review-source-counts" class="field-help" hidden></p>
     <details><summary>Listing reference, tax and other costs</summary><div class="discovery-controls"><label>Review title<input id="review-title" maxlength="500"></label><label>Listing reference URL<input id="review-url" type="url" maxlength="2048"></label><label>Currency<input id="review-currency" maxlength="3" value="USD"></label><label>My planned manual bid<input id="review-planned_bid" inputmode="decimal" placeholder="Unknown"></label><label>Tax<input id="review-tax" inputmode="decimal" placeholder="Unknown"></label><label>Other costs<input id="review-other_costs" inputmode="decimal" placeholder="Unknown"></label></div><p>Current bid, buy-now asking price and your planned manual bid are separate observations. None establishes a final purchase cost. You place bids yourself.</p></details>
-    <p id="review-count" class="discovery-note">No identified cards yet.</p><p class="field-help">Images are catalog reference scans. They do not show this seller's actual cards or verify edition, finish or condition.</p><div id="review-cards"></div>
-    <form id="check-find"><label for="check-query">Add or correct a card · name, set or number</label><input id="check-query" type="search" maxlength="160"><button class="secondary">Find cards locally</button></form><div id="check-matches"></div>
+    <p id="review-count" class="discovery-note">No identified cards yet.</p><p class="field-help">Catalog images do not verify the seller’s cards, edition, finish or condition.</p><div id="review-cards"></div>
+    <form id="check-find"><label for="check-query">Card name, set or number</label><input id="check-query" type="search" maxlength="160"><button class="secondary">Find cards locally</button></form><div id="check-matches"></div>
     <div class="discovery-actions"><button id="check-compare" type="button">Compare reviewed lot</button><button id="clear-review" type="button" class="secondary">Clear review</button></div><p class="field-help">Only included cards count. Blank costs mean unknown; enter 0 for a known zero.</p>
     <details class="review-help"><summary>How this review works</summary><p>Reopening keeps the remaining review time. Ungraded is the default; optional card details can change the value basis. Wanted targets are not assumed to be listing contents. Foreign currencies stay unpriced without conversion.</p></details>
   </section>
@@ -31,5 +31,5 @@
 </div>
 <script src="/collection-assets/listing-time.js?v=20261020-shop08" defer></script>
 <script src="/collection-assets/discovery-display.js?v=20261020-shop08" defer></script>
-<script src="/collection-assets/listing_check.js?v=20261020-interface" defer></script>
+<script src="/collection-assets/listing_check.js?v=20261026-interface" defer></script>
 {% endblock %}
