@@ -285,3 +285,389 @@ prices or imagery. Card details' Shopping action reuses this original state.
 Restoration rereads the existing authenticated temporary service without acquiring
 or renewing its lease. See [connected entry](hunts.md#connected-pokémon-and-card-entry)
 for scope changes and qualification boundaries.
+
+
+## October 27 browsing diagnosis
+
+A read-only investigation of the actual installed `hunter-poc-20261027` runtime
+confirmed a shared catalog bottleneck affecting guest and authenticated browsing.
+The installed grouping, catalog-entry, public-catalog and card-screen modules
+matched the inspected checkout. Browser resource timings on the owner's existing
+My Cards page measured 8.85 seconds for the card list, 7.76 seconds for filter
+options and 7 milliseconds for collection context. These are overlapping requests,
+not durations to add together. Unauthenticated local HTTP reads measured 2.69 seconds
+for public card groups and 1.06 seconds on repeat. Public catalog took 0.88 seconds
+but returned 19,711,673 bytes. The installation contained 33,083 printings across
+187 sets. No credentials or private record contents are reproduced here.
+
+These are individual observations, not a controlled cold-start benchmark or a p95.
+The owner's reported restart penalty has not yet been isolated from browser reload,
+server restart, filesystem warmth, concurrent work and image/network effects.
+HTTP 200 establishes availability, not usable performance. No implementation repair
+or new acquisition was performed in this investigation.
+
+The current implementation reads and decodes full catalog rows before application
+filtering. `card_groups.project` builds the group projection before `_list` pages
+it; private projection also resolves effective ownership and reads published metadata.
+List and filter-option requests separately invoke projection. `card-screens.js`
+waits for both before rendering the list. Guest grouping uses the shared catalog
+path, and the public catalog endpoint can serialize the full printing collection.
+This explains substantial avoidable work; exact attribution still requires profiling.
+
+## Accepted direction for responsive reads
+
+The next local version must serve bounded catalog pages from reusable, indexed
+metadata and apply current account ownership without rebuilding the whole catalog
+on every page/filter read. This is an agreed design direction, not delivered behavior.
+The current no-persistent-cache descriptions above remain accurate until replacement
+is implemented and qualified.
+
+Derived indexes are disposable representations of authoritative records, never new
+ownership or publication authority. Their design must identify catalog revision,
+publication/identity changes, account and collection revision where applicable, and
+schema/package compatibility. Publication withdrawal, edits, Undo, source replacement,
+logout and revocation must not expose stale or foreign private data. Authorize every
+private request independently of a cache hit. Build/rebuild and atomic activation
+belong to explicit maintenance or authoritative updates, not ordinary browsing.
+Restart should reuse valid derived state; missing/corrupt state needs bounded,
+observable recovery without reseeding or returning silently incomplete results.
+
+Public output remains allowlisted; archived owned identities, unresolved evidence,
+natural sorting, complete filter options and stable group IDs retain their contracts.
+Bound response size and database work for lists, filters, species and detail reads;
+a paginated response alone does not establish a bounded implementation. Migrate
+full-catalog consumers explicitly and preserve compatibility through a documented
+adapter or versioned change. Performance must not depend on reduced customer catalogs,
+stale ownership, removed safeguards or a warm process cache.
+
+See [next-version experience](UI_DESIGN.md#next-version-responsiveness-contract)
+and [measurement requirements](CI.md#browsing-performance-qualification).
+
+## PERF-01 read architecture contract
+
+This is the implementation contract for PERF-02–04, not an installed feature.
+PERF-01's measured evidence and remaining qualification limits are recorded in
+[CI](CI.md#perf-01-baseline-evidence). Preserve the existing identity and ownership
+rules above; a fast approximation of them is not acceptable.
+
+### UI, backend and database boundary
+
+The UI and database remain separate layers. Browser JavaScript calls authenticated
+or public HTTP APIs; backend Python services own all database reads/writes and
+policy checks. The existing private `inventory.db` SQLite database stores the
+application's authoritative records. Shared catalog indexes and account overlays
+are server-side derived tables in that database, not browser storage or UI-owned
+state. The browser receives bounded results and keeps only transient display state.
+
+This design does not introduce a separate database-server process. SQLite is a
+local database file accessed by the backend; PostgreSQL remains the separately
+qualified staging option. Logical UI/database separation does not require another
+database engine, service or copy of the customer's data. The API boundary allows
+backend read implementation changes without moving authority into the UI.
+
+### Authority and revision keys
+
+Keep `games`, `catalog_sets`, `printings`, reviewed aliases/publication heads,
+collection sources/declarations, copies, operations and frozen goals authoritative.
+Do not put prices, provider content, session credentials or private photos into the
+catalog index. Retain complete archived identity metadata internally; a publication
+flag controls availability, not whether a retained copy's identity exists.
+
+Add a durable monotonic catalog revision in an explicit additive schema migration.
+The derived catalog key is `(catalog_revision, read_schema_version,
+identity_policy_version, publication_policy_version, image_mapping_version)`.
+A package digest identifies the builder in diagnostics; unrelated package changes
+need not invalidate an identical declared read schema/policy. The existing
+`catalog_heads` set/import pairs alone are insufficient: they do not cover every
+identity/alias change. No file mtime, row count or process lifetime is a revision.
+
+Use the existing per-account `collection_generations.value` for collection revision,
+with an explicit source revision/digest and a new `account_read_revision` backstop
+in the overlay manifest. The overlay key is `(internal_account_id,
+collection_generation, account_read_revision, source_revision, catalog_key,
+ownership_policy_version)`. Keep the existing collection generation semantics intact;
+new read-revision triggers must not make a just-created preview stale. Goal-scoped results additionally key on the immutable
+goal ID/version and finite scope criteria. Never enlarge a frozen goal when a new
+catalog revision appears. An account ID supplied by the browser cannot select an
+overlay. Authentication, active-account state and role are read on every request,
+including hits, and checked again before response release alongside revisions.
+
+### Shared indexed representation
+
+Use additive tables in the existing database, with build IDs on every derived row
+and an active-manifest pointer. This avoids a second database transaction boundary.
+Prepare typed, allowlisted printing metadata; groups; group-child membership;
+all alias candidates (including collisions); unresolved catalog evidence; species
+membership; filter dictionaries and postings. Store archived and published child
+membership separately. Store the exact `dg1` hash inputs and resulting ID unchanged.
+
+Precompute three deterministic group order ranks using the existing Python
+case-folding/natural-number comparator and stable ID tie-break. Index
+`(build_id, scope, sort_rank, group_id)`, membership by printing/group, aliases by
+literal alias, and filter postings by `(build_id, field, literal_value, group_id)`.
+Prepare case-folded searchable text and 1/2/3-character gram postings; intersect
+query grams in SQL and apply exact existing substring semantics as a residual.
+Do not change substring search to word-prefix matching. The older printing API's
+all-token matching and variant-label search remain a separate compatibility policy.
+Search counts and sort/page selection operate on compact indexed IDs, never decoded
+whole-catalog Python records. Verify common one-character searches, empty queries,
+Unicode, punctuation and deep pages, not just selective names.
+
+Expand metadata only for the returned page or selected detail. Filter options use
+complete scoped dictionaries/postings, independent of the current page and query.
+Owned options join account membership, including archived owned children. Counts
+remain exact; no approximate totals or fabricated selectable edition/finish values.
+Prepare aliases and conflict detection once per catalog revision, not on each list.
+Image descriptors are resolved only for returned rows; remote artwork is outside
+primary response readiness and retains its existing access/source rules.
+
+### Account composition
+
+PERF-03 owns disposable account-group, account-species, copy-reference and unresolved
+evidence tables. Derive these from the existing effective-collection policy, including
+operation history/source boundaries. Persist the result of that policy, not another
+interpretation of possession. Broad presence, established total, recorded/current
+copies and exact variants remain separate. Never allocate broad quantities to children.
+
+Recompute the affected literal identity/copy/species dependency closure on ordinary
+confirmed edits and Undo. Source replacement/import may require a whole-account
+rebuild; perform that work in the authoritative operation/preparation path. Catalog
+identity changes rebuild affected overlays against the candidate catalog revision.
+Store full evidence once and page references separately. A list must not replay the
+entire operation journal or reconstruct every catalog printing to validate a trusted
+internal snapshot. Replace equality against freshly loaded whole-catalog inputs with
+an internal revision-bound snapshot type; arbitrary caller-supplied rows still reject.
+
+Update authoritative state, generation and applicable derived rows atomically when
+the bounded incremental path succeeds. If preparation fails, do not serve the old
+revision as current: mark the overlay unavailable and expose explicit recovery.
+A durable confirmed operation remains confirmed; a derived failure must never replay
+it. Simultaneous reads select one build/revision snapshot, and a final authority check
+returns 409 if that snapshot became stale. Cached possession is never mutation authority.
+
+### Invalidation ownership
+
+| Authoritative event | Owning path | Required derived action |
+| --- | --- | --- |
+| Catalog publish, rollback/withdrawal, corrected identity, variant children | `catalog_imports.transition/write`, `catalog_variants`, pipeline publication adapters | Advance catalog revision in the same transaction; invalidate public/private catalog and affected overlays; retain old IDs/history without invented aliases |
+| Catalog set/game/printing/alias writes outside publication | Explicit migration/import/deployment operators | Database revision triggers provide a backstop; operator prepares a compatible build before readiness |
+| Copy add/edit/remove/resolve, quantity/declaration correction, source replacement, import, bulk/photo confirmation | `collection.confirm`, `collection_plans`, `collection_intents`, `collection_drafts` | Advance account generation and update/rebuild affected overlay; receipts and source semantics unchanged |
+| Undo | `collection.undo` | New generation and recomputation from resulting authority, never restore an old cached snapshot |
+| Source/declaration or copy changes through maintenance | Import/deployment/operator paths | Invalidate account overlay transactionally; triggers on relevant authority tables catch bypasses of `collection.bump` |
+| Goal creation/successor/edit | Collection confirmation and `collection_goals` | Key scoped result by new goal version; preserve frozen membership and old version behavior |
+| Account revocation/deletion/role change | Existing account/CLI/support authority | Reject access immediately; discard account reuse; current principal checks remain mandatory |
+| Logout/session expiry/account switch | Django session authority and frontend navigation | Stop client reuse and discard late responses; never rely on cached account state |
+| Image mapping/package policy update | Explicit installed package update | Change relevant mapping/policy key; rebind page descriptors without changing identity/ownership |
+
+Revision triggers must cover inserts, updates and deletes of catalog authority and
+account source/copy/declaration authority and committed operation changes. Catalog
+triggers advance catalog revision; account triggers advance only the new
+`account_read_revision`, not `collection_generations`. Exclude preview-only operation
+changes and derived-table writes. Multiple read-revision increments in one transaction
+are harmless; equality, not consecutive numbering, is the contract. Existing
+confirmation/Undo generation checks and operation ordering remain compatible. Tests must enumerate trigger coverage and all mutation adapters above.
+
+### Versioned bounded API
+
+Keep current routes and JSON contracts for compatibility. Add `/api/v2/` equivalents
+for card groups, owned groups, group filters, species groups and Pokédex summaries;
+add `/api/v2/public/` equivalents for guest groups, filters and species. V2 list
+selectors retain current semantics and page sizes (default 40, maximum 100), with
+an optional opaque `catalog_revision` token alongside private `generation`.
+Each response supplies `read_version:2`, `catalog_revision` and `public`; private
+responses also supply checked `account_id` and `generation`. A supplied stale token
+returns 409. Unknown/duplicate selectors retain 400; authorization/404 policy stays.
+
+V2 lists return group summaries, exact total/page counts and
+`unresolved:{total,url}`. The URL addresses a separately paged evidence endpoint
+(default 40, max 100), bound to the same revision/account/scope. Evidence is never
+silently dropped. Detail supplies the primary summary and selected child immediately;
+variants, copies, history and oversized evidence use individually paged subresources
+with the same revision checks. A complete evidence record exceeding the response
+budget uses an explicit authorized detail/download path; never truncate original text.
+Filter dictionaries are complete across independently paged option resources when
+they exceed the payload limit; report total and continuation, not a partial list as
+complete. The UI can search these choices without transferring the full dictionary.
+
+Do not add `return`/scroll/goal UI state to catalog filter authority. Preserve local
+return validation, child membership and exact unavailable-child handling. V1 full
+arrays remain available to explicit legacy tools until their callers migrate; no
+ordinary V2 navigation may invoke them. Private output stays no-store and explicitly
+allowlisted; public endpoints never read account overlays.
+
+### Consumer migration inventory
+
+This inventory covers production calls found through `collection.catalog`, its
+`service`/`inv`/`inventory` aliases, `catalog_entries`, `public_catalog.entries`, and
+HTTP URL consumers. Re-run that search when implementing against a newer source.
+
+| Consumer family | Modules/assets | Migration and compatibility obligation |
+| --- | --- | --- |
+| Cards, filters, detail, canonical/legacy links | `card_groups`, `card_group_views`, `card-screens.js`, `collection.js` | PERF-02/03 indexed reads; PERF-04 V2; preserve dg1, aliases, selected children, errors and return context |
+| Guest discovery, public catalog and species | `public_catalog`, `public_views`, `species_views`, `public-species.js` | Bounded species/group queries and server rendering; keep V1 full catalog response for explicit compatibility only |
+| Private Pokédex/species and goals | `species_projection`, `species-screens.js`, `pokedex.js`, `collection_goals`, `goal_hunts` | Revision-bound species aggregates; preserve current versus frozen scope and unknown totals |
+| Manual picker and goal builder | `collection_views`, `collection.js` catalog search, goal catalog/member loading | Bounded printing picker and paged selection; retain selected printing IDs across pages; no silently reduced goal membership |
+| Scan/photo suggestions | `scans`, `scans.js`, `photo_batches` | Keep worker matching on explicit full metadata where required; migrate browser picker away from `/api/catalog/`; no recognition during qualification |
+| Bulk entry | `bulk_input`, `bulk_views` | Indexed literal resolution and bounded suggestions; template/export semantics and replay identity unchanged |
+| Shopping/discovery | `shopping`, `shopping_views`, `discovery`, `discovery_catalog`, `discovery_views`, `discovery_comparison`, `shopping_context` | Bounded local choices; retain full comparison membership where required; no implicit provider calls |
+| Hunter and lot/listing review | `hunter_catalog`, `hunter_views`, `hunter_lots`, `listing_check`, `listing_views`, `lot_calculator` | Exact IDs/restore sets and current/frozen references; keep source/lifetime/rights checks independent of index hits |
+| Ownership and mutation validation | `effective_collection`, `ownership_declarations`, `collection_defaults`, `collection_intents`, `collection.printing` | Trusted internal snapshot and exact indexed identity reads; preserve preview/confirm authority and archived mappings |
+| Artwork | `image_bindings`, `owned_artwork` | ID-bounded metadata validation; no full catalog for one image; preserve independent photo authorization |
+| Lookup, packs, product coverage, parity | `lookup`, `packs`, `product_views`, `parity` | Shared typed membership reads; retain frozen targets, availability and old full projection for explicit tools |
+| Price admission and catalog review | `price_snapshots`, `catalog_requests`, `catalog_pipeline` | Explicit batch/full metadata remains permitted off the browsing path; rights checks and reviewed publication stay authoritative |
+| Export and collection tools | `collection_views`, `/api/collection/`, `/api/export/`, `collection.js` | Explicit full export/tool action only; browsing context V2 omits all-copy bootstrap and offers bounded duplicate-count lookups |
+| Engineering/initialization | `synthetic`, migration and fixtures | Retain isolated full-catalog paths for tests; never select these as customer runtime |
+
+No repository browser caller of `/api/public/catalog/` was found; preserve it for
+unknown external clients instead of silently changing its response shape. `/api/catalog/`
+has real scan, manual-picker and goal-builder callers and cannot simply be removed.
+
+### Downstream implementation slices
+
+1. **PERF-02 — backend/database engineer:** add explicit read-schema migration,
+   revision triggers, catalog builder/manifest, indexed query services and V2 public
+   adapters in `collection_catalog`, `card_groups`, `public_catalog`, `species_views`
+   and `urls`. Keep V1 adapters. Test full-size/2× scale, Unicode/natural ordering,
+   conflicting aliases, publication withdrawal, archived metadata, deep pagination,
+   complete options, query plans and crash-safe activation. Depends on this contract.
+2. **PERF-03 — backend/integration engineer with security review:** integrate account
+   overlays into `effective_collection`, `collection.confirm/undo`, import/source,
+   group/species/context adapters and artwork validation. Test edits, Undo, imports,
+   unresolved/multi-card evidence, unknown quantity, archived copies, frozen goals,
+   concurrent revision changes and cross-account/revocation denial. Depends on PERF-02.
+3. **PERF-04 — frontend/UX engineer:** migrate cards, collection bootstrap, species,
+   guest templates and all picker consumers listed above. Render primary results
+   independently of options/art; cancel/discard obsolete work; preserve Back/focus.
+   Test 20-sample actual-installed navigation and updates, partial failure, duplicate
+   request counts, account switching, keyboard and narrow/enlarged layouts. Can start
+   against the V2 contract; integrated qualification requires PERF-02/03.
+4. **OPS-READINESS — runtime/integration engineer:** implement explicit preparation,
+   readiness, compatible rollback and sanitized phase diagnostics as specified in
+   [operations](operations.md#perf-01-derived-state-lifecycle). Test missing/corrupt/
+   interrupted builds without changing customer authority. Depends on PERF-02/03.
+
+Rejected alternatives: caching JSON by URL alone leaks/stales account state; per-process
+memoization leaves restart cold and duplicates memory; paginating after projection
+retains the measured cost; skipping ownership validation changes correctness; TTLs
+cannot make publication withdrawal safe; a new database/framework or more worker
+processes adds operational risk without removing repeated work. Compression can
+reduce transfer bytes but cannot fix full-catalog decoding or ownership projection.
+
+## PERF-02 implemented shared read services
+
+The source now has additive SQLite V2 public services. This is not an installation
+or a browser performance claim. V1 routes and full metadata services retain their
+existing response shapes and authority checks. PERF-03 owns account composition;
+PERF-04 owns browser adoption. No ordinary V2 read calls the V1 full projection.
+
+`catalog_read_schema` owns the explicit migration and database revision triggers.
+`catalog_read_build` snapshots authority, uses `catalog_read_records` to build typed
+candidates outside the write transaction, validates the complete candidate and switches the manifest only when
+the authoritative revision still matches. `catalog_read_compact` shares rows only
+when their complete derived values are identical. Distinct public and retained
+conflicts remain distinct; sharing is not fuzzy identity resolution. Public grouping
+uses precisely published Pokémon/English inputs, independently of archived conflicts.
+Internal printing metadata also retains unresolved identities and archived records.
+
+Group IDs still come from `card_groups.build_groups` and its literal dg1 inputs.
+Three global ranks preserve its natural-number/case-fold ordering and ID ties.
+`catalog_read_select` counts, filters and pages compact SQL records before expanding
+returned metadata. It never decodes the catalog or operation journal on a GET.
+`catalog_read_internal` offers checked snapshots, bounded literal printing reads,
+paged alias candidates and the account read-revision key for downstream integration.
+These backend-only primitives confer neither account access nor ownership.
+
+### Search storage adjustment
+
+An initial ordinary table with one row per gram/group exceeded the fixed preparation
+budget. The compatible adjustment uses SQLite FTS5 as a compressed inverted index
+of explicit, hex-encoded **1-, 2- and 3-character grams**, not a word/prefix search
+engine. Grams are generated within whitespace-separated tokens, matching the
+existing query tokenization; cross-whitespace grams cannot satisfy a query token.
+Query grams intersect in SQL; the existing case-folded all-token substring
+predicate remains the residual, including punctuation and Unicode. Encoded scope and
+build terms prevent another build or archived scope from supplying candidates.
+Document IDs encode the build-local group rank and public child count, avoiding a
+large metadata join merely to recover candidate IDs and printing counts. Exact
+common-word substring postings accelerate positive matches; words longer than 24
+characters and variant-only matches retain the complete gram/residual path. This
+accelerator cannot turn a match on different children into a same-child match.
+`catalog_read_search` selects at most page-offset-plus-page-size candidate groups
+for a printing page before joining compact child rows; exact totals still count the
+complete matching postings. Alternate sorts page directly through ordered compact
+common text plus residual matching ranks, without materializing every positive match.
+Variant selectors use covering partial indexes; child pages explicitly select the
+group-membership index before fetching metadata. Broad counts and deep pages can visit catalog-scale
+compact indexes, but metadata fetching/JSON expansion stays page-bounded. Full integrity validation checks the FTS index against its
+external-content records. SQLite must include FTS5; PostgreSQL V2 is explicitly
+unavailable pending separate implementation and qualification.
+
+Read snapshots use deferred SQLite transactions, leaving the established immediate
+mutation transactions unchanged. Read connections use a bounded 64 MiB SQLite page
+cache and in-memory compact SQL temporary results; these are disposable engine state,
+not a catalog authority or a Python full-catalog cache. Preparation separately reuses
+typed records and identical encoded terms within that single build; the bounded
+word-token cache is discarded when preparation finishes. OPS-READINESS must account
+for that per-connection memory when choosing concurrency.
+
+### Public V2 contract and frontend handoff
+
+All following paths begin with `/api/v2/public/`. Every successful response includes
+`read_version: 2`, `public: true`, and an opaque `catalog_revision`. Return that token
+on subsequent pages and subresources. Responses are `no-store`. Duplicate/unknown
+selectors return 400; a stale token returns 409; unavailable derived state returns
+503 with `code: read_state_unavailable`. Neither failure initiates a migration,
+rebuild, provider request or fallback full-catalog transfer.
+
+| Path | Contract |
+| --- | --- |
+| `card-groups/` | Existing group selectors, exact `total/pages`, bounded `groups`, and `unresolved: {total,url}` |
+| `species/<dex>/card-groups/` | Same list for canonical species 1–251; caller cannot override species or scope |
+| `card-groups/<dg1>/` | Group summary, checked optional `child`, and separately paged `variants: {total,url}` |
+| `card-groups/<dg1>/variants/` | Complete child metadata in pages; optional query and edition/finish/variant selectors stay on the same child |
+| `card-group-filters/` | One complete dictionary through pages; `field=set` by default, also language/edition/finish/variant; exact total and `next` |
+| `pokedex-species/` | Paged canonical species with current published printing/group counts; V1 public species query/set/era/type/region semantics |
+| `catalog/` | Bounded resolved printing picker, with a separate unresolved-printing resource; retains exact IDs across pages |
+| `catalog-unresolved/` | Paged printing metadata that cannot form a resolved group; optional all-token query |
+| `evidence/` | Paged unresolved group evidence, retaining every record |
+| `aliases/<literal>/` | Literal resolution; conflicting candidates return 409, unavailable destinations 404 |
+| `resources/<kind>/<id>/` | Explicit complete JSON download for oversized group, printing, evidence or option records |
+
+List resources default to 40 and cap at 100. An oversized item is an explicit
+`{id, oversized:true, url}` reference (options use their resource URL); the complete
+original value is available through that revision-bound download. It is never
+truncated. Primary page summaries and metadata are limited independently of the
+number of variants/evidence items. Search/variant-filtered group summaries expose a
+`matching_variants.url`, so a client need not transfer an unbounded child-ID array.
+Append the response-level `matching_filters` selectors to that URL to get the
+matching subset; the URL alone returns every accessible variant of the group.
+Filter pages are independent of search results and the current group page. Follow
+`next` until null; never label the first dictionary page as the entire dictionary.
+
+Example sequence: fetch `card-groups/?q=ivysaur`, retain its revision, open a returned
+group with `?catalog_revision=<token>`, then follow its variants URL. Select a child
+by supplying both `child=<literal-id>` and the same revision to detail. A stale token
+requires reloading the current selection; a 503 requires explicit operator recovery.
+PERF-04 must keep return/focus/scroll state in the browser/navigation layer and must
+not send it as catalog selectors. Private/owned scope remains PERF-03's responsibility.
+
+### Consumer inventory recheck and downstream ownership
+
+The source search still finds browser full-catalog calls in `scans.js` and the manual
+picker, goal builder and set checklist paths of `collection.js`. No repository browser
+caller of `/api/public/catalog/` was found. That endpoint remains compatible for
+unknown external clients. Worker matching, explicit exports, reviewed publication,
+pricing admission and frozen-goal tools retain their full metadata paths.
+
+PERF-03 must compose retained indexed metadata with `effective_collection`, current
+account authorization, collection generation, account read revision and source digest.
+It must not interpret the public picker as the whole private catalog or substitute
+public membership for archived owned identities. The index supplies identity data,
+not effective possession. Current confirm/Undo generation semantics are unchanged.
+
+PERF-04 must migrate the inventoried browser callers to bounded adapters, follow
+unresolved and overflow links, retain selected literal IDs across pages and avoid
+reintroducing an all-catalog bootstrap. Public and private overlays must be integrated
+before claiming the existing screens are faster. OPS-READINESS must integrate the
+explicit operator primitives with startup/recovery and readiness; RUNTIME-DELIVER
+must install the separately qualified integrated candidate.

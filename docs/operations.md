@@ -169,3 +169,182 @@ never reset reservations to retry an uncertain model request. The worker and acc
 paths enforce image lifetime; hard termination may leave private temporary files.
 See [photo storage](photo-entry.md#storage-and-shared-review) and
 [failure handling](ERROR_HANDLING.md).
+
+
+## Next-version startup and read diagnostics
+
+The responsive local version requires bounded, sanitized request timing and useful
+startup/readiness diagnostics. Existing error logging is described in
+[recovery](ERROR_HANDLING.md#diagnostics); request timing and derived-index recovery
+are not yet established operating capabilities. Do not enable raw access logging
+that exposes setup links, search text, credentials or private records.
+
+The implementation must distinguish process listening, application readiness and
+usable catalog reads; document startup time and failures. Browsing must not start
+acquisition, recognition, schema migration or catalog rebuilding. Necessary derived
+state updates need a versioned, atomic preparation/activation path, bounded recovery
+and failure reporting. Local startup must preserve ordinary login and existing
+worker/Stop policies. Select concurrency changes only after profiling contention;
+additional processes must not duplicate workers or weaken accounting/lease ownership.
+
+Before installing any schema/index change, supply its explicit migration and rollback
+compatibility procedure and follow protected-state backups. Validate restart and
+recovery in engineering isolation, then verify ordinary startup and read-only browsing
+on the actual installation. A code rollback uses current authoritative data and
+independent journals; an old cache or backup must never restore revoked data or capacity.
+
+## PERF-01 derived-state lifecycle
+
+This is a required design for OPS-READINESS; the current installed app does not
+implement it. Use the [read architecture](card-groups.md#perf-01-read-architecture-contract)
+and [fixed budgets](CI.md#perf-01-performance-budgets).
+
+An explicit preparation command builds candidate catalog/overlay rows with a unique
+build ID, schema/policy keys, authority revisions, counts and content checksum.
+Read authority under a consistent database snapshot; do not hold a write lock for
+all CPU preparation. Persist candidate rows in bounded transactions. Validate identity,
+counts, public allowlists and checksum, then atomically compare the source revision
+and switch the active manifest in one short transaction. A changed source rejects
+activation. Preserve the prior build until all readers release it; cleanup is explicit.
+Never mark a partly prepared build ready. A crash before activation leaves the prior
+compatible revision active only if authority still matches; a crash after commit
+uses the new manifest. Old authority is never restored to make an index appear valid.
+
+Publication/collection writes advance authoritative revisions transactionally.
+A candidate may be prepared before a reviewed publication and activated with it,
+provided the compare-and-swap includes the publication's complete expected changes.
+Withdrawal takes effect immediately: if replacement preparation fails, affected reads
+return an explicit unavailable response instead of old published content. Changes
+cannot wait for a TTL. Collection confirmation receipts remain authoritative even
+when overlay preparation fails; recovery reconstructs derived state from those receipts.
+
+On ordinary startup, validate schema/policy/authority keys, manifest completeness
+and bounded integrity metadata, then reuse compatible derived tables. Do not replay
+the entire catalog or account journal at launch. Validate row/page integrity when
+read; explicit preparation performs the full checksum/integrity scan. A missing,
+corrupt, interrupted or incompatible build produces readiness failure within two
+seconds and a fixed repair code. It does not trigger a migration, reseed, provider
+call or synchronous rebuild from a browsing GET. The operator's explicit local
+repair has a 30-second full-catalog preparation budget on the qualification machine;
+report a miss rather than extending startup silently. Recovery tests must distinguish
+unsupported schema from data corruption and never delete authority or accounting.
+
+Expose separate liveness and readiness. A listener is not proof that browsing is
+ready. Readiness checks active catalog and required account overlay keys without
+returning private data; authenticated recovery detail reauthorizes the account.
+Return 503 with a fixed `read_state_unavailable` code and bounded retry advice for
+unavailable V2 derived state. A supplied stale revision is 409, not 503. The frontend
+keeps valid context and offers explicit recovery instead of an endless spinner.
+
+The additive migration creates derived tables, manifests, catalog revision and
+account read-revision rows and revision triggers. Run it only through an explicit reviewed maintenance command
+with the documented protected-state backup and rollback procedure. No migration is
+performed in PERF-01. Older code may ignore additive tables; triggers must still
+invalidate newer derived state if older code writes authority. Reuse only compatible
+schema versions after returning to a newer runtime. Never roll back collections,
+secrets, consumed usage, Stop decisions, tombstones or source revocations. Keep old
+runtime selection available, but do not equate its slower V1 reads with readiness
+of the new version. PostgreSQL support requires equivalent atomicity and trigger
+qualification before claiming compatibility.
+
+Diagnostics contain route templates (never raw URLs/query strings), status, build
+schema, hit/miss/unavailable reason, elapsed/query/fetch/projection/serialization
+milliseconds, query and decoded-row counts, payload byte count, and startup phase.
+Use a per-request random diagnostic ID; omit account IDs, record bodies, SQL
+parameters, credential/session values, artwork URLs and provider content. Aggregate
+by guest/member and operation type. Bound log size/retention and keep private raw
+measurement files outside Git. Instrument SQL fetch separately from execute; cursor
+execute time alone misses row materialization. Do not introduce duplicate recognition,
+expiry or acquisition workers as a response to slow CPU projection.
+
+Before a controlled customer restart, inspect durable queued/processing jobs and
+active acquisition leases, and establish whether in-memory Shopping work must be
+preserved. Durable job absence alone cannot establish that all temporary reviews are
+safe to discard. Reuse the exact installed interpreter/root/ordinary startup command;
+measure process spawn, listening, readiness and first usable page independently.
+
+## PERF-02 read-schema maintenance
+
+The new source provides explicit SQLite-only maintenance primitives. They have not
+been applied to the customer installation. Follow the protected-state backup and
+runtime-selection procedure above before a later authorized delivery. Require the
+existing catalog, collection and declaration schemas. A subsequently installed
+catalog-pipeline schema requires re-running the read migration to install its revision
+backstop; that transition invalidates older prepared state.
+
+Use the selected compatible installed interpreter and the existing private root:
+
+```sh
+"$DEX_APP_PYTHON" -I -m pokemon_hunter.beta.catalog_read_operator --root "$DEX_APP_ROOT" migrate
+"$DEX_APP_PYTHON" -I -m pokemon_hunter.beta.catalog_read_operator --root "$DEX_APP_ROOT" prepare
+"$DEX_APP_PYTHON" -I -m pokemon_hunter.beta.catalog_read_operator --root "$DEX_APP_ROOT" activate --build BUILD_ID
+"$DEX_APP_PYTHON" -I -m pokemon_hunter.beta.catalog_read_operator --root "$DEX_APP_ROOT" status
+```
+
+`prepare` returns the candidate build ID and does not activate it. It reads a
+consistent authoritative snapshot, releases that transaction, computes typed rows,
+persists bounded batches, builds/checks the gram index and validates counts, digests,
+identity and allowlists. Candidate states are preparing, indexing and validated;
+only atomic activation makes a candidate ready. A failed comparison means authority
+changed: prepare a new candidate; never force an old revision current. A partial
+candidate is not resumable or browseable. Preparation does not modify catalog,
+collection, credentials, acquisition accounting or provider state.
+
+Ordinary reads validate schema/policy/revision, trigger infrastructure and the active
+sealed manifest and per-build FTS document count. Expanded metadata verifies its row digest. Missing/incompatible/corrupt
+state fails explicitly; browsing never repairs it. Full candidate checksum and FTS
+integrity validation remain explicit maintenance work, not a startup full scan.
+Physical SQLite damage can require normal database recovery; do not mistake a
+read-model rebuild for repair of damaged authoritative records.
+
+After readers have switched, the operator can explicitly reclaim an inactive build:
+
+```sh
+"$DEX_APP_PYTHON" -I -m pokemon_hunter.beta.catalog_read_operator --root "$DEX_APP_ROOT" discard --build OLD_BUILD_ID
+```
+
+The active build cannot be discarded. SQLite read transactions retain their snapshot
+when inactive rows are deleted (including WAL readers); rollback-journal locking
+also prevents reclaiming data underneath a read. Do not discard a candidate while
+another preparation process is still writing it. Interrupted candidates can be
+explicitly discarded after the writer has stopped. No automatic cleanup runs on GET.
+
+Rollback means selecting the compatible previous runtime, leaving authoritative data
+and additive read tables/triggers intact. Older code can continue V1 reads; its
+catalog/source/copy writes still invalidate newer prepared state through triggers.
+Returning to newer code requires compatible schema/policy and a current revision.
+Do not restore old collections, accounting, secrets, revocations, tombstones or Stop
+choices to make a derived index appear valid. Full readiness endpoints, startup
+orchestration and bounded sanitized request diagnostics remain OPS-READINESS work.
+
+### Explicit derived-state repair
+
+For a damaged FTS index whose external-content records and authority remain intact:
+
+```sh
+"$DEX_APP_PYTHON" -I -m pokemon_hunter.beta.catalog_read_operator --root "$DEX_APP_ROOT" repair-index
+```
+
+This invalidates ready/validated manifests, rebuilds and integrity-checks the FTS
+index, and leaves preparation/activation explicit. For missing derived tables or
+revision triggers under the same supported schema version:
+
+```sh
+"$DEX_APP_PYTHON" -I -m pokemon_hunter.beta.catalog_read_operator --root "$DEX_APP_ROOT" repair-schema
+```
+
+This transaction recreates only read-model infrastructure, retains account read
+revision values and advances the catalog revision. It discards derived candidates,
+not catalog/collection authority. It requires the existing catalog revision and
+supported schema marker; missing authority revision or an incompatible schema needs
+an explicit version transition/database recovery, not a reset. After either repair,
+prepare and activate a new candidate and check status before serving V2.
+
+Normal derived-row changes invalidate their ready/validated manifest through
+triggers. Full checksums and FTS integrity are checked during explicit validation;
+ordinary reads do not promise detection of every possible manual shadow-table or
+physical database alteration. A missing FTS document set is rejected by the read
+check. Do not write FTS shadow tables or add triggers to them: a development attempt
+to do so caused SQLite re-entrant FTS failure and was removed. Use the supported FTS
+commands and explicit repair paths above. Failed repair leaves the transaction
+rolled back and does not authorize serving known damaged state.

@@ -262,3 +262,30 @@ Photo batches retain independent jobs, reservations and deletion tombstones whil
 binding selected crops through ordinary collection confirmation. See
 [photo storage and shared review](photo-entry.md#storage-and-shared-review) and
 [photo rows in collection review](effective-collection.md#photo-rows-in-the-shared-review).
+
+## Planned indexed browsing authority
+
+PERF-01's [read architecture](card-groups.md#perf-01-read-architecture-contract)
+assigns shared indexed metadata to PERF-02 and revision-bound account composition
+to PERF-03. The original records and mutation services above remain authoritative;
+derived tables never authorize access, establish ownership or retain provider rights.
+The [invalidation matrix](card-groups.md#invalidation-ownership) covers publication,
+identity/source changes, edits/Undo and account revocation. Explicit preparation,
+activation and recovery belong to [operations](operations.md#perf-01-derived-state-lifecycle).
+This design has not been installed. Existing no-persistent-cache descriptions still
+describe current behavior until those slices are implemented and qualified.
+
+## Implemented shared read authority
+
+`beta/catalog_read_schema.py` owns the explicit additive SQLite schema and revision
+backstops. `catalog_read_build.py` owns snapshot preparation, validation, activation
+and inactive-build reclamation; `catalog_read_records.py` materializes typed records
+and postings, and `catalog_read_compact.py` shares identical rows only.
+`catalog_read_select.py`, `catalog_read_search.py`, `catalog_read_queries.py` and
+`catalog_read_species.py` own
+bounded SQL selection and public projection; `catalog_read_views.py` adapts V2 HTTP.
+`catalog_read_internal.py` supplies backend snapshot/identity/revision interfaces for
+PERF-03. `catalog_read_snapshot.py` owns deferred read transactions without changing
+collection mutation transactions. V1 and effective-collection authority remain intact.
+See [implemented APIs and handoffs](card-groups.md#perf-02-implemented-shared-read-services)
+and [explicit maintenance](operations.md#perf-02-read-schema-maintenance).

@@ -256,3 +256,52 @@ text, keyboard focus, long names, unavailable images and slow/error states. Cove
 collection versus Library, current versus frozen progress, deliberate confirmation,
 Stop and Back/reopen without new acquisition. Automated or synthetic checks do not
 establish real recognition accuracy, source freshness or marketplace outcomes.
+
+
+## Next-version responsiveness contract
+
+The October 27 owner-selected next version prioritizes a responsive, dependable
+local product across signed-out card discovery and signed-in My Cards, Card Library,
+Pokédex, search, filters, pagination and details. Preserve the delivered Shopping,
+photo-entry and ungraded Hunter workflows. This contract describes the accepted
+next-version requirements; implementation and acceptance remain outstanding.
+
+Navigation and search controls must appear promptly. Primary card results must not
+wait for secondary filter metadata or remote artwork. Use stable placeholders and
+progressive rendering without flashing false empty results or wrong ownership.
+Distinguish loading, empty, unavailable, stale/conflicted and failed states, with
+useful bounded recovery. Navigation preserves valid filters, page, scroll and focus;
+late responses cannot replace a newer route, account or query. Keyboard navigation,
+narrow screens and enlarged text must remain usable. A failed secondary request
+must not erase valid primary results or enable unsupported filter choices.
+
+Targets on the ordinary local installation are useful cards within one second of
+navigation after server restart, and routine local search/filter/page/detail updates
+within 300 milliseconds. Useful cards means correct text, ownership where authorized,
+and working primary actions; remote artwork may complete separately. A loading shell
+alone does not meet the target. Measure startup-to-ready separately so moving work
+into startup cannot conceal a long launch delay. The baseline slice must set and
+record a numeric startup budget before implementation; unresolved budgets are not passes.
+[Qualification](CI.md#browsing-performance-qualification) defines repeated measurements.
+
+The owner reviews guest discovery and signed-in collection browsing on the final
+actual installation, including launch/reload, finding a card, opening it and returning,
+changing filters and recovering from a failure. Explicit acceptance is separate from
+engineering timing results. Existing workflow reviews remain required in
+[Shopping](hunts.md#completion-requirements-and-owner-review) and
+[photo entry](photo-entry.md#delivered-verification-and-owner-review).
+
+PERF-01 fixes the supporting [startup, API, payload and client budgets](CI.md#perf-01-performance-budgets)
+and the [V2 read contract](card-groups.md#versioned-bounded-api). PERF-04 must render
+primary cards as soon as their authorized response is ready, independently of filter
+options and art. Disable only unfinished secondary controls; do not delay the whole
+screen with `Promise.all`. Fetch account context once per navigation authority epoch,
+reuse complete filter choices only at matching account/catalog/collection revisions,
+and avoid requesting both full species identity and full group projections.
+
+Use separate paged detail/evidence sections without implying the first page is the
+complete record. A 409 invalidates the retained revision and permits one fresh read;
+a 503 shows unavailable state and explicit recovery; neither may cause an automatic
+retry loop. Empty means a successful current query returned zero matches. Preserve
+valid results on secondary errors, with clear retry for that failed section. These
+are required next-version behaviors, not observations of the installed UI.

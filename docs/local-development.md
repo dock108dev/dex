@@ -238,3 +238,14 @@ reconcile a cumulative source successor. Never label a cumulative source update 
 lockfile-only change. Qualify the selected package, preserve rollback and independent
 journals, then follow [runtime updates](operations.md#runtime-updates-and-recovery).
 A code rollback must not restore old consumed capacity or revoked data.
+
+PERF-01 directly reverified the selected `hunter-poc-20261027` interpreter, package
+and listening process against the existing customer root. Its dependency inventory
+still contains filelock 4.0.12 and opentelemetry-api 1.45.0; no dependency repair was
+performed. The installed package digest is
+`3e084d7e1d51db566e67febf4f23ffc41454d199408d95d008662a2178c3da5f`.
+The checkout differs in 30 beta source/asset paths (four are source-only extraction
+modules); there are no installed-only beta files. See the
+[baseline and qualification limits](CI.md#perf-01-baseline-evidence) before selecting
+a cumulative successor. The final process was restored to ordinary CLI startup,
+without diagnostic wrappers.

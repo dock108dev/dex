@@ -572,6 +572,14 @@ into realized values.
 
 ## Completion requirements and owner review
 
+The October 27 next-version scope also requires responsive guest and authenticated
+catalog/collection browsing, dependable local startup and observable read performance.
+See the [experience contract](UI_DESIGN.md#next-version-responsiveness-contract),
+[read architecture decision](card-groups.md#accepted-direction-for-responsive-reads)
+and [qualification requirements](CI.md#browsing-performance-qualification).
+Those repairs preserve the workflows below; their prior delivery is not performance
+qualification or owner acceptance.
+
 The local completion goal is a useful Pokémon/card-name → optional set → mixed-lot
 results → seller/assessment → More/edit/Back → Stop loop, with contextual entry
 from missing/owned Pokémon and card choices. Goals, exact printings, wanted lists,
@@ -609,6 +617,12 @@ acceptance. Supporting records are local-only:
 must be checked again before a new session; do not renew consumed test capacity.
 
 ## Optional backlog
+
+A frontend-framework rewrite, database-engine replacement, distributed services,
+cloud hosting and broad enterprise administration are not prerequisites for the
+selected local responsiveness goal. Adopt infrastructure changes only for a measured
+requirement with a bounded compatibility plan. Guest/catalog performance and local
+startup reliability are required next-version work, not optional backlog.
 
 Stronger relevance/ranking, missing-page redesign, broader provider/catalog coverage,
 general photo-accuracy evaluation, fresh-price acquisition, graded/bulk Hunter UI,

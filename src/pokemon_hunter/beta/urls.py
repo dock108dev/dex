@@ -4,6 +4,7 @@ from django.urls import path
 
 from . import collection_views as collection_assets
 from . import public_views, species_views, views
+from .catalog_read_views import routes as catalog_read_routes
 
 # Choose one authoritative handler per URL; retain account-only handlers for account-only roots.
 collection_routes = views
@@ -228,3 +229,7 @@ else:
         path("recovery/<uidb64>/<token>/", views.RedeemView.as_view()),
         path("invite/<uidb64>/<token>/", views.InviteView.as_view()),
     ]
+
+# Additive public contracts remain available (503) before explicit preparation.
+
+urlpatterns += catalog_read_routes()
