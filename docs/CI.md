@@ -497,6 +497,13 @@ SQLite connections and a new connection before every request. Each condition has
 scale, with preparation/activation measured separately once per scale, not as a
 percentile. Fresh connection does not mean a cold OS file cache or a server restart.
 
+The scale test uses pytest-cov's `no_cover` marker so branch tracing does not enter
+the wall-clock budgets when the full suite runs with coverage. It still executes
+in the required Behavior job, with the same 30-second preparation limit and all
+request, SQL, payload and decoding limits. `test_catalog_reads.py` remains covered
+for functional correctness and integrity checks. Run timing qualification without
+an external profiler as well; profiling is diagnostic, not comparable budget evidence.
+
 Requests go through Django's test client, middleware and JSON serialization. Timing
 includes connection setup; SQL instrumentation includes execution plus fetch/dict
 materialization and transaction statements. SQL counts exclude separate EXPLAIN

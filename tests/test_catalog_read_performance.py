@@ -77,6 +77,9 @@ def seed(cx, count):
         )
 
 
+# Measure product work, not branch-coverage tracing. Functional coverage remains
+# in test_catalog_reads.py; this test still runs and enforces every budget in CI.
+@pytest.mark.no_cover
 @pytest.mark.parametrize("count", [33083, 66166])
 def test_scale(cx, count):
     declarations_migrate(cx)

@@ -37,6 +37,7 @@ pokemon-hunter = "pokemon_hunter.main:main"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 faulthandler_timeout = 90 # Diagnose stalled tests before the bounded hosted job expires.
+markers = ["no_cover: run timing-sensitive tests without pytest-cov instrumentation"]
 
 [tool.coverage.run]
 branch = true
