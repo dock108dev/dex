@@ -601,3 +601,52 @@ def test_operator_explicit_lifecycle_on_existing_engineering_root(prepared, tmp_
         [*base[:-1], str(absent), "migrate"], capture_output=True, text=True, timeout=30
     )
     assert rejected.returncode != 0 and not absent.exists()
+
+
+def test_validation_serializes_competing_writer_and_activation_rechecks_authority(prepared):
+    import threading
+
+    with connection.cursor() as cursor:
+        cursor.execute("PRAGMA journal_mode=WAL")
+    entered = threading.Event()
+    finished = threading.Event()
+    errors = []
+
+    def write_authority():
+        try:
+            with sqlite3.connect(prepared["root"] / "inventory.db", timeout=5) as other:
+                entered.set()
+                other.execute("UPDATE games SET name=name")
+        except Exception as exc:
+            errors.append(exc)
+        finally:
+            finished.set()
+
+    writer = threading.Thread(target=write_authority)
+    original = builds.validate_payload
+    started = False
+
+    def overlap(table, row):
+        nonlocal started
+        if not started:
+            started = True
+            writer.start()
+            assert entered.wait(2)
+            # A deferred reader permits this writer to commit, then cannot upgrade
+            # its stale snapshot for the FTS check/status write. An immediate
+            # maintenance transaction holds the writer until validation commits.
+            finished.wait(0.1)
+        return original(table, row)
+
+    try:
+        with patch.object(builds, "validate_payload", side_effect=overlap):
+            candidate = builds.prepare()
+    finally:
+        if started:
+            writer.join(6)
+    assert started and not writer.is_alive() and not errors
+    assert store.rows("SELECT status FROM catalog_read_builds WHERE id=%s", [candidate]) == [
+        {"status": "validated"}
+    ]
+    with pytest.raises(collection.Conflict):
+        builds.activate(candidate)

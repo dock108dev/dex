@@ -640,7 +640,7 @@ revision checks fail. Do not reinstate removed inference automatically on rollba
 
 Integration verification produced a repaired successor to the RUNTIME-DEPS artifact,
 with the package identities in [CI-VERIFY evidence](ci-verify-20261029.md). Its
-installed member binding is `0011711c7b86c163bfb2064a0059e57ba5616327725dfbcfc7471da5d5a3b195`. This is distinct from its wheel archive hash and the earlier candidate binding.
+installed member binding is `8ce58eb58e9a98b9c4ee25a0595b840d43b3dab6e72a128759e0d78e59a0471b`. This is distinct from its wheel archive hash and the earlier candidate binding.
 RUNTIME-DELIVER must use the finally qualified successor, verify the actual current
 previous binding, and follow the existing schema/preparation/rebinding sequence.
 CI-VERIFY is not complete while required hosted results remain missing. No customer

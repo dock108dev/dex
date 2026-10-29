@@ -156,3 +156,26 @@ print('completed')
 """
     assert ci_smoke.run_python(Path(sys.executable), code, [], tmp_path, env).strip() == "completed"
     assert (tmp_path / "network-attempts").read_text() == "blocked\n"
+
+
+def test_failed_child_retains_content_free_maintenance_location_only(tmp_path, monkeypatch):
+    from subprocess import CompletedProcess
+
+    monkeypatch.setattr(
+        ci_smoke.subprocess,
+        "run",
+        lambda *args, **kwargs: CompletedProcess(
+            args=[],
+            returncode=1,
+            stdout="SYNTHETIC_PRIVATE_SENTINEL",
+            stderr=(
+                "SYNTHETIC_PRIVATE_SENTINEL\n"
+                "read_maintenance_failed type=OperationalError frames=operator.py:10:main > schema.py:20:migrate\n"
+            ),
+        ),
+    )
+    with pytest.raises(ci_smoke.SmokeFailure) as error:
+        ci_smoke.run_python(Path(sys.executable), "", [], tmp_path, {})
+    assert "OperationalError" in str(error.value)
+    assert "schema.py:20:migrate" in str(error.value)
+    assert "SYNTHETIC_PRIVATE_SENTINEL" not in str(error.value)

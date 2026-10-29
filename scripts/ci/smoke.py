@@ -16,6 +16,7 @@ import hashlib
 import http.cookiejar
 import json
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -135,9 +136,15 @@ def run_python(python, code, arguments, cwd, env, *, timeout=90):
         check=False,
     )
     if result.returncode:
-        # Child commands read only this harness's fresh synthetic root. Reports
-        # retain the failure class/exit status without private generated secrets.
-        raise SmokeFailure(f"Installed app subprocess failed (exit {result.returncode})")
+        # Preserve only the application's content-free diagnostic, never arbitrary
+        # stdout/stderr, exception messages, generated credentials or local paths.
+        diagnostic = re.search(
+            r"read_maintenance_failed type=([A-Za-z_][A-Za-z_0-9]*) "
+            r"frames=([A-Za-z_0-9.py:<> >]+)(?:\n|$)",
+            result.stderr,
+        )
+        detail = f"; {diagnostic.group(0).strip()}" if diagnostic else ""
+        raise SmokeFailure(f"Installed app subprocess failed (exit {result.returncode}){detail}")
     return result.stdout
 
 
@@ -167,13 +174,19 @@ def prepare_read_models(python, cwd, env, root):
     """Run shipped operators explicitly against this smoke's disposable root."""
 
     def operator(module, *arguments):
-        return run_python(
-            python,
-            "import runpy,sys; module=sys.argv.pop(1); runpy.run_module(module,run_name='__main__')",
-            ["pokemon_hunter.beta." + module, "--root", str(root), *arguments],
-            cwd,
-            env,
-        )
+        try:
+            return run_python(
+                python,
+                "import runpy,sys; module=sys.argv.pop(1); runpy.run_module(module,run_name='__main__')",
+                ["pokemon_hunter.beta." + module, "--root", str(root), *arguments],
+                cwd,
+                env,
+            )
+        except SmokeFailure as exc:
+            action = next(
+                value for value in arguments if value in {"migrate", "prepare", "activate", "status"}
+            )
+            raise SmokeFailure(f"{module} {action}: {exc}") from None
 
     # The minimal synthetic initializer predates the optional declaration schema.
     # Install that prerequisite explicitly; ordinary startup must never do this.

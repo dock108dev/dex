@@ -131,7 +131,10 @@ def prepare(*, timings=None):
 
 def validate(build):
     """Full explicit integrity scan; not a browsing or startup operation."""
-    with snapshot():
+    # Validation writes the FTS integrity command and candidate status. Acquire
+    # the configured IMMEDIATE maintenance transaction before reading; upgrading
+    # a deferred snapshot after another writer commits fails with SQLITE_BUSY.
+    with transaction.atomic():
         found = store.rows("SELECT * FROM catalog_read_builds WHERE id=%s", [build])
         if (
             not found
