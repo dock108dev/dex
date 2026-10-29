@@ -14,6 +14,25 @@ from pokemon_hunter.beta import cli
 
 root, chosen_port = Path(sys.argv[1]), int(sys.argv[2])
 
+# Explicit diagnostic-only baseline; normal acceptance always serves actual templates.
+if len(sys.argv) > 3:
+    if sys.argv[3] != "import-control":
+        raise ValueError("Unknown engineering template control")
+    from django.template.loaders.filesystem import Loader
+
+    original_contents = Loader.get_contents
+
+    def import_control(self, origin):
+        source = original_contents(self, origin)
+        if Path(origin.name).name in {"base.html", "b2.html"}:
+            source = source.replace(
+                '<link rel="stylesheet" href="/collection-assets/collection-base.css"><link rel="stylesheet" href="/collection-assets/collection-browse.css">',
+                '<link rel="stylesheet" href="/collection-assets/collection.css">',
+            )
+        return source
+
+    Loader.get_contents = import_control
+
 
 def serve(application, **options):
     # Test-only fixed query classes; never SQL text, values or parameters.

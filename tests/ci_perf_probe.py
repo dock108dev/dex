@@ -69,6 +69,68 @@ def test_profile_preparation(cx):
         )
 
 
+def test_query_wall_and_thread_cpu(cx):
+    from unittest.mock import patch
+
+    from django.db import connection
+
+    from pokemon_hunter.beta import store
+
+    OUTPUT.mkdir(parents=True, exist_ok=True)
+    seed(cx, 66166)
+    ownership(cx, 10000)
+    prepare_reads(cx)
+    report = {
+        "identity": identity(),
+        "profiled_not_acceptance": True,
+        "connection": "fresh Django connection per in-process request; no HTTP/browser; query plans outside captured intervals",
+        "samples": {},
+        "plans": {},
+    }
+    original = store.rows
+    for name, route in [
+        ("picker_search", "/api/v2/catalog/?q=pikachu"),
+        ("owned_search", "/api/v2/my-card-groups/?q=pikachu"),
+    ]:
+        samples = []
+        for _ in range(20):
+            connection.close()
+            captured = []
+            plan_inputs = {}
+
+            def measured(sql, params=()):
+                wall, cpu = time.perf_counter(), time.thread_time()
+                result = original(sql, params)
+                captured.append(
+                    {
+                        "sql": sql,
+                        "wall_ms": (time.perf_counter() - wall) * 1000,
+                        "thread_cpu_ms": (time.thread_time() - cpu) * 1000,
+                        "rows": len(result),
+                    }
+                )
+                if sql not in report["plans"]:
+                    plan_inputs[sql] = params
+                return result
+
+            wall, cpu = time.perf_counter(), time.thread_time()
+            with patch.object(store, "rows", side_effect=measured):
+                response = cx["a"].get(route)
+            sample = {
+                "wall_ms": (time.perf_counter() - wall) * 1000,
+                "thread_cpu_ms": (time.thread_time() - cpu) * 1000,
+                "queries": captured,
+            }
+            assert response.status_code == 200
+            sample["total"] = response.json()["total"]
+            samples.append(sample)
+            # Plans are outside all captured request/query intervals; never retain parameters.
+            for sql, params in plan_inputs.items():
+                report["plans"][sql] = original("EXPLAIN QUERY PLAN " + sql, params)
+        report["samples"][name] = samples
+    (OUTPUT / "query-wall-cpu.json").write_text(json.dumps(report, indent=2))
+
+
 NAVIGATION_PROBE = r"""(() => {
  const selectors = {'/cards/':'#card-group-list .owned-card-tile',
  '/card-library/':'#card-group-list .owned-card-tile',
@@ -104,15 +166,9 @@ def test_browser_instrumentation(cx):
     for marker in ["B2_ISOLATED", "B3_ISOLATED", "B4_ISOLATED"]:
         (cx["root"] / marker).write_text("Isolated engineering capability\n")
     (cx["root"] / "secret.key").write_text(settings.SECRET_KEY)
-    process = subprocess.Popen(
-        [sys.executable, "tests/ops_server.py", str(cx["root"]), "0"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
+    process = None
     report = {"identity": identity(), "scale": 66166, "copies": 10000, "modes": {}}
     try:
-        base = f"http://127.0.0.1:{read_port(process)}"
         with sync_playwright() as pw:
             browser = pw.chromium.launch()
             report["browser"] = browser.version
@@ -124,20 +180,24 @@ def test_browser_instrumentation(cx):
                 # Some pinned headless builds omit --enable-automation. Retain the
                 # precise capability limitation without changing launch settings.
                 report["browser_arguments"] = {"unavailable": str(error)}
-            for mode in ["external_only", "external_only_no_backdrop", "external_only_repeat"]:
+            for mode in ["import_control", "direct_styles", "import_control_repeat"]:
+                process = subprocess.Popen(
+                    [
+                        sys.executable,
+                        "tests/ops_server.py",
+                        str(cx["root"]),
+                        "0",
+                        *(["import-control"] if mode.startswith("import_control") else []),
+                    ],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                )
+                base = f"http://127.0.0.1:{read_port(process)}"
                 context = browser.new_context()
                 context.add_cookies(
                     [{"name": k, "value": v.value, "url": base} for k, v in cx["a"].cookies.items()]
                 )
-                if mode == "external_only_no_backdrop":
-                    context.add_init_script(
-                        script="""(() => {
-                     const style=document.createElement('style');
-                     style.textContent='*,*::before,*::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}';
-                     const observer=new MutationObserver(()=>{if(document.documentElement&&!style.isConnected){document.documentElement.append(style);observer.disconnect();}});
-                     observer.observe(document,{childList:true,subtree:true});
-                    })();"""
-                    )
                 context.add_init_script(script=NAVIGATION_PROBE)
                 context.add_init_script(path="tests/perf04_browser_probe.js")
                 context.add_init_script(
@@ -180,8 +240,8 @@ def test_browser_instrumentation(cx):
                 )
                 page.goto(base + "/__diagnostic_blank__")
                 measurements["idle_frames"] = page.evaluate("""() => new Promise(resolve=>{
-                 const gaps=[];let prior=performance.now();
-                 function frame(t){gaps.push(t-prior);prior=t;if(gaps.length<120)requestAnimationFrame(frame);else resolve({gaps,visibility:document.visibilityState});}
+                 const gaps=[];let prior=null;
+                 function frame(t){if(prior!==null)gaps.push(t-prior);prior=t;if(gaps.length<120)requestAnimationFrame(frame);else resolve({gaps,visibility:document.visibilityState});}
                  requestAnimationFrame(frame);
                 })""")
                 for path, selector in [
@@ -206,8 +266,10 @@ def test_browser_instrumentation(cx):
                         value["backdrops"] = page.evaluate(
                             "[...document.querySelectorAll('header,.card,.panel,.stat,.auth-card')].map(e=>getComputedStyle(e).backdropFilter)"
                         )
-                        if mode == "external_only_no_backdrop":
-                            assert all(style == "none" for style in value["backdrops"])
+                        stylesheet_paths = {r["name"].split("?", 1)[0] for r in value["resources"]}
+                        assert (
+                            base + "/collection-assets/collection.css" in stylesheet_paths
+                        ) == mode.startswith("import_control")
                         samples.append(value)
                     measurements["navigation"][path] = samples
                 # Guest filter is the repeated near-threshold Linux case.
@@ -229,10 +291,15 @@ def test_browser_instrumentation(cx):
                 # Controlled external URL is aborted by the route before transmission.
                 assert page.evaluate("fetch('https://example.invalid/diagnostic').then(()=>false,()=>true)")
                 context.close()
+                process.terminate()
+                process.wait(timeout=12)
+                close_pipes(process)
+                process = None
                 (OUTPUT / "browser.json").write_text(json.dumps(report, indent=2))
             browser.close()
     finally:
-        process.terminate()
-        process.wait(timeout=12)
-        close_pipes(process)
+        if process is not None:
+            process.terminate()
+            process.wait(timeout=12)
+            close_pipes(process)
         (OUTPUT / "browser.json").write_text(json.dumps(report, indent=2))

@@ -231,3 +231,29 @@ def test_previous_goal_representation_requires_explicit_preparation(prepared):
     assert result.status_code == 503 and result.json()["code"] == "read_state_unavailable"
     builds.prepare(prepared["actor"])
     assert prepared["a"].get("/api/v2/goals/").status_code == 200
+
+
+def test_primary_shells_discover_complete_styles_without_import_waterfall(prepared):
+    from html.parser import HTMLParser
+
+    class Styles(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.hrefs = []
+
+        def handle_starttag(self, tag, attrs):
+            attrs = dict(attrs)
+            if tag == "link" and attrs.get("rel") == "stylesheet":
+                self.hrefs.append(attrs["href"])
+
+    for client, route in [(prepared["a"], "/cards/"), (prepared["client"](), "/card-library/")]:
+        response = client.get(route)
+        assert response.status_code == 200
+        styles = Styles()
+        styles.feed(response.content.decode())
+        assert styles.hrefs[:3] == [
+            "/collection-assets/glass.css",
+            "/collection-assets/collection-base.css",
+            "/collection-assets/collection-browse.css",
+        ]
+        assert "/collection-assets/collection.css" not in styles.hrefs
