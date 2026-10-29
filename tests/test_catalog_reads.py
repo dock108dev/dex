@@ -650,3 +650,28 @@ def test_validation_serializes_competing_writer_and_activation_rechecks_authorit
     ]
     with pytest.raises(collection.Conflict):
         builds.activate(candidate)
+
+
+@pytest.mark.parametrize("printing", [False, True])
+@pytest.mark.parametrize("sort", ["set", "name", "number"])
+def test_unfiltered_page_expands_metadata_by_primary_key(prepared, printing, sort):
+    from pokemon_hunter.beta.catalog_read_select import unfiltered
+
+    build = store.rows("SELECT build FROM catalog_read_active WHERE id=1")[0]["build"]
+    original = store.rows
+    plans = []
+
+    def inspected(sql, params=()):
+        if sql.startswith("WITH page"):
+            plans.extend(original("EXPLAIN QUERY PLAN " + sql, params))
+        return original(sql, params)
+
+    with patch.object(store, "rows", side_effect=inspected):
+        total, first = unfiltered(build, {"sort": sort, "page": 1, "page_size": 1}, printing=printing)
+        _, second = unfiltered(build, {"sort": sort, "page": 2, "page_size": 1}, printing=printing)
+        _, empty = unfiltered(build, {"sort": sort, "page": total + 1, "page_size": 1}, printing=printing)
+    assert total >= 2 and len(first) == len(second) == 1 and not empty
+    assert first[0]["id"] != second[0]["id"]
+    lookups = [p["detail"] for p in plans if "SEARCH g " in p["detail"]]
+    assert len(lookups) == 3
+    assert all("build=?" in p and "scope=?" in p and "id=?" in p for p in lookups), plans

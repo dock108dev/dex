@@ -861,8 +861,4 @@ syntax checks, 18 maintained-document link checks and whitespace checks pass.
 The October 29 exact-candidate verification is in
 [the CI-VERIFY evidence and delivery handoff](ci-verify-20261029.md). Initial manifest
 and package reconciliation passed. Integration checks exposed navigation/renderer
-regressions; the repaired successor has new wheel/sdist hashes. The final installed local suite passes 3,598 tests with no failures or skips;
-source, browser, security, PostgreSQL, distribution and fixed-budget performance
-checks pass. Hosted normal/compatibility, required aggregates
-and hosted exact-candidate security remain open; the old base commit's green runs do not
-qualify this working tree. The customer installation remains unchanged.
+regressions; the repaired successor has new wheel/sdist hashes. The prior candidate passed 3,602 installed local tests and all fixed-budget gates, but Ubuntu SQLite 3.45.1 exposed an unbounded metadata join plan. The page-first planner repair has successor archives and fresh installed smoke; complete local and hosted normal/compatibility qualification is running again. Required aggregates and exact-candidate security remain open; prior green checks do not qualify the new application artifact. The customer installation remains unchanged.

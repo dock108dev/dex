@@ -210,5 +210,5 @@ zero findings; Bandit has 184 visible findings and zero blocking findings under 
 existing policy. The runtime-only Python and npm test-dependency audits also have
 zero findings. No scanner exclusion or vulnerability ignore was added. Final local
 source/package identities and retained reports are recorded in
-[CI-VERIFY evidence](ci-verify-20261029.md). Exact-candidate hosted security remains
-open. These checks do not update or establish security of the customer runtime.
+[CI-VERIFY evidence](ci-verify-20261029.md). Hosted security and CodeQL passed for predecessor `d66e16f`; the subsequent
+SQLite planner repair requires fresh exact-candidate security and aggregate results. These checks do not update or establish security of the customer runtime.
