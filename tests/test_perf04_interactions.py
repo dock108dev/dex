@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 
 import pytest
+from browser_measurements import isolated_network
 from perf04_helpers import prepare_reads
 from runtime_process import close_pipes, read_port
 from test_account_read_performance import ownership
@@ -56,7 +57,7 @@ def test_real_interaction_phases_and_restart(cx, scale, copies):
         passed=False,
         customer_data=False,
         provider_calls=0,
-        connection="Ordinary CLI workers and HTTP/1.1 ASGI/uvicorn; keep-alive enabled, browser resource cache disabled by interception; Server-Timing connection descriptions identify reused TCP peers",
+        connection="Ordinary CLI workers and HTTP/1.1 ASGI/uvicorn; keep-alive enabled, browser resource cache explicitly disabled; external-only interception; Server-Timing connection descriptions identify reused TCP peers",
         os_cache="warm from preparation; OS cache not evicted",
         observation_window_ms=300,
         samples={},
@@ -90,7 +91,7 @@ def test_real_interaction_phases_and_restart(cx, scale, copies):
                     )
                 context.add_init_script(path="tests/perf04_browser_probe.js")
                 page = context.new_page()
-                page.route("**/*", lambda r: r.continue_() if r.request.url.startswith(base) else r.abort())
+                isolated_network(page, base)
                 page.goto(base + "/card-library/")
                 try:
                     page.locator("html[data-perf-ready]").wait_for(state="attached", timeout=5000)

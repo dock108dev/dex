@@ -180,6 +180,6 @@ def candidates(build, selected):
         return "", []
     marks = ",".join(["%s"] * len(wanted))
     return (
-        f" AND id IN (SELECT id FROM ar_scope_catalog INDEXED BY ar_scope_set_names WHERE build=%s AND set_name IN ({marks}) UNION SELECT id FROM ar_scope_catalog INDEXED BY ar_scope_set_options WHERE build=%s AND (set_id IN ({marks}) OR set_id IS NULL OR set_id='Unknown'))",
-        [build, *wanted, build, *wanted],
+        f" AND id IN (SELECT id FROM ar_scope_catalog INDEXED BY ar_scope_set_names WHERE build=%s AND set_name IN ({marks}) UNION SELECT id FROM ar_scope_catalog INDEXED BY ar_scope_set_options WHERE build=%s AND set_id IN ({marks},'Unknown') UNION SELECT id FROM ar_scope_catalog INDEXED BY ar_scope_set_options WHERE build=%s AND set_id IS NULL)",
+        [build, *wanted, build, *wanted, build],
     )

@@ -95,7 +95,7 @@ NAVIGATION_PROBE = r"""(() => {
 
 def test_browser_instrumentation(cx):
     from django.conf import settings
-    from playwright.sync_api import expect, sync_playwright
+    from playwright.sync_api import Error, expect, sync_playwright
 
     OUTPUT.mkdir(parents=True, exist_ok=True)
     seed(cx, 66166)
@@ -116,13 +116,37 @@ def test_browser_instrumentation(cx):
         with sync_playwright() as pw:
             browser = pw.chromium.launch()
             report["browser"] = browser.version
-            for mode in ["all_requests_python", "external_only", "all_requests_python_repeat"]:
+            browser_cdp = browser.new_browser_cdp_session()
+            report["graphics"] = browser_cdp.send("SystemInfo.getInfo")
+            try:
+                report["browser_arguments"] = browser_cdp.send("Browser.getBrowserCommandLine")
+            except Error as error:
+                # Some pinned headless builds omit --enable-automation. Retain the
+                # precise capability limitation without changing launch settings.
+                report["browser_arguments"] = {"unavailable": str(error)}
+            for mode in ["external_only", "external_only_no_backdrop", "external_only_repeat"]:
                 context = browser.new_context()
                 context.add_cookies(
                     [{"name": k, "value": v.value, "url": base} for k, v in cx["a"].cookies.items()]
                 )
+                if mode == "external_only_no_backdrop":
+                    context.add_init_script(
+                        script="""(() => {
+                     const style=document.createElement('style');
+                     style.textContent='*,*::before,*::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}';
+                     const observer=new MutationObserver(()=>{if(document.documentElement&&!style.isConnected){document.documentElement.append(style);observer.disconnect();}});
+                     observer.observe(document,{childList:true,subtree:true});
+                    })();"""
+                    )
                 context.add_init_script(script=NAVIGATION_PROBE)
                 context.add_init_script(path="tests/perf04_browser_probe.js")
+                context.add_init_script(
+                    script="""(() => {
+                 window.primaryDomTime=null;
+                 new MutationObserver(()=>{if(primaryDomTime===null&&document.querySelector('#card-group-list,#browse-results nav'))primaryDomTime=performance.now();})
+                 .observe(document,{childList:true,subtree:true});
+                })();"""
+                )
                 page = context.new_page()
                 cdp = context.new_cdp_session(page)
                 cdp.send("Network.enable")
@@ -146,6 +170,20 @@ def test_browser_instrumentation(cx):
                 )
                 measurements = {"navigation": {}, "filter": [], "routing": routing}
                 report["modes"][mode] = measurements
+                # Empty same-origin document controls compositor scheduling without product rendering.
+                page.route(
+                    base + "/__diagnostic_blank__",
+                    lambda route: route.fulfill(
+                        content_type="text/html",
+                        body="<!doctype html><title>Engineering frame control</title>",
+                    ),
+                )
+                page.goto(base + "/__diagnostic_blank__")
+                measurements["idle_frames"] = page.evaluate("""() => new Promise(resolve=>{
+                 const gaps=[];let prior=performance.now();
+                 function frame(t){gaps.push(t-prior);prior=t;if(gaps.length<120)requestAnimationFrame(frame);else resolve({gaps,visibility:document.visibilityState});}
+                 requestAnimationFrame(frame);
+                })""")
                 for path, selector in [
                     ("/cards/", "#card-group-list .owned-card-tile"),
                     ("/pokedex/1/", "#species-explore"),
@@ -165,6 +203,11 @@ def test_browser_instrumentation(cx):
                         resources:performance.getEntriesByType('resource').map(r=>r.toJSON())})""")
                         assert value["ready"] is not None
                         value["driver_ms"] = driver_ms
+                        value["backdrops"] = page.evaluate(
+                            "[...document.querySelectorAll('header,.card,.panel,.stat,.auth-card')].map(e=>getComputedStyle(e).backdropFilter)"
+                        )
+                        if mode == "external_only_no_backdrop":
+                            assert all(style == "none" for style in value["backdrops"])
                         samples.append(value)
                     measurements["navigation"][path] = samples
                 # Guest filter is the repeated near-threshold Linux case.
@@ -179,7 +222,7 @@ def test_browser_instrumentation(cx):
                     page.wait_for_timeout(300)
                     measurements["filter"].append(
                         page.evaluate("""() => ({probe:window.probe,
-                     timeOrigin:performance.timeOrigin, navigationProbe,
+                     timeOrigin:performance.timeOrigin, navigationProbe,primaryDomTime,
                      navigation:performance.getEntriesByType('navigation')[0].toJSON(),
                      resources:performance.getEntriesByType('resource').map(r=>r.toJSON())})""")
                     )

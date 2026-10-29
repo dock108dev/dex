@@ -426,7 +426,7 @@ def _refresh(actor, previous, operation_id):
         parts = sorted(affected)
         catalog_rows = bounded(
             store.rows(
-                f"SELECT * FROM ar_catalog WHERE build=%s AND component IN ({placeholders}) LIMIT %s",
+                f"SELECT * FROM ar_catalog INDEXED BY ar_catalog_component WHERE build=%s AND component IN ({placeholders}) LIMIT %s",
                 [snapshot.build, *parts, MAX_INPUT_ROWS + 1],
             )
         )
@@ -435,7 +435,7 @@ def _refresh(actor, previous, operation_id):
         by_literal = {r["literal"]: r["component"] for r in catalog_rows}
         existing_cards = bounded(
             store.rows(
-                f"SELECT id,literal,component FROM ar_cards WHERE user_id=%s AND component IN ({placeholders}) LIMIT %s",
+                f"SELECT id,literal,component FROM ar_cards INDEXED BY ar_cards_component WHERE user_id=%s AND component IN ({placeholders}) LIMIT %s",
                 [actor.user_id, *parts, MAX_INPUT_ROWS + 1],
             )
         )
@@ -475,7 +475,7 @@ def _refresh(actor, previous, operation_id):
         prior_species = {
             r["species"]
             for r in store.rows(
-                f"SELECT DISTINCT species FROM ar_cards WHERE user_id=%s AND component IN ({placeholders})",
+                f"SELECT DISTINCT species FROM ar_cards INDEXED BY ar_cards_component WHERE user_id=%s AND component IN ({placeholders})",
                 [actor.user_id, *parts],
             )
             if r["species"] is not None

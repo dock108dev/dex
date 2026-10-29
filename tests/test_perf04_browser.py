@@ -7,9 +7,11 @@ import sys
 import time
 from pathlib import Path
 from socketserver import ThreadingMixIn
+from urllib.parse import urlsplit
 from wsgiref.simple_server import WSGIRequestHandler, WSGIServer
 
 import pytest
+from browser_measurements import isolated_network, navigation_clock, navigation_sample
 from runtime_process import close_pipes, read_port
 from test_account_read_performance import ownership
 from test_b1 import env as env
@@ -107,10 +109,7 @@ def test_full_browser(cx, scale, copies):
             page = context.new_page()
             errors = []
             page.on("pageerror", lambda e: errors.append(str(e)))
-            page.route(
-                "**/*",
-                lambda route: route.continue_() if route.request.url.startswith(base) else route.abort(),
-            )
+            isolated_network(page, base)
             paths = [
                 ("/cards/", "#card-group-list .owned-card-tile"),
                 ("/card-library/?q=pikachu", "#card-group-list .owned-card-tile"),
@@ -120,6 +119,10 @@ def test_full_browser(cx, scale, copies):
                 ("/card-groups/" + key + "/?return=%2Fcards%2F", "#edit-group-card"),
                 ("/pokedex/1/", "#species-explore"),
             ]
+            navigation_clock(context, {urlsplit(path).path: selector for path, selector in paths})
+            report["clock"] = (
+                "browser navigation origin through visible primary content and two animation frames; driver acknowledgement retained separately"
+            )
             for path, selector in paths:
                 values = []
                 for i in range(20):
@@ -130,8 +133,9 @@ def test_full_browser(cx, scale, copies):
                     except AssertionError:
                         print(page.locator("body").inner_text(), errors)
                         raise
-                    page.evaluate("() => new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))")
-                    elapsed = (time.perf_counter() - start) * 1000
+                    readiness = navigation_sample(page)
+                    driver_elapsed = (time.perf_counter() - start) * 1000
+                    elapsed = readiness["ready_ms"]
                     # Observe optional work for a fixed window after primary timing ends.
                     page.wait_for_timeout(300)
                     resources = page.evaluate(
@@ -152,6 +156,8 @@ def test_full_browser(cx, scale, copies):
                     values.append(
                         {
                             "ms": elapsed,
+                            "driver_ms": driver_elapsed,
+                            "readiness": readiness,
                             "requests": len(resources) + 1,
                             "bytes": sum(r["bytes"] for r in resources)
                             + page.evaluate("performance.getEntriesByType('navigation')[0].decodedBodySize"),
@@ -216,10 +222,7 @@ def test_full_browser(cx, scale, copies):
             expect(page.locator("#bulk-drawer")).to_be_visible()
             assert not errors, errors
             guest = browser.new_page()
-            guest.route(
-                "**/*",
-                lambda route: route.continue_() if route.request.url.startswith(base) else route.abort(),
-            )
+            isolated_network(guest, base)
             for path in ["/card-library/", "/pokedex/"]:
                 guest.goto(base + path)
                 expect(guest.locator("#browse-results")).not_to_contain_text("Loading")

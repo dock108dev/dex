@@ -64,11 +64,25 @@ def test_prepare_restart_and_policy_parity(prepared):
 
 
 def test_add_undo_incremental_policy_parity(prepared):
-    with patch.object(accounts, "prepare", side_effect=AssertionError("whole account refresh")):
+    original = store.rows
+    plans = {}
+
+    def measured(sql, params=()):
+        if "component IN" in sql and ("FROM ar_catalog " in sql or "FROM ar_cards " in sql):
+            plans[sql] = original("EXPLAIN QUERY PLAN " + sql, params)
+        return original(sql, params)
+
+    with (
+        patch.object(accounts, "prepare", side_effect=AssertionError("whole account refresh")),
+        patch.object(store, "rows", side_effect=measured),
+    ):
         op = add(prepared)
         parity(prepared)
         collection.undo(prepared["actor"], op["id"])
         parity(prepared)
+    assert len(plans) >= 3
+    for sql, plan in plans.items():
+        assert any("component=?" in row["detail"] for row in plan), (sql, plan)
 
 
 def test_source_replacement_and_unknown_quantities(prepared):
@@ -582,3 +596,29 @@ def test_explicit_operator_lifecycle_on_existing_engineering_root(prepared):
     outcome = run("prepare")
     assert outcome.returncode == 0, outcome.stderr
     parity(prepared)
+
+
+def test_species_set_candidates_keep_unknowns_with_index_seeks(prepared):
+    from pokemon_hunter.beta import account_read_species
+
+    build = accounts.catalog_current().build
+    examples = [
+        ("probe-id", "wanted", "Other name"),
+        ("probe-name", "different", "wanted"),
+        ("probe-null", None, "No evidence"),
+        ("probe-unknown", "Unknown", "No evidence"),
+        ("probe-excluded", "different", "Different name"),
+    ]
+    for key, set_id, set_name in examples:
+        collection.execute(
+            "INSERT INTO ar_scope_catalog(build,id,species,set_id,set_name) VALUES(%s,%s,25,%s,%s)",
+            [build, key, set_id, set_name],
+        )
+    predicate, args = account_read_species.candidates(build, {"set": "wanted"})
+    sql = "SELECT id FROM ar_scope_catalog WHERE build=%s" + predicate
+    found = {row["id"] for row in store.rows(sql, [build, *args])}
+    assert found.intersection(row[0] for row in examples) == {row[0] for row in examples[:-1]}
+    plans = [row["detail"] for row in store.rows("EXPLAIN QUERY PLAN " + sql, [build, *args])]
+    set_plans = [plan for plan in plans if "ar_scope_set_options" in plan]
+    assert len(set_plans) == 2
+    assert all("build=? AND set_id=?" in plan for plan in set_plans), plans

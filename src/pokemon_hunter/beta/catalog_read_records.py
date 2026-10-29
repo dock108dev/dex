@@ -31,12 +31,42 @@ def summary(group, published):
     return {field: group[field] for field in card_groups.SUMMARY_FIELDS}
 
 
+def scopes(rows, public):
+    """Share complete identity buckets; mixed visibility still gets independent grouping."""
+    if len(public) == len(rows):
+        return (("shared", rows),)
+    original = (("retained", rows), ("public", public))
+    fields = ("game_id", "set_id", "language", "collector_number")
+    # The ordinary snapshot has unique literal IDs. Preserve legacy duplicate and
+    # malformed-input semantics rather than selecting a representative for them.
+    if len({row["id"] for row in rows}) != len(rows) or any(
+        not all(isinstance(row.get(field), str) for field in fields) for row in rows
+    ):
+        return original
+    public_ids = {row["id"] for row in public}
+    private_keys = {tuple(row[field] for field in fields) for row in rows if row["id"] not in public_ids}
+    shared, retained, visible = [], [], []
+    for row in rows:
+        if tuple(row[field] for field in fields) not in private_keys:
+            shared.append(row)
+        else:
+            retained.append(row)
+            if row["id"] in public_ids:
+                visible.append(row)
+    return tuple(
+        (name, selected)
+        for name, selected in (("retained", retained), ("public", visible), ("shared", shared))
+        if selected
+    )
+
+
 def materialize(rows, pokemon, reviewed_aliases, metadata):
     """No database calls or write locks during grouping, ranking and gram construction."""
     data = {table: [] for table in TABLES}
     published = {r["id"] for r in rows if r["publication_state"] == r["set_publication_state"] == "published"}
     public = [r for r in rows if r["id"] in published and r["game_id"] in pokemon and r["language"] == "en"]
-    scopes = (("shared", rows),) if len(public) == len(rows) else (("retained", rows), ("public", public))
+    selected_scopes = scopes(rows, public)
+    option_groups, unresolved = [], []
     cards = {}
     gram_cache = {}
     word_cache = {}
@@ -44,7 +74,7 @@ def materialize(rows, pokemon, reviewed_aliases, metadata):
         card = dict(metadata[child["id"]], language=child["language"], available=child["id"] in published)
         payload = encode(card)
         cards[child["id"]] = (card, payload, len(payload.encode()), digest(payload))
-    for scope, selected in scopes:
+    for scope, selected in selected_scopes:
         built = card_groups.build_groups(selected, pokemon_game_ids=pokemon)
         for child in selected:
             card, payload, size, sha = cards[child["id"]]
@@ -79,7 +109,7 @@ def materialize(rows, pokemon, reviewed_aliases, metadata):
                     sha,
                 )
             )
-        if len(scopes) > 1:
+        if len(selected_scopes) > 1:
             # Compaction assigns final cross-scope ranks once. Only the local
             # set rank is needed to correlate rows until that step.
             local = {group["id"]: i for i, group in enumerate(built["groups"])}
@@ -100,7 +130,9 @@ def materialize(rows, pokemon, reviewed_aliases, metadata):
                     ),
                 )
                 ranks[sort] = {r["id"]: i for i, r in enumerate(ordered)}
-        options, postings = {}, set()
+        postings = set()
+        option_groups.extend((scope, group) for group in built["groups"])
+        unresolved.extend((scope, record) for record in built["unresolved"])
         for group in built["groups"]:
             key = group["id"]
             payload = encode(summary(group, published))
@@ -165,7 +197,6 @@ def materialize(rows, pokemon, reviewed_aliases, metadata):
                     ("language", group["language"], group["language"]),
                 ] + [(f, child.get(f), child.get(f)) for f in ("edition", "finish", "variant")]:
                     if isinstance(value, str) and value:
-                        options.setdefault(field, {})[value] = label
                         postings.add((scope, field, value, key))
             if cached is None:
                 cached = (
@@ -179,6 +210,30 @@ def materialize(rows, pokemon, reviewed_aliases, metadata):
                 gram_cache[gram_key] = cached
             data["cr_grams"].append((scope, ranks["set"][key], cached))
         data["cr_postings"].extend(sorted(postings))
+        for alias, ids in card_groups.alias_inventory(selected).items():
+            data["cr_aliases"].extend((scope, alias, key) for key in ids)
+    # Option labels and evidence IDs follow each complete visible scope's original
+    # group/evidence order, independently of the shared materialization partition.
+    visible_scopes = ("shared",) if len(public) == len(rows) else ("retained", "public")
+    for scope in visible_scopes:
+        groups = [group for source, group in option_groups if source in {scope, "shared"}]
+        groups.sort(
+            key=lambda group: (
+                group["set_name"].casefold(),
+                card_groups._collector_number_key(group["collector_number"]),
+                group["name"].casefold(),
+                group["id"],
+            )
+        )
+        options = {}
+        for group in groups:
+            for child in group["_children"]:
+                for field, value, label in [
+                    ("set", group["set_id"], group["set_name"]),
+                    ("language", group["language"], group["language"]),
+                ] + [(f, child.get(f), child.get(f)) for f in ("edition", "finish", "variant")]:
+                    if isinstance(value, str) and value:
+                        options.setdefault(field, {})[value] = label
         for field, values in options.items():
             for rank, (value, label) in enumerate(
                 sorted(values.items(), key=lambda p: (p[1].casefold(), p[0]))
@@ -186,10 +241,11 @@ def materialize(rows, pokemon, reviewed_aliases, metadata):
                 data["cr_options"].append(
                     (scope, field, rank, value, label, len(encode(dict(value=value, label=label)).encode()))
                 )
-        for alias, ids in card_groups.alias_inventory(selected).items():
-            data["cr_aliases"].extend((scope, alias, key) for key in ids)
-        # Reviewed request aliases are identity-key evidence, not invented printing mappings.
-        for i, evidence in enumerate(built["unresolved"]):
+        records = sorted(
+            (record for source, record in unresolved if source in {scope, "shared"}),
+            key=lambda record: json.dumps(record, sort_keys=True),
+        )
+        for i, evidence in enumerate(records):
             payload = encode(evidence)
             data["cr_evidence"].append((scope, str(i), len(payload.encode()), payload, digest(payload)))
     # Retain literal reviewed candidates internally, without leaking request evidence publicly.
@@ -199,7 +255,7 @@ def materialize(rows, pokemon, reviewed_aliases, metadata):
         )
     from .catalog_read_compact import compact
 
-    if len(scopes) == 1:
+    if len(selected_scopes) == 1:
         for values in data.values():
             values.sort()
     else:
