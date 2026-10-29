@@ -71,7 +71,7 @@ def synthetic_project(destination):
 
 
 @pytest.fixture(autouse=True)
-def finish_test_timers(monkeypatch):
+def finish_test_timers():
     """Run real deadlines, then release test-owned timers when their test ends."""
     timers = []
     original = threading.Timer.start
@@ -81,8 +81,11 @@ def finish_test_timers(monkeypatch):
         timers.append(timer)
         return result
 
-    monkeypatch.setattr(threading.Timer, "start", start)
-    yield
+    # A private patch scope must not reorder the shared monkeypatch fixture
+    # relative to Django environment setup/teardown.
+    with pytest.MonkeyPatch.context() as patcher:
+        patcher.setattr(threading.Timer, "start", start)
+        yield
     for timer in timers:
         timer.cancel()
     for timer in timers:
