@@ -190,4 +190,4 @@ config/market_values.json
 /.local/
 
 # Isolated JavaScript renderer test dependencies.
-/node_modules/
+node_modules/
