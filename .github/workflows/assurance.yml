@@ -181,8 +181,20 @@ jobs:
       if: ${{ !cancelled() }}
       run: |
         ulimit -c 0
+        # Python normally ignores SIGPIPE and raises BrokenPipeError. GDB must
+        # pass it through, while still stopping on the target SIGSEGV.
+        result=0
+        timeout 30s gdb --batch --return-child-result \
+          -ex 'handle SIGPIPE nostop noprint pass' \
+          -ex 'info signals SIGPIPE' -ex 'info signals SIGSEGV' -ex run \
+          --args .venv/bin/python -c 'import os; r,w=os.pipe(); os.close(r); os.write(w,b"probe")' \
+          > reports/ci/native-diagnostic/sigpipe-policy.log 2>&1 || result=$?
+        test "$result" -eq 1
+        grep -q BrokenPipeError reports/ci/native-diagnostic/sigpipe-policy.log
+        ! grep -q 'received signal SIGPIPE' reports/ci/native-diagnostic/sigpipe-policy.log
         timeout 40m gdb --batch --return-child-result \
           -ex 'set pagination off' -ex 'set print frame-arguments none' \
+          -ex 'handle SIGPIPE nostop noprint pass' \
           -ex run -ex 'thread apply all bt 30' \
           --args .venv/bin/python -m pytest -q --durations=15 \
           --disable-socket --allow-unix-socket \
