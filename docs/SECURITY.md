@@ -26,12 +26,11 @@
 - Uploads are private database bytes. Image validation bounds size, dimensions and
   formats, rejects animation, and re-encodes images without metadata. Downloads
   authorize the record rather than concatenating an untrusted filesystem path.
-- Workers derive the account from durable jobs, recheck account state, and keep
-  provider work separate from inventory confirmation. Recognition may send photos
-  to OpenAI through the explicitly configured provider. CLI subprocess arguments,
-  environment, temporary-directory permissions and execution restrictions remain
-  as documented in [photo configuration](photo-entry.md). There is no automatic API
-  fallback or spending reset.
+- Workers derive the account from durable jobs and keep photo processing separate
+  from inventory confirmation. Codex and OpenAI execution paths are removed; analysis
+  requests fail explicitly. Uploads and prior reviews remain private. Future Ollama
+  recognition must preserve authorization, revision and publication checks. Historical
+  reservations and deletion journals are never reset by provider removal.
 - eBay and guide data, uploaded images, imports, model output and seller strings
   are untrusted. Templates/JavaScript escape display text; catalog identities are
   generated internally. Seller links receive a separate server-side URL policy.
@@ -152,3 +151,64 @@ accounting and clock rollback fail closed. Restoring the app must not restore ol
 acquisition allowances or price revocations. Temporary results are not saved,
 exported or logged. See [operations](operations.md) and
 [recovery](ERROR_HANDLING.md).
+
+## PERF-03 private read review
+
+The account-read adapters resolve the server principal on every request and
+recheck role/activity plus collection/account/catalog revisions before returning.
+All pages, artwork, photo references, evidence and oversized JSON downloads are
+independently authorized and private/no-store. Foreign account selectors are
+rejected. Public V2 does not import account overlays. Copy display records use an
+explicit allowlist; retained possession never authorizes a mutation. Derived
+integrity failure returns unavailable rather than falling back to stale data.
+See `perf03-account-reads.md` and the isolated logout/account-switch/revocation,
+concurrent-write and failure-injection tests. This review is source/local evidence,
+not a claim of hosted or installed verification.
+
+## RUNTIME-DEPS advisory review — October 29, 2026
+
+The read-only installed inventory still selects `hunter-poc-20261027`, Python
+3.12.15 and package 0.1.0. It is unchanged. A fresh strict PyPI audit of its
+installed dependencies returned 55 finding entries across four packages (aliases
+and duplicate advisory records are not 55 distinct vulnerabilities):
+
+| Dependency path | Installed | Candidate lock | Audit finding entries |
+| --- | --- | --- | ---: |
+| HTTPX → certifi | 2026.7.22 | 2026.10.19 | 2 |
+| CI pip-audit → CacheControl[filecache] → filelock | 4.0.12 | 4.2.1 | 13 |
+| FastAPI → opentelemetry-api | 1.45.0 | 1.45.1 | 1 |
+| Dex → Pillow | 12.3.0 | 13.0.0 | 39 |
+
+The checkout already locked these repaired versions before this slice. Retain them;
+`tool.uv.constraint-dependencies` now prevents older certifi, filelock and
+opentelemetry-api resolution. The existing Pillow >=13 requirement already provides
+its floor. No dependency version was upgraded relative to the starting lock. The
+candidate's runtime-only installation omits development/audit/browser tools and
+therefore filelock; the separate qualification environment includes fixed filelock.
+No vulnerability ignore or scanner policy was added.
+
+Authoritative responses were fetched afresh from PyPI for each installed version.
+See the [filelock advisory](https://github.com/advisories/GHSA-v4x8-3wr5-3wq8),
+[OpenTelemetry advisory](https://github.com/advisories/GHSA-xcq7-p3pf-p88h),
+[certifi version advisories](https://pypi.org/pypi/certifi/2026.7.22/json) and
+[Pillow version advisories](https://pypi.org/pypi/pillow/12.3.0/json).
+Complete returned IDs, aliases, fixed versions and descriptions are retained in
+`reports/runtime-deps-20261029/*-advisories.json` and `installed-audit.json`.
+The locked candidate audit has zero findings; this does not secure the older
+customer installation. Bandit and full-history/worktree Gitleaks results and exact
+package identities are recorded in [CI qualification](CI.md#runtime-deps-local-qualification).
+An initial scan could not locate Gitleaks; that failed report is retained separately
+from the completed run using the repository's retained Gitleaks 8.30.1 executable.
+
+## CI-VERIFY security boundary
+
+October 29 integrated verification restored nested card-return account/goal-version
+authorization and the private card-shell cache directive. Existing adversarial tests
+retain foreign-account and stale-goal denial; no provider or inference path was
+restored. Final fresh Python advisory and worktree/history secret scans have
+zero findings; Bandit has 184 visible findings and zero blocking findings under the
+existing policy. The runtime-only Python and npm test-dependency audits also have
+zero findings. No scanner exclusion or vulnerability ignore was added. Final local
+source/package identities and retained reports are recorded in
+[CI-VERIFY evidence](ci-verify-20261029.md). Exact-candidate hosted security remains
+open. These checks do not update or establish security of the customer runtime.

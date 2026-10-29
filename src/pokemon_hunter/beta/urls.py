@@ -3,7 +3,8 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
 
 from . import collection_views as collection_assets
-from . import public_views, species_views, views
+from . import public_views, readiness, species_views, views
+from .account_read_views import routes as account_read_routes
 from .catalog_read_views import routes as catalog_read_routes
 
 # Choose one authoritative handler per URL; retain account-only handlers for account-only roots.
@@ -22,6 +23,9 @@ if settings.PARITY_ENABLED:
     hunt_detail = hunt_routes.saved
 
 urlpatterns = [
+    path("livez/", readiness.live),
+    path("readyz/", readiness.ready),
+    path("api/v2/readiness/", readiness.account),
     path("", collection_routes.home),
     path("pokedex/", species_views.home),
     path("pokedex/<int:dex>/", species_views.home),
@@ -233,3 +237,5 @@ else:
 # Additive public contracts remain available (503) before explicit preparation.
 
 urlpatterns += catalog_read_routes()
+
+urlpatterns += account_read_routes()

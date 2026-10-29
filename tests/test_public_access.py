@@ -45,11 +45,13 @@ def test_early_root_guest_registry_browse_uses_no_private_data_or_network(env):
         for route in ("/", "/pokedex/", "/pokedex/123/", "/hunt/", "/lookup/?targets=123"):
             assert guest.get(route).status_code == 200
         numeric = guest.get("/pokedex/", {"q": "#123"})
-        assert b"Scyther" in numeric.content and b"Bulbasaur" not in numeric.content
+        assert b"public-browse.js" in numeric.content
+        assert b"Scyther" not in numeric.content  # Primary metadata arrives through V2.
         assert guest.get("/pokedex/252/").status_code == 404
         assert guest.get("/api/public/catalog/").json()["printings"] == []
     assert not any(table in sql for sql in queries for table in PRIVATE_TABLES)
-    assert b"No cards indexed yet" in guest.get("/pokedex/123/").content
+    assert b"public-browse.js" in guest.get("/pokedex/123/").content
+    assert guest.get("/api/v2/public/pokedex-species/").status_code == 503
     for asset in (
         "glass.css",
         "collection.css",
@@ -79,7 +81,7 @@ def test_public_printings_are_allowlisted_published_and_escaped(b4):
     number = printing["pokemon_dex"]
     assert number
     page = guest.get(f"/pokedex/{number}/")
-    assert b"&lt;script&gt;" in page.content and b'<script>alert("private")</script>' not in page.content
+    assert b"public-browse.js" in page.content and b'<script>alert("private")</script>' not in page.content
     inv.execute("UPDATE printings SET language='ja' WHERE id=%s", [row["id"]])
     assert row["id"] not in {value["id"] for value in guest.get("/api/public/catalog/").json()["printings"]}
     inv.execute("UPDATE printings SET language='en' WHERE id=%s", [row["id"]])
@@ -202,7 +204,10 @@ def test_public_validation_errors_never_expose_exception_details(b4, route):
         patch.object(public_catalog, "pokedex", side_effect=fail_query),
         patch.object(public_catalog, "pack_lookup", side_effect=ValueError(sentinel)),
     ):
-        response = b4["client"]().get(route, {"q": "bad"} if route != "/lookup/" else {"targets": "123"})
+        response = b4["client"]().get(
+            route,
+            {"q": "\x00" if route == "/pokedex/" else "bad"} if route != "/lookup/" else {"targets": "123"},
+        )
     assert response.status_code == 400
     assert sentinel.encode() not in response.content
     assert b"Choose valid" in response.content
@@ -225,7 +230,7 @@ def test_guest_pokedex_dispatch_and_signed_in_collection_remain_distinct(b4):
     try:
         guest = b4["client"]()
         assert guest.get("/pokedex/").status_code == 200
-        assert b"public-species" in guest.get("/pokedex/").content
+        assert b"public-browse.js" in guest.get("/pokedex/").content
         assert guest.get("/hunt/").status_code == 200
         assert guest.get("/cards/").status_code == 302
         assert guest.get("/api/parity/").status_code == 302

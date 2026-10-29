@@ -286,6 +286,10 @@ def main():
         from .price_snapshots import expiry_worker
 
         configure()
+        from .read_diagnostics import configure as configure_diagnostics
+
+        configure_diagnostics(args.root)
+        application = get_asgi_application()
         price_stop = threading.Event()
         price_worker = threading.Thread(target=expiry_worker, args=(price_stop,), daemon=True)
         price_worker.start()
@@ -303,9 +307,32 @@ def main():
             )
             worker.start()
 
+        from .serving import ShutdownApplication
+
+        joined = threading.Event()
+
+        def stop_workers():
+            if joined.is_set():
+                return
+            joined.set()
+            price_stop.set()
+            if worker is not None:
+                stop.set()
+            price_worker.join(timeout=5)
+            if worker is not None:
+                worker.join(timeout=5)
+            complete = not price_worker.is_alive() and (worker is None or not worker.is_alive())
+            if not complete:
+                from .diagnostics import failure
+
+                failure("worker_shutdown_incomplete", TimeoutError())
+            from .read_diagnostics import emit
+
+            emit(dict(event="shutdown", phase="workers_joined", ready=complete))
+
         try:
             uvicorn.run(
-                get_asgi_application(),
+                ShutdownApplication(application, stop_workers),
                 host="127.0.0.1",
                 port=8011,
                 access_log=False,
@@ -313,15 +340,7 @@ def main():
                 log_level="warning",
             )
         finally:
-            price_stop.set()
-            price_worker.join(timeout=5)
-            if worker is not None:
-                stop.set()
-                worker.join(timeout=5)
-                if worker.is_alive():
-                    from .diagnostics import failure
-
-                    failure("worker_shutdown_incomplete", TimeoutError())
+            stop_workers()
 
 
 def entrypoint():

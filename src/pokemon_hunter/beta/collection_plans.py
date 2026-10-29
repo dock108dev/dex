@@ -305,7 +305,19 @@ def build(
             },
         )
     elif kind in {"goal", "goal_edit"}:
-        definition = goal_definition(actor, request)
+        if request.get("preserve_membership"):
+            if (
+                kind != "goal_edit"
+                or set(request) != {"id", "revision", "name", "goal_kind", "preserve_membership"}
+                or request["preserve_membership"] is not True
+            ):
+                raise ValueError("Preserving membership permits only a reviewed name change")
+            retained = one(actor, "goal", request["id"])
+            if retained["kind"] != request["goal_kind"]:
+                raise ValueError("Retain the original goal kind")
+            definition = json.loads(retained["definition"])
+        else:
+            definition = goal_definition(actor, request)
         fields = {
             "name": name(request.get("name")),
             "kind": request["goal_kind"],

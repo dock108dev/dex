@@ -34,12 +34,12 @@ async function api(path, payload) {
   }
   try { result = await response.json(); } catch { throw fail(`Request could not complete (${response.status}). Check its saved status before repeating a change.`); }
   if(window.navigationAuthorityDiscarded)throw fail('Session ended. Sign in again.');
-  if (!response.ok) {if(response.status===403){window.discardNavigationAuthority?.();window.invalidateCardScreens?.();window.invalidateSpeciesScreens?.();$('#content').replaceChildren();}throw fail(result.error || `Not available to this account (${response.status})`);}
+  if (!response.ok) {if(response.status===403){window.discardNavigationAuthority?.();window.invalidateCardScreens?.();window.invalidateSpeciesScreens?.();$('#content').replaceChildren();}throw fail(window.BoundedReads?.message(response.status,result) || result.error || `Not available to this account (${response.status})`);}
   return result;
 }
 function status(text, error=false) { const target=$('#status');if(!target)return;target.textContent=text;target.className=error?'error':''; }
 function setOptions(all=false) { return `${all?'<option value="">All supported sets</option>':''}${data.sets.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('')}`; }
-function binderOptions(selected) { return `<option value="">No binder</option>${data.binders.map(b=>`<option value="${esc(b.id)}" ${b.id===selected?'selected':''}>${esc(b.name)}</option>`).join('')}`; }
+function binderOptions(selected) { return `<option value="">No binder</option>${selected&&!data.binders.some(b=>b.id===selected)?'<option selected value="'+esc(selected)+'">Current binder</option>':''}${data.binders.map(b=>`<option value="${esc(b.id)}" ${b.id===selected?'selected':''}>${esc(b.name)}</option>`).join('')}`; }
 function field(key,label,value='',type='text') { return `<div><label for="${key}">${label}</label><input id="${key}" name="${key}" type="${type}" value="${esc(value)}" ${key==='purchase_amount'?'inputmode="decimal"':''}></div>`; }
 function unknown(p) { return (p.unresolved_fields || []).join(', ') || 'None'; }
 function cardName(c) { try {return JSON.parse(c.attributes||'{}').name||c.display_identity?.name||'Unidentified card';} catch {return 'Unidentified card';} }
@@ -82,10 +82,12 @@ async function refresh({renderPage=true,restoreDialogFocus=false}={}) {
   const sequence=++refreshSequence, route=location.pathname+location.search;
   window.invalidateCardScreens?.();
   window.invalidateSpeciesScreens?.();
-  const browsing=/^\/(cards|card-library|card-groups|pokedex)(\/|$)/.test(location.pathname);
-  const next=await api(browsing?'/api/collection-context/':'/api/collection/');
+  const browsing=/^\/(cards|card-library|card-groups|pokedex|goals)(\/|$)/.test(location.pathname);
+  const cards=/^\/(cards|card-library|card-groups)(\/|$)/.test(location.pathname);
+  if(cards){data={context_only:true,effective_collection:{cards:[]},binders:[],copies:[],goals:[]};if(renderPage)await render();if(restoreDialogFocus)restoreCollectionFocus();return;}
+  const next=browsing?BoundedReads.context(await api('/api/v2/collection-context/')):await api('/api/collection/');
   if(sequence!==refreshSequence||route!==location.pathname+location.search)return;
-  const grouped=/^\/(cards|card-library|card-groups|pokedex|settings)(\/|$)/.test(location.pathname);
+  const grouped=/^\/(cards|card-library|card-groups|pokedex|settings|goals)(\/|$)/.test(location.pathname);
   let parity;
   if(document.body.dataset.parity==='true'&&!grouped)parity=await api('/api/parity/');
   if(sequence!==refreshSequence||route!==location.pathname+location.search)return;
@@ -127,7 +129,7 @@ async function render() {
     return;
   }
   if(window.renderParity&&window.renderParity(route))return;
-  if(route==='/goals/') {renderGoals();renderDeclaration();} else if(route==='/settings/')renderSettings();else renderCollection();
+  if(route==='/goals/') {await window.renderBoundedGoals();} else if(route==='/settings/')renderSettings();else renderCollection();
 }
 function renderCollection() {
   const unique=new Set(data.copies.filter(c=>c.printing_id).map(c=>c.printing_id)).size;
@@ -185,10 +187,12 @@ function renderCopies() {
   document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editCopy(data.copies.find(c=>c.id===b.dataset.edit)));
   document.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{const c=data.copies.find(c=>c.id===b.dataset.remove);preview('remove',{id:c.id,revision:c.revision},crypto.randomUUID());});
 }
-async function searchCatalog(){
+let catalogReader;
+async function searchCatalog(page=1){
   const sequence=++searchSequence;
-  try {const query=new URLSearchParams({q:$('#search').value,set:$('#catalog-set').value});const found=(await api('/api/catalog/?'+query)).printings;if(sequence!==searchSequence)return;catalog=found;
-    $('#catalog-results').innerHTML=catalog.length?catalog.map(p=>`<article class="card"><h3>${esc(p.name)}</h3><p>${esc(p.set_name)} · #${esc(p.collector_number)}</p><p>${esc(p.variant_label||'Variant not specified')}</p><p class="muted">Unresolved: ${esc(unknown(p))}</p><button class="secondary" data-card-intent="${esc(p.id)}">Edit collection</button><button class="secondary" data-printing="${esc(p.id)}">Review printing & add copy</button></article>`).join(''):`<p>No matching cards. Try another name or set.${document.querySelector('a[href="/requests/"]')?' Use Catalog requests to ask for a missing card.':''}</p>`;
+  try {if(page===1){catalogReader?.stop();catalogReader=new BoundedReads.Reader({active:()=>Boolean($('#catalog-results'))&&!window.navigationAuthorityDiscarded});}const query=new URLSearchParams({q:$('#search').value,set:$('#catalog-set').value,page});const result=await catalogReader.get('/api/v2/catalog/?'+query,'picker');const found=result.printings;if(sequence!==searchSequence)return;catalog=found;
+    $('#catalog-results').innerHTML=catalog.length?catalog.map(p=>p.oversized?`<p>${BoundedReads.overflow(p)}</p>`:`<article class="card"><h3>${esc(p.name)}</h3><p>${esc(p.set_name)} · #${esc(p.collector_number)}</p><p>${esc(p.variant_label||'Variant not specified')}</p><p class="muted">Unresolved: ${esc(unknown(p))}</p><button class="secondary" data-card-intent="${esc(p.id)}">Edit collection</button><button class="secondary" data-printing="${esc(p.id)}">Review printing & add copy</button></article>`).join(''):`<p>No matching cards. Try another name or set.${document.querySelector('a[href="/requests/"]')?' Use Catalog requests to ask for a missing card.':''}</p>`;
+    const pager=document.createElement('div');pager.innerHTML='<p>'+result.total+' choices · page '+result.page+' of '+Math.max(1,result.pages)+'</p>';for(const [label,n] of [['Previous',page-1],['Next',page+1]])if(n>=1&&n<=result.pages){const b=document.createElement('button');b.textContent=label;b.onclick=()=>searchCatalog(n);pager.append(b);}$('#catalog-results').append(pager);
     document.querySelectorAll('[data-card-intent]').forEach(b=>b.onclick=()=>editCollectionCard(cardIdentity(catalog.find(p=>p.id===b.dataset.cardIntent))));
     document.querySelectorAll('[data-printing]').forEach(b=>b.onclick=()=>editCopy(null,catalog.find(p=>p.id===b.dataset.printing)));
   }catch(e){status(e.message,true);}
@@ -196,8 +200,12 @@ async function searchCatalog(){
 function editCopy(copy,p,groupContext=null){
   const c=copy||{}, editing=!!copy;
   $('#editor-title').textContent=editing?'Edit physical copy':'Add physical copy';
-  const existing=p?data.copies.filter(c=>c.printing_id===p.id).length:0;
+  const existing=data.context_only?'Unknown':p?data.copies.filter(c=>c.printing_id===p.id).length:0;
   $('#editor-body').innerHTML=`<h3>${esc(editing?cardName(c):p.name)}</h3>${p?`<p>${esc(p.set_name)} · #${esc(p.collector_number)} · ${esc(p.language||'Language unknown')}</p><details><summary>Selected variant details</summary><p>${esc(p.variant_label||'Variant not specified')}</p><p>Edition: ${esc(p.edition||'unresolved')} · Finish: ${esc(p.finish||'unresolved')} · Variant: ${esc(p.variant||'unresolved')}</p><p>${existing} recorded copies. Unresolved: ${esc(unknown(p))}.</p></details>`:`<details><summary>Copy reference</summary><p class="copy-reference">${esc(c.id)}</p><p>Copy identity is preserved. Unresolved variants stay unresolved.</p></details>`}<form id="copy-form"><div class="form-grid"><div><label for="condition">Condition</label><select name="condition" id="condition">${['','Mint','NM','LP','MP','HP','DMG'].map(v=>`<option value="${v}" ${v===c.condition?'selected':''}>${v||'Unknown'}</option>`).join('')}</select></div><div><label for="binder_id">Binder</label><select id="binder_id" name="binder_id">${binderOptions(c.binder_id)}</select></div><details class="full copy-purchase"><summary>Purchase details</summary><div class="form-grid">${field('purchase_amount','Purchase amount',c.purchase_amount)}${field('purchase_currency','Currency (e.g. USD)',c.purchase_currency)}${field('purchase_date','Purchase date',c.purchase_date,'date')}</div></details><details class="full copy-grading"><summary>Grading and certificate</summary><div class="form-grid">${field('grading_company','Grading company (optional)',c.grading_company)}${field('grade','Recorded grade (optional)',c.grade)}${field('certificate','Certificate (optional)',c.certificate)}</div></details><div class="full"><label for="notes">Notes</label><textarea id="notes" name="notes" maxlength="2000">${esc(c.notes||'')}</textarea></div></div>${editing?'':`<label for="copy-policy">Duplicate policy</label>${duplicatePolicyControl('copy-policy')}`}<p class="muted">Leave unknown values blank. Purchase amounts are stored exactly; these are not value estimates.</p><p id="copy-error" role="alert" class="error" hidden></p><button>Preview ${editing?'edit':'addition'}</button></form>`;
+  if(data.context_only){const editorBody=$('#editor-body').firstElementChild,reader=new BoundedReads.Reader({seed:data.read_state,active:()=>$('#editor').open&&$('#editor-body').firstElementChild===editorBody&&!window.navigationAuthorityDiscarded});
+    const host=document.createElement('div');$('#binder_id').after(host);BoundedReads.paged(host,{reader,url:'/api/v2/binders/',field:'binders',render:b=>'<button type="button" data-binder-choice="'+esc(b.id)+'">'+esc(b.name)+'</button>',bind:rows=>rows.querySelectorAll('[data-binder-choice]').forEach(b=>b.onclick=()=>{const select=$('#binder_id');if(![...select.options].some(o=>o.value===b.dataset.binderChoice))select.add(new Option(b.textContent,b.dataset.binderChoice));select.value=b.dataset.binderChoice;})}).textContent='Browse binders';
+    queueMicrotask(()=>BoundedReads.labelControls(reader,[{element:$('#binder_id'),kind:'binder'}]).catch(e=>status(e.message,true)));
+  }
   const operationId=crypto.randomUUID();
   if (!editing) bindDuplicatePolicy('copy-policy');
   $('#copy-form').onsubmit=e=>{e.preventDefault();const attrs=Object.fromEntries(new FormData(e.currentTarget));preview(editing?'edit':'add',editing?{id:c.id,revision:c.revision,attributes:attrs}:{printing_id:p.id,attributes:attrs,duplicate_policy:$('#copy-policy').value},operationId,groupContext);};
@@ -213,6 +221,7 @@ function editCopyEdition(copy,groupContext,group){
 }
 
 let goalBuilderCatalog=[], editingFilteredGoal=null;
+const goalMemberSelection=new Map();let goalMemberReader;
 function goalFilterValues(){
   const species=$('#filter-completion').value==='species',pokemon=data.goal_options.games.find(g=>g.id===$('#filter-game').value)?.game_key==='pokemon';
   const range=pokemon&&(species||$('#filter-range').checked);
@@ -232,20 +241,18 @@ function updateGoalFilters(){
   if(species)$('#filter-range').checked=true;
   $('#filter-range').disabled=species;
   for(const id of ['filter-min','filter-max'])$('#'+id).disabled=!pokemon||!$('#filter-range').checked;
-  const f=goalFilterValues(),rows=matchingGoalFilters(),owned=new Set(data.copies.map(c=>c.printing_id));
+  const f=goalFilterValues();
   const valid=f.pokemon_dex_min===null||Number.isInteger(f.pokemon_dex_min)&&Number.isInteger(f.pokemon_dex_max)&&1<=f.pokemon_dex_min&&f.pokemon_dex_min<=f.pokemon_dex_max&&f.pokemon_dex_max<=251;
-  let summary;
-  if(species){const total=f.pokemon_dex_max-f.pokemon_dex_min+1,available=new Set(rows.map(p=>p.attributes.pokemon_dex)),have=new Set(rows.filter(p=>owned.has(p.id)).map(p=>p.attributes.pokemon_dex));summary=total+' target species · '+have.size+' owned within these filters · '+(total-available.size)+' unavailable in selected catalog · '+rows.length+' eligible printings';}
-  else summary=rows.length+' matching printings · '+rows.filter(p=>owned.has(p.id)).length+' owned within these filters'+($('#filter-policy').value==='exact'?' · Exact completion requires resolved variants':'');
-  $('#filter-summary').textContent=valid?summary:'Choose a Pokédex range within #001–251.';
-  if($('#goal-kind').value==='filtered')$('#goal-form button[type=submit]').disabled=!valid||(!species&&!rows.length);
+  $('#filter-summary').textContent=valid?'Preview evaluates the complete catalog against these filters and shows the exact frozen membership.':'Choose a Pokédex range within #001–251.';
+  if($('#goal-kind').value==='filtered')$('#goal-form button[type=submit]').disabled=!valid;
+
 }
 function populateGoalFilters(){
-  const game=$('#filter-game').value,rows=goalBuilderCatalog.filter(p=>p.game_id===game);
+  const game=$('#filter-game').value;
   $('#filter-sets').innerHTML=data.sets.filter(s=>s.game_id===game).map(s=>'<label class="check"><input type="checkbox" value="'+esc(s.id)+'">'+esc(s.name)+'</label>').join('');
-  $('#filter-type').innerHTML='<option value="all">All card types</option>'+[...new Set(rows.map(p=>p.attributes.supertype||'Unknown'))].sort().map(t=>'<option value="'+esc(t)+'">'+esc(t)+'</option>').join('');
-  if(rows.some(p=>p.attributes.supertype==='Pokémon'))$('#filter-type').value='Pokémon';
-  $('#filter-rarities').innerHTML=[...new Set(rows.map(p=>p.attributes.rarity||'Unknown'))].sort().map(r=>'<option value="'+esc(r)+'">'+esc(r)+'</option>').join('');
+  $('#filter-type').innerHTML='<option value="all">All card types</option>'+data.goal_options.card_types.map(t=>'<option value="'+esc(t)+'">'+esc(t)+'</option>').join('');
+  if(data.goal_options.card_types.includes('Pokémon'))$('#filter-type').value='Pokémon';
+  $('#filter-rarities').innerHTML=data.goal_options.rarities.map(r=>'<option value="'+esc(r)+'">'+esc(r)+'</option>').join('');
   document.querySelectorAll('#filter-sets input').forEach(c=>c.onchange=updateGoalFilters);
   $('#filter-set-query').value='';updateGoalFilters();
 }
@@ -256,6 +263,7 @@ function showGoalChecklist(g){
   $('#goal-target-query').oninput=update;$('#goal-target-status').onchange=update;update();openDialog('#editor');
 }
 function editFilteredGoal(g){
+  if(!g.definition.filters){status('This frozen goal has no saved filter definition. Its membership is retained; create a new reviewed goal instead of guessing its original filters.',true);return;}
   editingFilteredGoal=g;$('#goal-kind').value='filtered';$('#goal-kind').onchange();$('#goal-name').value=g.name;
   const f=g.definition.filters;
   if(f){$('#filter-game').value=f.game_id;populateGoalFilters();$('#filter-completion').value=f.completion;$('#filter-type').value=f.card_type;for(const c of document.querySelectorAll('#filter-sets input'))c.checked=f.set_ids.includes(c.value);for(const o of $('#filter-rarities').options)o.selected=f.rarities.includes(o.value);$('#filter-range').checked=f.pokemon_dex_min!==null;$('#filter-min').value=f.pokemon_dex_min??1;$('#filter-max').value=f.pokemon_dex_max??251;}
@@ -281,17 +289,18 @@ async function wireGoalFilters(){
   document.querySelectorAll('[data-goal-checklist]').forEach(b=>b.onclick=()=>showGoalChecklist(data.goals.find(g=>g.id===b.dataset.goalChecklist)));
   document.querySelectorAll('[data-goal-filters]').forEach(b=>{b.disabled=true;b.onclick=()=>editFilteredGoal(data.goals.find(g=>g.id===b.dataset.goalFilters));});
   kind.onchange();
-  try{goalBuilderCatalog=(await api('/api/catalog/')).printings;if(location.pathname==='/goals/'){populateGoalFilters();document.querySelectorAll('[data-goal-filters]').forEach(b=>b.disabled=false);}}catch(e){status(e.message,true);button.disabled=true;}
+  try{if(location.pathname==='/goals/'){populateGoalFilters();document.querySelectorAll('[data-goal-filters]').forEach(b=>b.disabled=false);}}catch(e){status(e.message,true);button.disabled=true;}
 }
 
 function renderGoals(){
   $('#content').innerHTML=`<h1>Goals</h1><p class="muted">Choose the cards or species you want to collect. One copy can count toward several goals. Goals never add cards to inventory.</p><div class="grid">${data.goals.map(g=>`<article class="card"><h2>${esc(g.name)}</h2>${['original151','original151_collection','collection_species'].includes(g.kind)?'<p>Retained version '+g.definition.lineage.number+' · '+(g.coverage_update_available?'New reviewed coverage available; preview an explicit update.':'Coverage matches current publication.')+'</p>':''}<p><strong>${g.satisfied} / ${g.total}</strong> ${g.definition.policy==='species'?'species':g.definition.policy==='exact'?'exact variants':'catalog entries'}</p><progress value="${g.satisfied}" max="${g.total}" aria-label="${esc(g.name)} progress"></progress><p>${esc(g.definition.coverage)}</p>${g.definition.collection_source?'<p>Frozen collection source: '+esc(g.definition.collection_source.source_sha256)+' · '+(g.collection_update_available?'Another source is available; select it below before previewing a successor.':'Selected collection source retained.')+'</p>':''}<details><summary>Frozen checklist and version</summary><p><code>${esc(g.version)}</code></p>${g.definition.items.map(i=>`<p>${esc(i.label)}${i.unresolved?' · variant unresolved':''}</p>`).join('')}</details>${['original151','original151_collection','collection_species'].includes(g.kind)?(['original151_collection','collection_species'].includes(g.kind)?'<label for="successor-source-'+esc(g.id)+'">Source for reviewed successor</label><select id="successor-source-'+esc(g.id)+'">'+(data.available_collection_sources||[]).map(r=>'<option value="'+esc(r.id)+'"'+(r.id===g.definition.collection_source.id?' selected':'')+'>'+r.owned+' owned / '+(151-r.owned)+' missing · '+esc(r.source_sha256)+'</option>').join('')+'</select>':'')+'<p>'+g.frozen_qualifying_printings+' qualifying printings in this frozen version · '+g.qualifying_printings+' currently published · '+g.unavailable+' species without current catalog coverage</p><button class="secondary" data-broad-update="'+esc(g.id)+'"'+(g.successor_ids?.length?' disabled':'')+'>Preview successor version</button><button class="secondary" data-broad-progress="'+esc(g.id)+'">View progress and missing species</button><a href="/missing/?goal='+encodeURIComponent(g.id)+'">Find missing on eBay for this version</a><p><a href="/packs/?goal='+encodeURIComponent(g.id)+'">Packs to open</a></p>':'<button class="secondary" data-goal-remove="'+esc(g.id)+'">Remove goal</button>'}</article>`).join('')||'<div class="panel empty"><h2>No goals yet</h2><p>Track a set, make a custom checklist, or start Vintage 251.</p></div>'}</div><section class="panel"><h2>Create a tracking goal</h2><form id="goal-form"><label for="goal-name">Goal name</label><input id="goal-name" required maxlength="120"><label for="goal-kind">Goal type</label><select id="goal-kind"><option value="original151_collection">Original 151 · collection species ownership</option><option value="original151">Original 151 · any era · reviewed coverage v1</option><option value="set">Track a set</option><option value="custom">Custom checklist</option><option value="vintage">Vintage 251 · legacy-v1</option></select><div id="collection-source-scope" hidden><label for="collection-source">Collection source version</label><select id="collection-source">${(data.available_collection_sources||[]).map(r=>`<option value="${esc(r.id)}">${r.owned} owned / ${151-r.owned} missing · ${esc(r.source_sha256)}</option>`).join('')}</select><p>Declared species across eras, including Dark and EX cards. This freezes ownership from the selected source. It adds no physical copies or printing identities.</p></div><div id="goal-scope"><label for="goal-set">Catalog set</label><select id="goal-set">${setOptions()}</select><label for="goal-policy">Completion policy</label><select id="goal-policy"><option value="catalog">Catalog entries (qualified coverage)</option><option value="exact">Exact variants (unresolved do not count)</option></select></div><div id="custom-checklist" hidden><label for="goal-search">Filter checklist by name or number</label><input id="goal-search" type="search"><div id="goal-members" class="review-list"></div></div><p class="notice">Catalog-entry completion covers only the listed entries. It does not establish complete edition/variant coverage.</p><button>Preview tracking goal</button></form></section>`;
   document.querySelectorAll('#content .grid > article').forEach((article,index)=>{const g=data.goals[index];if(!g)return;const link=document.createElement('a');link.textContent='Find cards for this goal';link.href='/shopping/?'+new URLSearchParams({goal:g.id,version:g.version,generation:String(data.effective_collection.generation),return:'/goals/'});const paragraph=document.createElement('p');paragraph.append(link);article.append(paragraph);});
+  goalMemberSelection.clear();
   $('#goal-form').dataset.operation=crypto.randomUUID();
   $('#goal-kind').onchange=()=>{$('#collection-source-scope').hidden=$('#goal-kind').value!=='original151_collection';$('#goal-scope').hidden=$('#goal-kind').value==='vintage';$('#custom-checklist').hidden=$('#goal-kind').value!=='custom';if($('#goal-kind').value==='custom')loadGoalMembers();};
   $('#goal-set').onchange=()=>{if($('#goal-kind').value==='custom')loadGoalMembers();};
-  $('#goal-search').oninput=()=>{const q=$('#goal-search').value.toLowerCase();document.querySelectorAll('#goal-members label').forEach(l=>l.hidden=!l.textContent.toLowerCase().includes(q));};
-  $('#goal-form').onsubmit=e=>{e.preventDefault();preview('goal',{name:$('#goal-name').value,goal_kind:$('#goal-kind').value,set_id:$('#goal-set').value,policy:$('#goal-policy').value,printing_ids:[...document.querySelectorAll('#goal-members input:checked')].map(c=>c.value),...($('#goal-kind').value==='original151_collection'?{collection_source_id:$('#collection-source').value}:{})},e.currentTarget.dataset.operation);};
+  let goalSearchTimer;$('#goal-search').oninput=()=>{clearTimeout(goalSearchTimer);goalSearchTimer=setTimeout(loadGoalMembers,15);};
+  $('#goal-form').onsubmit=e=>{e.preventDefault();preview('goal',{name:$('#goal-name').value,goal_kind:$('#goal-kind').value,set_id:$('#goal-set').value,policy:$('#goal-policy').value,printing_ids:[...goalMemberSelection.keys()],...($('#goal-kind').value==='original151_collection'?{collection_source_id:$('#collection-source').value}:{})},e.currentTarget.dataset.operation);};
   document.querySelectorAll('[data-goal-remove]').forEach(b=>b.onclick=()=>{const g=data.goals.find(g=>g.id===b.dataset.goalRemove);preview('goal_remove',{id:g.id,revision:g.revision},crypto.randomUUID());});
   for(const g of data.goals.filter(g=>g.kind==='filtered'&&g.definition.policy==='species'&&g.definition.filters.pokemon_dex_min===1&&g.definition.filters.pokemon_dex_max===151&&!g.successor_ids?.length)){
     const old=document.querySelector('[data-goal-remove="'+g.id+'"]');const b=document.createElement('button');b.className='secondary';b.dataset.broadUpdate=g.id;b.textContent='Preview broad Original 151 successor';old.before(b);
@@ -300,7 +309,14 @@ function renderGoals(){
   document.querySelectorAll('[data-broad-update]').forEach(b=>b.onclick=()=>{const g=data.goals.find(g=>g.id===b.dataset.broadUpdate);preview('goal_edit',{id:g.id,revision:g.revision,name:g.name,goal_kind:['original151_collection','collection_species'].includes(g.kind)?g.kind:'original151',...(['original151_collection','collection_species'].includes(g.kind)?{collection_source_id:$('#successor-source-'+g.id).value,...(g.kind==='collection_species'?{targets:g.definition.items.map(i=>i.pokemon_dex)}:{})}:{})},crypto.randomUUID());});
   wireGoalFilters().catch(e=>status(e.message,true));
 }
-async function loadGoalMembers(){try{const ps=(await api('/api/catalog/?set='+$('#goal-set').value)).printings;$('#goal-members').innerHTML=ps.map(p=>`<label class="check"><input type="checkbox" value="${esc(p.id)}">${esc(p.name)} #${esc(p.collector_number)}</label>`).join('');}catch(e){status(e.message,true);}}
+async function loadGoalMembers(){
+  goalMemberReader?.stop();goalMemberReader=new BoundedReads.Reader({active:()=>Boolean($('#goal-members'))&&!window.navigationAuthorityDiscarded});
+  const host=$('#goal-members');host.replaceChildren();
+  const selected=document.createElement('p');host.append(selected);
+  const summary=()=>selected.textContent=goalMemberSelection.size+' selected across all pages and sets';summary();
+  const load=BoundedReads.paged(host,{reader:goalMemberReader,url:'/api/v2/catalog/?'+new URLSearchParams({set:$('#goal-set').value,q:$('#goal-search').value}),field:'printings',render:p=>`<label class="check"><input type="checkbox" value="${esc(p.id)}" ${goalMemberSelection.has(p.id)?'checked':''}>${esc(p.name)} #${esc(p.collector_number)}</label>`,bind:rows=>rows.querySelectorAll('input').forEach(input=>input.onchange=()=>{if(input.checked)goalMemberSelection.set(input.value,input.parentElement.textContent);else goalMemberSelection.delete(input.value);summary();})});load.click();
+}
+
 function renderSettings(){
   $('#content').innerHTML=`<h1>Settings & data</h1><section class="panel"><h2>Private binders</h2><div class="grid">${data.binders.map(b=>`<article class="card"><h3>${esc(b.name)}</h3><p>${data.copies.filter(c=>c.binder_id===b.id).length} active copies</p><div class="actions"><button class="secondary" data-binder-edit="${esc(b.id)}">Rename</button><button class="secondary" data-binder-remove="${esc(b.id)}">Remove binder</button></div></article>`).join('')||'<p>No binders yet. Create one, then assign copies when adding or editing them.</p>'}</div><form id="binder-form"><label for="binder-name">New binder name</label><input id="binder-name" maxlength="120" required><p><button>Preview binder</button></p></form></section><section class="panel"><h2>Export & import</h2><p><a href="/api/export/">Download copy and goal JSON export</a> · Copy identities, unresolved fields, attributes, binders, versioned goals and schema version.</p><p>Current ownership, total-quantity and source-selection intent stays in the local operation journal. This export imports copy/goal history; keep a protected database backup to restore current collection intent.</p><p>Import a Dex JSON export or CSV with printing_id and optional condition, purchase_amount, purchase_currency, purchase_date, notes, binder_id, grading_company, grade and certificate columns. Find printing IDs in a JSON export or printing checklist.</p><form id="import-form"><label for="import-format">File format</label><select id="import-format"><option value="json">JSON</option><option value="csv">CSV</option></select><label for="import-file">Choose a file (optional, up to 1.5 MB)</label><input id="import-file" type="file" accept=".json,.csv"><label for="import-text">Import contents</label><textarea id="import-text" required rows="7" spellcheck="false"></textarea><label for="import-policy">Duplicate handling</label>${duplicatePolicyControl('import-policy')}<p class="muted">Every row is validated before confirmation. Errors block the entire import. Repeating the same confirmed import returns its saved result.</p><button>Preview import</button></form></section><section class="panel"><h2>Select collection source</h2><p>Replace current ownership and quantity intent in the chosen scope. State outside a regional scope is preserved. Review retained copies and presence changes before confirming.</p><form id="source-select-form"><label for="select-source">Source</label><select id="select-source">${(data.available_collection_sources||[]).map(r=>`<option value="${esc(r.id)}">${esc(r.source_sha256)}</option>`).join('')}</select><label for="select-scope">Replacement scope</label><select id="select-scope"><option value="full251">All 251 species and cards</option><option value="kanto">Kanto · #001–151</option><option value="johto">Johto · #152–251</option></select><p>A full source can replace all cards or one region. A regional source replaces only its own region.</p><button ${data.available_collection_sources?.length?'':'disabled'}>Preview source replacement</button></form></section><section class="panel"><h2>Recent operations & undo</h2><p>Undo reverses only its operation. Later edits block undo until reviewed; they are never silently overwritten.</p><div class="history">${data.operations.map(o=>`<button data-operation="${esc(o.id)}">${esc(operationNames[o.kind]||o.kind)} · ${esc(o.state)} · ${esc(o.created)}<br><small>${esc(o.id)}</small></button>`).join('')||'<p>No operations yet.</p>'}</div></section><section class="panel"><h2>Preserved history</h2><p><a href="${document.body.dataset.parity==='true'?'/finds/':'/api/hunts/'}">Your preserved hunts</a> · <a href="/api/archives/">Your original migration archives</a></p><p class="muted">Your local collection and saved hunts stay private to this account. Keep an ordinary backup of your private app data; source-control history does not contain it.</p></section>`;
   const toolLinks=[...document.querySelectorAll('.app-tools .tools-menu a')].filter(a=>a.pathname!=='/settings/');if(toolLinks.length){const tools=document.createElement('section');tools.className='panel';const title=document.createElement('h2');title.textContent='Collection tools';const links=document.createElement('div');links.className='actions';toolLinks.forEach(a=>links.append(a.cloneNode(true)));tools.append(title,links);$('#content').prepend(tools);}
@@ -368,9 +384,11 @@ async function mutate(action){
     }
     if(op.user_id!==account){await refresh({restoreDialogFocus:true});return;}
     if(!active())return;
-    await refresh({restoreDialogFocus:true});
-    if(!active())return;
+    // The receipt is authoritative even if subsequent derived reads fail.
+    showReview(op);
     try{sessionStorage.removeItem('dex-pending-operation');}catch{}
+    try{await refresh({restoreDialogFocus:true});}catch(error){if(!window.navigationAuthorityDiscarded){showReview(op);$('#review-error').textContent='Change saved. '+error.message;}return;}
+    if(window.navigationAuthorityDiscarded)return;
     if($('#review').open)showReview(op);
     status(action==='undo'?'Operation undone.':'Changes saved.');
   }catch(e){if(active()){$('#review-error').textContent=e.message+' Recover the saved operation before repeating the change.';await recoverPendingOperation();}}

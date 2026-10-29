@@ -11,6 +11,7 @@ from django.core.exceptions import PermissionDenied
 from django.db import connection
 from django.http import Http404
 from django.test.utils import CaptureQueriesContext
+from perf04_helpers import prepare_reads
 from test_b1 import env as env
 from test_b2 import b2 as b2
 from test_b2 import post
@@ -456,6 +457,7 @@ def test_reviewer_reserved_group_alias_keeps_each_parity_child_destination(cx):
     inv.execute(
         "UPDATE printings SET provenance=%s WHERE id=%s", [json.dumps({"legacy_id": reserved}), printing]
     )
+    prepare_reads(cx)
     before = dump(cx)
     with pytest.raises(inv.Conflict):
         groups.resolve_destination(cx["actor"], reserved)
@@ -625,6 +627,7 @@ def test_reviewer_ambiguous_legacy_route_has_readable_safe_conflict(cx):
     from pokemon_hunter.beta import urls
 
     clone(cx, provenance=json.dumps({"legacy_id": "a"}))
+    prepare_reads(cx)
     before = dump(cx)
     old = settings.PARITY_ENABLED
     settings.PARITY_ENABLED = True

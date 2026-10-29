@@ -9,7 +9,7 @@ from django.shortcuts import render
 from django.utils.crypto import salted_hmac
 from django.views.decorators.http import require_GET
 
-from . import card_groups, collection_views, species_projection, store
+from . import collection_views, species_projection, store
 from .card_group_views import check_generation, query, return_context
 from .collection_views import browsing_endpoint
 from .views import actor
@@ -114,9 +114,13 @@ def authorize_destination(who, value):
     raw = dict(parse_qsl(parts.query, keep_blank_values=True, strict_parsing=True, max_num_fields=24))
     store.verified(who)
     if raw.get("goal"):
-        species_projection._scope(who, raw["goal"])
+        species_projection.authorize_goal(who, raw["goal"], raw.get("version"))
     if parts.path.startswith("/card-groups/"):
-        result = card_groups.detail(who, parts.path.split("/")[2], selected_child=raw.get("child"))
+        from . import account_read_queries
+
+        result = account_read_queries.detail(
+            who, {k: v for k, v in raw.items() if k in {"child", "generation"}}, key=parts.path.split("/")[2]
+        )
         check_generation(raw, result)
         if result.get("public") is not False:
             raise ValueError("This collection destination is unavailable")

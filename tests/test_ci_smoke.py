@@ -32,6 +32,13 @@ def wheel(tmp_path, *, omit=None, extra=None):
 @pytest.mark.parametrize(
     "missing",
     [
+        "catalog_read_operator.py",
+        "account_read_operator.py",
+        "readiness.py",
+        "serving.py",
+        "static/bounded-reads.js",
+        "static/public-browse.js",
+        "templates/beta/public_browse.html",
         "static/public.css",
         "static/collection-base.css",
         "static/collection-browse.css",

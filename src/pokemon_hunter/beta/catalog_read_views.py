@@ -2,12 +2,13 @@
 
 from functools import wraps
 
-from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 
 from . import catalog_read_queries as reads
 from .catalog_read_build import Unavailable
 from .collection import Conflict
+from .read_diagnostics import category, phase
+from .read_diagnostics import json_response as JsonResponse
 from .request_inputs import query
 
 
@@ -16,10 +17,12 @@ def endpoint(service):
     @require_GET
     def view(request, **kwargs):
         try:
-            response = JsonResponse(
-                service(query(request), **kwargs), json_dumps_params={"ensure_ascii": False}
-            )
+            with phase("service_ms"):
+                result = service(query(request), **kwargs)
+            category("catalog", "ready")
+            response = JsonResponse(result, json_dumps_params={"ensure_ascii": False})
         except Unavailable:
+            category("catalog", "unavailable")
             response = JsonResponse(
                 dict(
                     error="read_state_unavailable",
@@ -50,6 +53,8 @@ def routes():
         for route, service in (
             ("card-groups/", reads.groups),
             ("card-group-filters/", reads.options),
+            ("group-artwork/", reads.artwork),
+            ("species-artwork/", reads.species_artwork),
             ("card-groups/<str:key>/", reads.detail),
             ("card-groups/<str:key>/variants/", reads.variants),
             ("species/<int:dex>/card-groups/", reads.groups),

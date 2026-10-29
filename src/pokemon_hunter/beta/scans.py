@@ -1,16 +1,13 @@
 """Private, durable photo jobs. Workers extract evidence; only confirmation adds inventory."""
 
-import base64
 import io
 import json
-import os
 import threading
 import time
 import uuid
 import warnings
 from typing import Literal
 
-import httpx
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.db import transaction as django_transaction
@@ -18,12 +15,11 @@ from django.http import Http404
 from PIL import Image, ImageOps
 from pydantic import BaseModel, ConfigDict, Field
 
-from . import codex_recognition, scan_config, store
 from . import collection as inventory
+from . import scan_config, store
 from . import transactions as transaction
 from .diagnostics import failure
 
-MODEL = "gpt-4.1-mini-2025-04-14"
 VERSION = "dex-photo-v1"
 _serve_admissions = None
 _admission_lock = threading.Lock()
@@ -129,7 +125,7 @@ def normalized(upload):
         ) from None
 
 
-def authorized_photo_rows(actor, key=None, *, content=False):
+def authorized_photo_rows(actor, key=None, *, content=False, copy_ids=None):
     """Shared serving/descriptor policy, with actual bytes and account associations."""
     actor = store.verified(actor)
     columns = "p.id,j.copy_id" + (",p.content" if content else "")
@@ -144,11 +140,16 @@ def authorized_photo_rows(actor, key=None, *, content=False):
     if key is not None:
         sql += " AND p.id=%s"
         params.append(str(key))
+    if copy_ids is not None:
+        if not copy_ids or len(copy_ids) > 100:
+            return []
+        sql += " AND j.copy_id IN (" + ",".join(["%s"] * len(copy_ids)) + ")"
+        params.extend(copy_ids)
     result = store.rows(sql + " ORDER BY p.id", params)
     store.verified(actor)
     from . import photo_batches
 
-    result += photo_batches.authorized_photo_rows(actor, key, content)
+    result += photo_batches.authorized_photo_rows(actor, key, content, copy_ids=copy_ids)
     return result
 
 
@@ -158,6 +159,7 @@ def job(actor, key):
     if not found:
         raise Http404
     value = found[0]
+    value["recognition_enabled"] = scan_config.recognition_enabled()
     value["result"] = json.loads(value["result"])
     value["photos"] = [
         p["id"]
@@ -181,8 +183,6 @@ def create(actor, key, uploads, fixture="valid"):
     cfg = config()
     if not cfg["enabled"]:
         raise ValueError("Scanning is disabled. Manual collection entry remains available.")
-    if cfg["mode"] not in {"manual", "fixture", "openai", "codex_cli"}:
-        raise ValueError("Invalid scan configuration")
     if fixture not in {"valid", "ambiguous", "unreadable", "unsupported", "failed"}:
         raise ValueError("Invalid simulation")
     if len(uploads) not in (1, 2):
@@ -192,6 +192,7 @@ def create(actor, key, uploads, fixture="valid"):
     recent = photo_batches.recent_admissions(actor)
     if recent + len(uploads) > 20:
         raise ValueError("Daily limit of 20 photo entries reached")
+    cfg = dict(cfg, mode=scan_config.effective_mode(cfg))
     images = [normalized(u) for u in uploads]
     if photo_batches.available():
         photo_batches.append("single_admit", job_id=key, user_id=actor.user_id, count=len(images))
@@ -204,7 +205,7 @@ def create(actor, key, uploads, fixture="valid"):
             fixture,
             time.time(),
             VERSION,
-            codex_recognition.MODEL if cfg["mode"] == "codex_cli" else MODEL,
+            "",
         ],
     )
     for image in images:
@@ -259,61 +260,15 @@ def match(actor, clues):
     }
 
 
-def recognize(images):
-    key = os.environ.get("OPENAI_API_KEY")
-    if not key:
-        raise ValueError("OPENAI_API_KEY is missing in the server environment")
-    content = [
-        {
-            "type": "input_image",
-            "image_url": "data:image/jpeg;base64," + base64.b64encode(p).decode(),
-            "detail": "high",
-        }
-        for p in images
-    ]
-    response = httpx.post(
-        "https://api.openai.com/v1/responses",
-        headers={"Authorization": "Bearer " + key},
-        json={
-            "model": MODEL,
-            "store": False,
-            "max_output_tokens": 600,
-            "instructions": PROMPT,
-            "input": [{"role": "user", "content": content}],
-            "text": {
-                "format": {
-                    "type": "json_schema",
-                    "name": "card_clues_v1",
-                    "strict": True,
-                    "schema": Clues.model_json_schema(),
-                }
-            },
-        },
-        timeout=httpx.Timeout(35, connect=5),
-    )
-    response.raise_for_status()
-    data = response.json()
-    if data.get("status") != "completed":
-        raise ValueError("Recognition incomplete; retry or choose manually")
-    text = "".join(
-        c["text"]
-        for o in data.get("output", [])
-        if o.get("type") == "message"
-        for c in o.get("content", [])
-        if c.get("type") == "output_text"
-    )
-    clues = Clues.model_validate_json(text)
-    usage = data["usage"]
-    # Pinned standard token prices, USD; reservations are never released on uncertain failures.
-    cached = usage.get("input_tokens_details", {}).get("cached_tokens", 0)
-    cost = (
-        (usage["input_tokens"] - cached) * 0.40 + cached * 0.10 + usage["output_tokens"] * 1.60
-    ) / 1_000_000
-    return clues, cost
-
-
 def process_one(stop=None):
     with transaction.atomic():
+        if not scan_config.recognition_enabled():
+            # Retain uploads, attribution, results and consumed attempts. Failed jobs
+            # support manual confirmation; their old provider may not be retried.
+            inventory.execute(
+                "UPDATE scan_jobs SET state='failed',error=%s WHERE mode!='manual' AND state IN ('queued','processing')",
+                [scan_config.UNAVAILABLE],
+            )
         # A crashed worker never auto-retries a possibly billed call.
         inventory.execute(
             "UPDATE scan_jobs SET state='failed',error='Worker interrupted; retry explicitly' WHERE state='processing' AND started<%s",
@@ -333,18 +288,6 @@ def process_one(stop=None):
         if not pending:
             return False
         row = pending[0]
-        from . import photo_batches
-
-        if (
-            row["mode"] == "codex_cli"
-            and photo_batches.available()
-            and store.rows("SELECT id FROM scan_batch_stages WHERE state='processing'")
-        ):
-            return False
-        if row["mode"] == "codex_cli" and store.rows(
-            "SELECT id FROM scan_jobs WHERE mode='codex_cli' AND state='processing'"
-        ):
-            return False
         _release_after_commit(row["id"])
         try:
             actor = store.principal(row["auth_subject"])
@@ -358,29 +301,16 @@ def process_one(stop=None):
             error = "Scanning disabled"
         if row["mode"] not in scan_config.MODES:
             error = "Unknown recognition provider. Choose manually."
-        if row["mode"] != cfg["mode"]:
+        if row["mode"] != scan_config.effective_mode(cfg):
             error = "Selected provider changed. Start a new photo entry or choose manually."
-        if row["mode"] == "openai":
-            total = store.rows("SELECT coalesce(sum(reserved_usd),0) AS n FROM scan_jobs")[0]["n"]
-            own = store.rows(
-                "SELECT coalesce(sum(reserved_usd),0) AS n FROM scan_jobs WHERE user_id=%s", [actor.user_id]
-            )[0]["n"]
-            if total + 0.05 > float(cfg["ceiling_usd"]) or own + 0.05 > float(cfg["user_ceiling_usd"]):
-                error = "Configured recognition spend ceiling reached"
-            if not os.environ.get("OPENAI_API_KEY"):
-                error = "OPENAI_API_KEY is missing in the server environment"
         if error:
             inventory.execute("UPDATE scan_jobs SET state='failed',error=%s WHERE id=%s", [error, row["id"]])
             return True
         claimed = time.time()
         inventory.execute(
-            "UPDATE scan_jobs SET state='processing',started=%s,attempts=attempts+1,reserved_usd=reserved_usd+%s WHERE id=%s",
-            [claimed, 0.05 if row["mode"] == "openai" else 0, row["id"]],
+            "UPDATE scan_jobs SET state='processing',started=%s,attempts=attempts+1 WHERE id=%s",
+            [claimed, row["id"]],
         )
-        images = [
-            bytes(p["content"])
-            for p in store.rows("SELECT content FROM scan_photos WHERE job_id=%s", [row["id"]])
-        ]
     started = time.monotonic()
     cost = None
     try:
@@ -410,34 +340,10 @@ def process_one(stop=None):
                     finish=None,
                     variant=None,
                 )
-            elif row["mode"] == "codex_cli":
-
-                def cancelled():
-                    if stop is not None and stop.is_set():
-                        return True
-                    active = store.rows(
-                        "SELECT j.state,u.state AS account_state FROM scan_jobs j JOIN users u ON u.id=j.user_id WHERE j.id=%s",
-                        [row["id"]],
-                    )
-                    return (
-                        not active
-                        or active[0]["state"] != "processing"
-                        or active[0]["account_state"] != "active"
-                        or not config()["enabled"]
-                    )
-
-                clues, usage = codex_recognition.recognize(images, settings.ROOT, cancelled, row["id"])
-            elif row["mode"] == "openai":
-                clues, cost = recognize(images)
             else:
                 raise ValueError("Unsupported recognition provider; choose a configured provider")
             state, result = match(actor, clues)
-            if row["mode"] == "codex_cli":
-                result["usage"] = usage
-                result["available_usage"] = None
         error = ""
-    except codex_recognition.RecognitionError as exc:
-        state, result, error = "failed", {}, str(exc)
     except Exception as exc:
         failure("recognition_failed", exc)
         state, result, error = (
@@ -446,6 +352,8 @@ def process_one(stop=None):
             "Recognition failed. Retry (maximum 2 attempts), choose manually, or save unidentified.",
         )
     with transaction.atomic():
+        if row["mode"] != "manual" and not scan_config.recognition_enabled():
+            state, result, error = "failed", json.loads(row["result"]), scan_config.UNAVAILABLE
         try:
             store.verified(actor)
         except PermissionDenied:
@@ -454,11 +362,6 @@ def process_one(stop=None):
             "UPDATE scan_jobs SET state=%s,result=%s,error=%s,cost_usd=%s,latency=%s WHERE id=%s AND state='processing' AND started=%s",
             [state, json.dumps(result), error, cost, time.monotonic() - started, row["id"], claimed],
         )
-        if cost is not None or row["mode"] == "codex_cli":
-            inventory.execute(
-                "UPDATE scan_jobs SET cost_usd=%s,latency=%s WHERE id=%s AND started=%s",
-                [cost, time.monotonic() - started, row["id"], claimed],
-            )
     return True
 
 
@@ -473,6 +376,7 @@ def action(actor, key, action, data):
         inventory.execute("UPDATE scan_jobs SET state='cancelled' WHERE id=%s", [key])
         inventory.execute("DELETE FROM scan_photos WHERE job_id=%s", [key])
     elif action == "retry":
+        scan_config.require_recognition()
         if current["state"] != "failed" or current["attempts"] >= 2:
             raise ValueError("Retry unavailable; choose manually or start a new photo entry")
         inventory.execute("UPDATE scan_jobs SET state='queued',error='' WHERE id=%s", [key])

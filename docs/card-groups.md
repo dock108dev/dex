@@ -671,3 +671,26 @@ reintroducing an all-catalog bootstrap. Public and private overlays must be inte
 before claiming the existing screens are faster. OPS-READINESS must integrate the
 explicit operator primitives with startup/recovery and readiness; RUNTIME-DELIVER
 must install the separately qualified integrated candidate.
+
+## PERF-03 private account adapters
+
+The implemented backend contracts, revision/authorization boundaries, mutation
+closure and successor handoffs are in [PERF-03 account reads](perf03-account-reads.md).
+V1 and the customer installation remain unchanged by this backend work. Qualification
+status is recorded separately in `CI.md`; implementation alone is not product acceptance.
+
+## PERF-04 consumer migration status
+
+The earlier consumer inventory describes the pre-migration baseline. The current
+working candidate uses V2 for ordinary public/private cards, card details and species
+browsing, private manual/scan/photo pickers and bulk pages. Private pickers consume
+`printings`; public pickers consume `cards`. Detail children, evidence and oversized
+records are explicit paged resources. Backend-compatible additions and all remaining
+V1 calls are enumerated in [frontend adoption](perf04-frontend.md).
+
+Goals/source/update and Pokédex goal editors now use bounded authorized reads. Frozen
+membership stays server-owned; explicit preservation/replacement handles missing
+historical filters. Selected labels and reviewed artwork have bounded independent
+resources. Explicit collection/retained-analysis tools and mutation/receipt endpoints
+retain their contracts; they are not fallback reads. Exact qualification and remaining
+installation/acceptance boundaries are in [PERF-04 evidence](perf04-evidence-20261028.md).

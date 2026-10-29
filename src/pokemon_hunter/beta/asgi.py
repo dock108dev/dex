@@ -95,4 +95,13 @@ class BoundedBodyApplication:
 def get_asgi_application():
     from django.core.asgi import get_asgi_application as django_application
 
-    return BoundedBodyApplication(django_application())
+    application = django_application()
+    if getattr(settings, "STAGING", False):
+        # Preserve the separately qualified hosted serving/heartbeat contract.
+        return BoundedBodyApplication(application)
+    from .readiness import startup
+
+    startup()
+    from .serving import LimitedApplication
+
+    return LimitedApplication(BoundedBodyApplication(application))

@@ -1,11 +1,10 @@
 """Photo confirmation contracts over synthetic state and controlled processes."""
 
 import pytest
-from photo_batch_helpers import BOX, fake, photos, selected, staged, success
+from photo_batch_helpers import BOX, cropped, photos, selected
 from test_bulk_onboarding import b2, b3, b4, bulk, cx, e1, env, snapshot
 from test_effective_collection import apply
 
-from pokemon_hunter.beta import batch_recognition as protocol
 from pokemon_hunter.beta import collection as inv
 from pokemon_hunter.beta import collection_drafts as drafts
 from pokemon_hunter.beta import photo_batches as batches
@@ -156,10 +155,10 @@ def test_photo_match_normalizes_numbers_language_and_unknown_catalog_variants():
     assert not matches({**clue, "status": "unreadable"}, [card])
 
 
-def test_direct_photo_analysis_to_confirmation_and_report(photos, tmp_path, monkeypatch):
+def test_stored_photo_evidence_to_confirmation_and_report(photos):
     cx = photos
     a = cx["actor"]
-    b = staged(cx)
+    b = cropped(cx)
     p = cx["by_legacy"]["c"]
     clue = dict(
         status="readable",
@@ -173,16 +172,14 @@ def test_direct_photo_analysis_to_confirmation_and_report(photos, tmp_path, monk
         reason=None,
         box={**BOX, "issues": ["glare"]},
     )
-    fake(
-        tmp_path,
-        monkeypatch,
-        success(dict(schema_version="dex-photo-identities-v1", status="proposed", cards=[clue])),
-    )
     before = inv.copies(a)
-    batches.analyze(a, b["id"], b["revision"], b["photos"][0]["id"], "photo", cx["session"], protocol.CONSENT)
-    assert batches.process_one(selected_only=True)
+    # Existing evidence remains reviewable without any model or provider adapter.
+    import json
+
+    inv.execute(
+        "UPDATE scan_batch_crops SET proposal=%s WHERE id=%s", [json.dumps(clue), b["crops"][0]["id"]]
+    )
     b = batches.detail(a, b["id"])
-    assert b["stages"][-1]["state"] == "completed"
     assert inv.copies(a) == before
     c = b["crops"][0]
     assert c["proposal"]["name"] == p["name"] and c["candidates"]

@@ -9,6 +9,7 @@ from urllib.parse import urlencode
 import pytest
 from django.conf import settings
 from django.urls import clear_url_caches
+from perf04_helpers import prepare_reads
 from test_b1 import env as env
 from test_b2 import b2 as b2
 from test_b3 import b3 as b3
@@ -106,6 +107,7 @@ def test_review_home_endpoint_rejects_forged_or_duplicate_authority(cx):
 def test_review_home_group_child_reauthorization_has_no_default_printing(cx):
     group = find(cx)
     child = cx["by_legacy"]["a"]["id"]
+    prepare_reads(cx)
     before = dump(cx)
     for destination in (group["url"], group["url"] + "?" + urlencode({"child": child})):
         assert home(cx, destination).status_code == 200
@@ -134,6 +136,7 @@ def test_review_home_goal_does_not_substitute_foreign_or_deleted_saved_goal(cx):
 def test_review_home_private_archived_group_cannot_cross_account(cx):
     group = find(cx)
     inv.execute("UPDATE printings SET publication_state='archived' WHERE id=%s", [cx["by_legacy"]["a"]["id"]])
+    prepare_reads(cx)
     before = dump(cx)
     assert home(cx, group["url"]).status_code == 200
     assert home(cx, group["url"], cx["b"]).status_code in {400, 404}
@@ -498,6 +501,7 @@ def test_review_home_and_shopping_reauthorize_bounded_nested_return_chain(cx):
     listing = "/pokedex/?q=Ivy&region=kanto&scroll=850&focus=2"
     species = "/pokedex/2/?" + urlencode({"return": listing, "scroll": "25"})
     destination = group["url"] + "?" + urlencode({"return": species})
+    prepare_reads(cx)
     before = dump(cx)
     assert home(cx, destination).status_code == 200
     assert cx["a"].get("/shopping/", {"group": group["id"], "return": destination}).status_code == 200

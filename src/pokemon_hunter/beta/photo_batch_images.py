@@ -10,7 +10,7 @@ import warnings
 
 from PIL import Image, ImageOps
 
-from . import batch_recognition as protocol
+from . import photo_contracts as protocol
 
 
 def source(upload):

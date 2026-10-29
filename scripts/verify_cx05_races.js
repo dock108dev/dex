@@ -11,21 +11,15 @@ const options = {account_id:'account-a',generation:5,sets:[{id:'base',name:'Base
 const list = (changes={}) => ({account_id:'account-a',generation:5,total:1,page:1,pages:1,groups:[group],unresolved:[],...changes});
 const detail = (changes={}) => ({account_id:'account-a',generation:5,group,selected_child:null,variants:[],copies:[],history:[],...changes});
 function deferred() { let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject}; }
-function setup(route,responder,{storage=new Map(),preferences=new Map()}={}) {
-  const content={innerHTML:''},nodes=new Map(),calls=[],events={};
-  const element=tag=>({classList:{values:new Set(),toggle(name,on){if(on)this.values.add(name);else this.values.delete(name);},contains(name){return this.values.has(name);}},tagName:tag.toUpperCase(),children:[],listeners:{},append(...children){this.children.push(...children);},addEventListener(name,handler){this.listeners[name]=handler;}});
-  const summary=element('div');
-  const headerLinks=['/cards/','/card-library/'].map(path=>({dataset:path==='/cards/'?{navigationSection:'cards'}:{navigationTab:path},attrs:{},setAttribute(key,value){this.attrs[key]=value;if(key==='href')this.href='http://localhost'+value;},getAttribute(key){return this.attrs[key];}}));
-  const context={window:{},data:{effective_collection:{user_id:'account-a',generation:5},binders:[]},location:{origin:'http://localhost',href:'http://localhost'+route,pathname:route.split('?')[0],search:route.includes('?')?'?'+route.split('?')[1]:'',assign(url){context.assigned=url;},replace(url){context.replaced=url;},reload(){}},URL,URLSearchParams,Number,Set,Map,JSON,Math,Error,String,FormData:global.FormData,crypto:global.crypto,scrollY:0,scrollTo(x,y){context.restoredScroll=y;},requestAnimationFrame(fn){fn();},addEventListener(name,handler){events[name]=handler;},localStorage:{getItem(key){return preferences.get(key)??null;},setItem(key,value){preferences.set(key,value);}},sessionStorage:{getItem(key){return storage.get(key)??null;},setItem(key,value){storage.set(key,value);}},document:{body:{dataset:{parity:'true'}},querySelectorAll(selector){return selector.includes('data-navigation-section')?headerLinks:[];},createElement(tag){return element(tag);},querySelector(selector){return ['.card-detail-summary','.card-related-links'].includes(selector)?summary:null;}},$:selector=>selector==='#content'?content:(nodes.get(selector)||nodes.set(selector,element('div')).get(selector)),esc:value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),cardImage:()=>'<span class="image-frame"></span>',photoLink:()=>'',api:async url=>{calls.push(url);return responder(url);}};
-  vm.createContext(context);vm.runInContext(source,context,{filename:sourcePath});
-  return {context,content,calls,storage,preferences,events,headerLinks,render:()=>context.window.renderCardScreens(context.location.pathname)};
-}
+const harness=require('./renderer_v2_harness.cjs');
+function setup(route,responder,options={}){return harness(route,responder,source,{...options,species:false});}
+
 const cases=[];
 async function check(name,run){await run();cases.push({name,status:'passed'});}
 (async()=>{
   await check('owned fixed endpoint and UI parameters excluded',async()=>{
     const t=setup('/cards/?q=Ivysaur&scroll=80',url=>url.includes('filters')?options:list());await t.render();
-    const request=t.calls.find(url=>url.startsWith('/api/my-card-groups/'));
+    const request=t.calls.find(url=>url.startsWith('/api/v2/my-card-groups/'));
     assert(request);assert(!request.includes('scope'));assert(!request.includes('scroll'));assert(request.includes('generation=5'));assert(t.content.innerHTML.includes('Ivysaur'));assert(!t.content.innerHTML.includes('Quantity 0'));assert(t.content.innerHTML.includes('id="cards-add-many"'));assert(t.content.innerHTML.includes('href="/add-many/"'));assert(!t.content.innerHTML.includes('id="dim-unowned"'));
   });
   await check('ownership badges and dim preference preserve all cards without collection requests',async()=>{
@@ -49,7 +43,7 @@ async function check(name,run){await run();cases.push({name,status:'passed'});}
   });
   await check('separate library, matching children and canonical null-child tile',async()=>{
     const t=setup('/card-library/?edition=first_edition',url=>url.includes('filters')?options:list({groups:[{...group,matching_child_ids:['child-2']}]}));await t.render();
-    assert(t.calls.some(url=>url.startsWith('/api/card-groups/?edition=first_edition')));assert(t.content.innerHTML.includes('data-matching-child-ids="[&quot;child-2&quot;]"'));assert(!t.content.innerHTML.includes('?child='));assert(t.content.innerHTML.includes('Card Library'));
+    assert(t.calls.some(url=>url.startsWith('/api/v2/card-groups/?edition=first_edition')));assert(t.content.innerHTML.includes('data-matching-child-ids="[&quot;child-2&quot;]"'));assert(!t.content.innerHTML.includes('?child='));assert(t.content.innerHTML.includes('Card Library'));
   });
   await check('retained long card filter values have escaped readable descriptions without altering scoped requests',async()=>{
     const values={set:'long-set',language:'long-language',edition:'long-edition',finish:'long-finish',variant:'long-variant'};
@@ -63,29 +57,29 @@ async function check(name,run){await run();cases.push({name,status:'passed'});}
     }
     assert(t.content.innerHTML.includes('Wizards Black Star Promos &amp; retained expansion'));
     assert(t.content.innerHTML.includes('&lt;img src=x onerror=evil&gt;'));assert(!t.content.innerHTML.includes('<img src=x onerror=evil>'));
-    const request=t.calls.find(url=>url.startsWith('/api/card-groups/?'));
+    const request=t.calls.find(url=>url.startsWith('/api/v2/card-groups/?'));
     for(const [key,value] of Object.entries(values))assert.equal(new URL(request,'http://localhost').searchParams.get(key),value,key+' request remains literal');
     assert.equal(new URL(request,'http://localhost').searchParams.get('page'),'2');
     assert(t.content.innerHTML.includes('Collector number'));
   });
   await check('card selected captions update before submit and hide on reset; unavailable retained value stays readable',async()=>{
     const t=setup('/cards/?set=missing-reviewed-set&variant=long-retained-variant',url=>url.includes('filters')?options:list());await t.render();
-    assert(t.content.innerHTML.includes('missing-reviewed-set · unavailable filter'));
-    assert(t.content.innerHTML.includes('long-retained-variant · unavailable filter'));
+    assert.equal(t.context.$('#cards-set').value,'missing-reviewed-set');assert.equal(t.context.$('#cards-set-value').textContent,'Unavailable retained selection');
+    assert.equal(t.context.$('#cards-variant').value,'long-retained-variant');assert.equal(t.context.$('#cards-variant-value').textContent,'Unavailable retained selection');
     const select=t.context.$('#cards-set'),caption=t.context.$('#cards-set-value');
     assert.equal(typeof select.onchange,'function');
-    select.value='long-new-set';select.selectedOptions=[{textContent:'A new complete expansion & literal edition',text:'A new complete expansion & literal edition'}];select.onchange();
+    select.add(new t.context.Option('A new complete expansion & literal edition','long-new-set'));select.value='long-new-set';select.onchange();
     assert.equal(caption.textContent,'A new complete expansion & literal edition');assert.equal(caption.hidden,false);
-    select.value='';select.selectedOptions=[{textContent:'All sets',text:'All sets'}];select.onchange();
+    select.value='';select.onchange();
     assert.equal(caption.hidden,true);
     const sort=t.context.$('#cards-sort'),sortCaption=t.context.$('#cards-sort-value');
-    assert.equal(typeof sort.onchange,'function');sort.value='name';sort.selectedOptions=[{textContent:'Card name',text:'Card name'}];sort.onchange();
+    assert.equal(typeof sort.onchange,'function');sort.value='name';sort.onchange();
     assert.equal(sortCaption.textContent,'Card name');assert.equal(sortCaption.hidden,false);
   });
   await check('focused default detail, unknown quantity and closed disclosures',async()=>{
     const t=setup('/card-groups/dg1-card-a/',()=>detail());await t.render();
     assert(t.content.innerHTML.includes('Quantity not recorded.'));assert(!/<details[^>]*\sopen/.test(t.content.innerHTML));assert(t.content.innerHTML.includes('data-selected-child=""'));assert(!t.content.innerHTML.includes('dialog'));assert(t.content.innerHTML.includes('id="group-copies"'));
-    const appended=t.context.document.querySelector('.card-related-links').children[0];assert.equal(appended.id,'card-shopping');assert.equal(appended.textContent,'Find cards in Shopping');assert.equal(typeof appended.listeners.click,'function');
+    const appended=t.context.$('#card-shopping');assert.equal(appended.id,'card-shopping');assert.equal(appended.textContent,'Find cards in Shopping');assert.equal(typeof appended.listeners.click,'function');
   });
   await check('empty detail explains only current ownership and available actions',async()=>{
     const owned=setup('/card-groups/dg1-card-a/',()=>detail());await owned.render();
@@ -93,7 +87,7 @@ async function check(name,run){await run();cases.push({name,status:'passed'});}
     assert(!owned.content.innerHTML.includes('Choose a variant below to record a physical copy.'));
     const unowned=setup('/card-groups/dg1-card-a/',()=>detail({group:{...group,present:false},variants:[{id:'available',available:true}]}));await unowned.render();
     assert(unowned.content.innerHTML.includes('No individual copies recorded. Use Add to collection to record ownership.'));
-    assert(unowned.content.innerHTML.includes('Choose a variant below to add a physical copy.'));
+    assert(unowned.content.innerHTML.includes('Variants and adding a copy'));assert.equal(unowned.calls.length,1);
     assert(!unowned.content.innerHTML.includes('Your ownership is recorded separately'));
     const unresolved=setup('/card-groups/dg1-card-a/',()=>detail({group:{...group,present:false,identity_status:'unresolved'}}));await unresolved.render();
     assert(unresolved.content.innerHTML.includes('Card identity needs review'));
@@ -103,7 +97,7 @@ async function check(name,run){await run();cases.push({name,status:'passed'});}
   await check('compact hierarchy hides empty history and optional records while preserving copy identity',async()=>{
     const copies=[{id:'private-copy',printing_id:'literal-print',condition:null,notes:'saved optional note',purchase_amount:'12.50'}];
     const t=setup('/card-groups/dg1-card-a/',()=>detail({copies,variants:[{id:'literal-print',edition:'first',available:true}]}));await t.render();
-    const html=t.content.innerHTML;
+    assert(!t.content.innerHTML.includes('private-copy'));await t.expand('Recorded copies');const html=t.content.innerHTML;
     assert(html.indexOf('Your collection')<html.indexOf('Card facts'));assert(html.indexOf('Card facts')<html.indexOf('Record details'));
     assert(!html.includes('id="group-history"'));assert(!html.includes('No notes recorded'));assert(!html.includes('<dt>Purchase</dt>'));
     assert(html.includes('Condition not recorded'));assert(html.includes('data-group-copy="private-copy"'));
@@ -112,7 +106,7 @@ async function check(name,run){await run();cases.push({name,status:'passed'});}
   });
   await check('relevant removed history survives only in optional records',async()=>{
     const t=setup('/card-groups/dg1-card-a/',()=>detail({history:[{id:'removed-private',condition:'Good'}]}));await t.render();
-    assert(t.content.innerHTML.includes('id="group-history"'));assert(t.content.innerHTML.indexOf('removed-private')>t.content.innerHTML.indexOf('Record details'));
+    assert(!t.content.innerHTML.includes('removed-private'));await t.expand('Removed copies');assert(t.content.innerHTML.includes('id="group-history"'));assert(t.content.innerHTML.indexOf('removed-private')>t.content.innerHTML.indexOf('Record details'));
   });
   await check('explicit archived child stays selected and exact image unavailable',async()=>{
     const variant={id:'archived-child',edition:'first_edition',finish:'holo',available:false};
@@ -122,8 +116,8 @@ async function check(name,run){await run();cases.push({name,status:'passed'});}
   await check('matching-child context uses authoritative scoped IDs without inferring archived matches',async()=>{
     const variants=[{id:'visible',edition:'first_edition',available:true},{id:'archived',edition:'first_edition',available:false}];
     const back='/card-library/?edition=first_edition&page=2';
-    const t=setup('/card-groups/dg1-card-a/?return='+encodeURIComponent(back),url=>url.startsWith('/api/card-groups/?')?list({groups:[{...group,matching_child_ids:['visible']}]}):detail({variants}));await t.render();
-    assert(t.calls.some(url=>url.startsWith('/api/card-groups/?edition=first_edition&page=2&generation=5')));
+    const t=setup('/card-groups/dg1-card-a/?return='+encodeURIComponent(back),url=>url.startsWith('/api/v2/card-groups/?')?list({groups:[{...group,matching_child_ids:['visible']}]}):detail({variants}));await t.render();
+    assert.equal(t.calls.length,1);await t.expand('Variants matching');assert(t.calls.some(url=>url.includes('/variants/?edition=first_edition')));assert(!t.calls.some(url=>url.startsWith('/api/v2/card-groups/?')));
     assert(t.content.innerHTML.includes('data-variant="visible" data-filter-match="true"'));assert(!t.content.innerHTML.includes('data-variant="archived" data-filter-match="true"'));assert(t.content.innerHTML.includes('data-selected-child=""'));
   });
   await check('optional prices closed by default and core detail does not load parity',async()=>{
@@ -137,7 +131,7 @@ async function check(name,run){await run();cases.push({name,status:'passed'});}
   await check('optional checked prices preserve per-copy renderer and edition action',async()=>{
     const copy={id:'copy-a',printing_id:'child-a',condition:'Good'};
     const prices={effective_collection:{user_id:'account-a',generation:5},valuation:{copies:{'copy-a':{conditional:{raw:{value:3}}}}}};
-    const t=setup('/card-groups/dg1-card-a/',url=>url==='/api/parity/'?prices:detail({copies:[copy]}));t.context.copyPrices=c=>'<details><summary>Guide scenarios for this copy</summary><p>Retained guide for '+c.id+'</p></details>';await t.render();assert(t.content.innerHTML.includes('data-group-edition="copy-a"'));assert(!t.calls.includes('/api/parity/'));const disclosure=t.context.$('#group-prices');disclosure.open=true;await disclosure.ontoggle();assert(t.context.$('#group-prices-body').innerHTML.includes('Retained guide for copy-a'));assert(!t.context.$('#group-prices-body').innerHTML.includes('<details>'));assert.equal(t.context.window.parityData,prices);assert(t.context.$('#group-prices-body').innerHTML.includes('not a valuation multiplier'));
+    const t=setup('/card-groups/dg1-card-a/',url=>url==='/api/parity/'?prices:detail({copies:[copy]}));t.context.copyPrices=c=>'<details><summary>Guide scenarios for this copy</summary><p>Retained guide for '+c.id+'</p></details>';await t.render();assert(!t.content.innerHTML.includes('data-group-edition="copy-a"'));await t.expand('Recorded copies');assert(t.content.innerHTML.includes('data-group-edition="copy-a"'));assert(!t.calls.includes('/api/parity/'));const disclosure=t.context.$('#group-prices');disclosure.open=true;await disclosure.ontoggle();assert(t.context.$('#group-prices-body').innerHTML.includes('Retained guide for copy-a'));assert(!t.context.$('#group-prices-body').innerHTML.includes('<details>'));assert.equal(t.context.window.parityData,prices);assert(t.context.$('#group-prices-body').innerHTML.includes('not a valuation multiplier'));
   });
   await check('optional prices reject foreign or stale authority without publishing valuation',async()=>{
     for(const authority of [{user_id:'foreign',generation:5},{user_id:'account-a',generation:6}]){
@@ -152,8 +146,10 @@ async function check(name,run){await run();cases.push({name,status:'passed'});}
       const t=setup('/card-groups/dg1-card-a/',url=>{if(url!=='/api/parity/')return detail();if(failure)throw new Error('Price response unavailable');return {effective_collection:{user_id:'account-a',generation:5},valuation:{copies:{}}};});t.context.copyPrices=()=>'';await t.render();const disclosure=t.context.$('#group-prices');disclosure.open=true;await disclosure.ontoggle();assert(t.context.$('#group-prices-body').innerHTML.includes(failure?'Price response unavailable':'No matching retained guide evidence'));assert(t.content.innerHTML.includes('id="canonical-card"'));
     }
   });
-  await check('missing authoritative generation fails visibly before card or price requests',async()=>{
-    const t=setup('/card-groups/dg1-card-a/',()=>detail());delete t.context.data.effective_collection.generation;await t.render();assert.equal(t.calls.length,0);assert(t.content.innerHTML.includes('Collection version is unavailable'));assert(!t.content.innerHTML.includes('id="edit-group-card"'));
+  await check('missing prior generation holds editing until V2 authority arrives',async()=>{
+    const gate=deferred(),t=setup('/card-groups/dg1-card-a/',()=>gate.promise);delete t.context.data.effective_collection.generation;delete t.context.data.read_state;
+    const pending=t.render();assert.equal(t.calls.length,1);assert(!t.content.innerHTML.includes('id="edit-group-card"'));assert(!t.calls.includes('/api/parity/'));
+    gate.resolve(detail());await pending;assert.equal(t.context.data.effective_collection.generation,5);assert(t.content.innerHTML.includes('id="edit-group-card"'));
   });
   await check('optional prices expose missing version instead of silently keeping placeholder',async()=>{
     const t=setup('/card-groups/dg1-card-a/',()=>detail());t.context.copyPrices=()=>'';await t.render();delete t.context.data.effective_collection.generation;const disclosure=t.context.$('#group-prices');disclosure.open=true;await disclosure.ontoggle();assert(t.context.$('#group-prices-body').innerHTML.includes('version changed or is unavailable'));assert(!t.calls.includes('/api/parity/'));
@@ -167,7 +163,7 @@ async function check(name,run){await run();cases.push({name,status:'passed'});}
   });
   await check('tab history is account isolated and cannot restore a foreign or wrong-tab URL',async()=>{
     const storage=new Map([['dex-card-tab:account-a:/card-library/','/card-library/?q=Private&page=2&scroll=100']]);
-    const t=setup('/cards/',url=>url.includes('filters')?{...options,account_id:'account-b'}:list({account_id:'account-b'}),{storage});t.context.data.effective_collection.user_id='account-b';await t.render();assert.equal(t.headerLinks[1].getAttribute('href'),'/card-library/');
+    const t=setup('/cards/',url=>url.includes('filters')?{...options,account_id:'account-b'}:list({account_id:'account-b'}),{storage});t.context.data.effective_collection.user_id='account-b';t.context.data.read_state.account_id='account-b';await t.render();assert.equal(t.headerLinks[1].getAttribute('href'),'/card-library/');
     for(const value of ['https://evil.example/','/cards/?q=wrong-tab','/card-library/?page=invalid','/card-library/?q=one&q=two']){
       storage.set('dex-card-tab:account-a:/card-library/',value);const invalid=setup('/cards/',url=>url.includes('filters')?options:list(),{storage});await invalid.render();assert.equal(invalid.headerLinks[1].getAttribute('href'),'/card-library/');
     }
@@ -182,10 +178,10 @@ async function check(name,run){await run();cases.push({name,status:'passed'});}
     const t=setup('/cards/',url=>url.includes('filters')?{...options,generation:6}:list({generation:6}));await t.render();assert(t.content.innerHTML.includes('Collection changed'));assert(!t.content.innerHTML.includes('class="owned-card-tile"'));
   });
   await check('filter/list generation mismatch blocks mixed snapshot',async()=>{
-    const t=setup('/cards/',url=>url.includes('filters')?{...options,generation:6}:list());await t.render();assert(t.content.innerHTML.includes('Collection changed'));
+    const t=setup('/cards/',url=>url.includes('filters')?{...options,generation:6}:list());await t.render();assert(t.context.$('.owned-card-tile'));const button=[...t.context.document.querySelectorAll('button')].find(b=>b.textContent==='Browse set choices');await button.onclick();assert(t.content.textContent.includes('Reload the current selection'));assert(t.context.$('.owned-card-tile'));assert.equal(t.context.$('#cards-set').options.length,1);
   });
   await check('foreign account response blocks private detail',async()=>{
-    const t=setup('/card-groups/dg1-card-a/',()=>detail({account_id:'foreign'}));await t.render();assert(t.content.innerHTML.includes('Account changed'));assert(!t.content.innerHTML.includes('id="canonical-card"'));
+    const t=setup('/card-groups/dg1-card-a/',()=>detail({account_id:'foreign'}));await t.render();assert(t.content.innerHTML.includes('Sign in again'));assert(!t.content.innerHTML.includes('id="canonical-card"'));
   });
   await check('loading state and failed request never claim empty collection',async()=>{
     const gate=deferred();const t=setup('/cards/',url=>url.includes('filters')?options:gate.promise);const pending=t.render();assert(t.content.innerHTML.includes('Loading cards'));gate.reject(new Error('Authorization unavailable (403).'));await pending;assert(t.content.innerHTML.includes('Cards unavailable'));assert(!t.content.innerHTML.includes('Your collection is empty'));
@@ -196,7 +192,7 @@ async function check(name,run){await run();cases.push({name,status:'passed'});}
   });
   await check('unresolved-only retains evidence without fabricated tiles or global conflicts',async()=>{
     const mark={kind:'unresolved-species-mark',evidence:{name:'Mew',pokemon_dex:151,source_set:'Retained set'}};
-    const t=setup('/cards/',url=>url.includes('filters')?options:list({total:0,pages:0,groups:[],unresolved:[mark,mark,{kind:'incomplete-catalog-identity',label:'Global catalog conflict'}]}));await t.render();assert(t.content.innerHTML.includes('Your card evidence is retained'));assert(t.content.innerHTML.includes('Card details needed (1)'));assert(!t.content.innerHTML.includes('Your collection is empty'));assert(!t.content.innerHTML.includes('Global catalog conflict'));assert(!t.content.innerHTML.includes('class="owned-card-tile"'));
+    const t=setup('/cards/',url=>url.includes('filters')?options:list({total:0,pages:0,groups:[],unresolved:[mark]}));await t.render();assert(t.content.innerHTML.includes('Your card evidence is retained'));assert(t.content.innerHTML.includes('Card details needed (1)'));await t.expand('Card details needed');assert(t.content.textContent.includes('Mew'));assert(!t.content.innerHTML.includes('Your collection is empty'));assert(!t.content.innerHTML.includes('Global catalog conflict'));assert(!t.content.innerHTML.includes('class="owned-card-tile"'));
   });
   await check('complete multiple-card group results displayed once each without source duplicate list',async()=>{
     const b={...group,id:'dg1-card-b',set_name:'Base Set 2',collector_number:'44',established_total_quantity:3};

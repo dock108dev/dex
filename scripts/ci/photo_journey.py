@@ -7,6 +7,8 @@ def exercise(page, base, output):
     from playwright.sync_api import expect
 
     checks = []
+    read_state = page.request.get(base + "/api/v2/collection-context/").json()
+    assert read_state["read_version"] == 2 and read_state["public"] is False
     key = "22222222-2222-4222-8222-222222222222"
     group = dict(
         id="group",
@@ -42,8 +44,12 @@ def exercise(page, base, output):
     def boundary(route):
         path = urlsplit(route.request.url).path
         calls.append((path, route.request.method))
-        if path == "/api/bulk/catalog/":
-            value = dict(groups=[group])
+        if path == "/api/v2/selection-groups/":
+            value = dict(
+                read_state,
+                groups=[dict(group, present=False)],
+                candidates=[dict(id="printing", group_id="group")],
+            )
         elif path == "/api/photo-batches/":
             value = dict(batches=[])
         elif path == f"/api/photo-batches/{key}/":
@@ -63,7 +69,11 @@ def exercise(page, base, output):
             raise AssertionError("Unexpected photo request; no recognition or write fallback allowed")
         route.fulfill(json=value)
 
-    patterns = ("**/api/bulk/catalog/", "**/api/photo-batches/**", f"**/api/operations/{key}/undo/")
+    patterns = (
+        "**/api/v2/selection-groups/**",
+        "**/api/photo-batches/**",
+        f"**/api/operations/{key}/undo/",
+    )
     for pattern in patterns:
         page.route(pattern, boundary)
     page.route(
@@ -71,12 +81,14 @@ def exercise(page, base, output):
     )
     try:
         page.goto(base + "/add-photos/")
-        expect(page.get_by_role("button", name="Identify cards", exact=True)).to_be_enabled()
+        expect(page.get_by_role("button", name="Identify cards", exact=True)).to_have_count(0)
+        expect(
+            page.get_by_text("AI photo recognition is temporarily unavailable.", exact=False)
+        ).to_be_visible()
         assert all(method == "GET" for _, method in calls)
-        page.get_by_role("button", name="Identify cards", exact=True).click()
-        expect(page.locator("#photo-status")).to_contain_text("Choose a photo first")
-        assert all(method == "GET" for _, method in calls)
-        checks.append(dict(name="Photo entry does not start analysis without a chosen file", status="PASS"))
+        checks.append(
+            dict(name="Photo entry offers manual upload without a recognition control", status="PASS")
+        )
         page.goto(base + "/add-photos/?batch=" + key)
         expect(page.locator(".photo-card")).to_have_count(1)
         expect(page.locator(".photo-card")).to_contain_text("No image")

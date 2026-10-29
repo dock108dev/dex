@@ -58,11 +58,6 @@ def project(actor, *, catalog=None, active=None, pending=None):
     catalog = authoritative_catalog
     pokemon_games = {r["id"] for r in store.rows("SELECT id FROM games WHERE game_key='pokemon'")}
 
-    def species_number(p):
-        if p["game_id"] not in pokemon_games or p["attributes"].get("supertype") in {"Trainer", "Energy"}:
-            return None
-        return _number(p["attributes"].get("pokemon_dex"))
-
     authoritative_active = collection.copies(actor)
     active = authoritative_active if active is None else active
     # Optional preloaded records never bypass the account boundary.
@@ -70,8 +65,38 @@ def project(actor, *, catalog=None, active=None, pending=None):
         raise ValueError("Copy projection inputs must belong to the current account")
     if {c["id"]: c for c in active} != {c["id"]: c for c in authoritative_active}:
         raise ValueError("Copy projection inputs differ from the current account records")
+    history = store.rows(
+        "SELECT * FROM collection_operations WHERE user_id=%s ORDER BY generation,id",
+        [actor.user_id],
+    )
+    sources = (
+        store.rows("SELECT * FROM ownership_declarations WHERE user_id=%s", [actor.user_id])
+        if declarations.available()
+        else []
+    )
+    result = _evaluate(
+        actor.user_id, read_generation, catalog, active, history, sources, pokemon_games, pending
+    )
+    store.verified(actor)
+    if collection.generation(actor) != read_generation:
+        raise collection.Conflict("Collection changed during projection; reload the current view")
+    return result
+
+
+def _evaluate(user_id, read_generation, catalog, active, history, sources, pokemon_games, pending=None):
+    """Internal policy evaluator. Inputs confer no authority and results are not trusted snapshots.
+
+    Public callers must use project. Durable preparation supplies checked authority
+    inside its transaction and independently binds the result to read revisions.
+    """
+
+    def species_number(p):
+        if p["game_id"] not in pokemon_games or p["attributes"].get("supertype") in {"Trainer", "Energy"}:
+            return None
+        return _number(p["attributes"].get("pokemon_dex"))
+
     if pending is not None:
-        if pending.get("user_id") != actor.user_id or pending.get("generation") != read_generation:
+        if pending.get("user_id") != user_id or pending.get("generation") != read_generation:
             raise ValueError("Pending projection must belong to this account and current generation")
         simulated = {c["id"]: c for c in active}
         for change in pending["plan"].get("updates", []):
@@ -92,10 +117,6 @@ def project(actor, *, catalog=None, active=None, pending=None):
     for copy in active:
         copies_by_printing.setdefault(copy.get("printing_id"), []).append(copy)
     conflicts = []
-    history = store.rows(
-        "SELECT * FROM collection_operations WHERE user_id=%s ORDER BY generation,id",
-        [actor.user_id],
-    )
     for op in history:
         op["plan"] = _json(op["plan"], {})
         op["changes"] = _json(op["changes"], [])
@@ -140,11 +161,6 @@ def project(actor, *, catalog=None, active=None, pending=None):
         conflicts.append(
             dict(kind="ambiguous-operation-order", generation=value, operation_ids=generations[value])
         )
-    sources = (
-        store.rows("SELECT * FROM ownership_declarations WHERE user_id=%s", [actor.user_id])
-        if declarations.available()
-        else []
-    )
     sources = {s["id"]: s for s in sources}
     if pending is not None:
         sources.update(
@@ -541,18 +557,7 @@ def project(actor, *, catalog=None, active=None, pending=None):
                 )
             )
             row["established_total_quantity"] = None
-    # Rebuild species presence from current card support and unresolved declaration marks.
-    for n, s in species.items():
-        rows = [r for r in cards.values() if r["pokemon_dex"] == int(n)]
-        s["present"] = bool(s["unresolved"] or any(r["present"] for r in rows))
-        s["current_copy_ids"] = [cid for r in rows for cid in r["current_copy_ids"]]
-        s["card_ids"] = [r["id"] for r in rows if r["present"]]
-        s["operation_ids"] = [oid for r in rows if r["present"] for oid in r["operation_ids"]] + (
-            s["operation_ids"] if s["unresolved"] else []
-        )
-        s["source_ids"] = [sid for r in rows if r["present"] for sid in r["source_ids"]] + (
-            s["source_ids"] if s["unresolved"] else []
-        )
+    _species_rows(list(cards.values()), species)
     printings = {}
     for p in catalog:
         row = cards[_key(p["set_name"], p["name"], p["collector_number"])]
@@ -585,11 +590,8 @@ def project(actor, *, catalog=None, active=None, pending=None):
             if field in row:
                 row[field] = sorted(set(row[field]))
         row["recorded_copy_count"] = len(row["recorded_copy_ids"])
-    store.verified(actor)
-    if collection.generation(actor) != read_generation:
-        raise collection.Conflict("Collection changed during projection; reload the current view")
     return dict(
-        user_id=actor.user_id,
+        user_id=user_id,
         generation=read_generation,
         selected_source=selected,
         source_boundary=boundary,
@@ -602,3 +604,18 @@ def project(actor, *, catalog=None, active=None, pending=None):
         printings=printings,
         conflicts=conflicts,
     )
+
+
+def _species_rows(cards, species):
+    """Shared species aggregation over effective card evidence and source/copy seeds."""
+    for n, s in species.items():
+        rows = [r for r in cards if r["pokemon_dex"] == int(n)]
+        s["present"] = bool(s["unresolved"] or any(r["present"] for r in rows))
+        s["current_copy_ids"] = [cid for r in rows for cid in r["current_copy_ids"]]
+        s["card_ids"] = [r["id"] for r in rows if r["present"]]
+        s["operation_ids"] = [oid for r in rows if r["present"] for oid in r["operation_ids"]] + (
+            s["operation_ids"] if s["unresolved"] else []
+        )
+        s["source_ids"] = [sid for r in rows if r["present"] for sid in r["source_ids"]] + (
+            s["source_ids"] if s["unresolved"] else []
+        )

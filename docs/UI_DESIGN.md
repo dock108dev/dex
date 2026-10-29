@@ -305,3 +305,29 @@ a 503 shows unavailable state and explicit recovery; neither may cause an automa
 retry loop. Empty means a successful current query returned zero matches. Preserve
 valid results on secondary errors, with clear retry for that failed section. These
 are required next-version behaviors, not observations of the installed UI.
+
+## PERF-04 working interface
+
+The [frontend implementation](perf04-frontend.md) renders card text, ownership and primary
+actions from a bounded response before filter choices, children, copy records or art.
+Choices and detail records have explicit continuation; bounded label resolution retains
+selected IDs and readable labels off-page, through reopening, reload and Back. Bulk
+has separate this-page, all-matching and cross-page range actions, preserving off-page
+draft rows with an explicit whole-batch limit and revision-consistent selection.
+
+Goals uses saved headers, frozen target pages and source-choice pages. Missing historical
+filters are never inferred: rename preserves the exact checklist/version, and replacement
+creates a separate goal. Frozen declaration progress is labelled separately from current
+possession and qualified-current-copy progress.
+
+Prices distinguish unloaded copy records from absent evidence. Open Recorded copies
+first, then inspect retained guide scenarios for those loaded copies; additional pages
+require reopening the price disclosure. A partial page never claims complete evidence.
+List and detail artwork loads independently with reserved layout, reviewed source rights,
+bounded descriptor batches and visible-image concurrency. Secondary failure preserves
+usable primary results. Access revocation clears private results and provides sign-in;
+confirmed receipts remain recoverable and undoable when derived browsing is unavailable.
+
+Isolated keyboard/focus/scroll, error recovery, narrow screens and 200% text are covered
+in the [evidence](perf04-evidence-20261028.md). Actual-installed visual acceptance remains
+with QA-INTEGRATION and must use the existing customer installation and real state.

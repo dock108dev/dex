@@ -632,3 +632,27 @@ Repository branch enforcement is a separate maintainer decision after exact-cand
 CI passes. Investigation of nonblocking SQLite ResourceWarnings and portable
 configuration for installation-bound operator guards are maintenance follow-ups;
 they become release blockers only if candidate checks expose a concrete failure.
+
+## Planned Ollama listing interpretation
+
+The owner requested local-model extraction of card details and listing interpretation
+for Shopping and Price Hunter. This is planned additional scope, not an enabled feature.
+Use the shared backend gateway adapter and extend `hunter_lot_parser.py` with validated,
+source-linked proposals from already authorized titles, descriptions and item specifics.
+Retain the deterministic parser, exact catalog matching, leases and financial services
+as authorities; expose ambiguity and manual correction instead of silently choosing an
+identity or quantity. The initial text connection test missed an explicitly stated
+quantity, so connectivity alone is not extraction qualification.
+
+Seller condition/grade/authenticity statements remain claims. Structured listing
+prices stay authoritative; an asking price is not market value. Missing costs and
+unknown values remain unknown. Interpretation must not acquire more listings, scrape
+pages, buy/bid, infer ownership or create collection records. Requests are explicit,
+bounded and cancellable; partial, stale or invalid model results cannot be published
+as verified facts. No Codex/OpenAI execution fallback is permitted.
+
+Text interpretation and future photo recognition share transport only where appropriate.
+Photo inputs, image support, output budgets, revision checks and confirmation require
+separate qualification. The execution tracker orders these as AI-01 (gateway), AI-02
+(listing interpretation), and AI-03 (photo recognition), followed by the applicable
+candidate checks, local delivery and owner review.

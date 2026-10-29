@@ -75,25 +75,35 @@ def species(request, dex):
 @require_GET
 def legacy(request, key):
     query(request, set())
-    resolved = card_groups.resolve_destination(actor(request), key)
+    from . import account_read_queries
+
+    resolved = account_read_queries.resolve(actor(request), {}, key=key)
     response = HttpResponseRedirect(resolved["url"])
     response["Cache-Control"] = "private, no-store"
     return response
 
 
-@browsing_endpoint
 @require_GET
 def home(request, key):
-    raw = query(request, {"child", "generation", "return"})
-    if "return" in raw:
-        from .navigation import authorize_destination
+    # The shell does no catalog projection. The independently authorized V2
+    # primary request validates group/child existence and current revisions.
+    import re
 
-        authorize_destination(actor(request), raw["return"])
-    result = card_groups.detail(actor(request), key, selected_child=raw.get("child"))
-    check_generation(raw, result)
-    response = collection_views.private_home(request)
-    response["Cache-Control"] = "private, no-store"
-    return response
+    from django.shortcuts import render
+
+    try:
+        if not re.fullmatch(r"dg1-[0-9a-f]{64}", key):
+            raise ValueError("Choose a canonical card")
+        raw = query(request, {"child", "generation", "return"})
+        if "return" in raw:
+            return_context(raw["return"])
+        if "child" in raw and (not raw["child"] or len(raw["child"]) > 160):
+            raise ValueError("Choose a supported child")
+    except ValueError:
+        return JsonResponse({"error": collection_views.BROWSING_ERROR, "recovery_url": "/cards/"}, status=400)
+    if request.user.is_authenticated:
+        return collection_views.private_home(request)
+    return render(request, "beta/public_browse.html", {"public": True})
 
 
 def return_context(value, *, list_only=False, _depth=0):

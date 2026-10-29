@@ -28,6 +28,7 @@ INSTALLED_APPS = ["django.contrib.auth", "django.contrib.contenttypes", "django.
 MIDDLEWARE = [
     "pokemon_hunter.beta.security.LocalOnlyMiddleware",
     "pokemon_hunter.beta.diagnostics.FailureMiddleware",
+    "pokemon_hunter.beta.read_diagnostics.Middleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",

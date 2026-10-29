@@ -593,3 +593,276 @@ the earlier failures or establish responsiveness under arbitrary host contention
 PERF-02 is locally complete; PERF-03 is the next backend/integration slice, with
 security review. PERF-04 and OPS-READINESS use the concrete contracts and explicit
 maintenance primitives in the linked guides.
+
+## PERF-03 isolated qualification
+
+PERF-03 is complete in source and local SQLite qualification for the candidate
+recorded in [the detailed evidence](perf03-evidence-20261028.md). The
+[private API and lifecycle contract](perf03-account-reads.md) supplies the PERF-04
+and OPS-READINESS handoffs. This does not qualify the installed customer UI.
+
+The final beta Python digest is
+`6274a9db3e54e5020b0237cf8ef170e25668e211d1ce7df45a4c95440f8341b3`.
+The final affected regression command covered account reads, public catalog reads,
+card groups/sorting, effective ownership, defaults/intents/goals/declarations,
+bulk onboarding/security, photo confirmation/batches, species scope and B1–B4:
+**385 passed**, with sockets blocked. This includes 27 direct account tests and
+explicit operator preparation/discard/restart checks on an existing engineering
+root. No recognition/provider/customer activity occurred.
+
+Private scale qualification: **2 passed**, 2,080 API requests across 26 scenarios,
+20 samples per condition at each of 33,083 and 66,166 printings. The ownership
+loads add 5,000/10,000 copies and 10,000/20,000 historical operations. Largest
+scenario API p95 was **45.74 ms**, SQL p95 **32.73 ms**, at most **20 queries**,
+at most **100 decoded page records**, and **82,707 bytes** for the largest page.
+Every context/filter page passed 32 KiB. The conservative non-SQL p95 upper bound
+was **14.15 ms**, including authorization/composition/serialization, below the
+80 ms composition budget. See the detailed evidence for raw measurements,
+per-scenario p95s, worst cases, fetched/decoded counts and query plans.
+
+Twenty ordinary controlled edits per scale measured incremental preparation p95
+of **84.10 / 177.78 ms**, with worst samples **90.17 / 179.24 ms**. This isolates
+the preparation hooks from existing preview/full-confirmation planning. Explicit
+whole-account preparation took **8.66 / 17.65 seconds**, measured separately.
+Large dependency/source closures and global conflicts may require explicit
+preparation and return unavailable; these are not served with stale ownership.
+
+Affected PERF-02 timing gates were rerun on the same source candidate: **2 passed**,
+1,600 public requests. Public preparation plus activation was **10.62 / 23.42
+seconds**, below 30 seconds. Both sizes passed the unchanged API, SQL, query-count,
+payload and decoding limits. Raw reports remain in `reports/perf02/scale-*.json`;
+`reports/perf03/perf02-recheck.log` captures the rerun.
+
+Earlier failing private candidates remain identified in the detailed evidence and
+ignored `reports/perf03/pre-*`/`initial-*` artifacts. They are not promoted to
+passing evidence. The final harness writes `reports/perf03/scale-*.json` and still
+enforces the fixed gates in Behavior. Ruff check/format checks passed for the 21
+affected Python files; `git diff --check` passed. Existing unrelated work was
+preserved. PostgreSQL, hosted CI, frontend adoption, readiness orchestration,
+customer delivery and owner acceptance remain unqualified/separate.
+
+## PERF-04 isolated frontend candidate
+
+PERF-04 implementation and isolated qualification are complete for source digest
+`2c540137e9a1abba3a2793c524c33e9d132cd85b5ba4085ed31a399624747707`.
+The [frontend implementation](perf04-frontend.md) records migrated consumers and justified
+V1 tool contracts; [evidence](perf04-evidence-20261028.md) retains all samples, failures,
+phase definitions, connection/cache conditions and reproduction commands.
+
+Final checks: 443 affected backend/interface regressions; 31 workflow/contract checks;
+CX05 36 and CX06 24 renderer scenarios; bounded client/source-tool checks; four scale
+browser gates. The gates measured 280 private navigations plus 240 actual guest/private
+interactions and four process-restart navigations. Private-navigation p95 max was
+248.72 ms; interaction p95 max 172.00 ms; scheduling/transfer p95 max 39.39 ms;
+parse/DOM/paint p95 max 16.90 ms. Restart first-usable navigation was 169.10–341.44 ms.
+Largest interaction payload was 324,165 bytes; primary JSON 37,272 bytes. All fixed p95,
+restart and payload gates passed without changing thresholds.
+
+Individual outliers remain: navigation worst 447.93 ms and scheduling/transfer worst
+56.64 ms. Earlier twice-size p95 failures remain recorded and investigated; neither a
+later pass nor a test-server backlog change establishes a production concurrency fix.
+Raw traffic includes a 300 ms post-readiness window. HTTP/1.0 fresh-connection and
+ASGI/uvicorn keep-alive/process-restart conditions are distinguished; OS caches remained
+warm. Required CI now installs Chromium for these discovered tests, keeps loopback-only
+socket allowances, and retains their raw reports. Hosted CI has not been rerun here.
+
+OPS-READINESS owns integrated readiness/recovery and runtime diagnostics. RUNTIME-DELIVER
+and QA-INTEGRATION own installation, actual-state performance/visual review and acceptance.
+No customer installation, recognition, provider request, commit or deployment occurred.
+
+## OPS-READINESS qualification
+
+The working candidate adds `test_ops_readiness.py` for read-only scoped readiness,
+fault categories, goal-policy incompatibility, explicit repair ordering, receipt
+preservation, diagnostic redaction/retention, admission cancellation and lifespan
+shutdown. `test_ops_runtime.py` exercises the ordinary CLI with real cleanup workers
+on disposable full-size/2× state. `ops_server.py` changes only the socket and Host
+mapping to avoid the customer's fixed port; it calls the actual CLI serving branch.
+It does not substitute the engineering WSGI adapter or start provider work.
+
+Run fixed-budget suites serially so competing tests do not contaminate timing:
+
+```sh
+.venv/bin/pytest -q --disable-socket --allow-unix-socket -o faulthandler_timeout=0 tests/test_ops_readiness.py tests/test_asgi_limits.py tests/test_catalog_reads.py tests/test_account_reads.py tests/test_hunter_delivery_worker.py tests/test_perf04_contracts.py tests/test_ops_runtime.py tests/test_perf04_interactions.py tests/test_perf04_browser.py
+.venv/bin/pytest -q --disable-socket --allow-unix-socket -o faulthandler_timeout=0 tests/test_account_read_performance.py tests/test_catalog_read_performance.py
+```
+
+The final local run used an external 900-second process-group deadline for each
+command. Disabling the diagnostic traceback timer worked around the observed local
+Python 3.14 diagnostic stall; this is not a performance-budget change or a change to
+the CI timer configuration. Final results: 146 runtime/correctness/browser tests and
+4 backend performance tests passed. CX05/CX06 passed 60 renderer cases.
+
+
+The existing fixed budgets above remain unchanged. Twenty comparable requests are
+required for p95; three valid restarts and one invalid restart per scale report all
+observations without a percentile. Ordinary runtime evidence includes admission wait,
+request diagnostic IDs and process RSS. Page-cache capacity is not total RSS. Browser
+readiness remains a separate measurement from backend/catalog readiness.
+
+See [OPS candidate evidence](ops-readiness-evidence-20261028.md) for results, failures,
+source identity and exact limits. Preserve failed runs; a passing repeat does not erase
+a prior budget miss. These suites are discovered by the existing test jobs; add
+`reports/ops-readiness/` to retained CI reports. Hosted CI, package/dependency validation,
+customer installation and owner acceptance remain separate gates.
+
+## RUNTIME-DEPS local qualification
+
+**RUNTIME-DEPS is complete in local qualification. CI-VERIFY is next.**
+
+The October 29 candidate is `pokemon-hunter 0.1.1rc1`, containing the cumulative
+PERF-02/03/04 and OPS-READINESS work plus preserved extraction and recognition-removal
+changes. It remains uncommitted and uninstalled in the customer application.
+Local evidence is retained under `reports/runtime-deps-20261029/`; disposable
+engineering data is never presented as the customer experience.
+
+### Exact candidate identity
+
+| Input/artifact | SHA-256 |
+| --- | --- |
+| Final `uv.lock` | `09abd64f1f9066d820e172f93507348778f22c6ca25df93992f2c30b75a0035f` |
+| `pokemon_hunter-0.1.1rc1-py3-none-any.whl` | `bceb8a2f93a0488b534b82abb580ae8dc329785ffec82a9e9fd5024b7031ee7f` |
+| `pokemon_hunter-0.1.1rc1.tar.gz` | `9b8e1fc7ade77dd256e2dda056e2385850fc031e7bbe71b4d8c88703f779ca6f` |
+| `authored-code-manifest.json` (614 files) | `34f70633e71a9c17683af4f23345bb1853aa83ba9ee7b6033692684a8a22c148` |
+| Selected base interpreter executable | `3274dde21f9767655564d093e63c9a5faacefbf1d41bc1e6bf8b6f6e5a441903` |
+
+Base HEAD is `e90b63f33955cb93c9ccbadd7c8fdfdc1eac92ac`. The authored manifest
+identifies nonignored code, tests, configuration and packaging/CI inputs, including
+untracked cumulative work; it excludes documentation. It does not pretend this dirty
+candidate is HEAD. The source distribution contains all package/build inputs and the
+final lock; `source-snapshot.tar.gz` additionally preserves the authored verification
+inputs and documentation for later CI reconciliation. `candidate-identities.json`
+records archive hashes. Do not upload the entire reports directory: it also contains
+local environments and engineering state.
+
+Selected runtime: CPython **3.12.15**, `main, Oct 14 2026, 00:55:37`, Clang 23.1.3,
+macOS 27.0.1 arm64. SQLite **3.53.1**, with FTS5 create/insert/MATCH verified. This
+keeps the customer's inspected interpreter version while changing the cumulative
+application package. `requires-python >=3.12` and the hosted matrix are unchanged.
+The 3.14.0 diagnostic stall remains historically observed, without an upstream
+root-cause claim. Bounded probes armed, fired and cancelled 20 diagnostic timers on
+both 3.12.15 and 3.14.0 without reproducing it. More substantially, the selected
+runtime's unchanged 90-second pytest timer fired during the long browser suite,
+returned normally and the suite completed. No diagnostic disabling was used.
+
+### Installation and security evidence
+
+Build tooling was installed into an empty 3.12.15 environment from the hash-locked
+all-extras export. Runtime dependencies were separately installed into an empty
+runtime-only environment from the final locked export, then the wheel with
+`--no-deps`. The qualification environment also installed that wheel; no editable
+project or checkout `src` path was used. Package paths and full inventories are in
+`candidate-inventory.json`, `qualification-inventory.json`, and
+`installed-inventory.json`; the latter is a read-only inspection of the old runtime.
+
+- Repeat wheels and sdists match byte-for-byte. A wheel rebuilt from the final sdist
+  matches the tested wheel. A final formatting correction changed only two Python
+  members (AST equality verified) and RECORD; all qualification suites were rerun
+  against the rebuilt installed wheel. Earlier artifacts remain separately retained.
+- Package inspection verifies 286 installed package members, required operators,
+  templates, assets and retained public inputs, with no private state. Installed
+  compilation, canonical registry, entrypoint and data-path checks pass.
+- Updated installed smoke runs explicit declaration prerequisite, catalog/account
+  migrations, catalog preparation/activation/status and account preparation/status.
+  It first proves liveness with repeated unavailable readiness, so startup is not
+  mistaken for implicit preparation. Then 54 HTTP assertions check public/private
+  V2 content, readiness, sign-in, Shopping, assets and denial boundaries. Network
+  guards record zero external attempts; process and disposable-state cleanup pass.
+- Strict current PyPI audits of both all-extras lock and runtime requirements report
+  zero findings. Dependency consistency passes in both fresh environments. Bandit
+  has no blocking findings; Gitleaks checks worktree and full Git history without
+  ignores. See [the installed-versus-candidate advisory review](SECURITY.md#runtime-deps-advisory-review--october-29-2026).
+- The initial smoke expected species embedded in HTML and failed after the V2
+  migration. Its successor exposed the minimal synthetic initializer's missing
+  declaration prerequisite; explicit engineering preparation now supplies it.
+  An intermediate helper passed an integer build ID to subprocess arguments; it was
+  corrected to a string. These failures/logs are retained, not counted as passes.
+
+### Installed behavioral and performance checks
+
+The existing OPS command above ran against the installed wheel with diagnostics
+**enabled**: **146 passed in 449.96 seconds**. A separate focused run passed
+**579 tests in 61.16 seconds**, covering package failure guards, B1–B4, photo upload/
+review/confirmation/undo and disabled inference, Shopping math/authority/history,
+Discovery, Hunter lots and durable policy rebinding, bulk security and PERF-04
+workflows. Providers are controlled engineering fixtures; sockets are blocked except
+explicit loopback/Unix allowances. No actual provider, recognition or customer action
+is qualified by these tests.
+
+Performance retains 33,083/66,166 printings, 5,000/10,000 additional copies and
+10,000/20,000 historical edits. OS caches are warm after explicit preparation;
+there is no cold OS-cache claim. API warm/fresh connections remain separate.
+Browser resource cache is disabled by interception; remote artwork is blocked;
+ordinary CLI/ASGI and real cleanup workers are used. Twenty samples per scenario
+support each p95. Navigation has 280 samples; interactions have 240. All thresholds
+are unchanged. Full-size navigation max p95/worst is 163.53/181.23 ms; twice-size is
+165.02/225.10 ms. Interaction max p95/worst is 86.10/111.50 ms and 80.00/93.40 ms.
+
+Backend startup observations (three ready, then one interrupted/unavailable state):
+258.41, 259.64, 249.27, 247.67 ms at full size; 361.51, 264.27, 261.65, 260.68 ms
+at twice size, all below 2,000 ms. First usable guest/member navigation after restart:
+100.78/108.66 ms and 98.37/135.23 ms, all below 1,000 ms. These small restart samples
+are individual observations, not percentiles. The ordinary-process suites verify
+worker joins, scoped readiness and absence of implicit preparation.
+
+The final installed backend suite passed **4 tests in 85.94 seconds**, serially after
+the browser and workflow suites. It measured 1,600 public and 2,240 private API
+requests, plus 20 incremental edits at each scale. An initial backend run overlapped
+the short initial smoke; that run is retained separately and is not the final timing
+qualification. No failed timing run was discarded or budget relaxed.
+
+| Final boundary | Full size | Twice size | Budget |
+| --- | ---: | ---: | ---: |
+| Catalog preparation, one observation | 6,777.73 ms | 14,934.45 ms | 30,000 ms |
+| Whole-account preparation, one observation | 6,347.97 ms | 14,353.29 ms | Report separately |
+| Incremental p95 / worst | 40.16 / 43.10 ms | 86.15 / 86.77 ms | 200 ms p95 |
+| Catalog API / SQL largest p95 | 8.55 / 4.39 ms | 10.14 / 7.68 ms | 180 / 40 ms |
+| Account API / SQL largest p95 | 11.60 / 7.13 ms | 35.21 / 26.39 ms | 180 / 40 ms |
+| Catalog API worst sample | 26.41 ms | 10.68 ms | Report separately |
+| Account API worst sample | 15.00 ms | 36.15 ms | Report separately |
+| Ordinary runtime serial API / SQL p95 | 10.79 / 5.63 ms | 14.85 / 10.03 ms | 180 / 40 ms |
+| Ordinary runtime four-client API / SQL p95 | 34.69 / 5.90 ms | 52.00 / 10.16 ms | 180 / 40 ms |
+| Ordinary runtime four-client worst | 36.42 ms | 54.23 ms | Report separately |
+| Runtime RSS after reads | 77,776 KiB | 79,088 KiB | Observation, not a peak cap |
+
+Runtime request groups each contain 20 samples, 80 total across concurrency and
+scale. Catalog/account maximum query counts are 13/20. Existing payload, decoding,
+composition and bounded-row assertions all pass. `final-measurements.json` summarizes
+the complete raw reports under `final-evidence/`; per-scenario values and sample
+arrays remain available. The 60 CX05/CX06 renderer cases, source-tools, photo-client
+and Hunter-net checks pass. Ruff lint, all 463 Python format checks, 33 JavaScript
+syntax checks, 18 maintained-document link checks and whitespace checks pass.
+
+### Concrete CI-VERIFY handoff
+
+1. Reconcile the complete authored manifest with the preserved working tree, including
+   untracked modules/tests/assets and the updated distribution smoke. Commit/push or
+   dispatch only under the authorization for CI-VERIFY. Do not qualify HEAD alone.
+2. Verify the wheel, final sdist and lock hashes above. Rebuild with the pinned
+   hatchling and final lock, compare repeat outputs and wheel-from-sdist equality,
+   then install into fresh hash-locked runtime environments. Check all installed
+   members, imports, entrypoints, maintenance and V2 readiness using updated smoke.
+3. Run exact-source normal validation and the full compatibility attempt: Ubuntu and
+   macOS Python 3.14, Ubuntu 3.13, both OSes 3.12, minimum-runtime distribution, and
+   Linux x86_64 container checks. Keep the 90-second diagnostic timer. Retain any
+   3.14 diagnostic failure; the local 3.12 result is not a fix or waiver for it.
+4. Run quality/renderers, full guarded behavior/coverage, isolated browser journeys,
+   security/dependency audits, staging PostgreSQL and the required aggregate. Run
+   fixed-budget PERF/OPS full-size and 2× gates serially without competing profiling
+   or heavy checks, retaining raw samples, misses and exact interpreter identities.
+5. Record hosted run links and source/package correspondence. Missing or failed
+   matrix/jobs remain open; local SQLite does not qualify PostgreSQL, other OSes or
+   customer performance. Hand the verified artifacts to RUNTIME-DELIVER, then perform
+   actual-state QA-INTEGRATION and separate owner acceptance. No live allowance is
+   created by successful engineering checks.
+
+## CI-VERIFY integrated successor
+
+The October 29 exact-candidate verification is in
+[the CI-VERIFY evidence and delivery handoff](ci-verify-20261029.md). Initial manifest
+and package reconciliation passed. Integration checks exposed navigation/renderer
+regressions; the repaired successor has new wheel/sdist hashes. The final installed local suite passes 3,598 tests with no failures or skips;
+source, browser, security, PostgreSQL, distribution and fixed-budget performance
+checks pass. Hosted normal/compatibility, required aggregates
+and hosted exact-candidate security remain open; the old base commit's green runs do not
+qualify this working tree. The customer installation remains unchanged.

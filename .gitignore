@@ -188,3 +188,6 @@ config/market_values.json
 
 # Actual customer installation and independent private state.
 /.local/
+
+# Isolated JavaScript renderer test dependencies.
+/node_modules/

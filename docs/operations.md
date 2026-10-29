@@ -176,7 +176,8 @@ See [photo storage](photo-entry.md#storage-and-shared-review) and
 The responsive local version requires bounded, sanitized request timing and useful
 startup/readiness diagnostics. Existing error logging is described in
 [recovery](ERROR_HANDLING.md#diagnostics); request timing and derived-index recovery
-are not yet established operating capabilities. Do not enable raw access logging
+are implemented in the working OPS candidate described below, with qualification
+limits recorded separately. Do not enable raw access logging
 that exposes setup links, search text, credentials or private records.
 
 The implementation must distinguish process listening, application readiness and
@@ -314,8 +315,8 @@ and additive read tables/triggers intact. Older code can continue V1 reads; its
 catalog/source/copy writes still invalidate newer prepared state through triggers.
 Returning to newer code requires compatible schema/policy and a current revision.
 Do not restore old collections, accounting, secrets, revocations, tombstones or Stop
-choices to make a derived index appear valid. Full readiness endpoints, startup
-orchestration and bounded sanitized request diagnostics remain OPS-READINESS work.
+choices to make a derived index appear valid. The working OPS candidate adds scoped
+readiness, startup validation and bounded timing diagnostics; see the contracts below.
 
 ### Explicit derived-state repair
 
@@ -348,3 +349,301 @@ check. Do not write FTS shadow tables or add triggers to them: a development att
 to do so caused SQLite re-entrant FTS failure and was removed. Use the supported FTS
 commands and explicit repair paths above. Failed repair leaves the transaction
 rolled back and does not authorize serving known damaged state.
+
+## PERF-03 account-read lifecycle
+
+[PERF-03 account reads](perf03-account-reads.md#later-delivery-and-recovery) documents
+explicit migrate/prepare/status/discard/repair commands and catalog-before-account
+ordering. These commands were added for later delivery; PERF-03 does not authorize
+running them against `.local/customer`. Preserve the backup/runtime procedures
+above. A 503 is an unavailable read representation, never a reason to replay a
+confirmed operation or reset authoritative collection data.
+
+## OPS-READINESS local contracts
+
+The working candidate adds the following read-only signals. This describes source,
+not the installed customer runtime. Qualification and retained failures are in
+[OPS evidence](ops-readiness-evidence-20261028.md).
+
+| Signal | Meaning | Failure |
+| --- | --- | --- |
+| `GET /livez/` | HTTP request handling is alive; no database readiness assertion | Does not certify catalog, account or browser |
+| `GET /readyz/` | Shared catalog schema, required object names/types, revision triggers, active manifest seal/policy/revision and FTS document count pass | 503 with `read_state_unavailable`, fixed `category` and explicit `recovery` |
+| `GET /api/v2/readiness/` | Same catalog checks plus the signed-in account's schema/infrastructure, manifest seal, generation/revision and representation policy | 403 without current authorization; otherwise scoped 503 |
+| Rendered primary cards and usable controls | Browser usability, measured independently | Backend 200 or HTML shell is insufficient |
+
+All signals use no-store. Public results contain no account identifiers, build IDs,
+configuration or record content. Account readiness derives its principal exclusively
+from the authenticated session and independently rechecks it. `X-Dex-Read-Account`
+is an optional mismatch guard, never an account selector. Existing V2 stale-selector
+409 behavior remains in the resource APIs. Readiness URLs take no account selector;
+use resource APIs for revision-bound reads. Staging's existing `/healthz/` remains
+its separate worker-heartbeat contract; it is not local catalog readiness.
+
+The ASGI factory validates once before ordinary CLI worker startup. SQLite checks
+use a 500 ms VM progress deadline and 100 ms busy timeout, restoring the connection's
+settings afterward. The connection closes after startup validation. A failed derived
+check leaves sign-in, recovery guidance and read-only signals available. Resource GETs
+still recheck current authority; startup success is not a permanent cached assertion.
+No account enumeration, full journal replay, migration, preparation or cleanup occurs
+in validation. Metadata and indexed document counts are checked; this is not a full
+physical SQLite integrity scan. Payload checks remain at read time, full checksums at
+explicit preparation. Do not interpret readiness as proof against arbitrary disk damage
+or manual modification of SQLite shadow tables/trigger definitions.
+
+### Failure categories and explicit actions
+
+| Category | Action |
+| --- | --- |
+| `schema_missing` | Inspect the supported schema prerequisites, then explicit `migrate`; prepare separately |
+| `incompatible_schema` | Select a compatible runtime/version transition; never reset a schema marker |
+| `incompatible_policy`, `catalog_stale` | Prepare a new catalog candidate, then activate after its revision comparison |
+| `manifest_missing` | Explicit catalog preparation and activation |
+| `preparation_interrupted` | Stop/identify the interrupted writer; prepare a fresh candidate; only then activate and explicitly discard the abandoned candidate |
+| `manifest_corrupt`, `derived_corrupt` | Preserve authority; prepare a new candidate, or use supported derived repair if infrastructure/index damage is established |
+| `infrastructure_missing` | Explicit supported derived-schema repair, then preparation; incompatible/missing authority revisions require separate recovery |
+| `account_not_prepared`, `account_stale`, `account_corrupt` | Prepare the named account from current authority; never resubmit a confirmed mutation |
+| `account_policy_incompatible` | Explicit account preparation for `effective-collection-2-goal-headers` |
+| `check_deadline` | Inspect contention, storage and startup diagnostics; no automatic maintenance/retry |
+| `storage_unavailable` | Preserve database and independent journals; investigate authoritative SQLite damage/permissions separately |
+| `unsupported_database`, `publication_capability_unavailable` | Select a qualified runtime/capability configuration |
+
+A SQLite read error is not evidence that only derived data is damaged. Index rebuilding
+cannot repair damaged authoritative rows. Existing raw-data backups are disaster-recovery
+inputs, not permission to roll back live accounting, revocations or collection generations.
+
+### Candidate and repair commands
+
+For later RUNTIME-DELIVER, after selecting the qualified installed interpreter and
+backing up protected state, use this order (these commands were not run on the customer):
+
+```sh
+"$DEX_APP_PYTHON" -I -m pokemon_hunter.beta.catalog_read_operator --root "$DEX_APP_ROOT" migrate
+"$DEX_APP_PYTHON" -I -m pokemon_hunter.beta.account_read_operator --root "$DEX_APP_ROOT" migrate
+"$DEX_APP_PYTHON" -I -m pokemon_hunter.beta.catalog_read_operator --root "$DEX_APP_ROOT" prepare
+# Set DEX_CATALOG_BUILD to the build returned by prepare; do not use an older build.
+"$DEX_APP_PYTHON" -I -m pokemon_hunter.beta.catalog_read_operator --root "$DEX_APP_ROOT" activate --build "$DEX_CATALOG_BUILD"
+"$DEX_APP_PYTHON" -I -m pokemon_hunter.beta.catalog_read_operator --root "$DEX_APP_ROOT" status
+"$DEX_APP_PYTHON" -I -m pokemon_hunter.beta.account_read_operator --root "$DEX_APP_ROOT" --username "$DEX_ACCOUNT_USERNAME" prepare
+"$DEX_APP_PYTHON" -I -m pokemon_hunter.beta.account_read_operator --root "$DEX_APP_ROOT" --username "$DEX_ACCOUNT_USERNAME" status
+```
+
+Status exits nonzero when unavailable and emits a fixed safe recovery category.
+Catalog ready status retains its operator-only build/revision fields. Failed commands
+emit sanitized code locations, not exception bodies. Full-catalog and whole-account
+preparation durations are separate; preparing the catalog does not finish account recovery.
+The new account policy deliberately invalidates previous goal-header representations.
+Older runtimes may read additive tables or write authority, but their writes still advance
+revision triggers; returning to this runtime requires current compatible preparation.
+
+For established FTS-only damage, `catalog_read_operator ... repair-index` invalidates
+candidates and rebuilds the search index; next prepare/activate, then prepare accounts.
+For missing/damaged derived schema under the supported version:
+
+```sh
+"$DEX_APP_PYTHON" -I -m pokemon_hunter.beta.catalog_read_operator --root "$DEX_APP_ROOT" repair-schema
+"$DEX_APP_PYTHON" -I -m pokemon_hunter.beta.account_read_operator --root "$DEX_APP_ROOT" repair-schema
+```
+
+**Both repairs are required after catalog schema repair**: catalog-table replacement
+removes indexes installed by the account migration. Then prepare/activate the catalog
+and prepare each intended account explicitly. Account-only corruption may instead use
+`account_read_operator ... --username "$DEX_ACCOUNT_USERNAME" discard` and `prepare`;
+all-account schema repair is not the default response to one unavailable account.
+A failed build never becomes active; revision mismatch cannot be forced current.
+Activation/cleanup retain existing snapshot guarantees. Confirmed collection receipts
+remain authoritative when read refresh fails; preparation reconstructs from current data
+without replaying the mutation or receipt.
+
+### Serving, connection and worker policy
+
+Use one ordinary CLI process, with no reload or multiprocess workers. The ASGI wrapper
+admits one dynamic Django request at a time. The fixed `/collection-assets/`
+file-serving route has a separate four-slot lane; it never opens a catalog snapshot.
+This prevents script/style delivery waiting behind the data slot. Admission waits at most 500 ms, then
+returns `503 {"error":"runtime_busy"}` without invoking Django. `Server-Timing: admission`
+reports that wait on admitted responses. It does not measure time before the ASGI call,
+TCP backlog, browser scheduling, or paint. Cancellation always releases the slot.
+
+Django's zero persistent-connection setting closes request connections. Each catalog
+connection retains its existing 64 MiB SQLite page-cache ceiling: at most 64 MiB for
+the admitted catalog request. This is a page-cache allowance, not an RSS ceiling:
+Python heaps, SQLite temporary sorting (`temp_store=MEMORY`), sockets, assets and the
+existing cleanup-worker connections need additional memory. Do not multiply processes
+or assume the cache is always resident. Actual RSS and concurrent timings belong
+to the exact-candidate evidence. No additional acquisition/recognition worker is started.
+
+The existing expiry thread and selected-current-process photo worker retain their
+selection, leases and Stop behavior. Startup validates before starting them. Shutdown
+uses ASGI lifespan shutdown to signal both stop events and join each for up to five
+seconds before Uvicorn restores/re-raises signals; an idempotent CLI fallback handles
+ordinary exceptions. Incomplete joins emit
+the existing fixed failure event. `shutdown/workers_joined` reports whether both joined.
+Uvicorn may re-raise SIGTERM after orderly cleanup; signal exit alone is not proof of
+worker failure or provider cancellation. Preserve pending work and current independent
+accounting before any actual installation restart.
+
+### Bounded request diagnostics
+
+Ordinary CLI startup creates private `diagnostics/reads.jsonl` under the chosen root.
+It is size-retained: 1 MiB per file and two rotations (approximately 3 MiB total),
+0600 files in a 0700 directory. At most 60 records/minute are persisted; excess records
+are dropped, not queued. A separate in-memory ring holds the latest 256 records. There
+is no promise that every request ID appears in retained logs, nor time-based archival.
+Do not export logs indefinitely or turn on raw web access logging. Existing sanitized
+`dex.failures` stderr diagnostics remain separate from this request store.
+
+Each Django-dispatched request has a random `X-Dex-Diagnostic-ID`. Pre-dispatch
+ingress/body/admission refusals do not pass through this middleware and have no
+SQL/decoder diagnostic record. Records include the Django route
+**template**, status, elapsed milliseconds, expected schema/policy, catalog/account
+check category, SQL execute and fetch milliseconds separately, query/fetched-row counts,
+decoded-row count, service time, measured decoding/composition time, JSON serialization
+time and payload bytes. No URLs, query strings, SQL text/parameters, account IDs,
+credentials, sessions, records, artwork URLs or provider bodies are recorded.
+
+Fetch timing wraps request cursors, including ORM fetches. Decoded counts/composition
+cover the instrumented public/private payload decoders, not every arbitrary JSON call;
+the count includes attempted decoder calls on failed reads. Query count is cursor
+execution calls (ordinary read queries are individual calls, not batched statements);
+`decoded_coverage` labels that limit. `null` means unavailable/not measured. Service
+elapsed includes SQL and composition, so these overlapping totals must not be added.
+Request elapsed excludes admission, network and browser scheduling. Streaming payload
+size is unavailable. `not_checked` differs from `ready`; an HTML shell is never assigned
+catalog/account readiness merely because it returned 200.
+
+For slow startup, correlate `startup/catalog_validation` with an external spawn timer
+and separately probe liveness/readiness. For slow reads, use the response diagnostic ID,
+route template and execute/fetch/serialization durations; compare admission timing and
+browser resource/paint measurements rather than attributing the whole gap to SQL. For
+unavailable reads, inspect scoped readiness, apply the explicit action, then check again.
+The frontend retains its existing visible 503/manual-recovery text and confirmed receipt
+recovery; it does not prepare, automatically retry, poll readiness or fall back to V1.
+The macOS launcher still detects a listener only. Operators must verify its process/root
+and `/readyz/`; launching/opening a page is not a readiness assertion.
+
+The OPS runtime investigation identified duplicate FTS membership evaluation in owned
+search (one evaluation for count and another for page selection). Exact totals retain
+the complete posting-list check; page selection uses compact common text and only
+same-child/substring residual ranks, following the existing catalog search strategy.
+It preserves ordering, child semantics and empty/deep pages without reconstructing
+ownership or decoding the whole matching catalog. Owned search is now explicitly
+qualified alongside catalog search. Four simultaneous Django requests increased SQL
+wall time beyond its fixed budget; the single admission slot bounds that contention
+and reduces the maximum active catalog cache allowance to 64 MiB. Four-client load is
+still measured, with queue time reported separately.
+
+### RUNTIME-DELIVER handoff (not executed)
+
+1. **Release selection:** complete RUNTIME-DEPS and exact-candidate CI-VERIFY
+   first. OPS source and isolated qualification are complete; see the
+   [candidate evidence](ops-readiness-evidence-20261028.md). Select the built wheel/interpreter/dependency lock,
+   record their hashes and reconcile the cumulative dirty checkout. A beta-source
+   digest or version `0.1.0` alone is not an installed package identity. Retain the
+   previous interpreter and package for compatible rollback.
+2. **Interruption and preservation:** verify the existing process, selected root and
+   interpreter before stopping anything. Inspect selected/queued jobs, acquisition
+   leases and temporary in-memory Hunt work. Establish the delivery interruption
+   window without admitting provider work. Stop the ordinary process, verify worker
+   exit, then make a consistent SQLite backup and private copies of the authentication
+   secret, permitted photos/configuration/drafts/history. Exclude `price-snapshots/`.
+   Inventory and preserve current independent price revocations, source registries,
+   `.dex-shopping-discovery`, `.dex-tcgcsv-*`, and `.dex-photo-batches` journals outside
+   app restore. Verify backup readability and owner-only permissions.
+3. **Install code:** install the selected qualified runtime separately, preserve the
+   root and secret, and perform only the explicitly supported package-binding update.
+   Changing a runtime must not renew capacity, reset credentials or select old photo
+   work. Do not initialize/reseed the existing root.
+4. **Prepare explicitly:** run catalog migrate, account migrate, catalog prepare,
+   activate the returned current build, catalog status, then each intended account's
+   prepare/status using the exact commands above. For established derived-schema
+   damage use both schema repairs in order first. Record catalog and whole-account
+   durations separately. A failed activation or changed authority revision stops
+   delivery; prepare a current candidate instead of forcing an old revision.
+5. **Verify normally:** start the selected CLI once. Confirm process/root/package,
+   `/livez/`, `/readyz/`, then account readiness through ordinary sign-in. Confirm
+   worker lifecycle records and retained authority/accounting. QA-INTEGRATION then
+   measures first usable cards after restart and guest/member interactions on the
+   full actual state. A 200 shell or backend ready response does not close that gate.
+6. **Rollback if necessary:** stop/join the candidate and select the previous runtime
+   only if compatible with the current authoritative schema. Leave current data,
+   generations, receipts, independent consumed usage, Stop choices, revocations and
+   tombstones intact. If that runtime cannot read current authority, stop for an
+   explicit compatible transition; do not restore an older database/accounting merely
+   to make it start. Returning to this candidate requires its explicit preparation
+   whenever policy/revision checks fail. Cleanup of abandoned derived builds remains
+   a separate explicit command after active readers/writers have stopped.
+
+At OPS closeout, package/dependency and hosted CI qualification were still open.
+The later RUNTIME-DEPS status below supersedes package qualification only. No
+customer runtime, data, source rights or provider allowance changed during OPS
+engineering; installation remains a separate slice.
+
+### RUNTIME-DEPS candidate compatibility
+
+The October 29 `0.1.1rc1` candidate is a cumulative successor. Its immutable package
+and lock identities, fresh-install checks and remaining limits are in
+[CI qualification](CI.md#runtime-deps-local-qualification). No customer root, runtime
+link, process, credentials, configuration or independent journal was modified.
+The previous `hunter-poc-20261027` runtime remains available for later compatible
+rollback. CI-VERIFY and delivery remain separate.
+
+The candidate retains the checkout's existing FastAPI 0.161.1 and Pillow 13.0.0
+choices, versus installed 0.143.0 and 12.3.0. Certifi and OpenTelemetry also differ;
+[security](SECURITY.md#runtime-deps-advisory-review--october-29-2026) lists the audit
+resolution. Runtime-only installation deliberately excludes CI/dev extras. Photo
+upload, crop, review, confirmation and undo remain; the preserved owner-requested
+source change removes Codex/OpenAI inference. Do not enable or replay historical
+recognition jobs. Ollama is not implemented by this candidate.
+
+Before the catalog/account commands above, verify that the current authoritative
+catalog, collection and ownership-declaration schemas exist. The catalog migration
+fails closed if a prerequisite is absent. For a missing declaration table only,
+the existing `ownership_declarations.initialize(db)` with the supported inventory
+connection is the explicit additive prerequisite used in the disposable installed
+smoke; it is not ordinary startup. Incompatible existing authority requires its
+own reviewed transition. Then follow catalog migrate → account migrate → catalog
+prepare/activate/status → each intended account prepare/status. The policy
+`effective-collection-2-goal-headers` rejects older prepared headers. No GET, login
+or retry upgrades them. Catalog schema repair still requires account schema repair.
+
+The inspected installed package binding digest is
+`3e084d7e1d51db566e67febf4f23ffc41454d199408d95d008662a2178c3da5f`;
+the candidate binding digest is
+`e75522f90fb21bc6ba18fb9e4d69ff1191c0db2f61d6a9253e1f5ab7b2761460`.
+The package comparison records 36 added, 56 changed and two removed members, with
+194 unchanged. The removed members are the deferred recognition adapters; the
+comparison and full inventories are retained with candidate evidence.
+
+Package binding uses `hunter_installed.package_digest()`, which hashes installed
+application members, not the wheel archive hash. Never substitute one for the other.
+For an existing everyday policy, the supported privileged
+`hunter_policy.rebind_package(root, expected_previous=..., package_sha256=...,
+contract='hunt-09-daily-v1')` requires the exact current previous binding and newly
+installed digest. Delivery must verify the same acquisition contract before using
+it; changed acquisition semantics require a separately qualified contract/selection.
+The journal appends a rebind event without replacing policy revisions, parent IDs,
+debits, expiry or Stop choices. Fixed installed/qualification allowances are separate:
+do not rewrite their documents to bypass package mismatch or renew spent capacity.
+This slice invokes no customer binding operation and grants no acquisition allowance.
+
+Rollback is code selection over **current** compatible authoritative data. Stop and
+join the candidate, check the previous runtime's schema/feature compatibility, and
+retain all current receipts, generation/revision values, photo deletion tombstones,
+price revocations and independent acquisition journals. Additive derived tables do
+not justify rolling back authority. If the old code cannot read current authority,
+use an explicit compatible transition instead of restoring an older database.
+Returning to the candidate requires fresh explicit preparation when its policy or
+revision checks fail. Do not reinstate removed inference automatically on rollback.
+
+### CI-VERIFY successor delivery boundary
+
+Integration verification produced a repaired successor to the RUNTIME-DEPS artifact,
+with the package identities in [CI-VERIFY evidence](ci-verify-20261029.md). Its
+installed member binding is `0011711c7b86c163bfb2064a0059e57ba5616327725dfbcfc7471da5d5a3b195`. This is distinct from its wheel archive hash and the earlier candidate binding.
+RUNTIME-DELIVER must use the finally qualified successor, verify the actual current
+previous binding, and follow the existing schema/preparation/rebinding sequence.
+CI-VERIFY is not complete while required hosted results remain missing. No customer
+installation or binding operation has been performed; local runtime/integration
+engineering remains the responsible delivery lead after verification and applicable
+delivery authorization. Current-data-compatible rollback constraints above apply.

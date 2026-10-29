@@ -35,7 +35,7 @@
   <p id="bulk-meaning" class="bulk-help">Creates individual copy records. Complete card totals stay Unknown.</p>
   <details id="bulk-default-fields"><summary>Copy defaults: condition, binder and purchase details</summary><p class="bulk-help">Blank means Unknown. Existing rows keep their choices; check rows in Your batch to apply these defaults.</p><div id="bulk-defaults" class="bulk-controls"></div></details>
   <div id="bulk-checklist">
-    <div class="bulk-catalog-toolbar"><label>Search this set<input id="bulk-search" type="search" placeholder="Card name or number"></label><div class="bulk-actions"><button type="button" id="bulk-all">Select all matching</button><button type="button" id="bulk-range">Select checked range</button></div></div>
+    <div class="bulk-catalog-toolbar"><label>Search this set<input id="bulk-search" type="search" placeholder="Card name or number"></label><div class="bulk-actions"><button type="button" id="bulk-all">Select all matching</button><button type="button" id="bulk-all-matches">Select all matching</button><button type="button" id="bulk-range">Select checked range</button></div></div>
     <p class="bulk-help">For a range, check its first and last card, then select the range. Selections stay in your batch when you change sets or search.</p>
     <div id="bulk-catalog-rows"></div>
     <div class="bulk-actions bulk-pagination"><button type="button" id="bulk-prev">Previous</button><span id="bulk-page"></span><button type="button" id="bulk-next">Next</button></div>
@@ -54,6 +54,7 @@
 </section>
 <section id="bulk-receipt" class="bulk-panel" hidden tabindex="-1"><h2>Batch saved</h2><div id="bulk-receipt-body"></div><button id="bulk-undo" type="button">Undo this whole batch</button></section>
 <dialog id="bulk-drawer" aria-labelledby="bulk-drawer-title"><form method="dialog"><button aria-label="Close row exceptions">Close</button></form><h2 id="bulk-drawer-title">Edit card</h2><p id="bulk-row-record" class="bulk-help"></p><div id="bulk-row-fields" class="bulk-controls"></div><button type="button" id="bulk-row-save">Save row changes</button></dialog>
+<script src="/collection-assets/bounded-reads.js" defer></script>
 <script src="/collection-assets/bulk_entry.js" defer></script>
 {% endif %}
 </div>

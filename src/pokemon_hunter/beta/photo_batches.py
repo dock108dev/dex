@@ -5,24 +5,27 @@ and deletion tombstones when a database is recovered. It contains no pixels or c
 """
 
 import json
-import threading
 import time
 import uuid
 
 from django.conf import settings
-from django.contrib.auth import get_user
-from django.contrib.sessions.backends.db import SessionStore
 from django.core.exceptions import PermissionDenied
 from django.db import connection
-from django.db import transaction as django_transaction
 from django.http import Http404
 
 from pokemon_hunter.inventory import stable_id
 from pokemon_hunter.migration import encode
 
-from . import batch_recognition as protocol
-from . import bulk_input, collection, collection_drafts, photo_batch_images, scans, store, transactions
-from .codex_recognition import RecognitionError
+from . import (
+    bulk_input,
+    collection,
+    collection_drafts,
+    photo_batch_images,
+    scan_config,
+    store,
+    transactions,
+)
+from . import photo_contracts as protocol
 from .photo_batch_images import crop_bytes as crop_bytes
 from .photo_batch_images import source as source
 from .photo_batch_journal import append as append
@@ -30,10 +33,9 @@ from .photo_batch_journal import journal as journal
 from .photo_batch_journal import journal_path as journal_path
 from .photo_batch_journal import reservations as reservations
 from .photo_batch_journal import tombstones as tombstones
+from .photo_payload_cleanup import cleanup_payloads
 
 TERMINAL = {"cancelled", "expired"}
-_selected_stages = set()
-_stage_selection_lock = threading.Lock()
 
 
 def available():
@@ -357,228 +359,23 @@ def select_crop(actor, key, revision, cid, row, included, retain, decision):
     return detail(actor, key)
 
 
-def session_actor(session_key):
-    user = get_user(type("Request", (), {"session": SessionStore(session_key=session_key)})())
-    if not user.is_authenticated:
-        raise PermissionDenied
-    return store.principal(user.pk)
-
-
 @transactions.atomic
 def analyze(actor, key, revision, pid, stage, session_key, consent, notes=""):
-    mutable(actor, key, revision)
-    if session_actor(session_key) != actor:
-        raise PermissionDenied
-    p = photo(actor, key, pid)
-    if not isinstance(notes, str) or len(notes) > 2000:
-        raise ValueError("Photo notes must be at most 2000 characters")
-    if consent != protocol.CONSENT or stage not in {"detection", "identity", "photo"}:
-        raise ValueError("Review and accept the selected-image transmission notice")
-    cfg = scans.config()
-    if cfg["mode"] != "codex_cli" or not cfg["enabled"]:
-        raise ValueError("Selected Codex CLI mode is unavailable. Continue manually.")
-    if store.rows(
-        "SELECT id FROM scan_batch_stages WHERE user_id=%s AND state IN ('queued','processing')",
-        [actor.user_id],
-    ) or store.rows(
-        "SELECT id FROM scan_jobs WHERE user_id=%s AND mode='codex_cli' AND state='processing'",
-        [actor.user_id],
-    ):
-        raise ValueError("One CLI invocation at a time. Continue manually or Stop the active analysis.")
-    crops = store.rows("SELECT id FROM scan_batch_crops WHERE photo_id=%s AND state='active'", [pid])
-    if stage == "identity" and (not p["reviewed"] or not 1 <= len(crops) <= 15):
-        raise ValueError("Explicitly review crop layout/count before identities")
-    attempts = reservations(key)
-    logical = [r for r in attempts.values() if r["photo_id"] == pid and r["stage"] == stage]
-    if len(attempts) >= 10 or len(logical) >= 2:
-        raise ValueError("Attempt limit reached. Continue manually.")
-    allowance = min(
-        75,
-        75 - sum(r["charged"] for r in attempts.values() if r["photo_id"] == pid),
-        180 - sum(r["charged"] for r in attempts.values()),
-    )
-    if allowance <= 0.01:
-        raise ValueError("Active time exhausted. Continue manually.")
-    proposal = json.loads(p["proposal"])
-    proposal.pop("user_notes", None)
-    if notes.strip():
-        proposal["user_notes"] = notes.strip()
-    collection.execute("UPDATE scan_batch_photos SET proposal=%s WHERE id=%s", [encode(proposal), pid])
-    aid = str(uuid.uuid4())
-    append(
-        "reserve",
-        id=aid,
-        batch_id=key,
-        photo_id=pid,
-        user_id=actor.user_id,
-        stage=stage,
-        photo_revision=p["revision"],
-        allowance=allowance,
-        model=scans.codex_recognition.MODEL,
-        protocol=protocol.VERSION,
-        consent=consent,
-    )
-    collection.execute(
-        "INSERT INTO scan_batch_stages(id,batch_id,photo_id,user_id,stage,photo_revision,session_key,state,created,allowance) VALUES(%s,%s,%s,%s,%s,%s,%s,'queued',%s,%s)",
-        [aid, key, pid, actor.user_id, stage, p["revision"], session_key, time.time(), allowance],
-    )
-
-    def select_stage():
-        with _stage_selection_lock:
-            _selected_stages.add(aid)
-
-    django_transaction.on_commit(select_stage)
-    return detail(actor, key)
-
-
-def stage_valid(row, actor):
-    if session_actor(row["session_key"]) != store.verified(actor):
-        return False
-    b = get(actor, row["batch_id"])
-    p = photo(actor, row["batch_id"], row["photo_id"])
-    cfg = scans.config()
-    return (
-        b["state"] == "editing"
-        and p["revision"] == row["photo_revision"]
-        and cfg["enabled"]
-        and cfg["mode"] == "codex_cli"
-    )
+    """Old clients receive an explicit unavailable response; no work is admitted."""
+    get(actor, key)
+    scan_config.require_recognition()
 
 
 def process_one(stop=None, *, selected_only=False):
+    """Retire old AI work without erasing photos, reviews or consumed reservations."""
     if not available():
         return False
     with transactions.atomic():
-        with _stage_selection_lock:
-            selected = tuple(sorted(_selected_stages)) if selected_only else None
-        if selected == ():
-            return False
-        selection = "" if selected is None else " AND s.id IN (" + ",".join(["%s"] * len(selected)) + ")"
-        pending = store.rows(
-            "SELECT s.*,u.auth_subject FROM scan_batch_stages s JOIN users u ON s.user_id=u.id WHERE s.state='queued'"
-            + selection
-            + " ORDER BY s.created LIMIT 1",
-            [] if selected is None else list(selected),
-        )
-        if not pending:
-            return False
-        row = pending[0]
-        if store.rows("SELECT id FROM scan_jobs WHERE state='processing' AND mode='codex_cli'") or store.rows(
-            "SELECT id FROM scan_batch_stages WHERE state='processing'"
-        ):
-            return False
-        try:
-            actor = store.principal(int(row["auth_subject"]))
-            if not stage_valid(row, actor):
-                raise ValueError
-        except (ValueError, PermissionDenied, Http404):
-            collection.execute(
-                "UPDATE scan_batch_stages SET state='cancelled',error='Session or photo changed; continue manually' WHERE id=%s",
-                [row["id"]],
-            )
-            return True  # Reservation remains consumed; no transmission.
-
-        def release_stage():
-            with _stage_selection_lock:
-                _selected_stages.discard(row["id"])
-
-        django_transaction.on_commit(release_stage)
-        started = time.time()
         collection.execute(
-            "UPDATE scan_batch_stages SET state='processing',started=%s WHERE id=%s", [started, row["id"]]
+            "UPDATE scan_batch_stages SET state='cancelled',error=%s WHERE state IN ('queued','processing')",
+            [scan_config.UNAVAILABLE],
         )
-        source_photo = photo(actor, row["batch_id"], row["photo_id"])
-        notes = json.loads(source_photo["proposal"]).get("user_notes", "")
-        if row["stage"] in {"detection", "photo"}:
-            images = [bytes(photo(actor, row["batch_id"], row["photo_id"])["content"])]
-            crop_ids = []
-        else:
-            crops = store.rows(
-                "SELECT id,content FROM scan_batch_crops WHERE photo_id=%s AND state='active' ORDER BY id",
-                [row["photo_id"]],
-            )
-            images, crop_ids = [bytes(c["content"]) for c in crops], [c["id"] for c in crops]
-    clock = time.monotonic()
-    result, usage, error, state = {}, None, "", "completed"
-
-    def cancelled():
-        if stop is not None and stop.is_set():
-            return True
-        active = store.rows("SELECT state FROM scan_batch_stages WHERE id=%s", [row["id"]])
-        try:
-            return not active or active[0]["state"] != "processing" or not stage_valid(row, actor)
-        except (ValueError, PermissionDenied, Http404):
-            return True
-
-    try:
-        result, usage = scans.codex_recognition.recognize_batch(
-            row["stage"], images, settings.ROOT, cancelled, row["allowance"], crop_ids, notes=notes
-        )
-        if cancelled() or time.monotonic() - clock >= row["allowance"]:
-            raise RecognitionError("Analysis stopped or late. Continue manually.")
-    except RecognitionError as exc:
-        error, state = str(exc), "failed"
-    except Exception:
-        error, state = (
-            "Analysis failed. Continue manually or retry explicitly within the remaining limits.",
-            "failed",
-        )
-    elapsed = min(row["allowance"], max(0, time.monotonic() - clock))
-    append(
-        "settle",
-        id=row["id"],
-        batch_id=row["batch_id"],
-        elapsed=elapsed,
-        outcome=state,
-        usage=usage,
-        available_usage=None,
-        cost_usd=None,
-    )
-    with transactions.atomic():
-        valid = not cancelled()
-        if valid and state == "completed":
-            if row["stage"] == "photo":
-                # Proposals only: keep all identity decisions non-owning until the user confirms.
-                for old in store.rows(
-                    "SELECT id FROM scan_batch_crops WHERE photo_id=%s AND state='active'", [row["photo_id"]]
-                ):
-                    delete_crop(old["id"])
-                source = bytes(photo(actor, row["batch_id"], row["photo_id"])["content"])
-                for proposed in result["cards"]:
-                    clue = {k: v for k, v in proposed.items() if k != "box"}
-                    cid = str(uuid.uuid4())
-                    collection.execute(
-                        "INSERT INTO scan_batch_crops(id,photo_id,user_id,revision,geometry,content,proposal,state) VALUES(%s,%s,%s,1,%s,%s,%s,'active')",
-                        [
-                            cid,
-                            row["photo_id"],
-                            actor.user_id,
-                            encode(proposed["box"]),
-                            crop_bytes(source, proposed["box"]),
-                            encode(clue),
-                        ],
-                    )
-                collection.execute(
-                    "UPDATE scan_batch_photos SET reviewed=0,proposal=%s WHERE id=%s",
-                    [encode(dict(status=result["status"], user_notes=notes)), row["photo_id"]],
-                )
-            elif row["stage"] == "detection":
-                collection.execute(
-                    "UPDATE scan_batch_photos SET proposal=%s WHERE id=%s",
-                    [encode({**result, **({"user_notes": notes} if notes else {})}), row["photo_id"]],
-                )
-            else:
-                for clue in result["crops"]:
-                    collection.execute(
-                        "UPDATE scan_batch_crops SET proposal=%s WHERE id=%s AND photo_id=%s",
-                        [encode(clue), clue["crop_id"], row["photo_id"]],
-                    )
-            bump(row["batch_id"])
-        collection.execute(
-            "UPDATE scan_batch_stages SET state=%s,elapsed=%s,usage=%s,error=%s WHERE id=%s AND state='processing'",
-            [state if valid else "cancelled", elapsed, encode(usage), error, row["id"]],
-        )
-    return True
+    return False
 
 
 @transactions.atomic
@@ -792,15 +589,20 @@ def finish(actor, draft, op):
     collection.execute("UPDATE scan_batches SET state='confirmed' WHERE id=%s", [summary["batch_id"]])
 
 
-def authorized_photo_rows(actor, key=None, content=False):
+def authorized_photo_rows(actor, key=None, content=False, *, copy_ids=None):
     if not available():
         return []
     store.verified(actor)
+    if copy_ids is not None and (not copy_ids or len(copy_ids) > 100):
+        return []
     deleted = tombstones()
     rows = store.rows(
-        "SELECT c.id,c.copy_id,c.content,c.state,c.photo_id,p.batch_id,p.created,b.state AS batch_state FROM scan_batch_crops c JOIN scan_batch_photos p ON c.photo_id=p.id JOIN scan_batches b ON p.batch_id=b.id WHERE c.user_id=%s AND p.user_id=%s AND b.user_id=%s AND LENGTH(c.content)>0 AND c.state IN ('active','retained')"
-        + (" AND c.id=%s" if key else ""),
-        [actor.user_id] * 3 + ([str(key)] if key else []),
+        "SELECT c.id,c.copy_id,"
+        + ("c.content," if content else "")
+        + "c.state,c.photo_id,p.batch_id,p.created,b.state AS batch_state FROM scan_batch_crops c JOIN scan_batch_photos p ON c.photo_id=p.id JOIN scan_batches b ON p.batch_id=b.id WHERE c.user_id=%s AND p.user_id=%s AND b.user_id=%s AND LENGTH(c.content)>0 AND c.state IN ('active','retained')"
+        + (" AND c.id=%s" if key else "")
+        + (" AND c.copy_id IN (" + ",".join(["%s"] * len(copy_ids)) + ")" if copy_ids is not None else ""),
+        [actor.user_id] * 3 + ([str(key)] if key else []) + (list(copy_ids) if copy_ids is not None else []),
     )
     result = []
     for c in rows:
@@ -837,7 +639,7 @@ def revoke_inactive_crops():
 def cleanup():
     if not available():
         return
-    protocol.cleanup_payloads(settings.ROOT)
+    cleanup_payloads(settings.ROOT)
     deleted = tombstones()
     for key in deleted:
         collection.execute("UPDATE scan_batches SET state='cancelled' WHERE id=%s", [key])
@@ -944,6 +746,7 @@ def detail(actor, key):
         }
     return dict(
         **b,
+        recognition_enabled=scan_config.recognition_enabled(),
         source_admissions=len(admissions),
         source_bytes_used=sum(admissions.values()),
         photos=photos,
@@ -954,8 +757,7 @@ def detail(actor, key):
         remaining_active_seconds=max(0, 180 - sum(r["charged"] for r in attempts.values())),
         remaining_capacity=None,
         cost_usd=None,
-        model=scans.codex_recognition.MODEL,
-        consent_version=protocol.CONSENT,
+        model=None,
     )
 
 

@@ -3,7 +3,7 @@ from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_GET, require_POST
 
-from . import scans, store
+from . import scan_config, scans, store
 from .collection_views import body, endpoint
 from .views import actor
 
@@ -13,7 +13,13 @@ from .views import actor
 def home(request):
     actor(request)
     return render(
-        request, "beta/scans.html", {"mode": scans.config()["mode"], "expansion": settings.B4_ENABLED}
+        request,
+        "beta/scans.html",
+        {
+            "mode": scan_config.effective_mode(scans.config()),
+            "recognition_enabled": scan_config.recognition_enabled(),
+            "expansion": settings.B4_ENABLED,
+        },
     )
 
 
@@ -40,7 +46,9 @@ def jobs(request):
     keys = store.rows(
         "SELECT id FROM scan_jobs WHERE user_id=%s ORDER BY created DESC LIMIT 40", [who.user_id]
     )
-    return JsonResponse({"jobs": [scans.job(who, r["id"]) for r in keys], "mode": scans.config()["mode"]})
+    return JsonResponse(
+        {"jobs": [scans.job(who, r["id"]) for r in keys], "mode": scan_config.effective_mode(scans.config())}
+    )
 
 
 @endpoint
@@ -52,7 +60,10 @@ def detail(request, key):
 @endpoint
 @require_POST
 def mutate(request, key, action):
-    return JsonResponse(scans.action(actor(request), str(key), action, body(request)))
+    who = actor(request)
+    if action == "retry" and not scan_config.recognition_enabled():
+        return JsonResponse({"error": scan_config.UNAVAILABLE}, status=409)
+    return JsonResponse(scans.action(who, str(key), action, body(request)))
 
 
 @endpoint

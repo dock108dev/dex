@@ -173,3 +173,33 @@ def declared_card_reference(assertion):
         source_id="tcgdex-reference" if row else None,
         reason=None if row else "unsupported_or_conflicting_card_identity",
     )
+
+
+def indexed_group_reference(group, *, pokemon_game_ids):
+    """Descriptor for a digest-checked prepared group, already canonicalized at build.
+
+    Call only after indexed visibility and row integrity checks. Never accept a group
+    supplied by a client. This uses the same reviewed literal mapping and source policy
+    as card_group_reference, without rebuilding unrelated catalog siblings on GET.
+    """
+    valid = group.get("game_id") in pokemon_game_ids and group.get("identity_status") == "resolved"
+    row = (
+        _card_mapping(
+            group["set_name"],
+            group["name"],
+            group["language"],
+            group["collector_number"],
+            group["pokemon_dex"],
+        )
+        if valid
+        else None
+    )
+    return _descriptor(
+        "card_group_reference",
+        {field: group.get(field) for field in ("id", *GROUP_IDENTITY)},
+        alt=f"{group.get('name') or 'Card'} · {group.get('set_name') or 'Unknown set'} #{group.get('collector_number') or '?'}",
+        precision="card_group",
+        image_url=row["image_url"] if row else None,
+        source_id="tcgdex-reference" if row else None,
+        reason=None if row else "unsupported_or_conflicting_card_identity",
+    )

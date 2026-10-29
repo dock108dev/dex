@@ -61,6 +61,7 @@ jobs:
       id: renderers
       if: ${{ !cancelled() && steps.node.outcome == 'success' }}
       run: |-
+        npm ci --ignore-scripts --no-audit --no-fund
         node scripts/verify_cx05_races.js
         node scripts/verify_cx06_races.js
         node scripts/verify_cx06_source_tools.js
@@ -107,6 +108,9 @@ jobs:
       with:
         node-version-file: .nvmrc
         package-manager-cache: false
+    - name: Install pinned Chromium for isolated PERF-04 tests
+      id: behavior-chromium
+      run: uv run --no-sync playwright install --with-deps chromium
     - name: Offline component tests and branch coverage
       id: tests
       run: |-
@@ -117,19 +121,25 @@ jobs:
       env:
         SETUP: ${{ steps.setup.outcome }}
         TESTS: ${{ steps.tests.outcome }}
+        CHROMIUM: ${{ steps.behavior-chromium.outcome }}
         NODE: ${{ steps.node.outcome }}
       run: |
         report_python=(python3)
         if [[ "$SETUP" == success ]]; then
           report_python=(uv run --no-sync python)
         fi
-        "${report_python[@]}" scripts/ci/report.py job --name "Behavior" --output reports/ci/behavior/metrics.json --outcome "setup=$SETUP" --outcome "node=$NODE" --outcome "tests=$TESTS" --tool-version "node=$(node --version)" --junit reports/ci/behavior/junit.xml --coverage reports/ci/behavior/coverage.json \
+        "${report_python[@]}" scripts/ci/report.py job --name "Behavior" --output reports/ci/behavior/metrics.json --outcome "setup=$SETUP" --outcome "node=$NODE" --outcome "tests=$TESTS" --outcome "chromium=$CHROMIUM" --tool-version "node=$(node --version)" --junit reports/ci/behavior/junit.xml --coverage reports/ci/behavior/coverage.json \
           --expect-discovered-suites
     - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       if: always()
       with:
         name: ci-behavior-${{ matrix.os }}-py${{ matrix.python }}-${{ github.run_id }}-${{ github.run_attempt }}
-        path: reports/ci/behavior/
+        path: |
+          reports/ci/behavior/
+          reports/perf02/
+          reports/perf03/
+          reports/perf04/
+          reports/ops-readiness/
         if-no-files-found: error
         retention-days: 14
     strategy:
