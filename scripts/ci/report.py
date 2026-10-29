@@ -327,7 +327,10 @@ def aggregate(args: argparse.Namespace) -> int:
     records = []
     paths = list(args.report)
     if args.report_directory:
-        discovered = sorted(Path(args.report_directory).glob("*/metrics.json"))
+        root = Path(args.report_directory)
+        # Multi-directory behavior uploads preserve reports/ci/behavior beneath
+        # each artifact; single-directory job uploads place metrics at its root.
+        discovered = sorted([*root.glob("*/metrics.json"), *root.glob("*/ci/behavior/metrics.json")])
         if not discovered or len(discovered) > 20:
             errors.append("Required job metrics absent or exceed the 20-report bound")
         else:

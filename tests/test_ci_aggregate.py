@@ -203,3 +203,22 @@ def test_postgres_gate_requires_native_report_even_when_job_outcome_is_success(i
     path.unlink()
     assert report.main(arguments) == 1
     assert json.loads((identity / "aggregate.json").read_text())["errors"]
+
+
+def test_aggregate_discovers_nested_behavior_artifacts_and_retains_failures(identity):
+    children = identity / "children"
+    retained_job(identity, children / "root-layout", runtime="3.12")
+    retained_job(identity, children / "nested-one" / "ci" / "behavior", runtime="3.13")
+    nested = retained_job(identity, children / "nested-two" / "ci" / "behavior", runtime="3.14")
+    assert aggregate_reports(identity, children, 3) == 0
+    data = json.loads(nested.read_text())
+    data["result"] = "FAIL"
+    data["outcomes"]["tests"] = "FAIL"
+    data["reports"]["junit"]["passed"] = 0
+    data["reports"]["junit"]["failed"] = 1
+    fixture_json(nested, data)
+    assert aggregate_reports(identity, children, 3) == 1
+    result = json.loads((identity / "aggregate.json").read_text())
+    assert len(result["job_reports"]) == 3
+    assert "Retained job report failed: Behavior" in result["errors"]
+    assert not any("counts do not match" in error for error in result["errors"])
