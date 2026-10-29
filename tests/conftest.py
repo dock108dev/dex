@@ -1,4 +1,5 @@
 import copy
+import threading
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -67,3 +68,23 @@ def synthetic_project(destination):
     (config / "pokedex_251.json").write_text(json.dumps(synthetic_collection()))
     (config / "market_values.json").write_text("[]")
     return destination
+
+
+@pytest.fixture(autouse=True)
+def finish_test_timers(monkeypatch):
+    """Run real deadlines, then release test-owned timers when their test ends."""
+    timers = []
+    original = threading.Timer.start
+
+    def start(timer):
+        result = original(timer)
+        timers.append(timer)
+        return result
+
+    monkeypatch.setattr(threading.Timer, "start", start)
+    yield
+    for timer in timers:
+        timer.cancel()
+    for timer in timers:
+        timer.join(timeout=2)
+        assert not timer.is_alive(), "Test timer did not stop after cancellation"

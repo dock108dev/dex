@@ -4,6 +4,7 @@ import importlib
 import json
 import uuid
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import closing
 from unittest.mock import patch
 
 import pytest
@@ -23,7 +24,7 @@ def b2(env):
     from pokemon_hunter.beta import urls
 
     connection.close()
-    with connect(env["root"] / "inventory.db") as db:
+    with closing(connect(env["root"] / "inventory.db")) as db, db:
         service.initialize(db)
     original_limit = settings.DATA_UPLOAD_MAX_MEMORY_SIZE
     settings.DATA_UPLOAD_MAX_MEMORY_SIZE = 2_000_000

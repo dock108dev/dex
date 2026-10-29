@@ -5,6 +5,7 @@ import io
 import json
 import time
 import uuid
+from contextlib import closing
 from unittest.mock import patch
 
 import pytest
@@ -28,7 +29,7 @@ def b3(b2, monkeypatch):
     from pokemon_hunter.beta import urls
 
     connection.close()
-    with connect(b2["root"] / "inventory.db") as db:
+    with closing(connect(b2["root"] / "inventory.db")) as db, db:
         scans.initialize(db)
     monkeypatch.setattr(scan_config, "recognition_enabled", lambda: True)
     old_root = settings.ROOT
