@@ -17,7 +17,7 @@ defaults:
   run:
     shell: bash
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-${{ inputs.scope || 'scheduled' }}
   cancel-in-progress: false
 jobs:
   inputs:
