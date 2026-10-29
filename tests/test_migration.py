@@ -2,6 +2,7 @@ import json
 import sqlite3
 import subprocess
 import sys
+from contextlib import closing
 from pathlib import Path
 
 import pytest
@@ -56,7 +57,7 @@ def snapshot(tmp_path):
         json.dumps({"commit": "synthetic", "sets": [{"id": "test", "name": "Test"}]})
     )
     (root / "config/settings.yaml").write_text("synthetic: true\n")
-    with sqlite3.connect(root / "data/collection_hunts.db") as db:
+    with closing(sqlite3.connect(root / "data/collection_hunts.db")) as db, db:
         db.execute(
             "CREATE TABLE hunts(id INTEGER PRIMARY KEY,created TEXT,demo INTEGER,request TEXT,raw TEXT,coverage TEXT)"
         )
@@ -154,3 +155,39 @@ def test_snapshot_retains_wal(snapshot, tmp_path):
         with sqlite3.connect(out / "snapshot/data/wal.db") as restored:
             assert restored.execute("SELECT value FROM evidence").fetchone()[0] == "pending-wal"
         assert not list((out / "snapshot").rglob("*-wal"))
+
+
+@pytest.mark.parametrize("fail", [False, True])
+def test_initializer_closes_database_handles(snapshot, tmp_path, monkeypatch, fail):
+    from pokemon_hunter.beta.cli import initialize
+
+    target = tmp_path / "source.db"
+    import_snapshot(snapshot, target)
+    opened = []
+    original = sqlite3.connect
+
+    def tracked(*args, **kwargs):
+        db = original(*args, **kwargs)
+        opened.append(db)
+        return db
+
+    monkeypatch.setattr(sqlite3, "connect", tracked)
+    if fail:
+        from pokemon_hunter.beta import collection
+
+        def interrupted(db):
+            raise RuntimeError("controlled initialization failure")
+
+        monkeypatch.setattr(collection, "initialize", interrupted)
+        with pytest.raises(RuntimeError, match="controlled initialization failure"):
+            initialize(tmp_path / "initialized", target, b2=True)
+    else:
+        initialize(tmp_path / "initialized", target, b2=True)
+    try:
+        assert len(opened) >= 4
+        for db in opened:
+            with pytest.raises(sqlite3.ProgrammingError, match="closed database"):
+                db.execute("SELECT 1")
+    finally:
+        for db in opened:
+            db.close()

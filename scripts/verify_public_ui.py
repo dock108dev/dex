@@ -73,7 +73,7 @@ def run(root, base, output):
         overflow = page.evaluate("document.documentElement.scrollWidth > innerWidth")
         layout = page.evaluate("""() => {
             const records = [...document.querySelectorAll(
-                '.public-species-row, .public-card, .product-card')];
+                '[data-dex-species], .owned-card-tile, .product-card')];
             const boxes = records.map(item => item.getBoundingClientRect());
             return {
                 working_content_top: boxes.length ? Math.round(boxes[0].top + scrollY) : null,
@@ -125,47 +125,65 @@ def run(root, base, output):
             page.on("pageerror", lambda error: errors.append(str(error)))
             response = page.goto(base + "/")
             assert response.status == 200
-            expect(page.locator(".public-species-row")).to_have_count(251)
-            expect(page.get_by_role("link", name="Track my collection", exact=True)).to_be_visible()
+            expect(page.locator("[data-dex-species]")).to_have_count(40)
+            expect(page.get_by_role("link", name="Sign in", exact=True)).to_be_visible()
             expect(page.locator("header")).not_to_contain_text("My collection")
             capture(page, width, "guest-pokedex")
-            gap = page.locator(".public-species-row").evaluate_all("""rows => {
-                const row = rows.find(row => row.textContent.includes('No indexed cards'));
-                return row ? row.querySelector('.public-species-link').getAttribute('href') : null;
-            }""")
+            # Traverse real bounded pages: no reduced catalog or 251-row bootstrap.
+            seen = []
+            while True:
+                seen.extend(
+                    page.locator("[data-dex-species]").evaluate_all(
+                        "rows => rows.map(r => Number(r.dataset.dexSpecies))"
+                    )
+                )
+                following = page.get_by_role("link", name="Next", exact=True)
+                if not following.count():
+                    break
+                following.click()
+                expect(page.locator("[data-dex-species]").first).to_have_attribute(
+                    "data-dex-species", str(seen[-1] + 1)
+                )
+            assert seen == list(range(1, 252))
+            page.goto(base + "/pokedex/")
+            expect(page.locator("[data-dex-species]")).to_have_count(40)
+            gap = page.locator("[data-dex-species]").evaluate_all(
+                "rows => rows.find(r => r.textContent.includes('· 0 published printings'))?.querySelector('a').getAttribute('href')"
+            )
             if gap:
                 page.goto(base + gap)
-                expect(page.get_by_role("heading", name="No cards indexed yet", exact=True)).to_be_visible()
+                expect(page.locator("#browse-results")).to_contain_text("No matching published records.")
                 capture(page, width, "guest-catalog-gap")
                 page.goto(base + "/pokedex/")
-            page.locator(".public-species-link strong").first.evaluate(
+            page.locator("[data-dex-species] a").first.evaluate(
                 "element => element.textContent = 'Synthetic long Pokémon name for a narrow-layout check'"
             )
             capture(page, width, "guest-pokedex-long")
             page.goto(base + "/pokedex/")
-            page.locator("#browse-query").fill("#123")
-            page.locator("#browse-query").press("Enter")
-            expect(page.locator(".public-species-row")).to_have_count(1)
-            expect(page.locator(".public-species-link")).to_contain_text("Scyther")
+            page.locator("#browse-search").fill("#123")
+            page.locator("#browse-search").press("Enter")
+            expect(page.locator("[data-dex-species]")).to_have_count(1)
+            expect(page.locator("[data-dex-species] a")).to_contain_text("Scyther")
             capture(page, width, "guest-filtered", full=True)
-            page.locator(".public-species-link").focus()
+            page.locator("[data-dex-species] a").focus()
             page.keyboard.press("Enter")
-            expect(page.get_by_role("heading", name="#123 Scyther", exact=True)).to_be_visible()
+            expect(page.get_by_role("heading", name="Pokémon #123", exact=True)).to_be_visible()
             assert urlsplit(page.url).path == "/pokedex/123/"
-            expect(page.get_by_role("heading", name="Your Cards", exact=True)).to_be_visible()
+            expect(page.locator(".owned-card-tile").first).to_be_visible()
             expect(page.locator("dialog[open]")).to_have_count(0)
-            page.locator(".browse-return").click()
-            expect(page.locator("#browse-query")).to_have_value("#123")
+            page.get_by_role("link", name="Back to Pokédex", exact=True).click()
+            expect(page.locator("#browse-search")).to_have_value("#123")
             expect(page.locator("#public-species-123")).to_be_focused()
             page.locator("#public-species-123").press("Enter")
-            expect(page.get_by_role("heading", name="#123 Scyther", exact=True)).to_be_visible()
+            expect(page.get_by_role("heading", name="Pokémon #123", exact=True)).to_be_visible()
+            expect(page.locator(".owned-card-tile").first).to_be_visible()
             details_keyboard(page)
             capture(page, width, "guest-species", full=True)
-            page.locator(".public-card h2").first.evaluate(
+            page.locator(".owned-card-tile strong").first.evaluate(
                 "element => element.textContent = 'Synthetic long card title with an extended printing description'"
             )
             capture(page, width, "guest-species-long")
-            page.get_by_role("link", name="Look up packs", exact=True).click()
+            page.get_by_role("link", name="Pack lookup", exact=True).click()
             expect(page.get_by_role("heading", name="Pack lookup", exact=True)).to_be_visible()
             expect(page.locator("#lookup-goal")).to_have_count(0)
             expect(page.locator("#lookup-scope option[value='missing']")).to_have_count(0)
@@ -203,7 +221,7 @@ def run(root, base, output):
             capture(page, width, "guest-input-error", full=True)
             response = page.goto(base + "/pokedex/?q=NoMatchingPokemon")
             assert response.status == 200
-            expect(page.get_by_role("heading", name="No matching Pokémon", exact=True)).to_be_visible()
+            expect(page.locator("#browse-results")).to_contain_text("No matching published records.")
             capture(page, width, "guest-empty", full=True)
             page.goto(base + "/hunt/")
             expect(page.get_by_role("heading", name="eBay research", exact=True)).to_be_visible()
@@ -232,7 +250,26 @@ def run(root, base, output):
             page.locator("#id_password").fill(credentials["synthetic-member"])
             page.get_by_role("button", name="Sign in", exact=True).click()
             expect(page.get_by_role("heading", name="Goals", exact=True)).to_be_visible()
-            expect(page.locator("main")).to_contain_text("Synthetic all-era Original 151")
+            # Page byte limits may expose a goal through its complete resource.
+            # Verify the same frozen goal in whichever bounded representation is served.
+            goals = context.request.get(base + "/api/v2/goals/").json()["goals"]
+            for goal in goals:
+                record = (
+                    context.request.get(base + goal["url"]).json()["record"]
+                    if goal.get("oversized")
+                    else goal
+                )
+                if record["name"] == "Synthetic all-era Original 151":
+                    if goal.get("oversized"):
+                        page.get_by_role(
+                            "button", name="Open complete record " + goal["id"], exact=True
+                        ).click()
+                        expect(page.locator("main")).to_contain_text(record["name"])
+                    else:
+                        expect(page.locator("main")).to_contain_text(record["name"])
+                    break
+            else:
+                raise AssertionError("Frozen Original 151 goal is missing")
             capture(page, width, "member-goals")
             page.locator(".app-tools > summary").press("Enter")
             page.get_by_role("link", name="Physical copies", exact=True).click()
@@ -261,7 +298,7 @@ def run(root, base, output):
             data = context.request.get(base + "/api/collection/").json()
             assert len(data["copies"]) == 3 and len(data["goals"]) == 3
             page.goto(base + "/pokedex/")
-            expect(page.locator("[data-dex-species]")).to_have_count(251)
+            expect(page.locator("[data-dex-species]")).to_have_count(40)
             capture(page, width, "member-pokedex")
             page.get_by_role("button", name="Select", exact=True).click()
             first_select = page.locator("[data-select-species]").first
@@ -373,12 +410,12 @@ def run(root, base, output):
                 page.add_style_tag(content="body { zoom: 2; }")
                 capture(page, width, "member-lookup-zoom200")
                 page.goto(base + "/pokedex/")
-                expect(page.locator("[data-dex-species]")).to_have_count(251)
+                expect(page.locator("[data-dex-species]")).to_have_count(40)
                 page.add_style_tag(content="body { zoom: 2; }")
                 capture(page, width, "member-pokedex-zoom200")
             page.locator(".app-tools > summary").press("Enter")
             page.get_by_role("button", name="Sign out", exact=True).click()
-            expect(page.locator(".public-species-row")).to_have_count(251)
+            expect(page.locator("[data-dex-species]")).to_have_count(40)
             assert urlsplit(page.url).path == "/pokedex/"
             context.close()
         browser.close()

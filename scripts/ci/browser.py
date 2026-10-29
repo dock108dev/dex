@@ -86,6 +86,22 @@ def prepare_journey(root):
         raise ValueError("Prepared browser fixture has no selected product results")
     if len(collection.goals(member)) != 3 or len(collection.export_data(member)["copies"]) != 3:
         raise ValueError("Prepared browser fixture has unexpected collection state")
+    from pokemon_hunter.beta import (
+        account_read_build,
+        account_read_schema,
+        catalog_read_build,
+        catalog_read_schema,
+        ownership_declarations,
+    )
+    from pokemon_hunter.inventory import connect
+
+    with connect(root / "inventory.db") as db:
+        ownership_declarations.initialize(db)
+    catalog_read_schema.migrate()
+    account_read_schema.migrate()
+    catalog_read_build.activate(catalog_read_build.prepare())
+    for who in (owner, member):
+        account_read_build.prepare(who)
     connection.close()
 
 

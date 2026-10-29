@@ -18,7 +18,7 @@ from . import (
 )
 
 FILTERS = {"q", "region", "goal", "owned", "gaps"} | species_scope.KEYS
-LIST_STATE = FILTERS | {"scroll", "focus", "selecting"}
+LIST_STATE = FILTERS | {"scroll", "focus", "selecting", "page", "page_size"}
 
 
 def filters(raw):
@@ -50,7 +50,12 @@ def list_state(raw):
     if set(raw) - LIST_STATE or len(urlencode(raw)) > 1800:
         raise ValueError("Choose supported Pokédex context")
     filters({key: value for key, value in raw.items() if key in FILTERS})
-    for key, minimum, maximum in (("scroll", 0, 10000000), ("focus", 1, 251)):
+    for key, minimum, maximum in (
+        ("scroll", 0, 10000000),
+        ("focus", 1, 251),
+        ("page", 1, 2**53 - 1),
+        ("page_size", 1, 100),
+    ):
         if key in raw:
             card_groups._integer(raw[key], key, minimum, maximum)
     if "selecting" in raw and raw["selecting"] != "1":
@@ -62,6 +67,18 @@ def require_dex(dex):
     if type(dex) is not int or not 1 <= dex <= 251:
         raise Http404
     return dex
+
+
+def authorize_goal(actor, goal_id, version=None):
+    """Shell/link authorization without materializing frozen membership or progress."""
+    actor = store.verified(actor)
+    rows = store.rows(
+        "SELECT version FROM collection_goals WHERE user_id=%s AND id=%s", [actor.user_id, goal_id]
+    )
+    if not rows:
+        raise ValueError("This saved goal is unavailable. Choose another goal in Goals.")
+    if version is not None and version != rows[0]["version"]:
+        raise collection.Conflict("Saved goal changed; reopen it from Goals")
 
 
 def _scope(actor, goal_id):

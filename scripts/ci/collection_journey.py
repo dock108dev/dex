@@ -66,7 +66,7 @@ def exercise(url, root, output):
 
             started = time.monotonic()
             page.goto(url + "/pokedex/")
-            expect(page.locator("[data-dex-species]")).to_have_count(251)
+            expect(page.locator("[data-dex-species]")).to_have_count(40)
             page.locator("[data-dex-species]").first.click()
             expect(page.locator("#your-cards-heading")).to_be_visible()
             expect(page.get_by_role("region", name="Your Cards").locator("#species-shopping")).to_be_visible()

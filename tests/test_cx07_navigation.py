@@ -8,6 +8,7 @@ from unittest.mock import patch
 from urllib.parse import urlencode
 
 import pytest
+from perf04_helpers import prepare_reads
 from test_b1 import env as env
 from test_b2 import b2 as b2
 from test_b3 import b3 as b3
@@ -27,6 +28,7 @@ def test_bounded_shopping_return_chain_retains_null_and_explicit_child(cx):
     species = "/pokedex/2/?" + urlencode({"return": "/pokedex/?owned=missing&selecting=1&focus=2"})
     null = f"/card-groups/{group['id']}/?" + urlencode({"return": species})
     exact = f"/card-groups/{group['id']}/?" + urlencode({"child": child, "return": species})
+    prepare_reads(cx)
     before = dump(cx)
     assert navigation.authorize_destination(cx["actor"], null) == null
     assert navigation.authorize_destination(cx["actor"], exact) == exact
@@ -58,6 +60,7 @@ def test_remembered_card_generation_reauthorizes_or_rejects_without_writes(cx):
 
     group = find(cx, "a")
     generation = collection.generation(cx["actor"])
+    prepare_reads(cx)
     before = dump(cx)
     current = f"/card-groups/{group['id']}/?" + urlencode({"generation": generation})
     checked = cx["a"].get("/api/navigation/home/", {"destination": current})
@@ -65,7 +68,10 @@ def test_remembered_card_generation_reauthorizes_or_rejects_without_writes(cx):
     assert checked.json()["destination"] == current
     stale = f"/card-groups/{group['id']}/?" + urlencode({"generation": generation + 1})
     assert cx["a"].get("/api/navigation/home/", {"destination": stale}).status_code == 409
-    assert cx["a"].get(stale).status_code == 409
+    assert cx["a"].get(stale).status_code == 200
+    assert (
+        cx["a"].get(f"/api/v2/card-groups/{group['id']}/", {"generation": generation + 1}).status_code == 409
+    )
     assert dump(cx) == before
 
 

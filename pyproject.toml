@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pokemon-hunter"
-version = "0.1.0"
+version = "0.1.1rc1"
 description = "A local Pokémon collection app with explicit, conservative eBay research"
 requires-python = ">=3.12"
 dependencies = [
@@ -33,6 +33,10 @@ ci = [
 
 [project.scripts]
 pokemon-hunter = "pokemon_hunter.main:main"
+
+[tool.uv]
+# Advisory floors; retain the existing compatible lock, without unrelated upgrades.
+constraint-dependencies = ["certifi>=2026.10.19", "filelock>=4.2.1", "opentelemetry-api>=1.45.1"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

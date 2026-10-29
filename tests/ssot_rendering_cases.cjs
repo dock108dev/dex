@@ -126,7 +126,14 @@ function setup(route) {
       await t.context.render(); assert.deepEqual(t.calls, [route]);
     });
   }
-  for (const [route, expected] of [['/collection/', ['copies']], ['/goals/', ['goals', 'declarations']], ['/settings/', ['settings']]]) {
+  await check('goals await the bounded renderer without legacy projection', async () => {
+    const t = setup('/goals/'); let finish, completed = false;
+    t.context.window.renderBoundedGoals = () => new Promise(resolve => {finish = resolve; t.calls.push('bounded goals');});
+    const pending = t.context.render().then(() => {completed = true;});
+    await Promise.resolve(); assert.equal(completed, false);
+    finish(); await pending; assert.deepEqual(t.calls, ['bounded goals']);
+  });
+  for (const [route, expected] of [['/collection/', ['copies']], ['/settings/', ['settings']]]) {
     await check(route + ' retains supported collection tools', async () => {
       const t = setup(route); await t.context.render(); assert.deepEqual(t.calls, expected);
     });

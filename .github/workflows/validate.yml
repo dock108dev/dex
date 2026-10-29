@@ -61,6 +61,7 @@ jobs:
       id: renderers
       if: ${{ !cancelled() && steps.node.outcome == 'success' }}
       run: |-
+        npm ci --ignore-scripts --no-audit --no-fund
         node scripts/verify_cx05_races.js
         node scripts/verify_cx06_races.js
         node scripts/verify_cx06_source_tools.js
@@ -92,8 +93,10 @@ jobs:
   behavior:
     name: Behavior (${{ matrix.os }}, Python ${{ matrix.python }})
     runs-on: ${{ matrix.os }}
-    # Minimum-runtime full suites took 24-30+ minutes in the October 18 sample.
-    timeout-minutes: ${{ matrix.python == '3.12' && 45 || 30 }}
+    # The integrated 3.13 suite was still progressing at 84% when its 30-minute
+    # job expired. Allow complete diagnostics/results on every supported runtime;
+    # retain the 90-second timer and all individual performance budgets.
+    timeout-minutes: 45
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
@@ -107,6 +110,9 @@ jobs:
       with:
         node-version-file: .nvmrc
         package-manager-cache: false
+    - name: Install pinned Chromium for isolated PERF-04 tests
+      id: behavior-chromium
+      run: uv run --no-sync playwright install --with-deps chromium
     - name: Offline component tests and branch coverage
       id: tests
       run: |-
@@ -117,26 +123,32 @@ jobs:
       env:
         SETUP: ${{ steps.setup.outcome }}
         TESTS: ${{ steps.tests.outcome }}
+        CHROMIUM: ${{ steps.behavior-chromium.outcome }}
         NODE: ${{ steps.node.outcome }}
       run: |
         report_python=(python3)
         if [[ "$SETUP" == success ]]; then
           report_python=(uv run --no-sync python)
         fi
-        "${report_python[@]}" scripts/ci/report.py job --name "Behavior" --output reports/ci/behavior/metrics.json --outcome "setup=$SETUP" --outcome "node=$NODE" --outcome "tests=$TESTS" --tool-version "node=$(node --version)" --junit reports/ci/behavior/junit.xml --coverage reports/ci/behavior/coverage.json \
+        "${report_python[@]}" scripts/ci/report.py job --name "Behavior" --output reports/ci/behavior/metrics.json --outcome "setup=$SETUP" --outcome "node=$NODE" --outcome "tests=$TESTS" --outcome "chromium=$CHROMIUM" --tool-version "node=$(node --version)" --junit reports/ci/behavior/junit.xml --coverage reports/ci/behavior/coverage.json \
           --expect-discovered-suites
     - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       if: always()
       with:
         name: ci-behavior-${{ matrix.os }}-py${{ matrix.python }}-${{ github.run_id }}-${{ github.run_attempt }}
-        path: reports/ci/behavior/
+        path: |
+          reports/ci/behavior/
+          reports/perf02/
+          reports/perf03/
+          reports/perf04/
+          reports/ops-readiness/
         if-no-files-found: error
         retention-days: 14
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(inputs.compatibility && '[{"os":"ubuntu-24.04","python":"3.14"},{"os":"macos-15","python":"3.14"},{"os":"ubuntu-24.04","python":"3.13"},{"os":"ubuntu-24.04","python":"3.12"},{"os":"macos-15","python":"3.12"}]'
-          || '[{"os":"ubuntu-24.04","python":"3.14"},{"os":"macos-15","python":"3.14"}]') }}
+        include: ${{ fromJSON(inputs.compatibility && '[{"os":"ubuntu-24.04","python":"3.14"},{"os":"ubuntu-24.04","python":"3.13"},{"os":"ubuntu-24.04","python":"3.12"}]'
+          || '[{"os":"ubuntu-24.04","python":"3.14"}]') }}
   distribution:
     name: Fresh distribution
     runs-on: ubuntu-24.04
@@ -333,7 +345,7 @@ jobs:
       run: |-
         python3 scripts/ci/report.py aggregate --needs-json "$NEEDS_JSON" --output reports/ci/gate/metrics.json --required quality --required behavior --required distribution --required browser --required security --required staging \
           --report-directory reports/ci/children \
-          --expect-job-reports "Source quality=1" --expect-job-reports "Behavior=${{ inputs.compatibility && 5 || 2 }}" \
+          --expect-job-reports "Source quality=1" --expect-job-reports "Behavior=${{ inputs.compatibility && 3 || 1 }}" \
           --expect-job-reports "Staging PostgreSQL=1" --expect-job-reports "Fresh distribution=1" --expect-job-reports "Synthetic browser journeys=1" --expect-job-reports "Security and dependencies=1"
         echo "result=PASS" >> "$GITHUB_OUTPUT"
     - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

@@ -136,10 +136,10 @@ def exact_owned_printings(active, published_ids=None):
 def goals(actor, *, goal_id=None, include_updates=True):
     store.verified(actor)
     active = copies(actor)
-    owned = {c["printing_id"] for c in active}
     available_ids = {p["id"] for p in catalog(actor)}
     published_ids = available_ids if settings.B4_ENABLED else None
-    exact_owned = exact_owned_printings(active, published_ids)
+    from .goal_progress import evaluate
+
     result = store.rows(
         "SELECT * FROM collection_goals WHERE user_id=%s"
         + (" AND id=%s" if goal_id is not None else "")
@@ -159,7 +159,9 @@ def goals(actor, *, goal_id=None, include_updates=True):
         g["successor_ids"] = successor_ids.get(g["id"], [])
         definition = json.loads(g["definition"])
         if g["kind"] in collection_goals.KINDS:
-            g.update(definition=definition, **broad_goals.progress(definition, active, available_ids))
+            g.update(
+                definition=definition, **evaluate(g["kind"], definition, active, available_ids, published_ids)
+            )
             g["coverage_update_available"] = include_updates and any(
                 current_broad[k] != definition[k]
                 for k in ("items", "catalog_references", "eligibility_policy")
@@ -185,35 +187,8 @@ def goals(actor, *, goal_id=None, include_updates=True):
                     r["source_sha256"] != row["source_sha256"] for r in collection_goals.sources(actor)
                 )
             continue
-        items = definition["items"]
-        matched = [
-            i
-            for i in items
-            if owned.intersection(i["printing_ids"])
-            and (
-                definition["policy"] != "exact"
-                or (not i["unresolved"] and exact_owned.intersection(i["printing_ids"]))
-            )
-        ]
-        progress = [
-            {
-                **item,
-                "status": "owned"
-                if item in matched
-                else "unavailable"
-                if not available_ids.intersection(item["printing_ids"])
-                else "missing",
-            }
-            for item in items
-        ]
-        unavailable = sum(i["status"] == "unavailable" for i in progress)
         g.update(
-            definition=definition,
-            satisfied=len(matched),
-            total=len(items),
-            progress=progress,
-            unavailable=unavailable,
-            missing=len(items) - len(matched) - unavailable,
+            definition=definition, **evaluate(g["kind"], definition, active, available_ids, published_ids)
         )
     return result
 
@@ -406,6 +381,7 @@ def preview(actor, kind, request, operation_id):
             "targets",
         },
         "goal_edit": {
+            "preserve_membership",
             "id",
             "revision",
             "name",
@@ -494,6 +470,9 @@ def confirm(actor, key):
         raise Conflict("Catalog or ownership changed after preview. Create a fresh preview.")
     if prepared["errors"]:
         raise ValueError("Fix every row error before confirmation; no changes were applied")
+    from . import account_read_build
+
+    read_state = account_read_build.before_mutation(actor)
     changes = []
     if any(c["kind"] == "copy" for c in prepared["creates"]):
         execute(
@@ -524,6 +503,7 @@ def confirm(actor, key):
 
     revoke_inactive_crops()
     bump(actor)
+    account_read_build.refresh(actor, read_state, key)
     return operation(actor, key)
 
 
@@ -587,6 +567,9 @@ def undo(actor, key):
             )
             if any(r["id"] not in created_copies for r in refs):
                 raise Conflict("This binder is now used by another copy. Move that copy before undo.")
+    from . import account_read_build
+
+    read_state = account_read_build.before_mutation(actor)
     for change in reversed(op["changes"]):
         before, after = change["before"], change["after"]
         if before is None:
@@ -609,4 +592,5 @@ def undo(actor, key):
 
     revoke_inactive_crops()
     bump(actor)
+    account_read_build.refresh(actor, read_state, key)
     return operation(actor, key)

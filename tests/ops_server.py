@@ -1,0 +1,122 @@
+"""Ordinary CLI lifecycle on a disposable root; only socket/Host mapping is adapted."""
+
+import hashlib
+import json
+import sys
+import threading
+import time
+from pathlib import Path
+
+import uvicorn
+from runtime_process import listener as tcp_listener
+
+from pokemon_hunter.beta import cli
+
+root, chosen_port = Path(sys.argv[1]), int(sys.argv[2])
+
+# Explicit diagnostic-only baseline; normal acceptance always serves actual templates.
+if len(sys.argv) > 3:
+    if sys.argv[3] != "import-control":
+        raise ValueError("Unknown engineering template control")
+    from django.template.loaders.filesystem import Loader
+
+    original_contents = Loader.get_contents
+
+    def import_control(self, origin):
+        source = original_contents(self, origin)
+        if Path(origin.name).name in {"base.html", "b2.html"}:
+            source = source.replace(
+                '<link rel="stylesheet" href="/collection-assets/collection-base.css"><link rel="stylesheet" href="/collection-assets/collection-browse.css">',
+                '<link rel="stylesheet" href="/collection-assets/collection.css">',
+            )
+        return source
+
+    Loader.get_contents = import_control
+
+
+def serve(application, **options):
+    # Test-only fixed query classes; never SQL text, values or parameters.
+    from django.db.backends.signals import connection_created
+
+    from pokemon_hunter.beta.read_diagnostics import current
+
+    profile = []
+    lock = threading.Lock()
+
+    def instrument(sender, connection, **kwargs):
+        def measure(execute, sql, params, many, context):
+            started = time.perf_counter()
+            try:
+                return execute(sql, params, many, context)
+            finally:
+                record = current.get()
+                if record is not None:
+                    kind = next(
+                        (
+                            label
+                            for needle, label in [
+                                ("django_session", "session"),
+                                ("auth_user", "authorization"),
+                                ("sqlite_master", "infrastructure"),
+                                ("cr_gram_index", "search"),
+                                ("ar_membership", "membership"),
+                                ("account_read_state", "account_manifest"),
+                                ("catalog_read_builds", "catalog_manifest"),
+                                ("PRAGMA", "connection_setup"),
+                            ]
+                            if needle in sql
+                        ),
+                        "other",
+                    )
+                    with lock:
+                        if len(profile) < 5000:
+                            profile.append(
+                                dict(
+                                    id=record["id"],
+                                    kind=kind,
+                                    query=hashlib.sha256(sql.encode()).hexdigest()[:12],
+                                    ms=(time.perf_counter() - started) * 1000,
+                                )
+                            )
+
+        connection.execute_wrappers.append(measure)
+
+    connection_created.connect(instrument, weak=False)
+    original_shutdown = application.shutdown
+
+    def finish():
+        original_shutdown()
+        (root / "engineering-query-timings.json").write_text(json.dumps(profile))
+
+    application.shutdown = finish
+    listener = tcp_listener()
+    listener.bind(("127.0.0.1", chosen_port))
+
+    async def mapped(scope, receive, send):
+        started = time.perf_counter()
+        if scope["type"] == "http":
+            scope = dict(
+                scope, headers=[(k, b"127.0.0.1:8011" if k == b"host" else v) for k, v in scope["headers"]]
+            )
+
+        async def timed(message):
+            if message["type"] == "http.response.start":
+                value = f'application;dur={(time.perf_counter() - started) * 1000:.3f}, connection;desc="{scope["client"][1]}"'
+                message = dict(message, headers=[*message["headers"], (b"server-timing", value.encode())])
+            await send(message)
+
+        return await application(scope, receive, timed)
+
+    class Server(uvicorn.Server):
+        async def startup(self, sockets=None):
+            await super().startup(sockets=sockets)
+            print(listener.getsockname()[1], flush=True)
+
+    options.pop("host")
+    options.pop("port")
+    Server(uvicorn.Config(mapped, **options)).run(sockets=[listener])
+
+
+uvicorn.run = serve
+sys.argv = ["dex", "--root", str(root), "serve"]
+cli.entrypoint()

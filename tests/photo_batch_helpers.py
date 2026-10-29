@@ -1,17 +1,12 @@
 """Shared synthetic photo-batch fixtures and fake recognition processes."""
 
-import io
-import json
-import sys
 import uuid
 
 import pytest
 from django.conf import settings
-from PIL import Image
 from test_b3 import image
 from test_bulk_onboarding import b2, b3, b4, bulk, cx, e1, env, snapshot
 
-from pokemon_hunter.beta import codex_recognition as cli
 from pokemon_hunter.beta import photo_batches as batches
 from pokemon_hunter.beta import store
 
@@ -24,7 +19,7 @@ DETECTION = dict(schema_version="dex-detection-v1", status="proposed", boxes=[BO
 def photos(bulk):
     batches.initialize()
     batches.initialize()
-    (settings.ROOT / "scan-config.json").write_text('{"mode":"codex_cli"}')
+    (settings.ROOT / "scan-config.json").write_text('{"mode":"manual"}')
     bulk["session"] = bulk["a"].session.session_key
     return bulk
 
@@ -59,26 +54,3 @@ def selected(cx, b=None, n=1, retain=True):
                 "different",
             )
     return b
-
-
-def fake(tmp_path, monkeypatch, body):
-    p = tmp_path / "fake-codex"
-    p.write_text(
-        f"#!{sys.executable}\nimport sys,os,json,time,stat,subprocess\nfrom pathlib import Path\nargs=sys.argv[1:]\n"
-        + body
-    )
-    p.chmod(0o700)
-    monkeypatch.setattr(cli.shutil, "which", lambda _: str(p))
-    return p
-
-
-def success(payload=DETECTION, usage=True):
-    return f"Path(args[args.index('-o')+1]).write_text({json.dumps(json.dumps(payload))})\nprint({json.dumps(json.dumps(dict(type='turn.completed', **({'usage': {'input_tokens': 20, 'output_tokens': 3}} if usage else {}))))})\n"
-
-
-def run(tmp_path, stage="detection", crop_ids=(), cancelled=lambda: False, timeout=1):
-    im = io.BytesIO()
-    Image.new("RGB", (400, 600), "blue").save(im, "JPEG")
-    return cli.recognize_batch(
-        stage, [im.getvalue()] * (len(crop_ids) or 1), tmp_path, cancelled, timeout, crop_ids
-    )

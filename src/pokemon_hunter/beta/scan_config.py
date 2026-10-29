@@ -3,7 +3,8 @@
 import math
 
 FIELDS = {"enabled", "mode", "ceiling_usd", "user_ceiling_usd"}
-MODES = frozenset({"manual", "fixture", "openai", "codex_cli"})
+LEGACY_MODES = frozenset({"openai", "codex_cli"})
+MODES = frozenset({"manual", "fixture"})
 
 
 def validate(value, *, require_complete=False, staging=False):
@@ -15,10 +16,14 @@ def validate(value, *, require_complete=False, staging=False):
     if require_complete and not FIELDS <= value.keys():
         raise ValueError("Invalid persistent scan configuration")
     value = {"enabled": True, "mode": "manual", "ceiling_usd": 1.0, "user_ceiling_usd": 0.5, **value}
-    if not isinstance(value["mode"], str) or value["mode"] not in MODES or type(value["enabled"]) is not bool:
+    if (
+        not isinstance(value["mode"], str)
+        or value["mode"] not in MODES | LEGACY_MODES
+        or type(value["enabled"]) is not bool
+    ):
         raise ValueError("Invalid scan configuration")
     if staging and value["mode"] == "codex_cli":
-        raise ValueError("Staging recognition does not support codex_cli; choose manual, fixture or openai")
+        raise ValueError("Staging recognition does not support codex_cli; choose manual")
     for key, limit in (("ceiling_usd", 1.0), ("user_ceiling_usd", 0.5)):
         try:
             amount = float(value[key])
@@ -28,3 +33,30 @@ def validate(value, *, require_complete=False, staging=False):
             raise ValueError("Recognition ceilings cannot exceed existing limits")
         value[key] = amount
     return value
+
+
+UNAVAILABLE = "AI photo recognition is temporarily unavailable. Add cards manually."
+
+
+class RecognitionUnavailable(ValueError):
+    pass
+
+
+def recognition_enabled():
+    """No recognition adapter exists. Future Ollama work must implement this boundary."""
+    return False
+
+
+def require_recognition():
+    if not recognition_enabled():
+        raise RecognitionUnavailable(UNAVAILABLE)
+
+
+def effective_mode(value):
+    """New entries are manual while disabled or when reading a removed provider.
+
+    Do not rewrite stored configuration, job attribution or financial history.
+    """
+    if not recognition_enabled() or value["mode"] in LEGACY_MODES:
+        return "manual"
+    return value["mode"]

@@ -14,7 +14,6 @@ from test_b3 import image, upload
 from test_migration import snapshot as snapshot
 
 from pokemon_hunter.beta import cli, scan_worker, scans, store
-from pokemon_hunter.beta import collection as inv
 
 
 @pytest.fixture(autouse=True)
@@ -22,70 +21,17 @@ def selection(monkeypatch):
     monkeypatch.setattr(scans, "_serve_admissions", None)
 
 
-def fake_recognition(monkeypatch):
-    calls = []
-
-    def recognize(images, root, cancelled, job_id):
-        assert not cancelled()
-        calls.append(job_id)
-        return (
-            scans.Clues(
-                status="unreadable",
-                name=None,
-                set_name=None,
-                number=None,
-                language=None,
-                edition=None,
-                finish=None,
-                variant=None,
-            ),
-            {"input_tokens": 1, "output_tokens": 1},
-        )
-
-    monkeypatch.setattr(scans.codex_recognition, "recognize", recognize)
-    monkeypatch.setattr(scans, "recognize", lambda *_: pytest.fail("Unselected API recognition"))
-    return calls
-
-
-def test_ordinary_restart_preserves_old_queue_and_only_dispatches_new_explicit_upload(b3, monkeypatch):
-    (b3["root"] / "scan-config.json").write_text('{"mode":"codex_cli"}')
+def test_ordinary_restart_preserves_old_manual_queue(b3):
+    (b3["root"] / "scan-config.json").write_text('{"mode":"manual"}')
     old = upload(b3)
     before = scans.job(b3["actor"], old["id"])
-    calls = fake_recognition(monkeypatch)
-
     scans.select_current_process()
     assert not scans.process_one()
     assert scans.job(b3["actor"], old["id"]) == before
-    assert not calls
-
     current = upload(b3)
     assert scans.process_one()
-    assert calls == [current["id"]]
-    assert scans.job(b3["actor"], current["id"])["state"] == "needs-better-photo"
+    assert scans.job(b3["actor"], current["id"])["state"] == "needs-confirmation"
     assert scans.job(b3["actor"], old["id"]) == before
-    assert not scans.process_one()
-
-    # A new serving process cannot inherit a prior process's local selection.
-    waiting = upload(b3)
-    scans.select_current_process()
-    assert not scans.process_one()
-    assert scans.job(b3["actor"], waiting["id"])["attempts"] == 0
-    assert calls == [current["id"]]
-
-
-def test_explicit_retry_selects_current_process_without_resetting_consumption(b3, monkeypatch):
-    (b3["root"] / "scan-config.json").write_text('{"mode":"codex_cli"}')
-    old = upload(b3)
-    inv.execute("UPDATE scan_jobs SET state='failed',attempts=1,reserved_usd=0.05 WHERE id=%s", [old["id"]])
-    calls = fake_recognition(monkeypatch)
-    scans.select_current_process()
-    assert not scans.process_one()
-    scans.action(b3["actor"], old["id"], "retry", {})
-    assert scans.process_one()
-    result = scans.job(b3["actor"], old["id"])
-    assert result["attempts"] == 2 and result["reserved_usd"] == 0.05
-    assert calls == [old["id"]]
-    assert not scans.process_one()
 
 
 def test_selection_requires_committed_explicit_admission_and_current_account(b3):
@@ -191,7 +137,7 @@ def test_ordinary_serve_selects_before_workers_and_retains_price_expiry(b3, monk
     monkeypatch.setattr(sys, "argv", ["dex", "--root", str(b3["root"]), "serve"])
     monkeypatch.setattr(threading, "Thread", Thread)
     monkeypatch.setattr(asgi, "get_asgi_application", lambda: "guarded-asgi")
-    monkeypatch.setattr(uvicorn, "run", lambda app, **kwargs: order.append(app))
+    monkeypatch.setattr(uvicorn, "run", lambda app, **kwargs: order.append(app.application))
     cli.main()
     assert order == ["installed_configuration", "expiry_worker", "run", "guarded-asgi"]
     assert threads[1].kwargs == {"selected_scans_only": True}

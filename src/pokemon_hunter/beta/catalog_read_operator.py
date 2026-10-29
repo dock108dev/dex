@@ -41,9 +41,23 @@ def main():
         getattr(builds, args.action)(args.build)
         print("Catalog build action completed.")
     else:
-        manifest, revision = builds.active()
-        print(json.dumps(dict(build=manifest["id"], catalog_revision=revision, status=manifest["status"])))
+        from .readiness import inspect
+
+        status = inspect()
+        if status["ready"]:
+            manifest, revision = builds.active()
+            status.update(build=manifest["id"], catalog_revision=revision, status=manifest["status"])
+        print(json.dumps(status))
+        if not status["ready"]:
+            raise SystemExit(1)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as exc:
+        from .diagnostics import failure
+
+        failure("read_maintenance_failed", exc)
+        print("Read maintenance failed; preserve authority and inspect sanitized diagnostics.")
+        raise SystemExit(1) from None

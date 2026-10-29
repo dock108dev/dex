@@ -83,7 +83,7 @@ uv run --no-sync python -m pokemon_hunter.beta.cli --root "$DEX_DEMO_ROOT" serve
 ```
 
 Port 8011 must be free. Generated passwords are in the new root's private
-`credentials.json`. Recognition is simulated; reference coverage may be absent.
+`credentials.json`. Photo entry is manual; reference coverage may be absent.
 Later launches use only `serve`. Never substitute fixture state for an existing
 user's collection.
 
@@ -103,10 +103,8 @@ not the authenticated collection app.
 | --- | --- |
 | `DEX_PROFILE` | `local` by default; `staging` selects PostgreSQL/HTTPS settings |
 | `DEX_B1_ROOT` | Private root set by the local CLI |
-| `scan-config.json` | Recognition mode and spending limits; see [photo entry](photo-entry.md) |
+| `scan-config.json` | Photo admission and retained historical settings; see [photo entry](photo-entry.md) |
 | `hunter-policy.json` | Owner-selected ordinary Hunter policy marker; use Hunter's Usage settings |
-| `OPENAI_API_KEY` | Server/worker environment for explicitly configured API recognition |
-| `PATH`, `HOME`, optional `CODEX_HOME` | CLI recognition executable and its authentication |
 | `EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET` | eBay credentials; nonempty process values override `.env` |
 | `EBAY_DELIVERY_POSTAL_CODE` | Optional delivery destination override |
 | `config/settings.yaml` | eBay environment, marketplace, destination and watcher bounds |
@@ -114,7 +112,7 @@ not the authenticated collection app.
 Use [.env.example](../.env.example) and
 [settings.example.yaml](../config/settings.example.yaml). Keep local secrets private
 and untracked. The authenticated app reads only allowlisted eBay keys from `.env`;
-recognition credentials belong in the process environment. Missing optional eBay
+no recognition credentials are consumed. Missing optional eBay
 settings use model defaults; malformed existing settings fail.
 
 The eBay configuration directory is Django's `PROJECT`, independently of the data
@@ -210,8 +208,8 @@ sequencing because those transitions share revision checks, leases and transacti
 ordering. Its independent image processing, matching, addition planning and journal
 storage are separate modules. Keep transaction bodies together when refactoring.
 
-Photo lifecycle, recognition protocol and confirmation/report tests live in
-`test_photo_batches.py`, `test_photo_recognition.py` and `test_photo_confirmation.py`.
+Photo lifecycle, provider-neutral photo contracts and confirmation/report tests live in
+`test_photo_batches.py`, `test_photo_contracts.py` and `test_photo_confirmation.py`.
 Their synthetic fixtures are in non-collected `tests/photo_batch_helpers.py`.
 
 
@@ -249,3 +247,38 @@ modules); there are no installed-only beta files. See the
 [baseline and qualification limits](CI.md#perf-01-baseline-evidence) before selecting
 a cumulative successor. The final process was restored to ordinary CLI startup,
 without diagnostic wrappers.
+
+## Working OPS-READINESS runtime
+
+The candidate's ordinary CLI validates catalog readiness before starting its existing
+workers and records sanitized, bounded request timing. Use one process; its ASGI
+admission limit is one dynamic Django request at a time, plus four static-file requests. Do not use reload/multiple workers
+to work around latency. Local SQLite qualification does not qualify PostgreSQL/staging.
+
+Check `/livez/`, then `/readyz/`, then `/api/v2/readiness/` through ordinary sign-in.
+The last signal is account-specific; another account's failure does not mean the public
+catalog failed. Finally navigate to cards and measure usable content. A listening port,
+launcher success or 200 HTML shell does not establish those later states.
+
+See [commands and recovery](operations.md#ops-readiness-local-contracts) for explicit
+migration/preparation/status and repair ordering. Older prepared goal headers require
+account preparation with the new policy; startup never upgrades them. The customer
+installation remains unchanged. [OPS evidence](ops-readiness-evidence-20261028.md)
+records candidate-specific checks and remaining gates.
+
+## RUNTIME-DEPS candidate selection
+
+October 29 read-only inspection confirmed the configured `hunter-poc-20261027`
+runtime and ordinary CLI process using the existing customer root. That runtime
+remains unchanged. The separate cumulative `0.1.1rc1` candidate includes the preserved
+PERF-02/03/04, OPS-READINESS, extraction and recognition-removal changes; it is not a
+lockfile-only repair. See [candidate qualification](CI.md#runtime-deps-local-qualification).
+
+The selected local interpreter is CPython 3.12.15, built October 14, 2026 with
+Clang 23.1.3, matching the inspected customer's interpreter version. SQLite 3.53.1
+supports the required FTS5 create/insert/MATCH operations. Python >=3.12 remains the
+supported contract; the hosted Python/OS matrix is unchanged. Neither the old 3.14.0
+nor selected 3.12.15 reproduced the historical stall in a bounded 20-cycle
+arm/fire/cancel probe. This is not an upstream diagnosis or proof that 3.14.0 is
+fixed. Qualification uses the existing 90-second pytest diagnostic timer plus an
+external process-group deadline; no diagnostic or performance gate is disabled.

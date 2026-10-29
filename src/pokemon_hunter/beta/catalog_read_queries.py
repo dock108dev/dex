@@ -68,7 +68,11 @@ def payload(row, token, kind, key=None, *, full=False):
             oversized=True,
             url=url(f"resources/{kind}/sha-{row['sha']}/", token),
         )
-    return json.loads(row["payload"])
+    from .read_diagnostics import decoded, phase
+
+    decoded()
+    with phase("composition_ms"):
+        return json.loads(row["payload"])
 
 
 @read
@@ -192,17 +196,22 @@ def evidence(build, token, raw):
 
 @read
 def options(build, token, raw):
-    page, size = paging(raw, ("field",))
+    page, size = paging(raw, ("field", "value"))
     field = raw.get("field", "set")
     if field not in {"set", "language", "edition", "finish", "variant"}:
         raise ValueError("Choose a supported field")
+    extra = " AND value=%s" if raw.get("value") else ""
+    args = [build, field, *([raw["value"]] if raw.get("value") else [])]
     total = store.rows(
-        "SELECT COUNT(*) AS n FROM cr_options WHERE build=%s AND scope IN ('public','shared') AND field=%s",
-        [build, field],
+        "SELECT COUNT(*) AS n FROM cr_options WHERE build=%s AND scope IN ('public','shared') AND field=%s"
+        + extra,
+        args,
     )[0]["n"]
     rows = store.rows(
-        "SELECT rank,bytes,CASE WHEN bytes<=250 THEN value END AS value,CASE WHEN bytes<=250 THEN label END AS label FROM cr_options WHERE build=%s AND scope IN ('public','shared') AND field=%s ORDER BY rank LIMIT %s OFFSET %s",
-        [build, field, size, offset(page, size)],
+        "SELECT rank,bytes,CASE WHEN bytes<=250 THEN value END AS value,CASE WHEN bytes<=250 THEN label END AS label FROM cr_options WHERE build=%s AND scope IN ('public','shared') AND field=%s"
+        + extra
+        + " ORDER BY rank LIMIT %s OFFSET %s",
+        [*args, size, offset(page, size)],
     )
     # A long literal is represented by a complete resource, never silently truncated.
     items = [
@@ -321,3 +330,49 @@ def unresolved_printings(build, token, raw):
         page_size=size,
         pages=(total + size - 1) // size,
     )
+
+
+def artwork_ids(raw):
+    if set(raw) != {"ids"} or len(raw["ids"]) > 17000:
+        raise ValueError("Choose bounded artwork")
+    ids = raw["ids"].split(",")
+    if not 1 <= len(ids) <= 100 or len(set(ids)) != len(ids) or any(not i or len(i) > 160 for i in ids):
+        raise ValueError("Choose at most 100 distinct artwork identities")
+    return ids
+
+
+@read
+def artwork(build, token, raw):
+    from . import image_bindings, image_mappings
+
+    ids = artwork_ids(raw)
+    if not image_bindings.enabled():
+        return dict(artwork={})
+    rows = store.rows(
+        "SELECT id,payload,sha FROM cr_groups WHERE build=%s AND scope IN ('public','shared') AND id IN ("
+        + ",".join(["%s"] * len(ids))
+        + ")",
+        [build, *ids],
+    )
+    pokemon = {r["id"] for r in store.rows("SELECT id FROM games WHERE game_key='pokemon'")}
+    return dict(
+        artwork={
+            r["id"]: image_mappings.indexed_group_reference(
+                payload(r, token, "group", full=True), pokemon_game_ids=pokemon
+            )
+            for r in rows
+        }
+    )
+
+
+def species_artwork_records(raw):
+    from . import image_bindings, image_mappings
+
+    ids = artwork_ids(raw)
+    numbers = [card_groups._integer(i, "species", 1, 251) for i in ids]
+    return {str(n): image_mappings.species_artwork(n) for n in numbers} if image_bindings.enabled() else {}
+
+
+@read
+def species_artwork(build, token, raw):
+    return dict(artwork=species_artwork_records(raw))

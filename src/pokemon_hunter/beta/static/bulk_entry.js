@@ -7,6 +7,10 @@
   const state = {catalog: null, rows: [], draft: null, op: null, page: 0, trayPage: 0, reviewPage: 0,
     selected: new Set(), checked: new Set(), anchors: [], changed: false, busy: false, newBatch: false,
     epoch: 0, batchIdentity: crypto.randomUUID(), edit: null, resolved: new Map(), defaults: {}, lot: {}, savedCount: 0, recoverNeeded: false, focusAfterWork: null};
+  const html=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const anchorPositions=new Map();
+  const unavailableGroups=new Set();
+  let readClient, pageGroups=[],pageTotal=0,pageCount=0,loadSequence=0;
   const actionLabels = {add_copies:'Add copies', set_total:'Record total', mark_owned:'Mark owned'};
   const draftLabels = {editing:'In progress', ready:'Ready to review', previewed:'Reviewed', confirmed:'Saved', cancelled:'Cancelled', expired:'Expired'};
   const fields = ['condition','grading_company','grade','certificate','binder_id','location','notes',
@@ -67,7 +71,7 @@
     if(!value&&state.focusAfterWork){$(state.focusAfterWork)?.focus();state.focusAfterWork=null;}
   }
   function erase() {
-    state.epoch++; state.rows = []; state.selected.clear(); state.checked.clear();
+    readClient?.stop();state.epoch++; state.rows = []; state.selected.clear(); state.checked.clear();
     $('bulk-entry').replaceChildren(node('p','Your session changed. Sign in again to resume your account’s saved draft.'));
   }
   async function api(path, data) {
@@ -116,6 +120,7 @@
     if (emptyLabel) select.append(node('option',emptyLabel,{value:''}));
     values.forEach(([id,label])=>select.append(node('option',label,{value:id})));
   }
+  function optionsContain(control,value){return [...control.options].some(o=>o.value===value);}
   function attributeFields(container, prefix, values, inherit=false) {
     container.replaceChildren();
     fields.forEach(key => {
@@ -133,18 +138,38 @@
         control.maxLength = key === 'notes' ? 2000 : key === 'location' ? 1000 : 200;
         control.placeholder = inherit ? 'Inherit; type unknown to clear' : 'Unknown';
       }
+      if(key==='binder_id'&&values[key]&&!optionsContain(control,values[key]))control.add(new Option('Selected binder',values[key]));
       control.value = values[key] === null && control.tagName==='SELECT' && inherit ? 'unknown' : values[key] || '';
       control.dataset.explicitClear=String(values[key]===null);
       control.addEventListener('input',()=>control.dataset.explicitClear='false');
       if(values[key]===null)control.placeholder='Unknown · explicitly cleared';
       label.append(control); container.append(label);
+      if(key==='binder_id'&&readClient){const host=node('div',null);label.after(host);BoundedReads.paged(host,{reader:readClient,url:'/api/v2/binders/',field:'binders',active:()=>control.isConnected,render:b=>'<button type="button" data-entry-binder="'+html(b.id)+'">'+html(b.name)+'</button>',bind:rows=>rows.querySelectorAll('[data-entry-binder]').forEach(b=>b.onclick=()=>{if(!optionsContain(control,b.dataset.entryBinder))control.add(new Option(b.textContent,b.dataset.entryBinder));control.value=b.dataset.entryBinder;control.dispatchEvent(new Event('input',{bubbles:true}));control.dispatchEvent(new Event('change',{bubbles:true}));})});}
     });
   }
-  function matches() {
-    const q = $('bulk-search').value.toLocaleLowerCase();
-    return state.catalog.groups.filter(g=>g.set_id === $('bulk-set').value &&
-      g.game_id === $('bulk-game').selectedOptions[0]?.dataset.gameId && g.language === $('bulk-language').value &&
-      (g.name+' '+g.collector_number).toLocaleLowerCase().includes(q));
+  function matches() {return pageGroups;}
+  async function loadCatalog(){
+    const ticket=++loadSequence;
+    if(!$('bulk-set').value){pageGroups=[];pageTotal=pageCount=0;renderCatalog();return;}
+    const query=new URLSearchParams({set:$('bulk-set').value,q:$('bulk-search').value,page:state.page+1,page_size:50});
+    if($('bulk-language').value)query.set('language',$('bulk-language').value);
+    $('bulk-page').textContent='Loading cards…';
+    try{const result=await readClient.get('/api/v2/card-groups/?'+query,'bulk-list');if(ticket!==loadSequence)return;
+      pageTotal=result.total;pageCount=result.pages;
+      pageGroups=result.groups.filter(g=>!g.oversized).map(g=>({...g,existing:g,children:[]}));
+      const kept=state.catalog.groups.filter(g=>state.selected.has(g.id)&&!pageGroups.some(p=>p.id===g.id));state.catalog.groups=[...kept,...pageGroups];renderCatalog();
+      for(const row of result.groups.filter(g=>g.oversized)){const p=node('p',null);p.innerHTML=BoundedReads.overflow(row);$('bulk-catalog-rows').append(p);}
+    }catch(error){if(ticket===loadSequence&&error.name!=='AbortError'){pageGroups=[];$('bulk-catalog-rows').replaceChildren(node('p',error.message,{role:'alert'}));$('bulk-page').textContent='Cards unavailable';['bulk-all','bulk-prev','bulk-next'].forEach(id=>$(id).disabled=true);status(error.message,true);}}
+  }
+  async function loadSets(){
+    const game=$('bulk-game').selectedOptions[0]?.dataset.gameId;
+    const result=await readClient.get('/api/v2/entry-options/?'+new URLSearchParams({field:'set',game:game||''}),'bulk-sets');
+    state.catalog.sets=result.options.filter(s=>!s.oversized);setOptions($('bulk-set'),state.catalog.sets.map(s=>[s.id,s.name]));
+    const selected=state.catalog.sets[0];setOptions($('bulk-language'),selected?.language?[[selected.language,selected.language]]:[['','Unspecified language']]);
+    $('bulk-set-pages')?.remove();const host=node('div',null,{id:'bulk-set-pages'});$('bulk-set').after(host);
+    const first='/api/v2/entry-options/?'+new URLSearchParams({field:'set',game:game||''});const next=result.options.some(s=>s.oversized)?first:BoundedReads.next(first,result);
+    if(next)BoundedReads.paged(host,{reader:readClient,url:next,field:'options',render:s=>'<button type="button" data-entry-set="'+html(s.id)+'">'+html(s.name)+'</button>',bind:rows=>rows.querySelectorAll('[data-entry-set]').forEach(b=>b.onclick=()=>{if(![...$('bulk-set').options].some(o=>o.value===b.dataset.entrySet))$('bulk-set').add(new Option(b.textContent,b.dataset.entrySet));$('bulk-set').value=b.dataset.entrySet;setOptions($('bulk-language'),[['','All languages']]);state.page=0;loadCatalog();})});
+    state.page=0;await loadCatalog();
   }
   function groupFor(row) {
     const groupId=row.group_id||state.resolved.get(row.row_id);
@@ -162,14 +187,14 @@
     state.rows=state.rows.filter(r=>r.group_id!==id); state.selected.delete(id); changed();
   }
   function renderCatalog() {
-    const filtered=matches(), pages=Math.max(1,Math.ceil(filtered.length/50)); state.page=Math.min(state.page,pages-1);
+    const filtered=matches(), pages=Math.max(1,pageCount); state.page=Math.min(state.page,pages-1);
     const list=$('bulk-catalog-rows'); list.replaceChildren();
-    filtered.slice(state.page*50,state.page*50+50).forEach(g=>{
+    filtered.forEach(g=>{
       const card=node('div',null,{class:'bulk-card'}), label=node('label',null);
       const check=node('input',null,{type:'checkbox','aria-label':'Select '+g.name+' #'+g.collector_number});
       check.checked=state.selected.has(g.id);
       check.addEventListener('change',()=>{
-        try { if(check.checked){addGroup(g); state.anchors.push(g.id);state.anchors=state.anchors.slice(-2);}else removeGroup(g.id);
+        try { if(check.checked){addGroup(g); anchorPositions.set(g.id,{page:state.page,index:filtered.indexOf(g),query:selectionQuery()});state.anchors.push(g.id);state.anchors=state.anchors.slice(-2);}else removeGroup(g.id);
           renderTray(); renderCounts(); } catch(e){ check.checked=false; status(e.message); }
       });
       const text=node('span',g.collector_number+' · '+g.name);
@@ -183,15 +208,15 @@
       button.onclick=()=>{try{addGroup(g);check.checked=state.selected.has(g.id);renderTray();openRow(state.rows.find(r=>r.group_id===g.id),button);}catch(e){status(e.message,true);}};
       card.append(button);list.append(card);
     });
-    $('bulk-page').textContent=`Page ${state.page+1} of ${pages} · ${filtered.length} matching cards`;
+    $('bulk-page').textContent=`Page ${state.page+1} of ${pages} · ${pageTotal} matching cards`;
     $('bulk-prev').disabled=state.page===0; $('bulk-next').disabled=state.page>=pages-1;
-    $('bulk-all').textContent='Select all matching '+filtered.length;
+    $('bulk-all').textContent='Select this page ('+filtered.length+')';
     if(!filtered.length)list.append(node('p','No cards match this set and search. Try another number, name or set.',{class:'bulk-help'}));
-    $('bulk-all').disabled=!filtered.length;
+    $('bulk-all').disabled=!filtered.length;$('bulk-all-matches').disabled=!pageTotal;$('bulk-all-matches').textContent='Select all '+pageTotal+' matching cards';
     renderCounts();
   }
   function renderCounts() {
-    const visible = new Set(matches().slice(state.page*50,state.page*50+50).map(g=>g.id));
+    const visible = new Set(matches().map(g=>g.id));
     const hidden=state.rows.filter(r=>!visible.has(groupFor(r)?.id)).length;
     const sets=new Set(state.rows.map(r=>groupFor(r)?.set_name || r.set || r.set_id || 'Unresolved'));
     const rowIds=new Set(state.rows.map(r=>r.row_id));state.checked.forEach(id=>{if(!rowIds.has(id))state.checked.delete(id);});
@@ -206,7 +231,7 @@
     state.rows.slice(state.trayPage*50,state.trayPage*50+50).forEach(row=>{
       const line=node('div',null,{class:'bulk-draft-row'}),check=node('input',null,{type:'checkbox','aria-label':'Edit draft row '+row.row_id});
       check.checked=state.checked.has(row.row_id);check.onchange=()=>{check.checked?state.checked.add(row.row_id):state.checked.delete(row.row_id);renderCounts();};
-      const g=groupFor(row), caption=g?`${g.set_name} · #${g.collector_number} ${g.name}`:`${row.set||row.set_id||'Set unresolved'} · #${row.number||'?'} · ${row.row_id}`;
+      const g=groupFor(row), caption=g?`${g.set_name} · #${g.collector_number} ${g.name}`:`Retained card · #${row.number||'?'} · ${unavailableGroups.has(row.group_id)?'Metadata unavailable':'Loading saved identity…'}`;
       const text=node('span',caption+(row.included===false?' · Excluded':''));
       const action=row.action||defaults().action;
       const quantity=row.quantity===''||row.quantity===undefined?defaults().quantity:row.quantity;
@@ -219,6 +244,8 @@
       const edit=node('button','Edit row',{type:'button'});edit.dataset.rowId=row.row_id;edit.onclick=()=>openRow(row,edit);
       line.append(check,text,edit);target.append(line);
     });
+    const missing=[...new Set(state.rows.slice(state.trayPage*50,state.trayPage*50+50).filter(r=>r.group_id&&!groupFor(r)&&!unavailableGroups.has(r.group_id)).map(r=>r.group_id))];
+    if(missing.length&&readClient)readClient.get('/api/v2/selected-groups/?'+new URLSearchParams({ids:missing.join(',')}),'draft-labels').then(result=>{const got=new Set(result.groups.map(g=>g.id));missing.filter(id=>!got.has(id)).forEach(id=>unavailableGroups.add(id));state.catalog.groups.push(...result.groups.filter(g=>!g.oversized).map(g=>({...g,existing:g,children:[]})));result.groups.filter(g=>g.oversized).forEach(g=>unavailableGroups.add(g.id));renderTray();}).catch(e=>{if(e.name!=='AbortError')status(e.message,true);});
     $('bulk-set-template').href='/api/bulk/template/?set='+encodeURIComponent($('bulk-set').value);
     $('bulk-tray-page').textContent=`${state.trayPage+1} / ${pages}`;
     $('bulk-tray-prev').disabled=!state.trayPage; $('bulk-tray-next').disabled=state.trayPage>=pages-1;
@@ -238,8 +265,10 @@
     field('total','Card total (positive whole number or unknown)',null,row.total);
     const g=groupFor(row);
     const options=[['','Choose a supported child'],['unknown','Keep variant unknown']];
+    if(row.printing_id)options.push([row.printing_id,'Selected printing']);
     if(g) g.children.forEach(p=>options.push([p.id,`Edition: ${p.edition||'Unknown'} · Finish: ${p.finish||'Unknown'} · Variant: ${p.variant||'Unknown'} · Unresolved: ${p.unresolved_fields.join(', ')||'none'}`]));
     const choice=field('choice','Card variant',options,row.keep_unknown?'unknown':row.printing_id||'');
+    if(g){const host=node('div',null);prepend.push(host);BoundedReads.paged(host,{reader:readClient,url:'/api/v2/card-groups/'+encodeURIComponent(g.id)+'/variants/',field:'variants',active:()=>state.edit?.row===row,render:v=>'<button type="button" data-entry-child="'+html(v.id)+'">'+html(v.variant_label||[v.edition,v.finish,v.variant].filter(Boolean).join(' · ')||'Variant not specified')+'</button>',bind:rows=>rows.querySelectorAll('[data-entry-child]').forEach(b=>b.onclick=()=>{if(![...choice.options].some(o=>o.value===b.dataset.entryChild))choice.add(new Option(b.textContent,b.dataset.entryChild));choice.value=b.dataset.entryChild;choice.dispatchEvent(new Event('input'));choice.dispatchEvent(new Event('change'));})});}
     const variantCaption=node('p','',{class:'bulk-help'});prepend.push(variantCaption);
     const showChoice=()=>{variantCaption.textContent=choice.selectedOptions[0]?.textContent||'';};choice.onchange=showChoice;showChoice();
     if(g && ['Base Set 2','Wizards Black Star Promos'].includes(g.set_name)) prepend.push(node('p','Standard first edition: Not applicable. Other missing metadata remains Unknown.'));
@@ -255,6 +284,8 @@
     $('bulk-row-record').textContent=g?g.set_name+' · '+g.language:'Correct the card identity and details below.';
     const record=node('details',null);record.append(node('summary','Source row reference'),node('p',row.row_id));container.append(record);
     $('bulk-drawer').showModal();
+    const labelControls=[{element:choice,kind:'printing'},{element:$('bulk-row-binder_id'),kind:'binder'}].filter(c=>c.element&&c.element.value&&c.element.value!=='unknown');
+    BoundedReads.labelControls(readClient,labelControls).then(showChoice).catch(e=>status(e.message,true));
   }
   $('bulk-drawer').addEventListener('close',()=>{const origin=state.edit?.origin;if(origin?.isConnected)origin.focus();});
   $('bulk-row-save').onclick=()=>{
@@ -359,14 +390,15 @@
     });
     $('bulk-saved-count').textContent='('+state.savedCount+')';availability();
   }
-  async function resume(id) {
-    const result=await api(`/api/bulk/drafts/${id}/`),d=result.draft;state.draft=d;
+  async function resume(id, cached=null) {
+    const result=cached||await api(`/api/bulk/drafts/${id}/`),d=result.draft;state.draft=d;
     state.rows=d.input_json.rows;state.checked.clear();state.changed=false;state.newBatch=false;
     const defaults=d.input_json.defaults;
-    ['action','game','language','set'].forEach(k=>{if(defaults[k==='set'?'set_id':k])$('bulk-'+k).value=defaults[k==='set'?'set_id':k];});
-    $('bulk-quantity').value=defaults.quantity??'1';fields.forEach(k=>$('bulk-default-'+k).value=defaults[k]||'');
+    ['action','game','language','set'].forEach(k=>{if(defaults[k==='set'?'set_id':k]){const value=defaults[k==='set'?'set_id':k],control=$('bulk-'+k);if(!optionsContain(control,value))control.add(new Option(k==='language'?value:'Retained selection — loading label',value));control.value=value;}});
+    $('bulk-quantity').value=defaults.quantity??'1';fields.forEach(k=>{const control=$('bulk-default-'+k),value=defaults[k]||'';if(k==='binder_id'&&value&&!optionsContain(control,value))control.add(new Option('Retained binder — loading label',value));control.value=value;});
+    if(readClient&&!readClient.disposed)BoundedReads.labelControls(readClient,[{element:$('bulk-set'),kind:'set'},{element:$('bulk-default-binder_id'),kind:'binder'}]).catch(e=>status(e.message,true));
     ['amount','currency','date'].forEach(k=>$('bulk-lot-'+k).value=d.input_json.lot?.['lot_'+k]||'');
-    state.selected=new Set(state.rows.map(r=>groupFor(r)?.id).filter(Boolean));
+    state.selected=new Set(state.rows.map(r=>r.group_id||groupFor(r)?.id).filter(Boolean));
     history.replaceState(null,'','/add-many/?draft='+d.id);meaning();renderCatalog();renderTray();
     if(result.operation && ['confirmed','undone'].includes(result.operation.state))receipt(result.operation);
     else if(result.operation&&d.state==='previewed')renderReview(result.operation);
@@ -397,10 +429,29 @@
   $('bulk-new').onclick=()=>work(async()=>{
     $('bulk-editor').hidden=false;$('bulk-tray-panel').hidden=false;
     state.draft=null;state.op=null;state.rows=[];state.selected.clear();state.checked.clear();state.newBatch=true;state.batchIdentity=crypto.randomUUID();state.changed=false;state.recoverNeeded=false;
+    readClient?.stop();readClient=new BoundedReads.Reader({active:()=>!window.navigationAuthorityDiscarded});loadCatalog();
     history.replaceState(null,'','/add-many/');$('bulk-review-panel').hidden=true;$('bulk-receipt').hidden=true;renderCatalog();renderTray();status('Separate physical batch. Choose only different physical cards; identical printings may be different copies.');state.focusAfterWork='bulk-action';
   });
   $('bulk-all').onclick=()=>{try{const found=matches();if(found.filter(g=>!state.selected.has(g.id)).length+state.rows.length>2000)throw Error('Selection exceeds 2,000 rows. No rows selected.');found.forEach(addGroup);renderCatalog();renderTray();}catch(e){status(e.message);}};
-  $('bulk-range').onclick=()=>{try{const list=matches(),a=list.findIndex(g=>g.id===state.anchors[0]),b=list.findIndex(g=>g.id===state.anchors[1]);if(a<0||b<0)throw Error('Check the start and end in this matching set first.');list.slice(Math.min(a,b),Math.max(a,b)+1).forEach(addGroup);renderCatalog();renderTray();}catch(e){status(e.message);}};
+  function selectionQuery(){return new URLSearchParams({set:$('bulk-set').value,q:$('bulk-search').value,language:$('bulk-language').value}).toString();}
+  async function selectMatching(range=false){
+    const signature=selectionQuery(),pending=[];let first=0,last=pageCount-1,ends;
+    if(range){ends=state.anchors.map(id=>({id,...anchorPositions.get(id)})).sort((a,b)=>a.page-b.page||a.index-b.index);if(ends.length!==2||ends.some(e=>e.query!==signature))throw Error('Check the start and end within this same set and search, on any pages.');first=ends[0].page;last=ends[1].page;}
+    else if(pageTotal>2000)throw Error('More than 2,000 matches. Narrow this search before selecting all. No rows selected.');
+    if((last-first)*50>2000)throw Error('This range exceeds 2,000 cards. Narrow the checked range.');
+    for(let n=first;n<=last;n++){
+      const query=new URLSearchParams(signature);if(!query.get('language'))query.delete('language');query.set('page',n+1);query.set('page_size','50');
+      status('Reading selection page '+(n-first+1)+' of '+(last-first+1)+'…');const result=await readClient.get('/api/v2/card-groups/?'+query,'bulk-selection');
+      if(signature!==selectionQuery())throw Error('Selection changed. No additional rows selected.');
+      if(result.groups.some(g=>g.oversized))throw Error('This selection contains a complete-record reference. Review that record before selecting this range. No additional rows selected.');
+      pending.push(...result.groups.map(g=>({...g,existing:g,children:[]})));
+    }
+    let chosen=pending;if(range){const a=pending.findIndex(g=>g.id===ends[0].id),b=pending.findIndex(g=>g.id===ends[1].id);if(a<0||b<0)throw Error('Range changed. Reload and select its endpoints again.');chosen=pending.slice(a,b+1);}
+    if(chosen.filter(g=>!state.selected.has(g.id)).length+state.rows.length>2000)throw Error('Combined selection exceeds 2,000 rows. No additional rows selected.');
+    const known=new Set(state.catalog.groups.map(g=>g.id));state.catalog.groups.push(...chosen.filter(g=>!known.has(g.id)));chosen.forEach(addGroup);renderCatalog();renderTray();status(chosen.length+' matching cards selected across pages. Review before confirming.');
+  }
+  $('bulk-all-matches').onclick=()=>work(()=>selectMatching());
+  $('bulk-range').onclick=()=>work(()=>selectMatching(true));
   $('bulk-check-all').onclick=()=>{state.rows.forEach(r=>state.checked.add(r.row_id));renderTray();};
   $('bulk-clear-checked').onclick=()=>{state.checked.clear();renderTray();};
   $('bulk-unknown').onclick=()=>{state.rows.forEach(r=>{if(state.checked.has(r.row_id)){const g=groupFor(r);if(g){r.group_id=g.id;r.set_id=g.set_id;r.number=g.collector_number;r.language=g.language;}r.keep_unknown=true;delete r.printing_id;}});changed();renderTray();};
@@ -411,11 +462,11 @@
     state.rows.forEach(r=>{if(state.checked.has(r.row_id))Object.assign(r,values);});changed();renderTray();status(`Visible defaults applied to ${count} checked rows. Review their changes before confirming.`);
   };
   ['exclude','include'].forEach(action=>$('bulk-'+action).onclick=()=>{state.rows.forEach(r=>{if(state.checked.has(r.row_id))r.included=action==='include';});changed();renderTray();});
-  ['prev','next'].forEach((dir,i)=>$('bulk-'+dir).onclick=()=>{state.page+=i?1:-1;renderCatalog();$('bulk-search').focus();});
+  ['prev','next'].forEach((dir,i)=>$('bulk-'+dir).onclick=()=>{state.page+=i?1:-1;loadCatalog();$('bulk-search').focus();});
   ['prev','next'].forEach((dir,i)=>$('bulk-tray-'+dir).onclick=()=>{state.trayPage+=i?1:-1;renderTray();});
   ['prev','next'].forEach((dir,i)=>$('bulk-review-'+dir).onclick=()=>{state.reviewPage+=i?1:-1;renderReviewRows();});
-  ['set','game','language'].forEach(k=>$('bulk-'+k).onchange=()=>{state.page=0;state.anchors=[];changed();renderCatalog();});
-  $('bulk-search').oninput=()=>{state.page=0;renderCatalog();};
+  ['set','game','language'].forEach(k=>$('bulk-'+k).onchange=()=>{state.page=0;state.anchors=[];changed();if(k==='game')loadSets().catch(e=>status(e.message,true));else{if(k==='set')setOptions($('bulk-language'),[['','All languages']]);loadCatalog();}});
+  let searchTimer;$('bulk-search').oninput=()=>{state.page=0;clearTimeout(searchTimer);searchTimer=setTimeout(loadCatalog,15);};
   $('bulk-action').onchange=()=>{meaning();changed();};
   $('bulk-quantity').oninput=changed;$('bulk-defaults').addEventListener('change',changed);
   ['amount','currency','date'].forEach(k=>$('bulk-lot-'+k).onchange=changed);
@@ -431,7 +482,7 @@
       ...(resolved.get(r.row_id)?{group_id:resolved.get(r.row_id)}:{})}));
     if(state.rows.length+added.length>2000)throw Error('Combined draft exceeds 2,000 rows. No rows appended.');
     if(added.some(r=>state.rows.some(old=>old.row_id===r.row_id)))throw Error('These source numbers are already in the draft. Edit their rows, or start a separate physical batch.');
-    state.rows.push(...added);state.selected=new Set(state.rows.map(r=>groupFor(r)?.id).filter(Boolean));
+    state.rows.push(...added);state.selected=new Set(state.rows.map(r=>r.group_id||groupFor(r)?.id).filter(Boolean));
     changed();renderCatalog();renderTray();await saveDraft();
   });
   $('bulk-parse-csv').onclick=()=>work(async()=>{
@@ -441,14 +492,21 @@
   });
   window.addEventListener('beforeunload',e=>{if(state.changed){e.preventDefault();e.returnValue='';}});
   document.addEventListener('submit',e=>{if(e.target.action?.includes('/logout/')){state.changed=false;erase();}});
+  window.addEventListener('dex:authority-revoked',erase);
   window.addEventListener('pageshow',e=>{if(e.persisted)location.reload();});
   work(async()=>{
-    state.catalog=await api('/api/bulk/catalog/');
+    readClient=new BoundedReads.Reader({active:()=>Boolean($('bulk-editor'))&&!window.navigationAuthorityDiscarded});
+    state.catalog={games:[],groups:[],sets:[],languages:[],binders:[]};
+    attributeFields($('bulk-defaults'),'bulk-default-',{});await savedList();
+    const id=new URLSearchParams(location.search).get('draft');if(id){await resume(id);if(['confirmed','undone'].includes(state.op?.state))return;}
+    const games=await readClient.get('/api/v2/entry-options/?field=game');
+    state.catalog.games=games.options.filter(g=>!g.oversized);
     setOptions($('bulk-game'),state.catalog.games.map(g=>[g.game_key,g.name]));
     [...$('bulk-game').options].forEach(o=>o.dataset.gameId=state.catalog.games.find(g=>g.game_key===o.value).id);
-    setOptions($('bulk-language'),state.catalog.languages.map(l=>[l,l]));
-    setOptions($('bulk-set'),state.catalog.sets.map(s=>[s.id,s.name]));
-    attributeFields($('bulk-defaults'),'bulk-default-',{});meaning();renderCatalog();renderTray();await savedList();
-    const id=new URLSearchParams(location.search).get('draft');if(id)await resume(id);else status('Select cards to start a batch.');
+    const gameNext=games.options.some(g=>g.oversized)?'/api/v2/entry-options/?field=game':BoundedReads.next('/api/v2/entry-options/?field=game',games);
+    if(gameNext){const host=node('div',null);$('bulk-game').after(host);BoundedReads.paged(host,{reader:readClient,url:gameNext,field:'options',render:g=>'<button type="button" data-entry-game="'+html(g.game_key)+'" data-entry-game-id="'+html(g.id)+'">'+html(g.name)+'</button>',bind:rows=>rows.querySelectorAll('[data-entry-game]').forEach(b=>b.onclick=()=>{if(!optionsContain($('bulk-game'),b.dataset.entryGame)){const o=new Option(b.textContent,b.dataset.entryGame);o.dataset.gameId=b.dataset.entryGameId;$('bulk-game').add(o);}$('bulk-game').value=b.dataset.entryGame;loadSets().catch(e=>status(e.message,true));})});}
+    await loadSets();
+    meaning();renderCatalog();renderTray();
+    if(id)await resume(id,{draft:state.draft,operation:state.op});else status('Select cards to start a batch.');
   });
 })();

@@ -131,7 +131,10 @@ def prepare(*, timings=None):
 
 def validate(build):
     """Full explicit integrity scan; not a browsing or startup operation."""
-    with snapshot():
+    # Validation writes the FTS integrity command and candidate status. Acquire
+    # the configured IMMEDIATE maintenance transaction before reading; upgrading
+    # a deferred snapshot after another writer commits fails with SQLITE_BUSY.
+    with transaction.atomic():
         found = store.rows("SELECT * FROM catalog_read_builds WHERE id=%s", [build])
         if (
             not found
@@ -216,6 +219,9 @@ def activate(build):
 
 
 def active(token=None):
+    from .read_diagnostics import category
+
+    category("catalog", "unavailable")
     check_schema()
     source = revision()
     current = f"{source}:{POLICY}"
@@ -226,20 +232,28 @@ def active(token=None):
     found = store.rows(
         "SELECT b.* FROM catalog_read_active a JOIN catalog_read_builds b ON b.id=a.build WHERE a.id=1"
     )
-    if (
-        not found
-        or found[0]["status"] != "ready"
-        or found[0]["policy"] != POLICY
-        or found[0]["revision"] != source
-        or len(found[0]["checksum"] or "") != 64
-        or found[0]["seal"] != manifest_seal(found[0])
-    ):
-        raise Unavailable("prepare_catalog")
+    if not found:
+        interrupted = store.rows(
+            "SELECT 1 FROM catalog_read_builds WHERE status IN ('preparing','indexing') LIMIT 1"
+        )
+        raise Unavailable("preparation_interrupted" if interrupted else "manifest_missing")
+    row = found[0]
+    if row["policy"] != POLICY:
+        raise Unavailable("incompatible_policy")
+    if row["revision"] != source:
+        raise Unavailable("catalog_stale")
+    if row["status"] in {"preparing", "indexing"}:
+        raise Unavailable("preparation_interrupted")
+    if row["status"] != "ready":
+        raise Unavailable("derived_corrupt")
+    if len(row["checksum"] or "") != 64 or row["seal"] != manifest_seal(row):
+        raise Unavailable("manifest_corrupt")
     documents = store.rows(
         "SELECT COUNT(*) AS n FROM cr_gram_index WHERE cr_gram_index MATCH %s", [str(found[0]["id"])]
     )[0]["n"]
     if documents != json.loads(found[0]["counts"])["cr_grams"]:
         raise Unavailable("search_index_incomplete")
+    category("catalog", "ready")
     return found[0], current
 
 

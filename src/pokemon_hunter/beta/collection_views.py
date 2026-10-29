@@ -13,6 +13,7 @@ from pydantic import ValidationError
 
 from . import collection as service
 from . import image_bindings, store
+from .catalog_read_build import Unavailable
 from .diagnostics import failure
 from .views import actor
 
@@ -24,6 +25,17 @@ def endpoint(fn, *, browsing=False):
     def inner(request, *args, **kwargs):
         try:
             return fn(request, *args, **kwargs)
+        except Unavailable:
+            response = JsonResponse(
+                {
+                    "error": "read_state_unavailable",
+                    "code": "read_state_unavailable",
+                    "retry": "Explicit catalog and collection preparation required.",
+                },
+                status=503,
+            )
+            response["Cache-Control"] = "private, no-store"
+            return response
         except service.ReviewConflict as e:
             failure("request_review_conflict", e)
             return JsonResponse(
@@ -82,6 +94,8 @@ def home(request, key=None):
         from . import public_views
 
         return public_views.hunt(request)
+    if not request.user.is_authenticated and request.path == "/card-library/":
+        return render(request, "beta/public_browse.html", {"public": True})
     return private_home(request)
 
 
@@ -92,6 +106,12 @@ def private_home(request):
         from .navigation import authorize_destination
 
         authorize_destination(who, request.get_full_path())
+    elif request.path.startswith("/card-groups/") and request.GET.get("return"):
+        from .navigation import authorize_destination
+
+        # The shell remains bounded, but a return chain still carries private
+        # goal/version authority and must be rechecked before rendering it.
+        authorize_destination(who, request.GET["return"])
     response = render(
         request,
         "beta/b2.html",
@@ -103,6 +123,8 @@ def private_home(request):
         },
     )
     response._dex_owned_artwork = image_bindings.enabled()
+    if request.path.startswith("/card-groups/"):
+        response["Cache-Control"] = "private, no-store"
     return response
 
 
@@ -110,6 +132,9 @@ def private_home(request):
 def asset(request, filename):
     if filename not in {
         "collection.js",
+        "bounded-reads.js",
+        "goals-screen.js",
+        "public-browse.js",
         "bulk_entry.js",
         "bulk_entry.css",
         "photo_batches.js",

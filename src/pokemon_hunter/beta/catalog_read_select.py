@@ -93,8 +93,10 @@ def unfiltered(build, filters, *, printing=False):
         [build],
     )[0]["n"]
     rank = "rank_" + filters["sort"]
+    # Keep the bounded page outermost: SQLite 3.45 otherwise expands metadata
+    # before matching page IDs, turning each page into a catalog-wide nested loop.
     rows = store.rows(
-        f"WITH page AS MATERIALIZED (SELECT id,{rank} FROM {table} INDEXED BY {index}_{filters['sort']} WHERE build=%s AND scope IN ('public','shared') ORDER BY {rank},id LIMIT %s OFFSET %s) SELECT g.id,CASE WHEN g.bytes<=900 THEN g.payload END AS payload,g.sha FROM page JOIN {metadata} g ON g.build=%s AND g.scope IN ('public','shared') AND g.id=page.id ORDER BY page.{rank},g.id",
+        f"WITH page AS MATERIALIZED (SELECT id,{rank} FROM {table} INDEXED BY {index}_{filters['sort']} WHERE build=%s AND scope IN ('public','shared') ORDER BY {rank},id LIMIT %s OFFSET %s) SELECT g.id,CASE WHEN g.bytes<=900 THEN g.payload END AS payload,g.sha FROM page CROSS JOIN {metadata} g ON g.build=%s AND g.scope IN ('public','shared') AND g.id=page.id ORDER BY page.{rank},g.id",
         [build, filters["page_size"], offset(filters["page"], filters["page_size"]), build],
     )
     return total, rows

@@ -8,6 +8,7 @@ from unittest.mock import patch
 from urllib.parse import parse_qs, urlsplit
 
 import pytest
+from perf04_helpers import enable_read_fixture
 from test_b1 import env as env
 from test_b2 import apply
 from test_b2 import b2 as b2
@@ -74,7 +75,8 @@ def test_owned_references_and_page_share_image_availability_policy(b2, allowed):
         assert policy.call_count >= 2
 
 
-def test_card_detail_is_a_normal_private_page(restored):
+def test_card_detail_is_a_normal_private_page(restored, monkeypatch):
+    enable_read_fixture(restored, monkeypatch)
     before = inv.export_data(restored["actor"])
     response = restored["a"].get("/cards/a/")
     assert response.status_code == 302
@@ -93,7 +95,9 @@ def test_card_detail_is_a_normal_private_page(restored):
         assert selected.status_code == 200
         assert selected.json()["selected_child"]["id"] == printing["id"]
     assert restored["client"]().get("/cards/a/").status_code == 302
-    assert restored["client"]().get(response.url).status_code == 302
+    # Canonical public metadata now has a guest shell; private V2 stays denied.
+    assert restored["client"]().get(response.url).status_code == 200
+    assert restored["client"]().get("/api/v2" + destination.path).status_code == 403
     assert restored["a"].get("/owned-cards/").status_code == 404
     assert inv.export_data(restored["actor"]) == before
 

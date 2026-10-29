@@ -111,6 +111,8 @@ def exercise(database_url, source, report):
     )
     if client.get("/api/collection-context/").status_code != 302:
         raise ValueError("Staging guest gained collection access")
+    if client.get("/api/v2/readiness/").status_code != 403:
+        raise ValueError("Staging guest gained private V2 readiness access")
     client.force_login(owner)
     for path in (
         "/cards/",
@@ -123,6 +125,23 @@ def exercise(database_url, source, report):
         response = client.get(path)
         if response.status_code != 200:
             raise ValueError("Staging current collection route failed")
+    for path in (
+        "/readyz/",
+        "/api/v2/readiness/",
+        "/api/v2/public/card-groups/",
+        "/api/v2/my-card-groups/",
+    ):
+        response = client.get(path)
+        if response.status_code != 503 or response.json().get("code") != "read_state_unavailable":
+            raise ValueError("Unsupported PostgreSQL V2 reads did not fail explicitly")
+        if "no-store" not in response.get("Cache-Control", ""):
+            raise ValueError("Unsupported PostgreSQL V2 response may be cached")
+        if path in {"/readyz/", "/api/v2/readiness/"}:
+            if response.json().get("category") != "unsupported_database":
+                raise ValueError("PostgreSQL readiness did not identify the unsupported database")
+    report["checks"].append(
+        {"name": "unsupported PostgreSQL V2 reads and readiness fail explicitly", "status": "PASS"}
+    )
     if client.post("/api/operations/preview/", "{}", content_type="application/json").status_code != 403:
         raise ValueError("Staging CSRF boundary failed")
     report["checks"].append(

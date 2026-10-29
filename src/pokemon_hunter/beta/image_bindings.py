@@ -67,7 +67,7 @@ def private_copy_photos(actor, copy_ids):
     from .scans import authorized_photo_rows
 
     # One scoped query independent of the number of displayed copies.
-    for row in authorized_photo_rows(actor):
+    for row in authorized_photo_rows(actor, copy_ids=sorted(keys)):
         if row["copy_id"] not in keys:
             continue
         result[row["copy_id"]].append(

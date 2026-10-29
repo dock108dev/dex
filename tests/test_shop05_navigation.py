@@ -5,6 +5,7 @@ import re
 from urllib.parse import urlencode
 
 import pytest
+from perf04_helpers import enable_read_fixture
 from test_b1 import env as env
 from test_b2 import apply
 from test_b2 import b2 as b2
@@ -36,6 +37,7 @@ def no_acquisition(visual, monkeypatch):
 
     monkeypatch.setattr(discovery, "start", forbidden)
     monkeypatch.setattr(Transport, "request", forbidden)
+    enable_read_fixture(visual, monkeypatch)
     return visual
 
 
@@ -200,7 +202,8 @@ def test_goal_version_generation_and_other_account_rechecked_through_returns(no_
     assert state["a"].get(f"/card-groups/{row['id']}/", {"return": stale}).status_code == 409
     assert dump(state) == before
     state["a"].logout()
-    assert state["a"].get(details).status_code == 302
+    assert state["a"].get(details).status_code == 200  # Public canonical metadata shell.
+    assert state["a"].get(f"/api/v2/card-groups/{row['id']}/").status_code == 403
 
 
 @pytest.mark.parametrize(

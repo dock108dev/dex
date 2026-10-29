@@ -10,7 +10,7 @@ from django.shortcuts import render
 from django.views.decorators.http import require_GET, require_POST
 from pydantic import ValidationError
 
-from . import collection, navigation, store
+from . import collection, navigation, scan_config, store
 from . import photo_batches as batches
 from .collection_views import body
 from .views import actor
@@ -40,6 +40,8 @@ def endpoint(fn):
             response = JsonResponse(
                 dict(error="Use finite in-bounds crop geometry and supported fields"), status=400
             )
+        except scan_config.RecognitionUnavailable:
+            response = JsonResponse(dict(error=scan_config.UNAVAILABLE), status=409)
         except (ValueError, TypeError):
             # Exception text can include private inputs or downstream implementation details.
             response = JsonResponse(dict(error="Check the photo review fields"), status=400)
@@ -53,7 +55,11 @@ def endpoint(fn):
 @endpoint
 @require_GET
 def home(request, who):
-    return render(request, "beta/photo_batches.html", dict(available=batches.available()))
+    return render(
+        request,
+        "beta/photo_batches.html",
+        dict(available=batches.available(), recognition_enabled=scan_config.recognition_enabled()),
+    )
 
 
 @endpoint

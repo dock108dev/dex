@@ -6,6 +6,7 @@ import os
 import secrets
 import sqlite3
 import sys
+from contextlib import closing
 from pathlib import Path
 
 from . import staging_config
@@ -24,13 +25,15 @@ def initialize(root, source=None, b2=False, parity=False):
     if source:
         source = source.resolve(strict=True)
         with (
-            sqlite3.connect(f"{source.as_uri()}?mode=ro", uri=True) as old,
-            sqlite3.connect(root / "inventory.db") as new,
+            closing(sqlite3.connect(f"{source.as_uri()}?mode=ro", uri=True)) as old,
+            old,
+            closing(sqlite3.connect(root / "inventory.db")) as new,
+            new,
         ):
             old.backup(new)
     from pokemon_hunter.inventory import connect
 
-    with connect(root / "inventory.db") as db:
+    with closing(connect(root / "inventory.db")) as db, db:
         db.execute("""CREATE TABLE b1_private_resources(
             id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id),
             kind TEXT NOT NULL CHECK(kind IN ('photos','scan_jobs','goals','request_evidence')),
@@ -40,7 +43,7 @@ def initialize(root, source=None, b2=False, parity=False):
     if b2:
         from .collection import initialize as initialize_collection
 
-        with connect(root / "inventory.db") as db:
+        with closing(connect(root / "inventory.db")) as db, db:
             initialize_collection(db)
         (root / "B2_ISOLATED").write_text("Disposable B2 environment; never owner-local\n")
     if parity:
@@ -48,7 +51,7 @@ def initialize(root, source=None, b2=False, parity=False):
 
         evidence = root / "parity-evidence"
         evidence.mkdir(mode=0o700)
-        with sqlite3.connect(root / "inventory.db") as db:
+        with closing(sqlite3.connect(root / "inventory.db")) as db, db:
             for filename in (
                 "market_values.json",
                 "raw_values.json",
@@ -259,7 +262,7 @@ def main():
             raise ValueError("Catalog expansion requires photo entry to be enabled")
         from .catalog_imports import initialize as initialize_catalog
 
-        with sqlite3.connect(args.root / "inventory.db") as db:
+        with closing(sqlite3.connect(args.root / "inventory.db")) as db, db:
             initialize_catalog(db)
         (args.root / "B4_ISOLATED").write_text("B4 catalog expansion enabled; identities preserved\n")
         print("Catalog expansion enabled. Restart the server.")
@@ -268,7 +271,7 @@ def main():
             raise ValueError("Scans require collection transactions to be enabled")
         from .scans import initialize as initialize_scans
 
-        with sqlite3.connect(args.root / "inventory.db") as db:
+        with closing(sqlite3.connect(args.root / "inventory.db")) as db, db:
             initialize_scans(db)
         (args.root / "B3_ISOLATED").write_text("B3 photo entry enabled; original accounts preserved\n")
         print("Photo entry enabled. Restart serve; default is manual photo entry.")
@@ -286,6 +289,10 @@ def main():
         from .price_snapshots import expiry_worker
 
         configure()
+        from .read_diagnostics import configure as configure_diagnostics
+
+        configure_diagnostics(args.root)
+        application = get_asgi_application()
         price_stop = threading.Event()
         price_worker = threading.Thread(target=expiry_worker, args=(price_stop,), daemon=True)
         price_worker.start()
@@ -303,9 +310,32 @@ def main():
             )
             worker.start()
 
+        from .serving import ShutdownApplication
+
+        joined = threading.Event()
+
+        def stop_workers():
+            if joined.is_set():
+                return
+            joined.set()
+            price_stop.set()
+            if worker is not None:
+                stop.set()
+            price_worker.join(timeout=5)
+            if worker is not None:
+                worker.join(timeout=5)
+            complete = not price_worker.is_alive() and (worker is None or not worker.is_alive())
+            if not complete:
+                from .diagnostics import failure
+
+                failure("worker_shutdown_incomplete", TimeoutError())
+            from .read_diagnostics import emit
+
+            emit(dict(event="shutdown", phase="workers_joined", ready=complete))
+
         try:
             uvicorn.run(
-                get_asgi_application(),
+                ShutdownApplication(application, stop_workers),
                 host="127.0.0.1",
                 port=8011,
                 access_log=False,
@@ -313,15 +343,7 @@ def main():
                 log_level="warning",
             )
         finally:
-            price_stop.set()
-            price_worker.join(timeout=5)
-            if worker is not None:
-                stop.set()
-                worker.join(timeout=5)
-                if worker.is_alive():
-                    from .diagnostics import failure
-
-                    failure("worker_shutdown_incomplete", TimeoutError())
+            stop_workers()
 
 
 def entrypoint():

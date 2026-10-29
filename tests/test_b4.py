@@ -4,6 +4,7 @@ import copy
 import importlib
 import json
 import uuid
+from contextlib import closing
 from pathlib import Path
 from unittest.mock import patch
 
@@ -31,7 +32,7 @@ def b4(b3):
     from pokemon_hunter.beta import urls
 
     connection.close()
-    with connect(b3["root"] / "inventory.db") as db:
+    with closing(connect(b3["root"] / "inventory.db")) as db, db:
         cat.initialize(db)
     settings.B4_ENABLED = True
     importlib.reload(urls)

@@ -3,22 +3,17 @@
 {% block body_class %}photo-page{% endblock %}
 {% block content %}
 <link rel="stylesheet" href="/collection-assets/photo_batches.css?v=20261027-interface">
-<div id="photo-entry">
+<div id="photo-entry" data-recognition-enabled="{{ recognition_enabled|yesno:'true,false' }}">
 <h1>Add from photos</h1>
 {% if not available %}<p>Photo entry is unavailable. <a href="/add-many/">Add cards manually</a>.</p>{% else %}
+{% if not recognition_enabled %}<p>AI photo recognition is temporarily unavailable. <a href="/add-many/">Add cards manually</a>. <a href="/scan/">Save a photo and select an exact card</a>. Previous photos and reviews remain available below.</p>{% endif %}
 <form id="photo-csrf">{% csrf_token %}</form>
-<details class="photo-panel" id="photo-upload-panel" open><summary>New photo</summary><div class="photo-upload-fields">
-<label for="photo-file">Card photo</label><input type="file" id="photo-file" accept="image/jpeg,image/png,image/webp">
-<label for="photo-notes">Card details <span class="photo-muted">Optional</span></label><textarea id="photo-notes" rows="2" maxlength="2000" placeholder="Set names, card numbers, or details you know"></textarea>
-<p class="photo-muted">Identify sends your photo and notes to OpenAI through your signed-in Codex account. Review before adding.</p>
-<button id="photo-identify" type="button">Identify cards</button>
-<details><summary>Photo tips</summary><p>Show the card names and bottom numbers. Up to 15 cards per photo. JPEG, PNG or WebP up to 8 MB. Unconfirmed photos expire after seven days. <a href="/add-many/">Manual entry</a> is also available.</p></details>
-</div></details>
 <div class="photo-feedback"><p id="photo-status" role="status" aria-live="polite" tabindex="-1">Loading…</p>
 <button id="photo-stop" type="button" class="secondary" hidden>Stop</button></div>
-<section id="photo-results" hidden><div class="photo-review-heading"><h2 id="photo-results-title" tabindex="-1">Review cards</h2><p id="photo-summary"></p></div><div id="photo-cards"></div><button id="photo-confirm" type="button">Add selected cards</button><p class="photo-muted">Already owned cards are skipped. First-edition marks update an existing record when it is unambiguous.</p><details><summary>Original photo and retry</summary><div id="photo-sources"></div><button id="photo-retry" type="button" class="secondary">Identify this photo again</button><p>Another analysis sends the photo and notes again and uses account capacity. Nothing is retried automatically.</p></details></section>
+<section id="photo-results" hidden><div class="photo-review-heading"><h2 id="photo-results-title" tabindex="-1">Review cards</h2><p id="photo-summary"></p></div><div id="photo-cards"></div><button id="photo-confirm" type="button">Add selected cards</button><p class="photo-muted">Already owned cards are skipped. First-edition marks update an existing record when it is unambiguous.</p><details><summary>Original photo</summary><div id="photo-sources"></div></details></section>
 <section id="photo-report" hidden tabindex="-1"><h2>Addition report</h2><div id="photo-report-body"></div><button id="photo-undo" type="button" class="secondary">Undo these changes</button></section>
 <details class="photo-history"><summary>Previous photos</summary><div id="photo-saved"></div></details>
+<script src="/collection-assets/bounded-reads.js" defer></script>
 <script src="/collection-assets/photo_batches.js?v=20261027-interface" defer></script>
 {% endif %}
 </div>

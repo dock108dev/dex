@@ -16,6 +16,7 @@ import hashlib
 import http.cookiejar
 import json
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -135,9 +136,15 @@ def run_python(python, code, arguments, cwd, env, *, timeout=90):
         check=False,
     )
     if result.returncode:
-        # Child commands read only this harness's fresh synthetic root. Reports
-        # retain the failure class/exit status without private generated secrets.
-        raise SmokeFailure(f"Installed app subprocess failed (exit {result.returncode})")
+        # Preserve only the application's content-free diagnostic, never arbitrary
+        # stdout/stderr, exception messages, generated credentials or local paths.
+        diagnostic = re.search(
+            r"read_maintenance_failed type=([A-Za-z_][A-Za-z_0-9]*) "
+            r"frames=([A-Za-z_0-9.py:<> >]+)(?:\n|$)",
+            result.stderr,
+        )
+        detail = f"; {diagnostic.group(0).strip()}" if diagnostic else ""
+        raise SmokeFailure(f"Installed app subprocess failed (exit {result.returncode}){detail}")
     return result.stdout
 
 
@@ -161,6 +168,44 @@ def request(opener, port, route, data=None, extra_headers=None):
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         return None
+
+
+def prepare_read_models(python, cwd, env, root):
+    """Run shipped operators explicitly against this smoke's disposable root."""
+
+    def operator(module, *arguments):
+        try:
+            return run_python(
+                python,
+                "import runpy,sys; module=sys.argv.pop(1); runpy.run_module(module,run_name='__main__')",
+                ["pokemon_hunter.beta." + module, "--root", str(root), *arguments],
+                cwd,
+                env,
+            )
+        except SmokeFailure as exc:
+            action = next(
+                value for value in arguments if value in {"migrate", "prepare", "activate", "status"}
+            )
+            raise SmokeFailure(f"{module} {action}: {exc}") from None
+
+    # The minimal synthetic initializer predates the optional declaration schema.
+    # Install that prerequisite explicitly; ordinary startup must never do this.
+    run_python(
+        python,
+        "import sys; from pathlib import Path; from pokemon_hunter.inventory import connect; "
+        "from pokemon_hunter.beta.ownership_declarations import initialize; "
+        "db=connect(Path(sys.argv[1])/'inventory.db'); initialize(db); db.commit(); db.close()",
+        [str(root)],
+        cwd,
+        env,
+    )
+    operator("catalog_read_operator", "migrate")
+    operator("account_read_operator", "migrate")
+    build = json.loads(operator("catalog_read_operator", "prepare"))["build"]
+    operator("catalog_read_operator", "activate", "--build", str(build))
+    assert json.loads(operator("catalog_read_operator", "status"))["ready"]
+    operator("account_read_operator", "--username", "admin", "prepare")
+    assert json.loads(operator("account_read_operator", "--username", "admin", "status"))["ready"]
 
 
 def browser_smoke(python, cwd, env, root, timeout):
@@ -192,8 +237,18 @@ def browser_smoke(python, cwd, env, root, timeout):
             if time.monotonic() >= deadline:
                 raise SmokeFailure("Local server startup exceeded bounded timeout")
             time.sleep(0.2)
-        if b"Bulbasaur" not in body:
-            raise SmokeFailure("Public Pokédex is missing canonical species")
+        if request(guest, port, "/livez/")[0] != 200:
+            raise SmokeFailure("Installed liveness failed")
+        for _ in range(2):
+            if request(guest, port, "/readyz/")[0] != 503:
+                raise SmokeFailure("Startup implicitly prepared missing read models")
+        prepare_read_models(python, cwd, env, root)
+        if request(guest, port, "/readyz/")[0] != 200:
+            raise SmokeFailure("Explicitly prepared catalog is not ready")
+        status, _, body = request(guest, port, "/api/v2/public/pokedex-species/")
+        if status != 200 or b"Bulbasaur" not in body:
+            raise SmokeFailure("Public V2 Pokédex is missing canonical species")
+        checks += 5
         for route in ("/", "/pokedex/123/", "/hunt/", "/lookup/?targets=123", "/login/"):
             status, _, _ = request(guest, port, route)
             if status != 200:
@@ -217,6 +272,9 @@ def browser_smoke(python, cwd, env, root, timeout):
                 raise SmokeFailure("Guest access was not denied: " + route)
             checks += 1
         for asset in (
+            "bounded-reads.js",
+            "public-browse.js",
+            "goals-screen.js",
             "glass.css",
             "public.css",
             "collection.css",
@@ -274,6 +332,10 @@ def browser_smoke(python, cwd, env, root, timeout):
         if status != 200 or not shopping.get("cards"):
             raise SmokeFailure("Installed Shopping catalog failed")
         checks += 1
+        for route in ("/api/v2/readiness/", "/api/v2/card-groups/", "/api/v2/pokedex-species/"):
+            if request(owner, port, route)[0] != 200:
+                raise SmokeFailure("Installed prepared account route failed: " + route)
+            checks += 1
         identities = []
         for route in ("/api/collection-context/", "/api/my-card-groups/", "/api/pokedex-species/"):
             status, _, body = request(owner, port, route)

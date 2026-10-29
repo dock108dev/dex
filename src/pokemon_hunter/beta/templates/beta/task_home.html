@@ -5,7 +5,7 @@
 <div class="task-grid{% if request.path == '/add-card/' %} add-card-options{% endif %}">
 {% if request.path == '/add-card/' %}
   <link rel="stylesheet" href="/collection-assets/bulk_entry.css">
-  {% if photo_batches %}<section class="panel"><h2>Add from photos</h2><p>Photograph one card or several together. Identify them with Codex, check the matches, then add them to your collection.</p><a class="button-link" href="/add-photos/">Add from photos</a></section>{% endif %}
+  {% if photo_batches %}<section class="panel"><h2>Add from photos</h2><p>Save photos for manual card selection or review previous photo entries. AI photo recognition is temporarily unavailable.</p><a class="button-link" href="/add-photos/">Add from photos</a></section>{% endif %}
   <section class="panel"><h2>Add many cards</h2><p>Choose from a set, paste card numbers or upload a CSV. Review the batch before adding it.</p><a class="button-link" href="/add-many/">Add many cards</a></section>
   <section class="panel"><h2>Choose one card</h2><p>Find a card in the library, then choose its variant and copy details.</p><a class="button-link secondary" href="/card-library/">Browse Card Library</a></section>
   {% if not photo_batches %}<section class="panel add-card-photo"><div><h2>Add from a photo</h2>{% if scans %}<p>Upload and review a card photo before adding it.</p>{% else %}<p>Photo entry is unavailable in this installation. Choose a card from the library instead.</p>{% endif %}</div>{% if scans %}<a href="/scan/">Open photo entry</a>{% endif %}</section>{% endif %}

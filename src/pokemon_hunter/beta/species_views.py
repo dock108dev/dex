@@ -95,7 +95,7 @@ def home(request, dex=None):
         if settings.B2_ENABLED and request.user.is_authenticated:
             who = actor(request)
             if raw.get("goal"):
-                species_projection._scope(who, raw["goal"])
+                species_projection.authorize_goal(who, raw["goal"], raw.get("version"))
             if dex is not None:
                 from . import navigation
 
@@ -104,22 +104,17 @@ def home(request, dex=None):
         # Public consumers never acquire private fields or ownership from missing fields.
         if raw.get("goal") or raw.get("owned") not in {None, "", "all"}:
             raise ValueError("Sign in to use saved goals and current collection status")
-        guest_allowed = public_catalog.FILTERS | {"scroll", "focus"} if dex is None else {"scroll", "return"}
+        guest_allowed = (
+            public_catalog.FILTERS | {"scroll", "focus", "page", "page_size"}
+            if dex is None
+            else {"scroll", "return"}
+        )
         if set(raw) - guest_allowed:
             raise ValueError("Choose supported published Pokémon filters. Sign in for collection tools.")
         if any(raw.get(key, "").startswith("[") for key in species_scope.MULTI):
             raise ValueError("Sign in to evaluate multiselect card scopes")
-        public_raw = {key: value for key, value in raw.items() if key in public_catalog.FILTERS}
-        context = public_catalog.pokedex(public_raw, dex)
-        context["return_url"] = raw.get("return") or "/pokedex/"
-        for row in context["species"]:
-            list_fields = {**raw, "focus": str(row["dex"])}
-            row["url"] = f"/pokedex/{row['dex']}/?" + urlencode(
-                {"return": "/pokedex/?" + urlencode(list_fields)}
-            )
-        return render(
-            request, "beta/public_species.html" if dex is not None else "beta/public_pokedex.html", context
-        )
+        return render(request, "beta/public_browse.html", {"public": True})
+
     except collection.Conflict:
         return JsonResponse(
             {"error": "Collection or saved goal changed; reopen the Pokémon view."}, status=409

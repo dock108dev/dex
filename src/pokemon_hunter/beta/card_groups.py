@@ -229,6 +229,13 @@ def project(actor=None):
         published = collection.catalog(actor)
     published_ids = {row["id"] for row in published}
     pokemon_game_ids = {row["id"] for row in store.rows("SELECT id FROM games WHERE game_key='pokemon'")}
+    result = _compose(actor, generation, rows, active, effective, published_ids, pokemon_game_ids)
+    _finish_read(result, actor)
+    return result
+
+
+def _compose(actor, generation, rows, active, effective, published_ids, pokemon_game_ids):
+    """Internal composition only; callers own input authority and revision checks."""
     built = build_groups(rows, pokemon_game_ids=pokemon_game_ids)
     copies_by_printing = {}
     for copy in active:
@@ -338,7 +345,6 @@ def project(actor=None):
         active=active,
         effective=effective,
     )
-    _finish_read(snapshot, actor)
     return snapshot
 
 

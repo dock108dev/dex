@@ -33,7 +33,6 @@ or alerting service; repeated failures produce repeated records.
 | `worker_iteration_failed` | Cleanup, claim, connection or persistence failed. The worker waits and continues without requeuing a claimed provider call. |
 | `recognition_failed` | Provider, parsing or matching failed. A fixed job error is saved if the result transaction succeeds. |
 | `request_failed` | An unexpected view exception reached Django; expected authorization and not-found exceptions are excluded. |
-| `codex_usage_write_failed` | Attempt accounting failed after submission may have occurred. Inspect storage before retrying. |
 | `health_check_failed` | Staging readiness could not be evaluated; the response is a content-free HTTP 503. |
 | `ebay_configuration_failed`, `hunt_guide_read_failed` | Configuration or retained guide data could not be read or validated. No provider acquisition follows from a readiness check. |
 | `watcher_command_failed`, `local_operation_failed`, `staging_operation_failed` | An operator failed; inspect the exception class and code location. |
@@ -54,29 +53,23 @@ errors and Ctrl-C retain their normal behavior.
 
 ## Recognition, accounting and storage
 
-Recognition configuration rejects unknown fields/providers, non-boolean enablement and
-invalid or non-finite limits. API spending ceilings are bounded at $1 per root and $0.50
-per account. Local omitted fields use manual defaults; staging requires a complete
-configuration. Provider selection is explicit, with no automatic CLI/API switching.
+`scan_config.py` validates persisted photo settings and owns the unavailable message.
+Unknown fields and invalid historical ceilings fail validation. Legacy provider
+settings do not activate inference. Codex/OpenAI adapters and their credential reads
+are removed; there is no retry, login or paid fallback that can restore recognition.
+Manual photos, matching and confirmation remain available.
 
-Job claims and completion writes occur in separate transactions around provider I/O.
-A completion write can fail after submission, leaving a durable `processing` job.
-After 120 seconds a worker iteration marks a stale claim failed; another attempt requires
-an explicit action. At most two provider attempts are allowed per single-card job.
-Reservations survive failed or uncertain API outcomes. CLI subscription attempts remain
-separate from API dollars; usage records do not establish billing or remaining capacity.
+Workers retire historical pending AI work using failed/cancelled states without
+clearing result bodies, image bytes, attribution or consumed reservations. Preserve
+old usage logs as historical evidence, including incomplete/uncertain records; do
+not convert them into new capacity. `photo_payload_cleanup.py` removes only registered
+stale temporary payloads from older installations under the existing legacy lock.
+It does not execute recognition or sweep unregistered files.
 
-CLI usage records are flushed and synced before successful return. If accounting fails,
-the job reports the uncertain outcome; a prior recognition error remains primary. Keep a
-partial usage-log line as incomplete rather than completed accounting. The CLI lock closes
-on ordinary exit. Cancellation/deadline handling terminates the process group and removes
-temporary images, but cannot recall transmitted images. An API request can outlast the
-local server's five-second worker join. Manual matching remains available.
-
-Photo batches also retain independent consumed attempts and deletion tombstones;
+Photo batches retain independent consumed attempts and deletion tombstones;
 [photo-batch recovery](operations.md#photo-batch-recovery) describes restore requirements.
-Invalid images fail validation, including decompression warnings. CLI progress text is
-not a result: a completion event and schema-valid final output are required.
+Invalid images fail validation, including decompression warnings. Future Ollama
+integration requires separate transport, cancellation and publication qualification.
 
 ## Watcher durability and cleanup
 
@@ -126,3 +119,50 @@ because the action has already recorded an uncertain outcome; no late result is
 published and no retry follows. Keep the journal and diagnostics together when
 investigating. A failed journal write can leave only the earlier admitted/in-flight
 record: that is incomplete accounting, never evidence of unused capacity.
+
+## PERF-04 bounded read recovery
+
+The working V2 client binds account/catalog/account-read revisions, cancels obsolete
+channels and rejects late results. A 403 or sign-in redirect discards private authority
+and clears visible private content. A 404 identifies an unavailable record, 409 offers
+reload, and `read_state_unavailable` 503 explains explicit preparation/recovery. Reads
+do not prepare state, automatically retry, or fall back to full V1 data.
+
+Failed secondary choices retain primary cards and expose an explicit page retry.
+Confirmed mutation receipts are retained before display refresh; read failure reports
+that the change was saved and never repeats confirmation. Copy-price evidence is
+unloaded until requested, not falsely empty. These source behaviors have targeted
+checks; [PERF-04 evidence](perf04-evidence-20261028.md) lists the broader unqualified
+workflows and remaining legacy consumers.
+
+### Bounded browsing recovery (PERF-04)
+
+An access-denied V2 read discards private authority and clears private results and open
+editors, leaving a visible sign-in/reload state. Bulk and photo review listen to the
+same revocation event. A switched session cannot publish a response into the previous
+account's page. Secondary filter/artwork failures leave independently valid primary
+results visible and expose an explicit retry; revision conflicts never merge snapshots.
+
+Bulk saved-result recovery precedes catalog loading. Confirmed/undone receipts and Undo
+remain reachable if derived catalog/account reads return 503. No recovery path repeats
+confirmation. Whole-query/range selection collects revision-bound pages before changing
+a draft; an error or oversized unresolved selection cannot silently apply a partial set.
+
+## OPS readiness and slow-read investigation
+
+Use the [scoped readiness contracts and failure table](operations.md#ops-readiness-local-contracts).
+`read_state_unavailable` remains HTTP 503, supplied stale resource revisions remain 409,
+and authorization failure remains independent. `runtime_busy` indicates the bounded
+ASGI admission wait expired; it is not proof of damaged derived data.
+
+Before repeating an operation, inspect its confirmed result. Read recovery prepares
+from current authority and never submits that operation again. An older goal-header
+policy needs explicit account preparation, not a browser retry loop. A catalog-schema
+repair also requires account-schema repair before catalog/account preparation because
+account indexes on replaced catalog tables are removed.
+
+`X-Dex-Diagnostic-ID` correlates a request with the bounded private timing log when the
+record was retained. SQL execute and fetch have separate fields; missing timing is null,
+not zero. Route templates replace raw URLs. The log's sampling/rotation and overlapping
+phase semantics are in operations. Database corruption/permissions are reported as
+storage unavailable; an index repair is never advertised as authoritative data recovery.

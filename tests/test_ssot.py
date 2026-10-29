@@ -62,7 +62,9 @@ def test_guest_root_delegates_to_canonical_species_handler(env, b2):
                 response = guest.get("/", {"q": "Ivysaur"})
                 assert response.status_code == 200
                 handler.assert_called_once()
-                assert b"/pokedex/2/?return=" in response.content
+                assert b"public-browse.js" in response.content
+                assert b"bounded-reads.js" in response.content
+                assert b"/pokedex/2/?return=" not in response.content
                 assert response["Cache-Control"] == "no-store"
     finally:
         importlib.reload(urls)
@@ -290,7 +292,18 @@ def test_goal_and_hunt_exact_ownership_delegate_to_same_policy(env):
         patch.object(collection, "copies", return_value=active),
         patch.object(collection, "catalog", return_value=catalog),
         patch.object(collection.store, "verified"),
-        patch.object(collection.store, "rows", return_value=[]),
+        patch.object(
+            collection.store,
+            "rows",
+            return_value=[
+                {
+                    "id": "synthetic-goal",
+                    "kind": "custom",
+                    "name": "Exact goal",
+                    "definition": json.dumps({"policy": "exact", "items": []}),
+                }
+            ],
+        ),
         patch.object(collection, "exact_owned_printings", wraps=collection.exact_owned_printings) as policy,
     ):
         collection.goals(actor)
@@ -439,13 +452,11 @@ def test_persistent_recognition_reader_enforces_profile_without_resetting_config
         override_settings(STAGING=True),
         patch.object(scans.store, "rows", return_value=[record]),
         patch.object(scans.inventory, "execute") as write,
-        patch.object(scans.codex_recognition, "recognize") as cli,
-        patch.object(scans.httpx, "post") as api,
+        patch("httpx.post") as api,
     ):
         with pytest.raises(ValueError, match="does not support codex_cli"):
             scans.config()
         write.assert_not_called()
-        cli.assert_not_called()
         api.assert_not_called()
     assert json.loads(record["value"]) == value
     with override_settings(STAGING=True), patch.object(scans.store, "rows", return_value=[]):

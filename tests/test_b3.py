@@ -5,6 +5,7 @@ import io
 import json
 import time
 import uuid
+from contextlib import closing
 from unittest.mock import patch
 
 import pytest
@@ -15,12 +16,12 @@ from test_b2 import post
 from test_migration import snapshot as snapshot
 
 from pokemon_hunter.beta import collection as inv
-from pokemon_hunter.beta import scans
+from pokemon_hunter.beta import scan_config, scans
 from pokemon_hunter.inventory import connect
 
 
 @pytest.fixture
-def b3(b2):
+def b3(b2, monkeypatch):
     from django.conf import settings
     from django.db import connection
     from django.urls import clear_url_caches
@@ -28,8 +29,9 @@ def b3(b2):
     from pokemon_hunter.beta import urls
 
     connection.close()
-    with connect(b2["root"] / "inventory.db") as db:
+    with closing(connect(b2["root"] / "inventory.db")) as db, db:
         scans.initialize(db)
+    monkeypatch.setattr(scan_config, "recognition_enabled", lambda: True)
     old_root = settings.ROOT
     settings.ROOT = b2["root"]
     settings.B3_ENABLED = True
@@ -200,63 +202,6 @@ def test_retries_crash_recovery_retention(b3):
     inv.execute("UPDATE scan_jobs SET created=0 WHERE id=%s", [k["id"]])
     scans.cleanup()
     assert not scans.job(b3["actor"], k["id"])["photos"]
-
-
-def test_provider_contract_budget_and_missing_key(b3, monkeypatch):
-    (b3["root"] / "scan-config.json").write_text(
-        '{"mode":"openai","ceiling_usd":0.05,"user_ceiling_usd":0.05}'
-    )
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-    j = upload(b3)
-    scans.process_one()
-    assert "OPENAI_API_KEY" in scans.job(b3["actor"], j["id"])["error"]
-    monkeypatch.setenv("OPENAI_API_KEY", "synthetic-never-real")
-    payload = {
-        "status": "completed",
-        "usage": {"input_tokens": 1000, "output_tokens": 100},
-        "output": [
-            {
-                "type": "message",
-                "content": [
-                    {
-                        "type": "output_text",
-                        "text": json.dumps(
-                            dict(
-                                status="readable",
-                                name="Missing",
-                                set_name=None,
-                                number=None,
-                                language=None,
-                                edition=None,
-                                finish=None,
-                                variant=None,
-                            )
-                        ),
-                    }
-                ],
-            }
-        ],
-    }
-
-    class Reply:
-        def raise_for_status(self):
-            pass
-
-        def json(self):
-            return payload
-
-    with patch.object(scans.httpx, "post", return_value=Reply()) as request:
-        action(b3, j, "retry")
-        scans.process_one()
-        sent = request.call_args.kwargs["json"]
-        assert sent["store"] is False and sent["max_output_tokens"] == 600 and sent["model"] == scans.MODEL
-        assert sent["text"]["format"]["strict"] is True
-        assert "tools" not in sent
-        assert scans.job(b3["actor"], j["id"])["cost_usd"] == pytest.approx(0.00056)
-        k = upload(b3)
-        scans.process_one()
-        assert "ceiling" in scans.job(b3["actor"], k["id"])["error"]
-        assert request.call_count == 1
 
 
 def test_untrusted_model_schema_and_conflicting_clues(b3):

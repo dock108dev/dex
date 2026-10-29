@@ -51,7 +51,7 @@ before changes; never reseed an existing installation.
 - Private copies, intentional duplicates, binders, import/export and reviewed undo.
 - Current Pokédex completion by date, set and card criteria, plus frozen species
   or printing goals with explicit progress policies.
-- Private photo entry, manual matching and optional configured recognition.
+- Private photo uploads, manual matching and review of saved photo results.
 - Reviewed catalog publication, product contents and dated seller observations.
 - Explicit Shopping searches, assisted listing checks and delivered-price/reference
   comparisons. Listings and checked seller links appear immediately; new results
@@ -61,7 +61,7 @@ before changes; never reseed an existing installation.
 
 Real-card recognition accuracy is unmeasured; all-era variant coverage and current
 buying availability remain incomplete. Unknown identity, stock, shipping and
-coverage stay visible. Recognition providers and eBay require separate configuration.
+coverage stay visible. AI photo recognition is unavailable pending future Ollama integration; eBay has separate configuration.
 Shopping uses dated, admitted retained references and privately activated source
 snapshots. Scheduled acquisition is unavailable. Missing values remain unpriced.
 

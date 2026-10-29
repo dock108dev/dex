@@ -601,3 +601,77 @@ def test_operator_explicit_lifecycle_on_existing_engineering_root(prepared, tmp_
         [*base[:-1], str(absent), "migrate"], capture_output=True, text=True, timeout=30
     )
     assert rejected.returncode != 0 and not absent.exists()
+
+
+def test_validation_serializes_competing_writer_and_activation_rechecks_authority(prepared):
+    import threading
+
+    with connection.cursor() as cursor:
+        cursor.execute("PRAGMA journal_mode=WAL")
+    entered = threading.Event()
+    finished = threading.Event()
+    errors = []
+
+    def write_authority():
+        try:
+            with sqlite3.connect(prepared["root"] / "inventory.db", timeout=5) as other:
+                entered.set()
+                other.execute("UPDATE games SET name=name")
+        except Exception as exc:
+            errors.append(exc)
+        finally:
+            finished.set()
+
+    writer = threading.Thread(target=write_authority)
+    original = builds.validate_payload
+    started = False
+
+    def overlap(table, row):
+        nonlocal started
+        if not started:
+            started = True
+            writer.start()
+            assert entered.wait(2)
+            # A deferred reader permits this writer to commit, then cannot upgrade
+            # its stale snapshot for the FTS check/status write. An immediate
+            # maintenance transaction holds the writer until validation commits.
+            finished.wait(0.1)
+        return original(table, row)
+
+    try:
+        with patch.object(builds, "validate_payload", side_effect=overlap):
+            candidate = builds.prepare()
+    finally:
+        if started:
+            writer.join(6)
+    assert started and not writer.is_alive() and not errors
+    assert store.rows("SELECT status FROM catalog_read_builds WHERE id=%s", [candidate]) == [
+        {"status": "validated"}
+    ]
+    with pytest.raises(collection.Conflict):
+        builds.activate(candidate)
+
+
+@pytest.mark.parametrize("printing", [False, True])
+@pytest.mark.parametrize("sort", ["set", "name", "number"])
+def test_unfiltered_page_expands_metadata_by_primary_key(prepared, printing, sort):
+    from pokemon_hunter.beta.catalog_read_select import unfiltered
+
+    build = store.rows("SELECT build FROM catalog_read_active WHERE id=1")[0]["build"]
+    original = store.rows
+    plans = []
+
+    def inspected(sql, params=()):
+        if sql.startswith("WITH page"):
+            plans.extend(original("EXPLAIN QUERY PLAN " + sql, params))
+        return original(sql, params)
+
+    with patch.object(store, "rows", side_effect=inspected):
+        total, first = unfiltered(build, {"sort": sort, "page": 1, "page_size": 1}, printing=printing)
+        _, second = unfiltered(build, {"sort": sort, "page": 2, "page_size": 1}, printing=printing)
+        _, empty = unfiltered(build, {"sort": sort, "page": total + 1, "page_size": 1}, printing=printing)
+    assert total >= 2 and len(first) == len(second) == 1 and not empty
+    assert first[0]["id"] != second[0]["id"]
+    lookups = [p["detail"] for p in plans if "SEARCH g " in p["detail"]]
+    assert len(lookups) == 3
+    assert all("build=?" in p and "scope=?" in p and "id=?" in p for p in lookups), plans

@@ -10,6 +10,7 @@ name: Scheduled assurance
         options:
         - full
         - compatibility
+        - performance-diagnostic
         default: full
 permissions:
   contents: read
@@ -17,7 +18,7 @@ defaults:
   run:
     shell: bash
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-${{ inputs.scope || 'scheduled' }}
   cancel-in-progress: false
 jobs:
   inputs:
@@ -30,12 +31,13 @@ jobs:
         EVENT: ${{ github.event_name }}
         SCOPE: ${{ inputs.scope }}
       run: |-
-        if [[ "$EVENT" == workflow_dispatch && "$SCOPE" != full && "$SCOPE" != compatibility ]]; then
+        if [[ "$EVENT" == workflow_dispatch && "$SCOPE" != full && "$SCOPE" != compatibility && "$SCOPE" != performance-diagnostic ]]; then
           echo "Invalid diagnostic scope" >&2
           exit 1
         fi
   ci:
     name: CI
+    if: ${{ inputs.scope != 'performance-diagnostic' }}
     needs: inputs
     uses: ./.github/workflows/validate.yml
     with:
@@ -89,5 +91,45 @@ jobs:
       with:
         name: container-${{ github.run_id }}-${{ github.run_attempt }}
         path: reports/ci/container/
+        if-no-files-found: error
+        retention-days: 14
+
+  performance-diagnostic:
+    name: Diagnostic only (${{ matrix.os }}, Python 3.14)
+    needs: inputs
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.scope == 'performance-diagnostic' }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04]
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - uses: ./.github/actions/setup
+      with:
+        python-version: '3.14'
+    - name: Install the same pinned Chromium
+      run: uv run --no-sync playwright install --with-deps chromium
+    - name: Bounded profiling and browser instrumentation comparison (not acceptance)
+      run: uv run --no-sync pytest -q tests/ci_perf_probe.py --disable-socket --allow-unix-socket --junitxml=reports/ci/perf-diagnostic/probes.xml
+    - name: Separate unprofiled representative budget gates (not full qualification)
+      if: ${{ !cancelled() }}
+      run: uv run --no-sync pytest -q tests/test_catalog_read_performance.py tests/test_account_read_performance.py tests/test_ops_runtime.py --disable-socket --allow-unix-socket --junitxml=reports/ci/perf-diagnostic/budgets.xml
+    - name: Separate corrected browser budget gates (not full qualification)
+      if: ${{ !cancelled() }}
+      run: uv run --no-sync pytest -q tests/test_perf04_browser.py tests/test_perf04_interactions.py --disable-socket --allow-unix-socket --junitxml=reports/ci/perf-diagnostic/browser-budgets.xml
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      if: always()
+      with:
+        name: diagnostic-only-${{ matrix.os }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: |
+          reports/ci/perf-diagnostic/
+          reports/perf02/
+          reports/perf03/
+          reports/perf04/
+          reports/ops-readiness/
         if-no-files-found: error
         retention-days: 14

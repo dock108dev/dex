@@ -64,7 +64,7 @@ Paths are relative to `src/pokemon_hunter/`.
 | Discovery applicability and result order | `beta/discovery_comparison.py:compare`; `beta/goal_hunts.py` supplies collection/goal scope |
 | Provider settings and historical hunt projections | `config.py`, `beta/ebay_hunts.py:configuration/status`, `hunt.py`, `beta/hunt_values.py` |
 | Manual bulk drafts and replay identity | `beta/bulk_input.py`, `beta/collection_drafts.py`, `beta/bulk_views.py`, with collection mutation authority |
-| Photo jobs and batch review | `beta/scans.py`, `scan_worker.py`, `scan_config.py`, `codex_recognition.py`, `photo_batches.py`, `photo_batch_journal.py`, `batch_recognition.py` |
+| Photo jobs and batch review | `beta/scans.py`, `scan_worker.py`, `scan_config.py`, `photo_batches.py`, `photo_batch_journal.py`, `photo_contracts.py`, `photo_payload_cleanup.py` |
 | Synthetic sealed-offer replay | `beta/refresh.py`; no live acquisition adapter |
 | Bounded group-metadata acquisition | `metadata_collector.py`; explicit fixed TCGCSV group request, independent Stop and consumed reservation |
 | Image identity and private access | `beta/image_mappings.py`, pinned mapping data, `beta/image_bindings.py`; `scans.authorized_photo_rows` owns photo authorization |
@@ -289,3 +289,34 @@ PERF-03. `catalog_read_snapshot.py` owns deferred read transactions without chan
 collection mutation transactions. V1 and effective-collection authority remain intact.
 See [implemented APIs and handoffs](card-groups.md#perf-02-implemented-shared-read-services)
 and [explicit maintenance](operations.md#perf-02-read-schema-maintenance).
+
+## Photo recognition authority
+
+Domain: recognition capability and persisted configuration.
+SSOT module/file: `beta/scan_config.py`.
+Why this is authoritative: readers preserve legacy settings while all new ordinary
+entries resolve to manual; no runtime flag enables a removed provider.
+Known callers: scan views, scan jobs, photo-batch admission, deployment configuration validation.
+
+Domain: reusable photo evidence and manual processing.
+SSOT module/file: `beta/photo_contracts.py`, `photo_batch_images.py`, `photo_matching.py`.
+Why this is authoritative: schemas, image bounds and catalog matching are independent
+of provider transport and cannot grant ownership or perform network I/O.
+Known callers: batch layout, crop processing and stored-result review; future Ollama
+integration must consume these contracts instead of duplicating them.
+
+Domain: photo persistence and confirmation.
+SSOT module/file: `beta/scans.py`, `photo_batches.py`, `photo_batch_journal.py`.
+Why this is authoritative: account-scoped uploads, revisions, reservations and explicit
+confirmation remain here after removal of Codex/OpenAI dispatch.
+Known callers: scan/photo APIs, worker retirement of historical jobs, bulk handoff and review.
+
+Legacy provider labels, dollar reservations and the old payload lock filename remain
+storage/history contracts only. There is no executable provider compatibility shim.
+
+PERF-03's disposable account read records and private V2 contracts are documented
+in [PERF-03 account reads](perf03-account-reads.md). Effective ownership, reviewed
+operation receipts, frozen goal definitions and retained declarations remain the
+sources of truth. Derived preparation/recovery never replays a confirmed write.
+Source implementation, exact-candidate SQLite qualification, frontend adoption,
+installation and owner acceptance remain separate statuses.

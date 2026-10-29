@@ -3,6 +3,7 @@
 import copy
 import importlib
 import json
+from pathlib import Path
 from urllib.parse import urlsplit
 
 import pytest
@@ -23,7 +24,7 @@ from pokemon_hunter.beta.staging_config import configuration
 @pytest.fixture
 def snapshot(tmp_path):
     root = base_snapshot.__wrapped__(tmp_path)
-    project = PACKAGES.parents[2]
+    project = Path(__file__).resolve().parents[1]
     data = json.loads((project / "config/pokedex_251.example.json").read_text())
     data["cards"]["base_set-1"]["owned"] = True
     data["cards"]["base_set-1"]["first_edition"] = True
