@@ -3,6 +3,7 @@
 import hashlib
 import json
 import sqlite3
+from contextlib import closing
 from pathlib import Path
 
 from .inventory import OWNER_ID, connect, stable_id
@@ -58,8 +59,7 @@ def import_snapshot(snapshot, target, user_id=OWNER_ID):
     data = json.loads(files["config/pokedex_251.json"])
     source_hash = digest(encode({p: digest(b) for p, b in files.items()}).encode())
     batch = stable_id("batch", f"{user_id}:{source_hash}")
-    db = connect(target)
-    with db:
+    with closing(connect(target)) as db, db:
         db.execute(
             "INSERT OR IGNORE INTO users VALUES(?,NULL,?,?,?)",
             (
@@ -176,7 +176,7 @@ def import_snapshot(snapshot, target, user_id=OWNER_ID):
             )
         hunt = snapshot / "data/collection_hunts.db"
         if hunt.exists():
-            with sqlite3.connect(f"{hunt.as_uri()}?mode=ro", uri=True) as source:
+            with closing(sqlite3.connect(f"{hunt.as_uri()}?mode=ro", uri=True)) as source, source:
                 for row in source.execute("SELECT id,created,demo,request,raw,coverage FROM hunts"):
                     db.execute(
                         "INSERT OR IGNORE INTO saved_hunts VALUES(?,?,?,?,?,?,?,?)", (batch, user_id, *row)
@@ -198,7 +198,6 @@ def import_snapshot(snapshot, target, user_id=OWNER_ID):
                 ),
             ),
         )
-    db.close()
     return batch
 
 
@@ -244,7 +243,7 @@ def compare(snapshot, target, batch):
     ]
     hp = Path(snapshot) / "data/collection_hunts.db"
     if hp.exists():
-        with sqlite3.connect(f"{hp.resolve().as_uri()}?mode=ro", uri=True) as source:
+        with closing(sqlite3.connect(f"{hp.resolve().as_uri()}?mode=ro", uri=True)) as source, source:
             assert (
                 hunts
                 == source.execute(
