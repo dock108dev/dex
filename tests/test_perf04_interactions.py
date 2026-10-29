@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 from perf04_helpers import prepare_reads
+from runtime_process import close_pipes, read_port
 from test_account_read_performance import ownership
 from test_b1 import env as env
 from test_b2 import b2 as b2
@@ -72,9 +73,8 @@ def test_real_interaction_phases_and_restart(cx, scale, copies):
             stderr=subprocess.PIPE,
             text=True,
         )
-        line = process.stdout.readline().strip()
-        assert line.isdigit(), process.stderr.read()
-        return int(line), (time.perf_counter() - before) * 1000
+        port = read_port(process)
+        return port, (time.perf_counter() - before) * 1000
 
     port, startup = start()
     report["startup_to_listening_ms"] = startup
@@ -143,6 +143,7 @@ def test_real_interaction_phases_and_restart(cx, scale, copies):
                 # Restart the process with the exact prepared DB; no rebuilding or warm-up request.
                 process.terminate()
                 process.wait(timeout=10)
+                close_pipes(process)
                 _, startup = start(port)
                 page.evaluate("sessionStorage.removeItem('perf04-action')")
                 begin = time.perf_counter()
@@ -187,6 +188,8 @@ def test_real_interaction_phases_and_restart(cx, scale, copies):
         if process and process.poll() is None:
             process.terminate()
             process.wait(timeout=10)
+        if process:
+            close_pipes(process)
         output = Path("reports/perf04")
         output.mkdir(parents=True, exist_ok=True)
         (output / f"interactions-{scale}.json").write_text(json.dumps(report, indent=2))

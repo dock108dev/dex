@@ -2,13 +2,13 @@
 
 import hashlib
 import json
-import socket
 import sys
 import threading
 import time
 from pathlib import Path
 
 import uvicorn
+from runtime_process import listener as tcp_listener
 
 from pokemon_hunter.beta import cli
 
@@ -70,8 +70,7 @@ def serve(application, **options):
         (root / "engineering-query-timings.json").write_text(json.dumps(profile))
 
     application.shutdown = finish
-    listener = socket.socket()
-    listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    listener = tcp_listener()
     listener.bind(("127.0.0.1", chosen_port))
 
     async def mapped(scope, receive, send):

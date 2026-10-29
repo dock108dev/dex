@@ -2,7 +2,6 @@
 
 import hashlib
 import json
-import select
 import subprocess
 import sys
 import time
@@ -11,6 +10,7 @@ from socketserver import ThreadingMixIn
 from wsgiref.simple_server import WSGIRequestHandler, WSGIServer
 
 import pytest
+from runtime_process import close_pipes, read_port
 from test_account_read_performance import ownership
 from test_b1 import env as env
 from test_b2 import b2 as b2
@@ -68,14 +68,13 @@ def test_full_browser(cx, scale, copies):
         text=True,
     )
     try:
-        assert select.select([process.stdout], [], [], 10)[0], "Runtime startup deadline"
-        port = process.stdout.readline().strip()
-        assert port.isdigit(), "Runtime failed before listening"
+        port = read_port(process)
     except BaseException:
         process.terminate()
         process.wait(timeout=12)
+        close_pipes(process)
         raise
-    base = "http://127.0.0.1:" + port
+    base = f"http://127.0.0.1:{port}"
 
     def candidate():
         return hashlib.sha256(
@@ -231,6 +230,7 @@ def test_full_browser(cx, scale, copies):
     finally:
         process.terminate()
         process.wait(timeout=12)
+        close_pipes(process)
         output = Path("reports/perf04")
         output.mkdir(parents=True, exist_ok=True)
         (output / f"browser-{scale}.json").write_text(json.dumps(report, indent=2))

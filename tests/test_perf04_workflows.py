@@ -463,9 +463,15 @@ def test_off_page_set_and_binder_labels(browser_app):
     cx, page, base, requests, errors = browser_app
     page.goto(base + "/card-library/")
     page.get_by_role("button", name="Browse set choices", exact=True).click()
+    options = page.locator("[data-option-value]")
+    expect(options).to_have_count(40)
     page.get_by_role("button", name="Load next page", exact=True).click()
-    choice = page.locator("[data-option-value]").last
-    value, label = choice.get_attribute("data-option-value"), choice.inner_text()
+    expect(options).to_have_count(80)
+    value = options.last.get_attribute("data-option-value")
+    # Pin identity after pagination finishes; a live .last locator may otherwise
+    # read the previous page's label and click the newly appended page's value.
+    choice = page.locator(f'[data-option-value="{value}"]')
+    label = choice.inner_text()
     choice.click()
     page.get_by_role("button", name="Search cards", exact=True).click()
     expect(page.locator("#cards-set option:checked")).to_have_text(label)

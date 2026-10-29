@@ -93,8 +93,10 @@ jobs:
   behavior:
     name: Behavior (${{ matrix.os }}, Python ${{ matrix.python }})
     runs-on: ${{ matrix.os }}
-    # Minimum-runtime full suites took 24-30+ minutes in the October 18 sample.
-    timeout-minutes: ${{ matrix.python == '3.12' && 45 || 30 }}
+    # The integrated 3.13 suite was still progressing at 84% when its 30-minute
+    # job expired. Allow complete diagnostics/results on every supported runtime;
+    # retain the 90-second timer and all individual performance budgets.
+    timeout-minutes: 45
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:

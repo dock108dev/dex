@@ -3,7 +3,6 @@
 import concurrent.futures
 import json
 import platform
-import select
 import subprocess
 import sys
 import time
@@ -12,6 +11,7 @@ from pathlib import Path
 import httpx
 import pytest
 from perf04_helpers import prepare_reads
+from runtime_process import close_pipes, read_port
 from test_account_read_performance import ownership
 from test_b1 import env as env
 from test_b2 import b2 as b2
@@ -70,10 +70,8 @@ def test_ordinary_runtime(cx, scale, copies):
             stderr=subprocess.PIPE,
             text=True,
         )
-        assert select.select([process.stdout], [], [], 10)[0], "Startup did not report a listener"
-        line = process.stdout.readline().strip()
-        assert line.isdigit(), "Runtime failed before listening"
-        base = "http://127.0.0.1:" + line
+        port = read_port(process)
+        base = f"http://127.0.0.1:{port}"
         with httpx.Client(base_url=base, timeout=2) as client:
             live = client.get("/livez/")
             ready = client.get("/readyz/")
@@ -96,6 +94,7 @@ def test_ordinary_runtime(cx, scale, copies):
         ]
         assert any(r.get("event") == "shutdown" and r.get("ready") for r in records)
         errors = process.stderr.read()
+        close_pipes(process)
         assert not errors, "Runtime emitted unexpected errors (not included for privacy)"
 
     try:
@@ -155,4 +154,6 @@ def test_ordinary_runtime(cx, scale, copies):
         if process is not None and process.poll() is None:
             process.terminate()
             process.wait(timeout=12)
+        if process is not None:
+            close_pipes(process)
         (out / f"runtime-{scale}.json").write_text(json.dumps(report, indent=2))

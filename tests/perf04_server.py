@@ -1,9 +1,10 @@
 """Disposable ASGI measurement server. No workers, preparation, or initialization."""
 
-import socket
 import sys
 import time
 from pathlib import Path
+
+from runtime_process import listener as tcp_listener
 
 from pokemon_hunter.beta.cli import setup
 
@@ -15,8 +16,7 @@ def main():
     from pokemon_hunter.beta.asgi import get_asgi_application
 
     application = get_asgi_application()
-    listener = socket.socket()
-    listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    listener = tcp_listener()
     listener.bind(("127.0.0.1", int(sys.argv[2])))
     port = listener.getsockname()[1]
 
