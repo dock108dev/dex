@@ -25,5 +25,7 @@ runs:
     env:
       UV_PYTHON: ${{ steps.python.outputs.python-path }}
     run: |
-      echo "UV_PYTHON=$UV_PYTHON" >> "$GITHUB_ENV"
       uv sync --locked --extra dev --extra ci
+      # Subsequent no-build-isolation builds need the locked backend in .venv,
+      # not the bare interpreter that was used to create it.
+      echo "UV_PYTHON=$PWD/.venv/bin/python" >> "$GITHUB_ENV"
