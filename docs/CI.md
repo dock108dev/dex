@@ -20,11 +20,11 @@ not validate personal collections, live marketplace results or a hosted deployme
 | `assurance.yml / container` | Non-publishing image build and non-root installed imports without networking | Schedule or manual `compatibility` |
 | `assurance.yml / health` | Bounded Actions history and storage metadata | Schedule or manual; advisory collection |
 
-Normal behavior entries use Ubuntu 24.04 and macOS 15 with Python 3.14. Compatibility
-adds Ubuntu Python 3.13 and both OSes on Python 3.12. Every PR also installs and
+Normal hosted behavior uses Ubuntu 24.04 with Python 3.14. Compatibility
+adds Ubuntu Python 3.13 and Python 3.12. Every PR also installs and
 compiles the fresh package on the declared minimum Python 3.12. Other jobs use
 Ubuntu and Python 3.14, with Node 24 where needed. Matrix fail-fast is disabled.
-Behavior has a 30-minute limit, or 45 minutes on the minimum runtime; pytest prints
+Behavior has a 45-minute limit on every runtime; pytest prints
 slow-test timings and diagnostic stacks after a 90-second stall without terminating
 the test. Package inputs and tool versions are defined by the workflows, composite
 setup action, `pyproject.toml` and `uv.lock`.
@@ -35,6 +35,26 @@ qualify another PR. There are no path filters that can strand the required check
 PRs validate the proposed merge; main runs validate merged state. Superseded PR
 runs cancel; main/scheduled runs do not cancel unrelated work. Merge queues are
 not configured by these workflows; add `merge_group` before requiring queue gates.
+
+## Required local Mac compatibility
+
+The owner approved Linux as the required hosted target on October 29, 2026,
+reflecting the intended Linux service/container destination. The actual Mac remains
+supported through a separate local gate. This supersedes the proposed dedicated
+macOS 15 runner; previous hosted macOS failures remain recorded, not reclassified.
+
+Before CI-VERIFY can pass, run the complete installed suite serially on the actual
+Mac with Python 3.12 and 3.14, pinned dependencies/browser, socket guard, JUnit and
+line/branch coverage. Use disposable engineering roots, never the customer root.
+Retain every existing test, performance budget, twenty-sample group, full/doubled
+dataset and authority/security contract. Do not run competing profiling or builds.
+Record OS/architecture, interpreter/SQLite/browser identities, commit/tree and
+all authored hashes, installed wheel/sdist/lock/member binding, raw performance
+reports and complete JUnit/coverage. Verify the source seal before and after each
+suite. Missing, failed, skipped or stale local evidence leaves this separate gate
+open even when hosted CI passes. Local evidence is not a GitHub-hosted report and
+must not be inserted into the hosted aggregate. Local engineering qualification
+does not establish customer-runtime acceptance or authorize installation.
 
 ## Local checks
 
@@ -102,7 +122,7 @@ JSON records and native GitHub job summaries. Records include the tested merge S
 PR head, ref/event, run/attempt, runtime, tool versions and actual outcomes. Missing
 values stay unavailable; a previous successful run does not qualify changed source.
 
-The aggregate expects seven job reports, or ten for compatibility. It rejects
+The hosted aggregate expects six job reports, or eight for compatibility. It rejects
 missing, duplicate, malformed, stale or contradictory evidence, unexpected skips
 and cancellations. Every discovered `tests/test_*.py` module must execute; zero-test
 or all-skipped modules cannot pass. A retained PASS cannot override failed tests,
@@ -842,9 +862,10 @@ syntax checks, 18 maintained-document link checks and whitespace checks pass.
    hatchling and final lock, compare repeat outputs and wheel-from-sdist equality,
    then install into fresh hash-locked runtime environments. Check all installed
    members, imports, entrypoints, maintenance and V2 readiness using updated smoke.
-3. Run exact-source normal validation and the full compatibility attempt: Ubuntu and
-   macOS Python 3.14, Ubuntu 3.13, both OSes 3.12, minimum-runtime distribution, and
-   Linux x86_64 container checks. Keep the 90-second diagnostic timer. Retain any
+3. Run exact-source normal validation and the full compatibility attempt: Ubuntu
+   Python 3.14, 3.13 and 3.12, minimum-runtime distribution, and Linux x86_64
+   container checks. Separately require complete installed Python 3.12 and 3.14
+   compatibility on the actual local Mac, using disposable engineering state. Keep the 90-second diagnostic timer. Retain any
    3.14 diagnostic failure; the local 3.12 result is not a fix or waiver for it.
 4. Run quality/renderers, full guarded behavior/coverage, isolated browser journeys,
    security/dependency audits, staging PostgreSQL and the required aggregate. Run

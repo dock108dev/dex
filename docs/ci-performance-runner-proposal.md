@@ -1,9 +1,17 @@
 # Proposed macOS performance qualification environment
 
-Status: proposal only. The existing required hosted gates and budgets remain
-binding. CI-VERIFY is open and RUNTIME-DELIVER is blocked. No runner selection,
-required check, threshold, sample count or browser launch setting has changed.
-This proposal requires an explicit owner decision before implementation.
+Status: superseded by the owner's October 29 decision: Linux hosted CI plus
+actual-Mac compatibility. The owner initially approved this dedicated-macOS-15
+design, then selected Linux as the required hosted target after discovery found
+no registered dedicated runner. The local Mac is macOS 27.0.1 arm64.
+
+The current contract is in [CI](CI.md#required-local-mac-compatibility): complete
+Ubuntu Python 3.12/3.13/3.14 coverage, existing container/security/distribution/
+staging/browser/quality checks, plus complete installed Python 3.12/3.14 suites
+on the actual Mac. All product budgets, samples and datasets remain unchanged.
+No dedicated-runner provisioning or proposed frame-calibration requirement was
+implemented. The historical proposal and evidence below remain for traceability.
+CI-VERIFY remains open until fresh exact-candidate hosted and local gates pass.
 
 ## Controlled evidence
 

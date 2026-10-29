@@ -147,8 +147,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(inputs.compatibility && '[{"os":"ubuntu-24.04","python":"3.14"},{"os":"macos-15","python":"3.14"},{"os":"ubuntu-24.04","python":"3.13"},{"os":"ubuntu-24.04","python":"3.12"},{"os":"macos-15","python":"3.12"}]'
-          || '[{"os":"ubuntu-24.04","python":"3.14"},{"os":"macos-15","python":"3.14"}]') }}
+        include: ${{ fromJSON(inputs.compatibility && '[{"os":"ubuntu-24.04","python":"3.14"},{"os":"ubuntu-24.04","python":"3.13"},{"os":"ubuntu-24.04","python":"3.12"}]'
+          || '[{"os":"ubuntu-24.04","python":"3.14"}]') }}
   distribution:
     name: Fresh distribution
     runs-on: ubuntu-24.04
@@ -345,7 +345,7 @@ jobs:
       run: |-
         python3 scripts/ci/report.py aggregate --needs-json "$NEEDS_JSON" --output reports/ci/gate/metrics.json --required quality --required behavior --required distribution --required browser --required security --required staging \
           --report-directory reports/ci/children \
-          --expect-job-reports "Source quality=1" --expect-job-reports "Behavior=${{ inputs.compatibility && 5 || 2 }}" \
+          --expect-job-reports "Source quality=1" --expect-job-reports "Behavior=${{ inputs.compatibility && 3 || 1 }}" \
           --expect-job-reports "Staging PostgreSQL=1" --expect-job-reports "Fresh distribution=1" --expect-job-reports "Synthetic browser journeys=1" --expect-job-reports "Security and dependencies=1"
         echo "result=PASS" >> "$GITHUB_OUTPUT"
     - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
