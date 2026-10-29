@@ -11,6 +11,7 @@ name: Scheduled assurance
         - full
         - compatibility
         - performance-diagnostic
+        - native-diagnostic
         default: full
 permissions:
   contents: read
@@ -31,13 +32,13 @@ jobs:
         EVENT: ${{ github.event_name }}
         SCOPE: ${{ inputs.scope }}
       run: |-
-        if [[ "$EVENT" == workflow_dispatch && "$SCOPE" != full && "$SCOPE" != compatibility && "$SCOPE" != performance-diagnostic ]]; then
+        if [[ "$EVENT" == workflow_dispatch && "$SCOPE" != full && "$SCOPE" != compatibility && "$SCOPE" != performance-diagnostic && "$SCOPE" != native-diagnostic ]]; then
           echo "Invalid diagnostic scope" >&2
           exit 1
         fi
   ci:
     name: CI
-    if: ${{ inputs.scope != 'performance-diagnostic' }}
+    if: ${{ inputs.scope != 'performance-diagnostic' && inputs.scope != 'native-diagnostic' }}
     needs: inputs
     uses: ./.github/workflows/validate.yml
     with:
@@ -131,5 +132,68 @@ jobs:
           reports/perf03/
           reports/perf04/
           reports/ops-readiness/
+        if-no-files-found: error
+        retention-days: 14
+
+  native-diagnostic:
+    name: Native diagnostic only (Ubuntu, Python 3.12.16)
+    needs: inputs
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.scope == 'native-diagnostic' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - uses: ./.github/actions/setup
+      with:
+        python-version: '3.12.16'
+    - name: Prepare native debugger and pinned Chromium
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends gdb
+        uv run --no-sync playwright install --with-deps chromium
+        mkdir -p reports/ci/native-diagnostic
+        git rev-parse HEAD HEAD^{tree} > reports/ci/native-diagnostic/source.txt
+        sha256sum uv.lock > reports/ci/native-diagnostic/lock.txt
+        uv run --no-sync python -VV > reports/ci/native-diagnostic/python.txt
+        uv run --no-sync python -c 'import json, platform, sqlite3, greenlet; print(json.dumps({"platform": platform.platform(), "sqlite": sqlite3.sqlite_version, "greenlet": greenlet.__version__}))' > reports/ci/native-diagnostic/native-versions.json
+        uv pip freeze > reports/ci/native-diagnostic/dependencies.txt
+    - name: Bounded synthetic controls and native backtrace (not acceptance)
+      run: |
+        ulimit -c 0
+        for mode in sqlite greenlet primed-sqlite; do
+          for timer in off on; do
+            args=()
+            if [[ "$timer" == on ]]; then args+=(--timer); fi
+            for trial in 1 2 3; do
+              result=0
+              timeout 30s gdb --batch --return-child-result \
+                -ex 'set pagination off' -ex 'set print frame-arguments none' \
+                -ex run -ex 'thread apply all bt 30' \
+                --args .venv/bin/python scripts/ci/native_crash_probe.py "$mode" "${args[@]}" \
+                > "reports/ci/native-diagnostic/$mode-$timer-$trial.log" 2>&1 || result=$?
+              echo "$mode $timer $trial $result" >> reports/ci/native-diagnostic/probe-exits.txt
+            done
+          done
+        done
+    - name: Original full suite under debugger with unchanged 90-second diagnostics
+      if: ${{ !cancelled() }}
+      run: |
+        ulimit -c 0
+        timeout 40m gdb --batch --return-child-result \
+          -ex 'set pagination off' -ex 'set print frame-arguments none' \
+          -ex run -ex 'thread apply all bt 30' \
+          --args .venv/bin/python -m pytest -q --durations=15 \
+          --disable-socket --allow-unix-socket \
+          --junitxml=reports/ci/native-diagnostic/junit.xml \
+          --cov=pokemon_hunter --cov-branch \
+          --cov-report=json:reports/ci/native-diagnostic/coverage.json \
+          > reports/ci/native-diagnostic/full-suite.log 2>&1
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      if: always()
+      with:
+        name: native-diagnostic-only-${{ github.run_id }}-${{ github.run_attempt }}
+        path: reports/ci/native-diagnostic/
         if-no-files-found: error
         retention-days: 14
