@@ -13,6 +13,7 @@ name: Scheduled assurance
         - performance-diagnostic
         - native-diagnostic
         - bulk-goal-diagnostic
+        - bulk-goal-regression
         default: full
       goal_schedule:
         description: Controlled confirmation/reload ordering for the focused bulk-goal diagnostic only
@@ -37,13 +38,13 @@ jobs:
         EVENT: ${{ github.event_name }}
         SCOPE: ${{ inputs.scope }}
       run: |-
-        if [[ "$EVENT" == workflow_dispatch && "$SCOPE" != full && "$SCOPE" != compatibility && "$SCOPE" != performance-diagnostic && "$SCOPE" != native-diagnostic && "$SCOPE" != bulk-goal-diagnostic ]]; then
+        if [[ "$EVENT" == workflow_dispatch && "$SCOPE" != full && "$SCOPE" != compatibility && "$SCOPE" != performance-diagnostic && "$SCOPE" != native-diagnostic && "$SCOPE" != bulk-goal-diagnostic && "$SCOPE" != bulk-goal-regression ]]; then
           echo "Invalid diagnostic scope" >&2
           exit 1
         fi
   ci:
     name: CI
-    if: ${{ inputs.scope != 'performance-diagnostic' && inputs.scope != 'native-diagnostic' && inputs.scope != 'bulk-goal-diagnostic' }}
+    if: ${{ inputs.scope != 'performance-diagnostic' && inputs.scope != 'native-diagnostic' && inputs.scope != 'bulk-goal-diagnostic' && inputs.scope != 'bulk-goal-regression' }}
     needs: inputs
     uses: ./.github/workflows/validate.yml
     with:
@@ -261,5 +262,51 @@ jobs:
           reports/perf03/
           reports/perf04/
           reports/ops-readiness/
+        if-no-files-found: error
+        retention-days: 14
+
+  bulk-goal-regression:
+    name: Focused bulk-goal regression (Python 3.12.16)
+    env:
+      PYTHONPATH: tests
+    needs: inputs
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.scope == 'bulk-goal-regression' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        persist-credentials: false
+        fetch-depth: 0
+    - uses: ./.github/actions/setup
+      with:
+        python-version: '3.12.16'
+    - name: Prepare original comparison and exact identities
+      run: |
+        uv run --no-sync playwright install --with-deps chromium
+        uv run --no-sync python scripts/ci/bulk_goal_regression.py prepare
+        sha256sum uv.lock > reports/ci/bulk-goal-regression/lock.txt
+        uv pip freeze > reports/ci/bulk-goal-regression/dependencies.txt
+    - name: Regression must fail against original workflow
+      run: |
+        result=0
+        uv run --no-sync python -m pytest -q 'tests/test_bulk_goal_original_diagnostic.py::test_custom_goal_waits_for_confirmation_before_reload[bulk]' --disable-socket --allow-unix-socket --junitxml=reports/ci/bulk-goal-regression/original.xml > reports/ci/bulk-goal-regression/original.log 2>&1 || result=$?
+        test "$result" -eq 1
+    - name: All 22 repaired workflow checks
+      if: ${{ !cancelled() }}
+      run: |
+        uv run --no-sync python -m pytest -q tests/test_perf04_workflows.py --disable-socket --allow-unix-socket --junitxml=reports/ci/bulk-goal-regression/workflows.xml > reports/ci/bulk-goal-regression/workflows.log 2>&1
+    - name: All 66 related correctness checks
+      if: ${{ !cancelled() }}
+      run: |
+        uv run --no-sync python -m pytest -q tests/test_collection_goals.py tests/test_broad_goals.py tests/test_filtered_goals.py tests/test_account_reads.py tests/test_perf04_contracts.py --disable-socket --allow-unix-socket --junitxml=reports/ci/bulk-goal-regression/related.xml > reports/ci/bulk-goal-regression/related.log 2>&1
+    - name: Verify expected failure and complete focused passes
+      if: ${{ !cancelled() }}
+      run: uv run --no-sync python scripts/ci/bulk_goal_regression.py verify
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+      if: always()
+      with:
+        name: bulk-goal-regression-${{ github.run_id }}-${{ github.run_attempt }}
+        path: reports/ci/bulk-goal-regression/
         if-no-files-found: error
         retention-days: 14
