@@ -14,6 +14,10 @@ name: Scheduled assurance
         - native-diagnostic
         - bulk-goal-diagnostic
         default: full
+      goal_schedule:
+        description: Controlled confirmation/reload ordering for the focused bulk-goal diagnostic only
+        type: boolean
+        default: false
 permissions:
   contents: read
 defaults:
@@ -235,10 +239,11 @@ jobs:
     - name: Focused original test with transition evidence
       env:
         DEX_GOAL_DIAGNOSTIC_OUT: reports/ci/bulk-goal/focused
+        DEX_GOAL_CONTROLLED: ${{ inputs.goal_schedule && '1' || '0' }}
       run: |
         uv run --no-sync python -m pytest -p scripts.ci.bulk_goal_diagnostic -q 'tests/test_perf04_workflows.py::test_custom_goal_keeps_members_and_labels_across_search_and_pages[bulk]' --disable-socket --allow-unix-socket --junitxml=reports/ci/bulk-goal/focused/junit.xml > reports/ci/bulk-goal/focused.log 2>&1
     - name: Original test-order prefix through bulk goal
-      if: ${{ !cancelled() }}
+      if: ${{ !cancelled() && !inputs.goal_schedule }}
       env:
         DEX_GOAL_PREFIX: '1'
         DEX_GOAL_DIAGNOSTIC_OUT: reports/ci/bulk-goal/prefix

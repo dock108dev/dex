@@ -8,7 +8,7 @@ import threading
 import time
 import traceback
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
 import pytest
 
@@ -18,6 +18,9 @@ active = False
 lock = threading.Lock()
 restores = []
 page_ref = None
+confirm_entered = threading.Event()
+confirm_release = threading.Event()
+confirm_done = threading.Event()
 
 
 def emit(event, **fields):
@@ -66,7 +69,18 @@ def wrap(module, name):
     def observed(actor, *args, **kwargs):
         if not active:
             return original(actor, *args, **kwargs)
-        emit(name + ".before", state=state(actor))
+        emit(
+            name + ".before",
+            state=state(actor),
+            requested={
+                k: v for k, v in kwargs.items() if k in ("requested_generation", "requested_revision")
+            },
+        )
+        controlled = name == "confirm" and os.environ.get("DEX_GOAL_CONTROLLED") == "1"
+        if controlled:
+            confirm_entered.set()
+            emit("confirm.paused")
+            confirm_release.wait(2)
         try:
             result = original(actor, *args, **kwargs)
         except Exception as error:
@@ -80,6 +94,8 @@ def wrap(module, name):
                 ],
             )
             raise
+        if controlled:
+            confirm_done.set()
         safe = {
             k: result[k]
             for k in ("id", "kind", "state", "generation", "user_id")
@@ -107,6 +123,7 @@ def pytest_sessionstart(session):
         (builds, "_refresh"),
         (builds, "refresh"),
         (builds, "prepare"),
+        (builds, "state"),
     ]:
         wrap(module, name)
 
@@ -125,8 +142,39 @@ def pytest_fixture_setup(fixturedef, request):
     if active and fixturedef.argname == "browser_app":
         actor, page, base, _, _ = result
         page_ref = page
+        if os.environ.get("DEX_GOAL_CONTROLLED") == "1":
+
+            def release_on_stale_read(route):
+                if confirm_entered.is_set() and not confirm_done.is_set():
+                    emit(
+                        "goal.read.held.until.commit",
+                        selectors={
+                            k: v
+                            for k, v in parse_qs(urlsplit(route.request.url).query).items()
+                            if k in ("generation", "account_revision", "catalog_revision")
+                        },
+                    )
+                    confirm_release.set()
+                    if not confirm_done.wait(10):
+                        raise AssertionError("Controlled confirmation did not complete")
+                route.continue_()
+
+            page.route(base + "/api/v2/goals/**", release_on_stale_read)
+
         emit("browser.fixture.ready", state=state(actor["actor"]))
-        page.on("request", lambda r: emit("request", method=r.method, path=urlsplit(r.url).path))
+        page.on(
+            "request",
+            lambda r: emit(
+                "request",
+                method=r.method,
+                path=urlsplit(r.url).path,
+                selectors={
+                    k: v
+                    for k, v in parse_qs(urlsplit(r.url).query).items()
+                    if k in ("generation", "account_revision", "catalog_revision")
+                },
+            ),
+        )
         page.on(
             "requestfailed", lambda r: emit("request.failed", path=urlsplit(r.url).path, failure=r.failure)
         )
