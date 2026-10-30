@@ -12,6 +12,7 @@ name: Scheduled assurance
         - compatibility
         - performance-diagnostic
         - native-diagnostic
+        - bulk-goal-diagnostic
         default: full
 permissions:
   contents: read
@@ -32,13 +33,13 @@ jobs:
         EVENT: ${{ github.event_name }}
         SCOPE: ${{ inputs.scope }}
       run: |-
-        if [[ "$EVENT" == workflow_dispatch && "$SCOPE" != full && "$SCOPE" != compatibility && "$SCOPE" != performance-diagnostic && "$SCOPE" != native-diagnostic ]]; then
+        if [[ "$EVENT" == workflow_dispatch && "$SCOPE" != full && "$SCOPE" != compatibility && "$SCOPE" != performance-diagnostic && "$SCOPE" != native-diagnostic && "$SCOPE" != bulk-goal-diagnostic ]]; then
           echo "Invalid diagnostic scope" >&2
           exit 1
         fi
   ci:
     name: CI
-    if: ${{ inputs.scope != 'performance-diagnostic' && inputs.scope != 'native-diagnostic' }}
+    if: ${{ inputs.scope != 'performance-diagnostic' && inputs.scope != 'native-diagnostic' && inputs.scope != 'bulk-goal-diagnostic' }}
     needs: inputs
     uses: ./.github/workflows/validate.yml
     with:
@@ -207,5 +208,51 @@ jobs:
       with:
         name: native-diagnostic-only-${{ github.run_id }}-${{ github.run_attempt }}
         path: reports/ci/native-diagnostic/
+        if-no-files-found: error
+        retention-days: 14
+
+  bulk-goal-diagnostic:
+    name: Bulk goal diagnostic only (Python 3.12.16)
+    needs: inputs
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.scope == 'bulk-goal-diagnostic' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        persist-credentials: false
+    - uses: ./.github/actions/setup
+      with:
+        python-version: '3.12.16'
+    - name: Prepare pinned browser and identities
+      run: |
+        uv run --no-sync playwright install --with-deps chromium
+        mkdir -p reports/ci/bulk-goal
+        git rev-parse HEAD HEAD^{tree} > reports/ci/bulk-goal/source.txt
+        sha256sum uv.lock > reports/ci/bulk-goal/lock.txt
+        uv run --no-sync python -VV > reports/ci/bulk-goal/python.txt
+        uv pip freeze > reports/ci/bulk-goal/dependencies.txt
+    - name: Focused original test with transition evidence
+      env:
+        DEX_GOAL_DIAGNOSTIC_OUT: reports/ci/bulk-goal/focused
+      run: |
+        uv run --no-sync python -m pytest -p scripts.ci.bulk_goal_diagnostic -q 'tests/test_perf04_workflows.py::test_custom_goal_keeps_members_and_labels_across_search_and_pages[bulk]' --disable-socket --allow-unix-socket --junitxml=reports/ci/bulk-goal/focused/junit.xml > reports/ci/bulk-goal/focused.log 2>&1
+    - name: Original test-order prefix through bulk goal
+      if: ${{ !cancelled() }}
+      env:
+        DEX_GOAL_PREFIX: '1'
+        DEX_GOAL_DIAGNOSTIC_OUT: reports/ci/bulk-goal/prefix
+      run: |
+        uv run --no-sync python -m pytest -p scripts.ci.bulk_goal_diagnostic -q --disable-socket --allow-unix-socket --junitxml=reports/ci/bulk-goal/prefix/junit.xml > reports/ci/bulk-goal/prefix.log 2>&1
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+      if: always()
+      with:
+        name: bulk-goal-diagnostic-only-${{ github.run_id }}-${{ github.run_attempt }}
+        path: |
+          reports/ci/bulk-goal/
+          reports/perf02/
+          reports/perf03/
+          reports/perf04/
+          reports/ops-readiness/
         if-no-files-found: error
         retention-days: 14
