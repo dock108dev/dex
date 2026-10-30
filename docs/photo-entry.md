@@ -2,8 +2,8 @@
 
 ## Current capability
 
-Photo uploads and manual review are supported. AI photo recognition is temporarily
-unavailable. Executable Codex and direct OpenAI adapters, API token pricing, provider
+Photo uploads and manual review are supported. AI photo recognition is not
+available. Executable Codex and direct OpenAI adapters, API token pricing, provider
 launch code and the live evaluation script have been removed. There is no runtime
 flag, credential or model setting that reactivates them. No image-generation feature
 exists in this application.
@@ -47,25 +47,6 @@ new photo entries manual. Tests use explicit doubles for synthetic matching.
 OpenAI keys and Codex login are not application configuration. There is no automatic
 paid-provider, CLI or cloud fallback. Do not erase historical provider attribution
 or accounting just because the adapters are gone.
-
-## Future Ollama recognition
-
-Ollama is the intended future recognition backend. It is not connected yet, and
-this source exposes no selectable Ollama photo mode. `photo_contracts.py` preserves
-provider-neutral schemas, evidence prompts, crop geometry and image-size bounds;
-`photo_matching.py` and the single-card matcher preserve catalog identity rules.
-Uploads, revision checks, manual confirmation, reservations and data ownership
-remain application responsibilities. A future adapter must use backend-only requests,
-revalidate authority and revisions before publication, reject late results, retain
-consumed attempts, and keep inference separate from collection writes. It must not
-restore Codex/OpenAI fallback code.
-
-Local-model [listing interpretation](hunts.md#planned-ollama-listing-interpretation)
-is also planned, sharing the future backend adapter while retaining separate text
-and image validation. There is no active app-user text AI to migrate. The private Ollama handoff
-is not consumed by the launcher or backend. No private host belongs in production
-configuration. Changing source does not update an installed wheel; use the normal
-compatible runtime update procedure before claiming installed-app removal.
 
 ## Durable work and privacy
 
@@ -179,21 +160,3 @@ with the card identity and first-edition checkmark. It is retained in the immuta
 operation plan; reopening cannot replay additions. Undo reverses the batch's new
 copies and edition updates together, subject to the ordinary intervening-edit checks.
 It keeps the original report visibly labeled as undone.
-
-## Delivered verification and owner review
-
-The October 27 simplified-photo delivery replaced mandatory separate detection and
-identity screens with one original-photo analysis and reviewed confirmation. Its
-source and wheel suites each passed 162 targeted tests; installed client contracts
-and served assets were checked. One supplied two-card image matched Alakazam Base
-Set #1 and Kangaskhan Jungle #5 as holo Unlimited in 9.43 seconds. Confirmation added
-two cards and reload retained the report; that example applied no first-edition flags.
-Duplicate suppression and edition updates have targeted test coverage, not proof
-from that particular two-card journey. The preceding duplicate/report delivery had
-181 focused source/package checks. Dependencies were unchanged in these deliveries.
-
-The local-only `reports/photo-simple-20261027/closeout.md` records this bounded
-observation. It does not establish broad recognition accuracy or owner acceptance.
-Current source no longer executes that provider workflow. These observations
-refer to the older installed delivery, not present source capability. A compatible
-runtime update and ordinary owner review remain separate from source tests.

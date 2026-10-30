@@ -570,79 +570,14 @@ Dex does not infer entitlement, scrape sale history or turn active asking prices
 into realized values.
 
 
-## Completion requirements and owner review
+## Listing interpretation boundaries
 
-The October 27 next-version scope also requires responsive guest and authenticated
-catalog/collection browsing, dependable local startup and observable read performance.
-See the [experience contract](UI_DESIGN.md#next-version-responsiveness-contract),
-[read architecture decision](card-groups.md#accepted-direction-for-responsive-reads)
-and [qualification requirements](CI.md#browsing-performance-qualification).
-Those repairs preserve the workflows below; their prior delivery is not performance
-qualification or owner acceptance.
-
-The local completion goal is a useful Pokémon/card-name → optional set → mixed-lot
-results → seller/assessment → More/edit/Back → Stop loop, with contextual entry
-from missing/owned Pokémon and card choices. Goals, exact printings, wanted lists,
-budgets and valuation are optional. The later requested additions are simple
-photo-to-reviewed-collection entry and ungraded-single Price Hunter with dated raw
-references, time remaining and conditional net after explicit costs. General
-recognition accuracy, fresh-price guarantees and probability-weighted EV are not
-established requirements or demonstrated capabilities.
-
-Owner review uses the actual installed runtime, not an engineering fixture. For
-Shopping, assess search clarity, photos, seller links, preserved context, edits,
-reading position, More and Stop. For Hunter, assess ungraded results, original
-reference dates/source, editable assumptions and unknown-cost abstention. Identify
-the reviewed runtime and explicitly accept each workflow or supply a reproducible
-problem. A problem requires a bounded repair, affected verification/delivery and
-re-review; reporting feedback alone is not acceptance. Provider operations require
-a newly selected finite allowance when prior capacity is consumed.
-
-## Delivered behavior and verification limits
-
-Local delivery records dated October 27 establish that the simplified lot finder
-returned 20 summaries for one explicit name/set search. Its 44 candidate Python
-tests and 28 client cases passed. Original provider ordering is intentional;
-exhaustive API/web parity and stronger relevance filtering were not established.
-The ungraded Hunter delivery preserved photo and lot-finder behavior; 83 candidate
-tests, 29 client cases and arithmetic checks passed. An authorized three-operation
-Hunt consumed all three operations. Observed raw references were dated September
-27 without capture timestamps; no fresh-price confirmation followed. Package
-rebinding preserved policy, parent and consumed-usage accounting.
-
-These are bounded delivery observations, not current process inspection or owner
-acceptance. Supporting records are local-only:
-`reports/lots-simple-20261027/closeout.md` and
-`reports/hunter-poc-20261027/closeout.md`. Running behavior and available capacity
-must be checked again before a new session; do not renew consumed test capacity.
-
-## Optional backlog
-
-A frontend-framework rewrite, database-engine replacement, distributed services,
-cloud hosting and broad enterprise administration are not prerequisites for the
-selected local responsiveness goal. Adopt infrastructure changes only for a measured
-requirement with a bounded compatibility plan. Guest/catalog performance and local
-startup reliability are required next-version work, not optional backlog.
-
-Stronger relevance/ranking, missing-page redesign, broader provider/catalog coverage,
-general photo-accuracy evaluation, fresh-price acquisition, graded/bulk Hunter UI,
-and broader EV modeling require separately selected scope. External publication,
-signing and release automation are not prerequisites for the local completion goal.
-Repository branch enforcement is a separate maintainer decision after exact-candidate
-CI passes. Investigation of nonblocking SQLite ResourceWarnings and portable
-configuration for installation-bound operator guards are maintenance follow-ups;
-they become release blockers only if candidate checks expose a concrete failure.
-
-## Planned Ollama listing interpretation
-
-The owner requested local-model extraction of card details and listing interpretation
-for Shopping and Price Hunter. This is planned additional scope, not an enabled feature.
-Use the shared backend gateway adapter and extend `hunter_lot_parser.py` with validated,
+Local-model extraction of card details is implemented for Shopping and Price Hunter.
+`ollama_gateway.py` owns the bounded transport; `hunter_lot_parser.py` validates
 source-linked proposals from already authorized titles, descriptions and item specifics.
-Retain the deterministic parser, exact catalog matching, leases and financial services
-as authorities; expose ambiguity and manual correction instead of silently choosing an
-identity or quantity. The initial text connection test missed an explicitly stated
-quantity, so connectivity alone is not extraction qualification.
+The deterministic parser, exact catalog matching, parent leases and financial services
+remain authorities. Ambiguity and manual correction remain explicit rather than
+silently choosing an identity or quantity. Connectivity alone is not extraction qualification.
 
 Seller condition/grade/authenticity statements remain claims. Structured listing
 prices stay authoritative; an asking price is not market value. Missing costs and
@@ -651,8 +586,57 @@ pages, buy/bid, infer ownership or create collection records. Requests are expli
 bounded and cancellable; partial, stale or invalid model results cannot be published
 as verified facts. No Codex/OpenAI execution fallback is permitted.
 
-Text interpretation and future photo recognition share transport only where appropriate.
-Photo inputs, image support, output budgets, revision checks and confirmation require
-separate qualification. The execution tracker orders these as AI-01 (gateway), AI-02
-(listing interpretation), and AI-03 (photo recognition), followed by the applicable
-candidate checks, local delivery and owner review.
+
+## Local text adapter and listing review
+
+The backend reads owner-only `ollama.json` from the existing installation root.
+Its fields are `provider`, `app`, `base_url`, `api_key`, `model`,
+`timeout_seconds`, `max_tokens`, `temperature`, `reasoning_effort` and `stream`.
+Create this file only in the private installation root, with owner-only permissions
+(`chmod 600`). Replace the example URL, key and model with values for your configured
+gateway; this is not a direct Ollama server URL:
+
+```json
+{
+  "provider": "openai-compatible",
+  "app": "dex",
+  "base_url": "https://your-gateway.example/apps/dex/v1",
+  "api_key": "replace-with-private-key",
+  "model": "your-model-id",
+  "timeout_seconds": 240,
+  "max_tokens": 512,
+  "temperature": 0.3,
+  "reasoning_effort": "none",
+  "stream": true
+}
+```
+
+Do not commit this file or expose it to the browser. The URL path must be
+`/apps/dex/v1`; redirects and alternate-provider fallbacks are disabled. The timeout
+and output caps are 240 seconds and 512 tokens. Configuration readiness checks
+only local settings and do not send a model request. Missing or invalid settings
+leave interpretation unavailable; photo recognition remains unavailable regardless.
+
+Shopping and Price Hunter result cards offer **Interpret listing with local AI**.
+Only that explicit action sends already-authorized seller title, available
+summary/description and item specifics. Missing descriptions are not fetched.
+No provider price, account, collection or credential data is sent as prompt text.
+One analysis may run at a time. Stop cancels it. Navigation, changed seller content,
+account/session changes and the original source lease invalidate results. Results
+are temporary, expire within four minutes and are not stored with research/history.
+Restart neither restores them nor launches inference.
+
+Streaming text is buffered until the entire response finishes successfully and
+validates. Each suggested field requires a literal source quotation; unsupported
+fields and malformed, incomplete or oversized outputs fail closed. Card/set names
+are checked against the existing catalog; printing matching stays with the existing
+deterministic lot parser. Ambiguous identities and missing fields remain explicit.
+Seller condition/grade assertions are claims, not authentication or grading evidence.
+Prices, fees, profitability, ownership and acquisition allowances are unchanged.
+
+The review shows editable suggestions and their evidence. Corrections remain in
+that temporary panel; use the existing card/lot review to apply chosen cards.
+No suggestion automatically updates cards or financial calculations. This version
+can abstain on useful details even when they occur in seller text. Explicit “One
+card” is either recovered or visibly flagged when omitted. The model is an aid to
+manual review, not an authoritative card identifier.

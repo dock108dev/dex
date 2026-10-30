@@ -19,7 +19,7 @@ from django.http import Http404
 from test_hunter import hunt as hunt
 from test_hunter_lots import printing, raw
 
-from pokemon_hunter.beta import collection, discovery, lot_calculator, store
+from pokemon_hunter.beta import collection, discovery, discovery_listing, lot_calculator, store
 from pokemon_hunter.beta import discovery_comparison as comparison
 from pokemon_hunter.beta import hunter as hunter
 from pokemon_hunter.beta import hunter_budget as budget
@@ -196,9 +196,9 @@ def test_dst_window_latest_observation_and_all_fetched_dispositions(integrated, 
         ("v1|3|0", "outside_auction_window"),
         ("v1|5|0", "unavailable"),
     ):
-        assert rows[hunter._handle(parent, item_id)]["reason"] == reason
+        assert rows[discovery_listing.result_handle(parent.id, item_id)]["reason"] == reason
     changed = hunter.summary_lease(
-        integrated.env.actor, "binding", parent.id, hunter._handle(parent, "v1|4|0")
+        integrated.env.actor, "binding", parent.id, discovery_listing.result_handle(parent.id, "v1|4|0")
     )
     assert changed["raw"]["price"]["value"] == "9" and "currentBidPrice" not in changed["raw"]
     assert changed["raw"]["_hunt_lanes"] == ["auction", "buy_it_now"]

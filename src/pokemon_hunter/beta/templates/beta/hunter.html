@@ -2,9 +2,9 @@
 {% block title %}Price Hunter · Dex{% endblock %}
 {% block body_class %}hunter-page{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="/collection-assets/hunter.css?v=interface-20261017">
+<link rel="stylesheet" href="/collection-assets/hunter.css?v=interface-20261030">
 <div id="hunter-app" class="hunter" data-simple="true">
-  <div class="hunter-heading"><div><h1>Price Hunter</h1><p class="hunter-note">Ungraded singles · potential net after costs</p></div><nav hidden aria-label="Shopping tools"><a href="/shopping/">Search cards</a><a href="/shopping/check/">Check a listing/lot</a><a href="/shopping/calculator/">Manual calculator</a></nav></div>
+  <div class="hunter-heading"><div><h1>Price Hunter</h1><span class="hunter-category">Ungraded singles</span></div><nav hidden aria-label="Shopping tools"><a href="/shopping/">Search cards</a><a href="/shopping/check/">Check a listing/lot</a><a href="/shopping/calculator/">Manual calculator</a></nav></div>
   {{ hunter_initial|json_script:"hunter-initial" }}
   <form id="hunter-form">
     {% csrf_token %}
@@ -41,8 +41,7 @@
   </section>
   {% endif %}
   <section id="hunter-progress" aria-label="Hunt progress" hidden><p hidden id="hunter-window"></p><p hidden id="hunter-coverage"></p><p hidden id="hunter-limitations" class="hunter-note"></p><details hidden><summary>Coverage and request details</summary><div id="hunter-accounting"></div></details></section>
-  <p class="hunter-note">Estimate defaults: 0% tax · $5 resale postage · $0.50 supplies · standard eBay fees.</p>
-  <details class="hunter-cost-settings"><summary>Cost assumptions · standard eBay fees</summary>
+  <details class="hunter-cost-settings"><summary>Cost assumptions</summary>
     <p>Free shipping on resale. Starting assumptions: 0% purchase and resale tax, $5 resale postage, $0.50 supplies, no other costs. Adjust for your situation.</p>
     <div class="hunter-controls" id="hunter-net-inputs">
       <label>Purchase tax %<input id="net-purchase-tax" type="number" min="0" max="100" step="0.01" value="0"></label>
@@ -56,7 +55,7 @@
   </details>
   <section id="hunter-results" aria-labelledby="hunter-results-title" hidden>
     <div class="hunter-results-heading"><h2 id="hunter-results-title" tabindex="-1">Received results</h2><label hidden for="hunter-filter">Show received results<select id="hunter-filter"><option value="all">All results</option><option value="single">Singles</option><option value="mixed_lot">Lots</option><option value="priced">With an admitted reference</option><option value="unpriced">Unpriced or unresolved</option></select></label></div>
-    <p class="hunter-note">At the current bid, assuming resale at the dated ungraded reference. Verify condition; bids can rise.</p>
+    <p class="hunter-note">Estimates assume resale at the dated ungraded reference. Auction bids may rise.</p>
     <div id="hunter-cards" class="hunter-cards"></div>
     <div class="hunter-actions"><button id="hunter-local-next" type="button" class="secondary" hidden>Show more received results</button><button id="hunter-continue" type="button" class="primary" hidden>Continue acquisition</button></div>
     <p id="hunter-next-note" class="muted"></p>
@@ -66,6 +65,7 @@
   <details hidden class="hunter-help"><summary>About these comparisons</summary><p>Singles and lots include owned cards, all generations and supported Trainer/Energy cards. Nothing changes your collection.</p><p>A gap compares a stated cost basis with a dated, applicable reference. Conditional values need review. Unknown shipping, tax, contents and other costs remain unknown. Auction bids may rise; a gap is not a maximum bid, resale EV or guaranteed profit.</p><p>Hunt, Continue acquisition and loading official details are separate explicit requests. Browsing received results, revealing seller text and correcting a review do not acquire listings. Results and reviews are temporary and keep their original expiry. Nothing here adds cards or changes goals.</p></details>
   <noscript><p>Enable JavaScript for Price Hunter. <a href="/shopping/">Local Shopping search</a> and the <a href="/shopping/calculator/">manual calculator</a> remain available.</p></noscript>
 </div>
+<script src="/collection-assets/listing-interpretation.js?v=20261029" defer></script>
 <script src="/collection-assets/hunter-review.js?v=hunt06" defer></script>
 <script src="/collection-assets/listing-time.js?v=20261020-shop04" defer></script>
 <script src="/collection-assets/hunter-net.js?v=poc-20261027" defer></script>

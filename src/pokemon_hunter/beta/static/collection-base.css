@@ -475,3 +475,19 @@ dialog::backdrop { background: #25262a66; }
   header.app-header, .stat, .panel, .card, .auth-card { background: #fff; }
 }
 
+
+/* Shared temporary seller-text review in Shopping and Price Hunter. */
+.listing-analysis { border-top:1px solid var(--border); margin-top:12px; padding-top:12px; }
+.listing-analysis-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.listing-analysis button { max-width:100%; white-space:normal; }
+.listing-analysis-output:not(:empty) { margin-top:16px; }
+.listing-analysis-output h4 { font-size:1.0625rem; margin:0 0 8px; }
+.listing-analysis-output p { margin:8px 0; font-size:.9375rem; }
+.listing-analysis-fields { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,12rem),1fr)); gap:16px; margin:16px 0; }
+.listing-analysis-field { min-width:0; }
+.listing-analysis-field label { margin:0; font-size:.9375rem; }
+.listing-analysis-field input { display:block; width:100%; margin-top:6px; font-weight:400; }
+.listing-analysis-evidence { color:var(--muted); overflow-wrap:anywhere; }
+.listing-analysis-warnings { border-left:3px solid var(--red); padding:8px 8px 8px 24px; font-size:.9375rem; line-height:1.5; }
+.listing-analysis-output details { margin-top:12px; }
+.listing-analysis-output summary { color:var(--ink); }

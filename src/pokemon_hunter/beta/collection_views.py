@@ -132,6 +132,7 @@ def private_home(request):
 def asset(request, filename):
     if filename not in {
         "collection.js",
+        "listing-interpretation.js",
         "bounded-reads.js",
         "goals-screen.js",
         "public-browse.js",

@@ -141,6 +141,19 @@ The ordinary page searches ungraded singles; editable cost assumptions support a
 conditional net estimate. Unknown inputs leave the estimate unavailable. Usage
 settings and local result pages remain distinct from new acquisition actions.
 
+The heading and compact action row precede one Cost assumptions disclosure.
+Listing price and numeric net estimates carry the strongest weight; unavailable
+estimates remain readable without oversized emphasis. Reference date and condition
+stay visible. Reference & costs contains the source, capture time and itemized
+costs. An unmatched seller title appears once, and unavailable artwork uses a compact
+reference placeholder. Empty progress containers take no space.
+
+Shopping and Hunter share the temporary listing-analysis panel. Editable claims
+sit beside their quoted evidence in a responsive field grid; warnings and unknowns
+remain visible, with complete original seller text in one disclosure. Stop clears
+the panel, announces the stopped state and returns focus to the analysis button.
+Edits remain temporary and do not apply collection or price changes.
+
 Temporary lot review leads with Ungraded, quantities and the unresolved remainder.
 Attribute/cost corrections, seller provenance and additional official details are
 secondary. Input changes withhold obsolete comparisons; stale revisions reload
@@ -258,13 +271,10 @@ Stop and Back/reopen without new acquisition. Automated or synthetic checks do n
 establish real recognition accuracy, source freshness or marketplace outcomes.
 
 
-## Next-version responsiveness contract
+## Responsiveness contract
 
-The October 27 owner-selected next version prioritizes a responsive, dependable
-local product across signed-out card discovery and signed-in My Cards, Card Library,
-Pokédex, search, filters, pagination and details. Preserve the delivered Shopping,
-photo-entry and ungraded Hunter workflows. This contract describes the accepted
-next-version requirements; implementation and acceptance remain outstanding.
+Guest and signed-in browsing share responsiveness requirements across My Cards,
+Card Library, Pokédex, filters, pagination and details.
 
 Navigation and search controls must appear promptly. Primary card results must not
 wait for secondary filter metadata or remote artwork. Use stable placeholders and
@@ -280,19 +290,11 @@ navigation after server restart, and routine local search/filter/page/detail upd
 within 300 milliseconds. Useful cards means correct text, ownership where authorized,
 and working primary actions; remote artwork may complete separately. A loading shell
 alone does not meet the target. Measure startup-to-ready separately so moving work
-into startup cannot conceal a long launch delay. The baseline slice must set and
-record a numeric startup budget before implementation; unresolved budgets are not passes.
+into startup cannot conceal a long launch delay. The startup budget is two seconds; measure it separately from navigation.
 [Qualification](CI.md#browsing-performance-qualification) defines repeated measurements.
 
-The owner reviews guest discovery and signed-in collection browsing on the final
-actual installation, including launch/reload, finding a card, opening it and returning,
-changing filters and recovering from a failure. Explicit acceptance is separate from
-engineering timing results. Existing workflow reviews remain required in
-[Shopping](hunts.md#completion-requirements-and-owner-review) and
-[photo entry](photo-entry.md#delivered-verification-and-owner-review).
-
-PERF-01 fixes the supporting [startup, API, payload and client budgets](CI.md#perf-01-performance-budgets)
-and the [V2 read contract](card-groups.md#versioned-bounded-api). PERF-04 must render
+[Startup, API, payload and client budgets](CI.md#performance-budgets)
+and the [V2 read contract](card-groups.md#versioned-bounded-api). Clients render
 primary cards as soon as their authorized response is ready, independently of filter
 options and art. Disable only unfinished secondary controls; do not delay the whole
 screen with `Promise.all`. Fetch account context once per navigation authority epoch,
@@ -303,12 +305,11 @@ Use separate paged detail/evidence sections without implying the first page is t
 complete record. A 409 invalidates the retained revision and permits one fresh read;
 a 503 shows unavailable state and explicit recovery; neither may cause an automatic
 retry loop. Empty means a successful current query returned zero matches. Preserve
-valid results on secondary errors, with clear retry for that failed section. These
-are required next-version behaviors, not observations of the installed UI.
+valid results on secondary errors, with clear retry for that failed section.
 
-## PERF-04 working interface
+## Bounded interface behavior
 
-The [frontend implementation](perf04-frontend.md) renders card text, ownership and primary
+The [frontend implementation](frontend-reads.md) renders card text, ownership and primary
 actions from a bounded response before filter choices, children, copy records or art.
 Choices and detail records have explicit continuation; bounded label resolution retains
 selected IDs and readable labels off-page, through reopening, reload and Back. Bulk
@@ -328,6 +329,5 @@ bounded descriptor batches and visible-image concurrency. Secondary failure pres
 usable primary results. Access revocation clears private results and provides sign-in;
 confirmed receipts remain recoverable and undoable when derived browsing is unavailable.
 
-Isolated keyboard/focus/scroll, error recovery, narrow screens and 200% text are covered
-in the [evidence](perf04-evidence-20261028.md). Actual-installed visual acceptance remains
-with QA-INTEGRATION and must use the existing customer installation and real state.
+Check keyboard focus, scroll restoration, narrow screens and enlarged text with
+the [frontend test commands](frontend-reads.md#renderer-and-workflow-tests).

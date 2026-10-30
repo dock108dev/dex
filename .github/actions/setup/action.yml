@@ -3,7 +3,7 @@ description: Install reproducible tools without application credentials.
 inputs:
   python-version:
     description: Supported Python runtime
-    required: true
+    default: '3.14'
 runs:
   using: composite
   steps:

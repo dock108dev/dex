@@ -250,24 +250,16 @@ The [image contract](artwork.md) defines availability, source and fallback preci
 
 ## Bounded browsing reads
 
-`/api/collection-context/` is an authenticated, account-bound, generation-checked
-browsing bootstrap. It returns only authority, binder choices, copy identity pairs
-for duplicate counts and goal labels/versions. It excludes full effective printing
-maps, source/history bodies, goal checklists and inventory attributes. It accepts
-no query selectors and retains private/no-store policy.
+Ordinary card/species pages use V2 pages and compact, revision-bound context.
+[Frontend reads](frontend-reads.md) describes current consumers and remaining
+V1 tools. `/api/collection-context/` and the full `/api/collection/` endpoint remain
+compatibility services; they are not fallbacks for unavailable V2 state.
 
-My Cards, Card Library and card/species pages use this small context before their
-existing scoped/paged APIs. Explicit collection tools load the full existing
-`/api/collection/` response on demand. Late tool responses must still match the
-active data object, route, account and generation before merging or opening a
-form. Card editing uses its already checked detail summary; server preview and
-confirmation remain authoritative.
-
-Grouping/filtering still reads authoritative metadata and current ownership on
-each request, without a shared private cache. Artwork descriptors are bound only
-for a returned page/detail after filtering and pagination. Filter-option reads
-bind no images. Counts, conflict handling, archived context, exact identity and
-account/generation checks remain unchanged.
+V2 selection pages indexed metadata before expanding returned records. Private
+queries validate account authority and collection/catalog revisions before and
+after their snapshot. Artwork descriptors load separately for bounded accessible
+identities; filter options bind no images. Counts, archived context, unresolved
+evidence and exact identity retain the collection service’s semantics.
 
 ## Connected Shopping returns
 
@@ -287,68 +279,12 @@ or renewing its lease. See [connected entry](hunts.md#connected-pokémon-and-car
 for scope changes and qualification boundaries.
 
 
-## October 27 browsing diagnosis
+## Read architecture
 
-A read-only investigation of the actual installed `hunter-poc-20261027` runtime
-confirmed a shared catalog bottleneck affecting guest and authenticated browsing.
-The installed grouping, catalog-entry, public-catalog and card-screen modules
-matched the inspected checkout. Browser resource timings on the owner's existing
-My Cards page measured 8.85 seconds for the card list, 7.76 seconds for filter
-options and 7 milliseconds for collection context. These are overlapping requests,
-not durations to add together. Unauthenticated local HTTP reads measured 2.69 seconds
-for public card groups and 1.06 seconds on repeat. Public catalog took 0.88 seconds
-but returned 19,711,673 bytes. The installation contained 33,083 printings across
-187 sets. No credentials or private record contents are reproduced here.
-
-These are individual observations, not a controlled cold-start benchmark or a p95.
-The owner's reported restart penalty has not yet been isolated from browser reload,
-server restart, filesystem warmth, concurrent work and image/network effects.
-HTTP 200 establishes availability, not usable performance. No implementation repair
-or new acquisition was performed in this investigation.
-
-The current implementation reads and decodes full catalog rows before application
-filtering. `card_groups.project` builds the group projection before `_list` pages
-it; private projection also resolves effective ownership and reads published metadata.
-List and filter-option requests separately invoke projection. `card-screens.js`
-waits for both before rendering the list. Guest grouping uses the shared catalog
-path, and the public catalog endpoint can serialize the full printing collection.
-This explains substantial avoidable work; exact attribution still requires profiling.
-
-## Accepted direction for responsive reads
-
-The next local version must serve bounded catalog pages from reusable, indexed
-metadata and apply current account ownership without rebuilding the whole catalog
-on every page/filter read. This is an agreed design direction, not delivered behavior.
-The current no-persistent-cache descriptions above remain accurate until replacement
-is implemented and qualified.
-
-Derived indexes are disposable representations of authoritative records, never new
-ownership or publication authority. Their design must identify catalog revision,
-publication/identity changes, account and collection revision where applicable, and
-schema/package compatibility. Publication withdrawal, edits, Undo, source replacement,
-logout and revocation must not expose stale or foreign private data. Authorize every
-private request independently of a cache hit. Build/rebuild and atomic activation
-belong to explicit maintenance or authoritative updates, not ordinary browsing.
-Restart should reuse valid derived state; missing/corrupt state needs bounded,
-observable recovery without reseeding or returning silently incomplete results.
-
-Public output remains allowlisted; archived owned identities, unresolved evidence,
-natural sorting, complete filter options and stable group IDs retain their contracts.
-Bound response size and database work for lists, filters, species and detail reads;
-a paginated response alone does not establish a bounded implementation. Migrate
-full-catalog consumers explicitly and preserve compatibility through a documented
-adapter or versioned change. Performance must not depend on reduced customer catalogs,
-stale ownership, removed safeguards or a warm process cache.
-
-See [next-version experience](UI_DESIGN.md#next-version-responsiveness-contract)
-and [measurement requirements](CI.md#browsing-performance-qualification).
-
-## PERF-01 read architecture contract
-
-This is the implementation contract for PERF-02–04, not an installed feature.
-PERF-01's measured evidence and remaining qualification limits are recorded in
-[CI](CI.md#perf-01-baseline-evidence). Preserve the existing identity and ownership
-rules above; a fast approximation of them is not acceptable.
+V2 browsing selects bounded pages from indexed catalog metadata and current account
+overlays. Derived records are disposable representations, never ownership or
+publication authority. V1 routes remain available for explicit compatibility tools;
+ordinary V2 reads do not fall back to full projections.
 
 ### UI, backend and database boundary
 
@@ -423,7 +359,7 @@ primary response readiness and retains its existing access/source rules.
 
 ### Account composition
 
-PERF-03 owns disposable account-group, account-species, copy-reference and unresolved
+The account service owns disposable account-group, account-species, copy-reference and unresolved
 evidence tables. Derive these from the existing effective-collection policy, including
 operation history/source boundaries. Persist the result of that policy, not another
 interpretation of possession. Broad presence, established total, recorded/current
@@ -495,57 +431,6 @@ arrays remain available to explicit legacy tools until their callers migrate; no
 ordinary V2 navigation may invoke them. Private output stays no-store and explicitly
 allowlisted; public endpoints never read account overlays.
 
-### Consumer migration inventory
-
-This inventory covers production calls found through `collection.catalog`, its
-`service`/`inv`/`inventory` aliases, `catalog_entries`, `public_catalog.entries`, and
-HTTP URL consumers. Re-run that search when implementing against a newer source.
-
-| Consumer family | Modules/assets | Migration and compatibility obligation |
-| --- | --- | --- |
-| Cards, filters, detail, canonical/legacy links | `card_groups`, `card_group_views`, `card-screens.js`, `collection.js` | PERF-02/03 indexed reads; PERF-04 V2; preserve dg1, aliases, selected children, errors and return context |
-| Guest discovery, public catalog and species | `public_catalog`, `public_views`, `species_views`, `public-species.js` | Bounded species/group queries and server rendering; keep V1 full catalog response for explicit compatibility only |
-| Private Pokédex/species and goals | `species_projection`, `species-screens.js`, `pokedex.js`, `collection_goals`, `goal_hunts` | Revision-bound species aggregates; preserve current versus frozen scope and unknown totals |
-| Manual picker and goal builder | `collection_views`, `collection.js` catalog search, goal catalog/member loading | Bounded printing picker and paged selection; retain selected printing IDs across pages; no silently reduced goal membership |
-| Scan/photo suggestions | `scans`, `scans.js`, `photo_batches` | Keep worker matching on explicit full metadata where required; migrate browser picker away from `/api/catalog/`; no recognition during qualification |
-| Bulk entry | `bulk_input`, `bulk_views` | Indexed literal resolution and bounded suggestions; template/export semantics and replay identity unchanged |
-| Shopping/discovery | `shopping`, `shopping_views`, `discovery`, `discovery_catalog`, `discovery_views`, `discovery_comparison`, `shopping_context` | Bounded local choices; retain full comparison membership where required; no implicit provider calls |
-| Hunter and lot/listing review | `hunter_catalog`, `hunter_views`, `hunter_lots`, `listing_check`, `listing_views`, `lot_calculator` | Exact IDs/restore sets and current/frozen references; keep source/lifetime/rights checks independent of index hits |
-| Ownership and mutation validation | `effective_collection`, `ownership_declarations`, `collection_defaults`, `collection_intents`, `collection.printing` | Trusted internal snapshot and exact indexed identity reads; preserve preview/confirm authority and archived mappings |
-| Artwork | `image_bindings`, `owned_artwork` | ID-bounded metadata validation; no full catalog for one image; preserve independent photo authorization |
-| Lookup, packs, product coverage, parity | `lookup`, `packs`, `product_views`, `parity` | Shared typed membership reads; retain frozen targets, availability and old full projection for explicit tools |
-| Price admission and catalog review | `price_snapshots`, `catalog_requests`, `catalog_pipeline` | Explicit batch/full metadata remains permitted off the browsing path; rights checks and reviewed publication stay authoritative |
-| Export and collection tools | `collection_views`, `/api/collection/`, `/api/export/`, `collection.js` | Explicit full export/tool action only; browsing context V2 omits all-copy bootstrap and offers bounded duplicate-count lookups |
-| Engineering/initialization | `synthetic`, migration and fixtures | Retain isolated full-catalog paths for tests; never select these as customer runtime |
-
-No repository browser caller of `/api/public/catalog/` was found; preserve it for
-unknown external clients instead of silently changing its response shape. `/api/catalog/`
-has real scan, manual-picker and goal-builder callers and cannot simply be removed.
-
-### Downstream implementation slices
-
-1. **PERF-02 — backend/database engineer:** add explicit read-schema migration,
-   revision triggers, catalog builder/manifest, indexed query services and V2 public
-   adapters in `collection_catalog`, `card_groups`, `public_catalog`, `species_views`
-   and `urls`. Keep V1 adapters. Test full-size/2× scale, Unicode/natural ordering,
-   conflicting aliases, publication withdrawal, archived metadata, deep pagination,
-   complete options, query plans and crash-safe activation. Depends on this contract.
-2. **PERF-03 — backend/integration engineer with security review:** integrate account
-   overlays into `effective_collection`, `collection.confirm/undo`, import/source,
-   group/species/context adapters and artwork validation. Test edits, Undo, imports,
-   unresolved/multi-card evidence, unknown quantity, archived copies, frozen goals,
-   concurrent revision changes and cross-account/revocation denial. Depends on PERF-02.
-3. **PERF-04 — frontend/UX engineer:** migrate cards, collection bootstrap, species,
-   guest templates and all picker consumers listed above. Render primary results
-   independently of options/art; cancel/discard obsolete work; preserve Back/focus.
-   Test 20-sample actual-installed navigation and updates, partial failure, duplicate
-   request counts, account switching, keyboard and narrow/enlarged layouts. Can start
-   against the V2 contract; integrated qualification requires PERF-02/03.
-4. **OPS-READINESS — runtime/integration engineer:** implement explicit preparation,
-   readiness, compatible rollback and sanitized phase diagnostics as specified in
-   [operations](operations.md#perf-01-derived-state-lifecycle). Test missing/corrupt/
-   interrupted builds without changing customer authority. Depends on PERF-02/03.
-
 Rejected alternatives: caching JSON by URL alone leaks/stales account state; per-process
 memoization leaves restart cold and duplicates memory; paginating after projection
 retains the measured cost; skipping ownership validation changes correctness; TTLs
@@ -553,12 +438,11 @@ cannot make publication withdrawal safe; a new database/framework or more worker
 processes adds operational risk without removing repeated work. Compression can
 reduce transfer bytes but cannot fix full-catalog decoding or ownership projection.
 
-## PERF-02 implemented shared read services
+## Shared read services
 
-The source now has additive SQLite V2 public services. This is not an installation
-or a browser performance claim. V1 routes and full metadata services retain their
-existing response shapes and authority checks. PERF-03 owns account composition;
-PERF-04 owns browser adoption. No ordinary V2 read calls the V1 full projection.
+SQLite V2 public services preserve V1 response shapes and authority checks.
+Private composition is described in [account reads](account-reads.md); browser
+consumers and remaining V1 calls are in [frontend reads](frontend-reads.md).
 
 `catalog_read_schema` owns the explicit migration and database revision triggers.
 `catalog_read_build` snapshots authority, uses `catalog_read_records` to build typed
@@ -607,10 +491,10 @@ mutation transactions unchanged. Read connections use a bounded 64 MiB SQLite pa
 cache and in-memory compact SQL temporary results; these are disposable engine state,
 not a catalog authority or a Python full-catalog cache. Preparation separately reuses
 typed records and identical encoded terms within that single build; the bounded
-word-token cache is discarded when preparation finishes. OPS-READINESS must account
+word-token cache is discarded when preparation finishes. Memory measurements must account
 for that per-connection memory when choosing concurrency.
 
-### Public V2 contract and frontend handoff
+### Public V2 contract
 
 All following paths begin with `/api/v2/public/`. Every successful response includes
 `read_version: 2`, `public: true`, and an opaque `catalog_revision`. Return that token
@@ -648,49 +532,11 @@ Example sequence: fetch `card-groups/?q=ivysaur`, retain its revision, open a re
 group with `?catalog_revision=<token>`, then follow its variants URL. Select a child
 by supplying both `child=<literal-id>` and the same revision to detail. A stale token
 requires reloading the current selection; a 503 requires explicit operator recovery.
-PERF-04 must keep return/focus/scroll state in the browser/navigation layer and must
-not send it as catalog selectors. Private/owned scope remains PERF-03's responsibility.
+Clients keep return/focus/scroll state in the browser/navigation layer and must
+not send it as catalog selectors. Private scope remains the account service’s responsibility.
 
-### Consumer inventory recheck and downstream ownership
+## Private and frontend consumers
 
-The source search still finds browser full-catalog calls in `scans.js` and the manual
-picker, goal builder and set checklist paths of `collection.js`. No repository browser
-caller of `/api/public/catalog/` was found. That endpoint remains compatible for
-unknown external clients. Worker matching, explicit exports, reviewed publication,
-pricing admission and frozen-goal tools retain their full metadata paths.
-
-PERF-03 must compose retained indexed metadata with `effective_collection`, current
-account authorization, collection generation, account read revision and source digest.
-It must not interpret the public picker as the whole private catalog or substitute
-public membership for archived owned identities. The index supplies identity data,
-not effective possession. Current confirm/Undo generation semantics are unchanged.
-
-PERF-04 must migrate the inventoried browser callers to bounded adapters, follow
-unresolved and overflow links, retain selected literal IDs across pages and avoid
-reintroducing an all-catalog bootstrap. Public and private overlays must be integrated
-before claiming the existing screens are faster. OPS-READINESS must integrate the
-explicit operator primitives with startup/recovery and readiness; RUNTIME-DELIVER
-must install the separately qualified integrated candidate.
-
-## PERF-03 private account adapters
-
-The implemented backend contracts, revision/authorization boundaries, mutation
-closure and successor handoffs are in [PERF-03 account reads](perf03-account-reads.md).
-V1 and the customer installation remain unchanged by this backend work. Qualification
-status is recorded separately in `CI.md`; implementation alone is not product acceptance.
-
-## PERF-04 consumer migration status
-
-The earlier consumer inventory describes the pre-migration baseline. The current
-working candidate uses V2 for ordinary public/private cards, card details and species
-browsing, private manual/scan/photo pickers and bulk pages. Private pickers consume
-`printings`; public pickers consume `cards`. Detail children, evidence and oversized
-records are explicit paged resources. Backend-compatible additions and all remaining
-V1 calls are enumerated in [frontend adoption](perf04-frontend.md).
-
-Goals/source/update and Pokédex goal editors now use bounded authorized reads. Frozen
-membership stays server-owned; explicit preservation/replacement handles missing
-historical filters. Selected labels and reviewed artwork have bounded independent
-resources. Explicit collection/retained-analysis tools and mutation/receipt endpoints
-retain their contracts; they are not fallback reads. Exact qualification and remaining
-installation/acceptance boundaries are in [PERF-04 evidence](perf04-evidence-20261028.md).
+See [account reads](account-reads.md) for private HTTP contracts, revision checks
+and mutation invalidation, and [frontend reads](frontend-reads.md) for current
+consumers, explicit continuation, selected labels, artwork and retained V1 tools.

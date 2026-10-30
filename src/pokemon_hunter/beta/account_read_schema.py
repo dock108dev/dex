@@ -4,7 +4,7 @@ from django.db import connection, transaction
 
 from . import collection, store
 
-VERSION = 1
+VERSION = 2
 POLICY = "effective-collection-2-goal-headers"
 SCOPE_FIELDS = (
     "set_id TEXT,set_name TEXT,era TEXT,type TEXT,rarity TEXT,finish TEXT,card TEXT,start TEXT,end TEXT"
@@ -41,8 +41,12 @@ def migrate():
         if "catalog_read_schema" not in tables:
             raise ValueError("Migrate shared catalog reads first")
         if "account_read_schema" in tables:
-            if store.rows("SELECT version FROM account_read_schema") != [{"version": VERSION}]:
+            version = store.rows("SELECT version FROM account_read_schema")
+            if version not in ([{"version": 1}], [{"version": VERSION}]):
                 raise ValueError("Incompatible account read schema")
+            display_index(cursor)
+            if version == [{"version": 1}]:
+                cursor.execute("UPDATE account_read_schema SET version=%s", [VERSION])
             return
         cursor.execute("CREATE TABLE account_read_schema(version INTEGER PRIMARY KEY)")
         cursor.execute("INSERT INTO account_read_schema VALUES(%s)", [VERSION])
@@ -137,6 +141,17 @@ def migrate():
                 cursor.execute(
                     f"CREATE TRIGGER {table}_{event.lower()} AFTER {event} ON {table} BEGIN UPDATE account_read_state SET status='corrupt' WHERE status='ready'; END"
                 )
+        display_index(cursor)
+
+
+def display_index(cursor):
+    # Actual private summaries overflow WITHOUT ROWID table cells because the
+    # identity/component columns share their records. Keep bounded list payloads
+    # in a smaller covering index, avoiding an overflow lookup for every card.
+    # Explicit migration only: no preparation, authority changes or read-time DDL.
+    cursor.execute(
+        "CREATE INDEX IF NOT EXISTS ar_group_display ON ar_groups(user_id,id,CASE WHEN bytes<=1100 THEN payload END,sha)"
+    )
 
 
 def check():
@@ -145,12 +160,12 @@ def check():
     found = store.rows(
         "SELECT (SELECT version FROM account_read_schema) AS version, (SELECT COUNT(*) FROM sqlite_master WHERE type='trigger' AND name IN ("
         + ",".join(["%s"] * len(TRIGGERS))
-        + ")) AS triggers",
+        + ")) AS triggers, (SELECT COUNT(*) FROM sqlite_master WHERE type='index' AND name='ar_group_display' AND tbl_name='ar_groups') AS display_index",
         TRIGGERS,
     )[0]
     if found["version"] != VERSION:
         raise Unavailable("incompatible_schema")
-    if found["triggers"] != len(TRIGGERS):
+    if found["triggers"] != len(TRIGGERS) or found["display_index"] != 1:
         raise Unavailable("account_schema_infrastructure")
 
 

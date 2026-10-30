@@ -364,3 +364,123 @@ def parse(raw, printings, *, detail=None, _index=None):
         segment_count=len(segments),
         detail_used=detail is not None,
     )
+
+
+def interpretation_fields(raw):
+    """Allowlisted seller text only; never include prices, URLs or account data."""
+    fields = {}
+    for source, key in (
+        ("title", "title"),
+        ("description", "shortDescription"),
+        ("description_full", "description"),
+    ):
+        value = raw.get(key, "")
+        if not isinstance(value, str):
+            raise ValueError("Seller text is unavailable")
+        if value:
+            fields[source] = _text(value)
+    aspects = raw.get("localizedAspects", [])
+    if not isinstance(aspects, list) or len(aspects) > 100:
+        raise ValueError("Seller specifics exceed their limit")
+    for index, row in enumerate(aspects):
+        if not isinstance(row, dict) or not all(isinstance(row.get(k), str) for k in ("name", "value")):
+            raise ValueError("Invalid seller specifics")
+        if len(row["name"]) > 100 or len(row["value"]) > 500:
+            raise ValueError("Seller specifics exceed their limit")
+        fields[f"specific_{index}"] = _text(row["name"] + ": " + row["value"])
+    if not fields or sum(len(v.encode()) for v in fields.values()) > 16000:
+        raise ValueError("Choose a listing with at most 16,000 bytes of seller text")
+    return fields
+
+
+def interpretation_result(fields, raw):
+    """AI suggestions stay evidence-bound claims; no costs, ownership or mutations."""
+    allowed = {
+        "name",
+        "set",
+        "number",
+        "language",
+        "edition",
+        "finish",
+        "quantity",
+        "structure",
+        "condition",
+        "grade",
+        "exclusion",
+    }
+    if (
+        not isinstance(raw, dict)
+        or set(raw) != {"facts"}
+        or not isinstance(raw["facts"], list)
+        or len(raw["facts"]) > 12
+    ):
+        raise ValueError("Invalid interpretation")
+    facts, warnings = [], []
+    for fact in raw["facts"]:
+        if not isinstance(fact, dict) or set(fact) != {"field", "value", "source", "quote"}:
+            raise ValueError("Invalid fact")
+        if any(not isinstance(value, str) or not value or len(value) > 500 for value in fact.values()):
+            raise ValueError("Invalid fact value")
+        field, value, source, quote = (fact[k] for k in ("field", "value", "source", "quote"))
+        if field not in allowed or source not in fields or quote not in fields[source]:
+            raise ValueError("Unsupported evidence")
+        if field == "quantity":
+            words = {"one": "1", "two": "2", "three": "3", "four": "4", "five": "5"}
+            evidence = re.sub(r"\b(one|two|three|four|five)\b", lambda m: words[m[0]], quote.casefold())
+            if (
+                not re.fullmatch(r"[1-9][0-9]{0,5}", value)
+                or int(value) > MAX_QUANTITY
+                or not re.search(r"\b" + re.escape(value) + r"\s*(?:cards?|copies|copy|[x×])\b", evidence)
+            ):
+                raise ValueError("Quantity requires explicit card-count evidence")
+        elif field == "structure":
+            if value not in {"single", "mixed"}:
+                raise ValueError("Invalid structure")
+        elif value.casefold() not in quote.casefold():
+            raise ValueError("Value lacks literal evidence")
+        if field == "number" and not re.fullmatch(
+            r"[A-Za-z]*[0-9]+[A-Za-z]*(?:/[A-Za-z]*[0-9]+[A-Za-z]*)?", value
+        ):
+            warnings.append("Unsupported collector-number suggestion omitted; review the original text.")
+            continue
+        facts.append(dict(fact, status="seller claim — review required"))
+    for field in allowed:
+        if len({f["value"].casefold() for f in facts if f["field"] == field}) > 1:
+            warnings.append(f"Conflicting {field} claims; correct manually.")
+    # Surface source-level hazards even when the model silently omits them.
+    source_text = " ".join(fields.values())
+    counts = set()
+    words = {"one": "1", "two": "2", "three": "3", "four": "4", "five": "5"}
+    normalized = re.sub(r"\b(one|two|three|four|five)\b", lambda m: words[m[0]], source_text.casefold())
+    for count in re.findall(r"\b([0-9]+)\s*(?:cards?|copies|copy)\b", normalized):
+        counts.add(int(count))
+    if len(counts) > 1:
+        warnings.append("Multiple card counts occur in the seller text; resolve quantities manually.")
+    if re.search(r"\b(?:not included|excluded|excluding|except|without)\b", source_text, re.I) and not any(
+        f["field"] == "exclusion" for f in facts
+    ):
+        warnings.append(
+            "Seller exclusions were not extracted; review the original text before choosing cards."
+        )
+    patterns = {
+        "condition": r"(?:near mint|mint|nm|lightly played|moderately played|heavily played|lp|mp|hp|damaged|excellent|good|poor|ungraded|used)",
+        "edition": r"(?:1st edition|first edition|1st|unlimited|shadowless)",
+        "finish": r"(?:non[ -]?holo|reverse holo|holo(?:graphic)?|normal|foil|reverse foil|non[ -]?foil)",
+    }
+    for fact in facts[:]:
+        pattern = patterns.get(fact["field"])
+        if pattern and not re.fullmatch(pattern, fact["value"].strip(" ."), re.I):
+            facts.remove(fact)
+            warnings.append(
+                f"Unrecognized {fact['field']} suggestion omitted; review original seller wording."
+            )
+    explicit_one = any(re.search(r"\bone\s+card\b", v, re.I) for v in fields.values())
+    if explicit_one and not any(f["field"] == "quantity" for f in facts):
+        warnings.append("Seller explicitly says one card; quantity was not extracted. Review it manually.")
+    return dict(
+        facts=facts,
+        source_fields=dict(fields),
+        warnings=warnings,
+        unknown_fields=sorted(allowed - {f["field"] for f in facts}),
+        notice="Suggestions from seller text, not verified card identity. Prices, fees and ownership are unchanged.",
+    )

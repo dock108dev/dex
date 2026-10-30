@@ -4,9 +4,9 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pokemon-hunter"
-version = "0.1.1rc1"
+version = "0.1.1rc7"
 description = "A local Pokémon collection app with explicit, conservative eBay research"
-requires-python = ">=3.12"
+requires-python = ">=3.14,<3.15"
 dependencies = [
     "django>=5.2,<6.2",
     "django-axes>=8.3,<9",
@@ -65,6 +65,8 @@ show_missing = true
 only-include = ["src", "web", "config/catalog-imports", "config/sealed/2026-10-04", "config/sealed/2026-10-04-151/package.json", "config/sealed/2026-10-05-det1-e1c/package.json", "config/catalog-pipeline/inputs.json", "config/catalog-pipeline/retained-20261004.json", "config/catalog-pipeline/universe-20261004.json", "config/catalog-pipeline/m4-20261006", "pyproject.toml", "uv.lock", "README.md"]
 
 [tool.ruff]
+# Preserve established formatting; this is a syntax/style floor, not runtime support.
+target-version = "py312"
 line-length = 110
 
 [tool.ruff.lint]

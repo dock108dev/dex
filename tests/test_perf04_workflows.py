@@ -475,12 +475,15 @@ def test_off_page_set_and_binder_labels(browser_app):
     choice.click()
     page.get_by_role("button", name="Search cards", exact=True).click()
     expect(page.locator("#cards-set option:checked")).to_have_text(label)
+    expect(page.get_by_label("Applied card filters")).to_contain_text("Set: " + label)
     page.reload()
     expect(page.locator("#cards-set")).to_have_value(value)
     expect(page.locator("#cards-set option:checked")).to_have_text(label)
+    expect(page.get_by_label("Applied card filters")).to_contain_text("Set: " + label)
     page.locator(".owned-card-tile").first.click()
     page.locator("#card-back").click()
     expect(page.locator("#cards-set option:checked")).to_have_text(label)
+    expect(page.get_by_label("Applied card filters")).to_contain_text("Set: " + label)
     page.goto(base + "/card-groups/" + cx["binder_group"] + "/")
     page.locator("#group-copy-records summary").click()
     page.locator("[data-group-copy]").first.click()
@@ -520,7 +523,7 @@ def test_changed_workspaces_narrow_and_enlarged(browser_app, route, ready):
 def test_custom_goal_keeps_members_and_labels_across_search_and_pages(browser_app):
     from playwright.sync_api import expect
 
-    _, page, base, _, errors = browser_app
+    cx, page, base, _, errors = browser_app
     page.goto(base + "/goals/")
     page.locator("#goal-name").fill("Cross-page frozen members")
     page.locator("#goal-kind").select_option("custom")
@@ -546,12 +549,83 @@ def test_custom_goal_keeps_members_and_labels_across_search_and_pages(browser_ap
     second_value = second.get_attribute("value")
     captured = []
     page.on("request", lambda r: captured.append(r.post_data_json) if r.url.endswith("/preview/") else None)
-    page.get_by_role("button", name="Preview tracking goal", exact=True).click()
+    with page.expect_response(
+        lambda r: r.request.method == "POST" and r.url.endswith("/preview/")
+    ) as previewed:
+        page.get_by_role("button", name="Preview tracking goal", exact=True).click()
+    assert previewed.value.status == 200
+    preview = previewed.value.json()
     expect(page.locator("#confirm")).to_be_visible()
     assert set(captured[-1]["request"]["printing_ids"]) == {value, second_value}
-    page.locator("#confirm").click()
+    # A click starts confirmation; only its receipt establishes committed authority.
+    with page.expect_response(
+        lambda r: r.request.method == "POST" and r.url.endswith("/confirm/")
+    ) as confirmed:
+        page.locator("#confirm").click()
+    assert confirmed.value.status == 200
+    receipt = confirmed.value.json()
+    assert receipt["state"] == "confirmed"
+    assert receipt["id"] == preview["id"]
+    assert receipt["user_id"] == cx["actor"].user_id
     page.locator('[data-close="review"]').click()
     page.reload()
     page.get_by_role("button", name="View frozen checklist and progress", exact=True).click()
     expect(page.locator("#goal-target-list article")).to_have_count(2)
+    assert not errors, errors
+
+
+@pytest.mark.parametrize("browser_app", ["bulk"], indirect=True)
+def test_custom_goal_waits_for_confirmation_before_reload(browser_app, monkeypatch):
+    from pokemon_hunter.beta import collection
+
+    _, page, base, requests, _ = browser_app
+    entered, release, completed = (threading.Event() for _ in range(3))
+    original = collection.confirm
+    stale_reads = []
+
+    def held_confirm(*args, **kwargs):
+        entered.set()
+        # The broken workflow reloads during this interval. A receipt-aware
+        # workflow waits, then reads the committed revision on its new page.
+        release.wait(2)
+        result = original(*args, **kwargs)
+        completed.set()
+        return result
+
+    def commit_before_stale_read(route):
+        if entered.is_set() and not completed.is_set():
+            stale_reads.append(route.request.url)
+            release.set()
+            assert completed.wait(10), "Confirmation did not complete"
+        route.continue_()
+
+    monkeypatch.setattr(collection, "confirm", held_confirm)
+    page.route(base + "/api/v2/goals/**", commit_before_stale_read)
+    test_custom_goal_keeps_members_and_labels_across_search_and_pages(browser_app)
+    assert completed.is_set()
+    assert not stale_reads
+    assert sum("/confirm/" in path for path in requests) == 1
+
+
+@pytest.mark.parametrize("browser_app", ["labels"], indirect=True)
+def test_guest_filtered_card_detail_and_retained_label(browser_app):
+    from playwright.sync_api import expect
+
+    _, page, base, requests, errors = browser_app
+    page.context.clear_cookies()
+    page.goto(base + "/card-library/")
+    page.get_by_role("button", name="Browse set choices", exact=True).click()
+    choice = page.locator("[data-option-value]").first
+    label = choice.inner_text()
+    value = choice.get_attribute("data-option-value")
+    choice.click()
+    page.get_by_role("button", name="Search", exact=True).click()
+    page.locator(".owned-card-tile").first.click()
+    expect(page.get_by_text("Sign in to view your collection.", exact=True)).to_be_visible()
+    page.get_by_role("link", name="Back", exact=True).click()
+    expect(page.locator("#browse-set")).to_have_value(value)
+    expect(page.locator("#browse-set option:checked")).to_have_text(label)
+    page.reload()
+    expect(page.locator("#browse-set option:checked")).to_have_text(label)
+    assert not any("/api/v2/my-" in url for url in requests)
     assert not errors, errors

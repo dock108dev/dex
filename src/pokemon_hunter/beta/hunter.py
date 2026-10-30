@@ -22,6 +22,7 @@ from django.http import Http404
 from . import (
     collection,
     discovery,
+    discovery_listing,
     ebay_hunts,
     hunter_budget,
     hunter_catalog,
@@ -155,9 +156,10 @@ def _lookup(actor, session_key, run_id):
 
 
 def _clear_dependents(run_id):
-    from . import hunter_lot_details
+    from . import hunter_lot_details, listing_interpretation
 
     hunter_lot_details.erase_parent(run_id)
+    listing_interpretation.erase_parent("hunter", run_id)
 
 
 def _expire(run_id):
@@ -315,10 +317,6 @@ def stop(actor, session_key, run_id):
         return _summary(run)
 
 
-def _handle(run, item_id):
-    return hashlib.sha256((run.id + "\0" + item_id).encode()).hexdigest()[:24]
-
-
 def _eligibility(run, raw, now):
     paths = raw.get("_hunt_paths") or [
         ("singles" if run.traversal is None else run.traversal.scope, lane)
@@ -392,7 +390,7 @@ def status(actor, session_key, run_id, *, cursor=None):
         item_id = str(row.pop("item_id"))
         raw = by_id[item_id]
         row.update(
-            id=_handle(run, item_id),
+            id=discovery_listing.result_handle(run.id, item_id),
             observed_at=raw["_hunt_observed_at"],
             lanes=list(raw["_hunt_lanes"]),
             scopes=list(raw.get("_hunt_scopes", ["singles"])),
@@ -469,7 +467,9 @@ def summary_lease(actor, session_key, run_id, result_id):
     with run.lock:
         if run.cancel.is_set() or run.state != "complete":
             raise Http404
-        raw = next((r for r in run.raws if _handle(run, r["itemId"]) == result_id), None)
+        raw = next(
+            (r for r in run.raws if discovery_listing.result_handle(run.id, r["itemId"]) == result_id), None
+        )
         if raw is None:
             raise Http404
         reasons = _eligibility(run, raw, datetime.now(UTC))

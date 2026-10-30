@@ -1,11 +1,6 @@
 name: Shared validation
 'on':
   workflow_call:
-    inputs:
-      compatibility:
-        description: Include Python 3.12 on both supported OSes and Ubuntu Python 3.13
-        type: boolean
-        default: false
     outputs:
       result:
         description: Required-check aggregate conclusion
@@ -93,9 +88,8 @@ jobs:
   behavior:
     name: Behavior (${{ matrix.os }}, Python ${{ matrix.python }})
     runs-on: ${{ matrix.os }}
-    # The integrated 3.13 suite was still progressing at 84% when its 30-minute
-    # job expired. Allow complete diagnostics/results on every supported runtime;
-    # retain the 90-second timer and all individual performance budgets.
+    # Retain room for the complete integrated suite and report upload;
+    # preserve the 90-second diagnostic timer and individual performance budgets.
     timeout-minutes: 45
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -110,6 +104,9 @@ jobs:
       with:
         node-version-file: .nvmrc
         package-manager-cache: false
+    - name: Install locked renderer dependencies
+      id: javascript
+      run: npm ci --ignore-scripts --no-audit --no-fund
     - name: Install pinned Chromium for isolated PERF-04 tests
       id: behavior-chromium
       run: uv run --no-sync playwright install --with-deps chromium
@@ -123,6 +120,7 @@ jobs:
       env:
         SETUP: ${{ steps.setup.outcome }}
         TESTS: ${{ steps.tests.outcome }}
+        JAVASCRIPT: ${{ steps.javascript.outcome }}
         CHROMIUM: ${{ steps.behavior-chromium.outcome }}
         NODE: ${{ steps.node.outcome }}
       run: |
@@ -130,7 +128,7 @@ jobs:
         if [[ "$SETUP" == success ]]; then
           report_python=(uv run --no-sync python)
         fi
-        "${report_python[@]}" scripts/ci/report.py job --name "Behavior" --output reports/ci/behavior/metrics.json --outcome "setup=$SETUP" --outcome "node=$NODE" --outcome "tests=$TESTS" --outcome "chromium=$CHROMIUM" --tool-version "node=$(node --version)" --junit reports/ci/behavior/junit.xml --coverage reports/ci/behavior/coverage.json \
+        "${report_python[@]}" scripts/ci/report.py job --name "Behavior" --output reports/ci/behavior/metrics.json --outcome "setup=$SETUP" --outcome "node=$NODE" --outcome "javascript=$JAVASCRIPT" --outcome "tests=$TESTS" --outcome "chromium=$CHROMIUM" --tool-version "node=$(node --version)" --junit reports/ci/behavior/junit.xml --coverage reports/ci/behavior/coverage.json \
           --expect-discovered-suites
     - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       if: always()
@@ -147,8 +145,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(inputs.compatibility && '[{"os":"ubuntu-24.04","python":"3.14"},{"os":"ubuntu-24.04","python":"3.13"},{"os":"ubuntu-24.04","python":"3.12"}]'
-          || '[{"os":"ubuntu-24.04","python":"3.14"}]') }}
+        include:
+        - os: ubuntu-24.04
+          python: '3.14'
+
   distribution:
     name: Fresh distribution
     runs-on: ubuntu-24.04
@@ -175,7 +175,7 @@ jobs:
         [[ ${#rebuilt[@]} -eq 1 ]]
         cmp "${wheel[0]}" "${rebuilt[0]}"
         # Every PR must install/start on the actual declared minimum runtime.
-        uv venv --python 3.12 "$RUNNER_TEMP/dex-wheel"
+        uv venv --python 3.14 "$RUNNER_TEMP/dex-wheel"
         uv export --locked --no-dev --no-emit-project --format requirements-txt --output-file "$RUNNER_TEMP/runtime-requirements.txt" > /dev/null
         uv pip sync --python "$RUNNER_TEMP/dex-wheel/bin/python" --require-hashes "$RUNNER_TEMP/runtime-requirements.txt"
         uv pip install --python "$RUNNER_TEMP/dex-wheel/bin/python" --no-deps "${wheel[0]}"
@@ -345,7 +345,7 @@ jobs:
       run: |-
         python3 scripts/ci/report.py aggregate --needs-json "$NEEDS_JSON" --output reports/ci/gate/metrics.json --required quality --required behavior --required distribution --required browser --required security --required staging \
           --report-directory reports/ci/children \
-          --expect-job-reports "Source quality=1" --expect-job-reports "Behavior=${{ inputs.compatibility && 3 || 1 }}" \
+          --expect-job-reports "Source quality=1" --expect-job-reports "Behavior=1" \
           --expect-job-reports "Staging PostgreSQL=1" --expect-job-reports "Fresh distribution=1" --expect-job-reports "Synthetic browser journeys=1" --expect-job-reports "Security and dependencies=1"
         echo "result=PASS" >> "$GITHUB_OUTPUT"
     - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

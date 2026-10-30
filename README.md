@@ -14,7 +14,7 @@ storage. See [local development](docs/local-development.md) for startup and
 
 ## Requirements
 
-- Python 3.12 or later and [uv](https://docs.astral.sh/uv/).
+- Python 3.14 and [uv](https://docs.astral.sh/uv/).
 - macOS or Linux for the local application. Windows process handling is unsupported.
 - Port 8011 for the ordinary local server; reuse an already running installation.
 - Node.js 24 (see `.nvmrc`) for JavaScript checks. Playwright and other CI tools
@@ -61,7 +61,8 @@ before changes; never reseed an existing installation.
 
 Real-card recognition accuracy is unmeasured; all-era variant coverage and current
 buying availability remain incomplete. Unknown identity, stock, shipping and
-coverage stay visible. AI photo recognition is unavailable pending future Ollama integration; eBay has separate configuration.
+coverage stay visible. AI photo recognition is unavailable. Explicit local-model listing interpretation
+uses already-authorized seller text; eBay has separate configuration.
 Shopping uses dated, admitted retained references and privately activated source
 snapshots. Scheduled acquisition is unavailable. Missing values remain unpriced.
 

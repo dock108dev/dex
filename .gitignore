@@ -191,3 +191,13 @@ config/market_values.json
 
 # Isolated JavaScript renderer test dependencies.
 node_modules/
+
+# Local investigation and delivery notes; enduring guides live in docs/.
+/docs/ci-verify-20261029.md
+/docs/ci-performance-runner-proposal.md
+/docs/ops-readiness-evidence-20261028.md
+/docs/perf03-evidence-20261028.md
+/docs/perf04-evidence-20261028.md
+/docs/perf04-renderer-scenarios.md
+/docs/installed-qa-20261029.md
+/docs/python314-delivery.md

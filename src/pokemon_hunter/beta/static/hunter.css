@@ -144,3 +144,40 @@
 .hunter-card-head { display:flex; flex-wrap:wrap; }
 .hunter-card-head > .hunter-image { flex:0 0 5.5rem; width:5.5rem; max-width:100%; }
 .hunter-card-head > div { flex:1 1 10rem; min-width:0; }
+
+/* Price Hunter: action, assumptions, then the received listings. */
+.hunter-heading > div { display:flex; flex-wrap:wrap; align-items:baseline; gap:8px 16px; }
+.hunter-category { color:var(--muted); font-size:1rem; }
+#hunter-form { display:flex; align-items:center; flex-wrap:wrap; gap:12px 24px; padding:0; border:0; border-radius:0; background:transparent; }
+#hunter-form .hunter-controls { flex:0 1 auto; }
+.hunter-availability { flex:1 1 24rem; margin:0; gap:8px 12px; }
+#hunter-status { flex:1 1 16rem; }
+.hunter-availability:not(:has(#hunter-status:not(:empty))):not(:has(button:not([hidden]))) { display:none; }
+.hunter-usage { border-bottom:0; margin-bottom:0; }
+.hunter-cost-settings { border-block:1px solid var(--border); }
+.hunter-cost-settings > summary { color:var(--ink); }
+.hunter-cost-settings[open] { padding-bottom:16px; }
+.hunter-cost-settings > p { max-width:85ch; }
+.hunter-cost-settings .hunter-controls { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+.hunter-cost-settings .hunter-controls label { max-width:none; }
+#hunter-progress:not(:has(> :not([hidden]))) { display:none; }
+.hunter-single .hunter-image:not(:has(img)) { aspect-ratio:auto; min-height:88px; }
+.hunter-single .hunter-image span { font-size:.875rem; overflow-wrap:normal; }
+.hunter-single .hunter-amounts dd { font-size:1.0625rem; font-weight:600; }
+.hunter-single .hunter-metric-primary dd, .hunter-single .hunter-metric-net dd { font-size:1.5rem; font-weight:700; }
+.hunter-single .hunter-metric-net { border-left:2px solid var(--border); padding-left:16px; }
+.hunter-cost-breakdown { margin-top:8px!important; border:0; }
+.hunter-cost-breakdown summary { font-size:.9375rem; color:var(--ink); }
+.hunter-cost-lines { margin:0 0 12px; }
+.hunter-cost-lines > div { display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px 16px; padding:4px 0; }
+.hunter-cost-lines dd { margin:0; font-variant-numeric:tabular-nums; }
+.hunter-seller-title { padding-top:8px; }
+.hunter button:disabled { opacity:1; cursor:not-allowed; }
+@media(max-width:700px) {
+  .hunter-heading { margin-bottom:16px; }
+  .hunter-availability { flex-basis:100%; }
+  .hunter-cost-settings .hunter-controls { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media(max-width:380px) {
+  .hunter-cost-settings .hunter-controls { grid-template-columns:minmax(0,1fr); }
+}

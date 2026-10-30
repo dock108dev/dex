@@ -63,6 +63,84 @@ def test_prepare_restart_and_policy_parity(prepared):
         assert accounts.state(prepared["actor"], accounts.catalog_current().token)["status"] == "ready"
 
 
+def test_display_index_transition_preserves_prepared_rows_and_authority(prepared):
+    from pokemon_hunter.beta import account_read_queries as reads
+    from pokemon_hunter.beta.catalog_read_build import Unavailable
+
+    actor = prepared["actor"]
+    expected = reads.groups(actor)
+    collection.execute("DROP INDEX ar_group_display")
+    collection.execute("UPDATE account_read_schema SET version=1")
+    tables = [name for name in connection.introspection.table_names() if name != "account_read_schema"]
+    before = {name: store.rows(f'SELECT * FROM "{name}"') for name in tables}
+    with pytest.raises(Unavailable, match="incompatible_schema"):
+        reads.groups(actor)
+    with patch.object(accounts, "prepare", side_effect=AssertionError("No preparation needed")):
+        schema.migrate()
+        assert reads.groups(actor) == expected
+    assert before == {name: store.rows(f'SELECT * FROM "{name}"') for name in tables}
+    assert store.rows("SELECT version FROM account_read_schema") == [{"version": 2}]
+    schema.check()
+    collection.execute("DROP INDEX ar_group_display")
+    with pytest.raises(Unavailable, match="account_schema_infrastructure"):
+        reads.groups(actor)
+    schema.migrate()
+    assert reads.groups(actor) == expected
+
+
+def test_display_index_transition_is_atomic(prepared):
+    collection.execute("DROP INDEX ar_group_display")
+    collection.execute("UPDATE account_read_schema SET version=1")
+    create = schema.display_index
+
+    def fail(cursor):
+        create(cursor)
+        raise RuntimeError("interrupted explicit migration")
+
+    with patch.object(schema, "display_index", side_effect=fail), pytest.raises(RuntimeError):
+        schema.migrate()
+    assert store.rows("SELECT version FROM account_read_schema") == [{"version": 1}]
+    assert not store.rows("SELECT name FROM sqlite_master WHERE name='ar_group_display'")
+    schema.migrate()
+    parity(prepared)
+
+
+def test_display_projection_is_covering_and_preserves_oversized_records():
+    import hashlib
+    import sqlite3
+
+    with sqlite3.connect(":memory:") as db:
+        db.execute(
+            "CREATE TABLE ar_groups(user_id TEXT NOT NULL," + schema.TABLES["ar_groups"] + ") WITHOUT ROWID"
+        )
+        for n, size in enumerate((779, 838, 120000)):
+            payload = "x" * size
+            db.execute(
+                "INSERT INTO ar_groups VALUES(?,?,?,?,?,?,?,?,?,?)",
+                (
+                    "u" * 36,
+                    str(n),
+                    "a" * 36,
+                    "c" * 68,
+                    0,
+                    0,
+                    1,
+                    payload,
+                    hashlib.sha256(payload.encode()).hexdigest(),
+                    size,
+                ),
+            )
+        query = "SELECT id,CASE WHEN bytes<=1100 THEN payload END AS payload,sha FROM ar_groups WHERE user_id=? AND id IN ('0','1','2')"
+        expected = db.execute(query, ("u" * 36,)).fetchall()
+        pages_before = db.execute("PRAGMA page_count").fetchone()[0]
+        schema.display_index(db.cursor())
+        assert db.execute("PRAGMA page_count").fetchone()[0] - pages_before <= 4
+        assert db.execute(query, ("u" * 36,)).fetchall() == expected
+        assert expected[-1][1] is None
+        plan = db.execute("EXPLAIN QUERY PLAN " + query, ("u" * 36,)).fetchall()
+        assert any("USING COVERING INDEX ar_group_display" in row[3] for row in plan)
+
+
 def test_add_undo_incremental_policy_parity(prepared):
     original = store.rows
     plans = {}

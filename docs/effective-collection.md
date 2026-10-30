@@ -444,7 +444,7 @@ One batch rejects mixed actions on the same broad identity, so no within-generat
 operation ordering is invented. Preserve all existing export/import and goal policies.
 
 
-### Implementation and migration ownership
+### Service ownership and migration
 
 `bulk_formats` owns CSV/paste parsing, templates, envelopes and input fingerprints.
 `bulk_input` resolves current groups/aliases and validates all rows, including skipped rows. The single supported-child selector shows actual
@@ -512,10 +512,10 @@ Photo batches require separate local activation. See the
 [photo contract](photo-entry.md#multiple-card-photo-batches) for image admission,
 recognition, retention and recovery limits.
 
-## Durable account-read representation (PERF-03)
+## Durable account-read representation
 
 The private evaluator is shared with explicit account preparation and bounded
 identity updates. The public `project` entry point retains its full validation
 and account/generation checks. Derived records never define a second ownership
-policy or authorize mutation. See [PERF-03 account reads](perf03-account-reads.md)
+policy or authorize mutation. See [account reads](account-reads.md)
 for source-boundary, unknown-quantity, species, frozen-goal and recovery contracts.

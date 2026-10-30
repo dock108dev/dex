@@ -11,6 +11,7 @@ name: Scheduled assurance
         - full
         - compatibility
         - performance-diagnostic
+        - native-diagnostic
         default: full
 permissions:
   contents: read
@@ -31,17 +32,15 @@ jobs:
         EVENT: ${{ github.event_name }}
         SCOPE: ${{ inputs.scope }}
       run: |-
-        if [[ "$EVENT" == workflow_dispatch && "$SCOPE" != full && "$SCOPE" != compatibility && "$SCOPE" != performance-diagnostic ]]; then
+        if [[ "$EVENT" == workflow_dispatch && "$SCOPE" != full && "$SCOPE" != compatibility && "$SCOPE" != performance-diagnostic && "$SCOPE" != native-diagnostic ]]; then
           echo "Invalid diagnostic scope" >&2
           exit 1
         fi
   ci:
     name: CI
-    if: ${{ inputs.scope != 'performance-diagnostic' }}
+    if: ${{ inputs.scope != 'performance-diagnostic' && inputs.scope != 'native-diagnostic' }}
     needs: inputs
     uses: ./.github/workflows/validate.yml
-    with:
-      compatibility: ${{ github.event_name == 'schedule' || inputs.scope == 'compatibility' }}
   health:
     name: Bounded CI health
     runs-on: ubuntu-24.04
@@ -67,6 +66,7 @@ jobs:
       actions: read
   container:
     name: Scheduled container build
+    needs: inputs
     if: ${{ github.event_name == 'schedule' || inputs.scope == 'compatibility' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 12
@@ -108,19 +108,42 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
-    - uses: ./.github/actions/setup
+    - id: setup
+      uses: ./.github/actions/setup
       with:
         python-version: '3.14'
     - name: Install the same pinned Chromium
+      id: chromium
       run: uv run --no-sync playwright install --with-deps chromium
     - name: Bounded profiling and browser instrumentation comparison (not acceptance)
+      id: probes
       run: uv run --no-sync pytest -q tests/ci_perf_probe.py --disable-socket --allow-unix-socket --junitxml=reports/ci/perf-diagnostic/probes.xml
     - name: Separate unprofiled representative budget gates (not full qualification)
-      if: ${{ !cancelled() }}
+      id: budgets
+      if: ${{ !cancelled() && steps.chromium.outcome == 'success' }}
       run: uv run --no-sync pytest -q tests/test_catalog_read_performance.py tests/test_account_read_performance.py tests/test_ops_runtime.py --disable-socket --allow-unix-socket --junitxml=reports/ci/perf-diagnostic/budgets.xml
     - name: Separate corrected browser budget gates (not full qualification)
-      if: ${{ !cancelled() }}
+      id: browser-budgets
+      if: ${{ !cancelled() && steps.chromium.outcome == 'success' }}
       run: uv run --no-sync pytest -q tests/test_perf04_browser.py tests/test_perf04_interactions.py --disable-socket --allow-unix-socket --junitxml=reports/ci/perf-diagnostic/browser-budgets.xml
+    - name: Performance diagnostic summaries
+      if: always()
+      env:
+        SETUP: ${{ steps.setup.outcome }}
+        CHROMIUM: ${{ steps.chromium.outcome }}
+        PROBES: ${{ steps.probes.outcome }}
+        BUDGETS: ${{ steps.budgets.outcome }}
+        BROWSER: ${{ steps.browser-budgets.outcome }}
+      run: |
+        failed=0
+        for entry in "probes=$PROBES" "budgets=$BUDGETS" "browser-budgets=$BROWSER"; do
+          suite="${entry%%=*}"
+          python3 scripts/ci/report.py job --name "Performance diagnostic: $suite" \
+            --output "reports/ci/perf-diagnostic/$suite-metrics.json" \
+            --outcome "setup=$SETUP" --outcome "chromium=$CHROMIUM" --outcome "$entry" \
+            --junit "reports/ci/perf-diagnostic/$suite.xml" || failed=1
+        done
+        exit "$failed"
     - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       if: always()
       with:
@@ -131,5 +154,100 @@ jobs:
           reports/perf03/
           reports/perf04/
           reports/ops-readiness/
+        if-no-files-found: error
+        retention-days: 14
+
+  native-diagnostic:
+    name: Native diagnostic only (Ubuntu, Python 3.14)
+    needs: inputs
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.scope == 'native-diagnostic' }}
+    runs-on: ubuntu-24.04
+    # 18 bounded 30-second probes + 40-minute suite, setup and report upload.
+    timeout-minutes: 60
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - id: setup
+      uses: ./.github/actions/setup
+      with:
+        python-version: '3.14'
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      id: node
+      with:
+        node-version-file: .nvmrc
+        package-manager-cache: false
+    - name: Install locked renderer dependencies
+      id: javascript
+      run: npm ci --ignore-scripts --no-audit --no-fund
+    - name: Prepare native debugger and pinned Chromium
+      id: tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends gdb
+        uv run --no-sync playwright install --with-deps chromium
+        mkdir -p reports/ci/native-diagnostic
+        git rev-parse HEAD HEAD^{tree} > reports/ci/native-diagnostic/source.txt
+        sha256sum uv.lock > reports/ci/native-diagnostic/lock.txt
+        uv run --no-sync python -VV > reports/ci/native-diagnostic/python.txt
+        uv run --no-sync python -c 'import json, platform, sqlite3, greenlet; print(json.dumps({"platform": platform.platform(), "sqlite": sqlite3.sqlite_version, "greenlet": greenlet.__version__}))' > reports/ci/native-diagnostic/native-versions.json
+        uv pip freeze > reports/ci/native-diagnostic/dependencies.txt
+    - name: Bounded synthetic controls and native backtrace (not acceptance)
+      id: probes
+      run: |
+        ulimit -c 0
+        failed=0
+        for mode in sqlite greenlet primed-sqlite; do
+          for timer in off on; do
+            args=()
+            if [[ "$timer" == on ]]; then args+=(--timer); fi
+            for trial in 1 2 3; do
+              result=0
+              timeout 30s gdb --batch --return-child-result \
+                -ex 'set pagination off' -ex 'set print frame-arguments none' \
+                -ex run -ex 'thread apply all bt 30' \
+                --args .venv/bin/python scripts/ci/native_crash_probe.py "$mode" "${args[@]}" \
+                > "reports/ci/native-diagnostic/$mode-$timer-$trial.log" 2>&1 || result=$?
+              if [[ "$result" -ne 0 ]]; then failed=1; fi
+              echo "$mode $timer $trial $result" >> reports/ci/native-diagnostic/probe-exits.txt
+            done
+          done
+        done
+        exit "$failed"
+    - name: Original full suite under debugger with unchanged 90-second diagnostics
+      id: suite
+      if: ${{ !cancelled() && steps.tools.outcome == 'success' && steps.javascript.outcome == 'success' }}
+      run: |
+        ulimit -c 0
+        timeout 40m gdb --batch --return-child-result \
+          -ex 'set pagination off' -ex 'set print frame-arguments none' \
+          -ex run -ex 'thread apply all bt 30' \
+          --args .venv/bin/python -m pytest -q --durations=15 \
+          --disable-socket --allow-unix-socket \
+          --junitxml=reports/ci/native-diagnostic/junit.xml \
+          --cov=pokemon_hunter --cov-branch \
+          --cov-report=json:reports/ci/native-diagnostic/coverage.json \
+          > reports/ci/native-diagnostic/full-suite.log 2>&1
+    - name: Native diagnostic summary
+      if: always()
+      env:
+        SETUP: ${{ steps.setup.outcome }}
+        NODE: ${{ steps.node.outcome }}
+        JAVASCRIPT: ${{ steps.javascript.outcome }}
+        TOOLS: ${{ steps.tools.outcome }}
+        PROBES: ${{ steps.probes.outcome }}
+        SUITE: ${{ steps.suite.outcome }}
+      run: >-
+        python3 scripts/ci/report.py job --name "Native diagnostic only"
+        --output reports/ci/native-diagnostic/metrics.json
+        --outcome "setup=$SETUP" --outcome "node=$NODE" --outcome "javascript=$JAVASCRIPT"
+        --outcome "tools=$TOOLS" --outcome "probes=$PROBES" --outcome "suite=$SUITE"
+        --junit reports/ci/native-diagnostic/junit.xml
+        --coverage reports/ci/native-diagnostic/coverage.json --expect-discovered-suites
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      if: always()
+      with:
+        name: native-diagnostic-only-${{ github.run_id }}-${{ github.run_attempt }}
+        path: reports/ci/native-diagnostic/
         if-no-files-found: error
         retention-days: 14

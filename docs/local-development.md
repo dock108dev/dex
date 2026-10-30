@@ -7,12 +7,12 @@ physical copies, collecting goals and Shopping.
 
 ## Requirements
 
-Use Python 3.12 or later and uv on macOS or Linux. JavaScript checks use Node.js 24
+Use Python 3.14 and uv on macOS or Linux. JavaScript checks use Node.js 24
 from `.nvmrc`. Windows process handling is unsupported. Run development commands
 from the repository root:
 
 ```sh
-uv sync --locked --extra dev
+uv sync --locked --python 3.14 --extra dev
 ```
 
 ## Existing installations
@@ -103,6 +103,7 @@ not the authenticated collection app.
 | --- | --- |
 | `DEX_PROFILE` | `local` by default; `staging` selects PostgreSQL/HTTPS settings |
 | `DEX_B1_ROOT` | Private root set by the local CLI |
+| `ollama.json` | Optional owner-only listing-text gateway configuration; see [listing interpretation](hunts.md#local-text-adapter-and-listing-review) |
 | `scan-config.json` | Photo admission and retained historical settings; see [photo entry](photo-entry.md) |
 | `hunter-policy.json` | Owner-selected ordinary Hunter policy marker; use Hunter's Usage settings |
 | `EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET` | eBay credentials; nonempty process values override `.env` |
@@ -132,10 +133,13 @@ uv run --no-sync ruff format --check .
 uv run --no-sync pytest -q tests/test_b2.py tests/test_filtered_goals.py
 ```
 
-Socket guards, coverage, security and browser tools are in the `ci` extra:
+For the complete suite, use Node 24 and the `ci` extra. The suite includes
+JavaScript renderer contracts and Chromium tests, so install their dependencies too:
 
 ```sh
 uv sync --locked --extra dev --extra ci
+npm ci --ignore-scripts --no-audit --no-fund
+uv run --no-sync playwright install chromium
 uv run --no-sync python scripts/ci/source.py
 uv run --no-sync pytest -q --disable-socket --allow-unix-socket
 ```
@@ -156,9 +160,9 @@ original app. Preserve the `collection-base.css` then `collection-browse.css`
 cascade. Client renderers do not own account, possession or price policy.
 
 `bulk_formats.py` parses input; `bulk_input.py` resolves account/catalog identity.
-`photo_batch_images.py` handles image bytes; `photo_batch_journal.py` owns durable
-append/read operations, tombstones and reservation projection. `photo_batches.py`
-keeps its public journal imports and owns leases and transaction sequencing. Keep Stop, authorization and journals explicit when extracting.
+Photo processing and journal ownership are described once under
+[photo service boundaries](#photo-service-boundaries). Keep Stop, authorization
+and journals explicit when extracting.
 
 `discovery_contracts.py` defines checked input and ephemeral run types without
 account storage or worker activity. `discovery.py` retains the compatible exports
@@ -173,6 +177,18 @@ with those phases. Hunter review projection stays with its checked lease and
 comparison adapters; splitting its individual result fields would hide the
 revalidation boundary. Photo jobs similarly retain transactional lease/journal
 sequencing, with image processing and journal storage separate.
+
+Private V2 reads share `account_read_context.py` for the verified actor, snapshot,
+revision selectors, final revalidation and bounded payload links. Goal summary,
+item and source queries live in `account_read_goal_queries.py`; the existing
+`account_read_goals.py` still owns preparation/incremental refresh. Both query
+families depend on the shared context, never on one another. Existing
+`account_read_queries` exports and route bindings remain compatible.
+
+Catalog membership and bounded private resources share group/scope predicates and
+resource fallbacks in `account_read_queries.py`. Keep those SQL constraints together;
+extract independent domains rather than forwarding individual fields through tiny
+modules. Shared context owns authorization and revision checks for every read.
 
 Snapshot tooling separates execution from `tcgcsv_capture_contract.py`,
 `tcgcsv_capture_history.py` and `tcgcsv_capture_transport.py`. Execution retains the
@@ -211,74 +227,3 @@ storage are separate modules. Keep transaction bodies together when refactoring.
 Photo lifecycle, provider-neutral photo contracts and confirmation/report tests live in
 `test_photo_batches.py`, `test_photo_contracts.py` and `test_photo_confirmation.py`.
 Their synthetic fixtures are in non-collected `tests/photo_batch_helpers.py`.
-
-
-## Recorded runtime maintenance status
-
-The latest delivery record inspected for the October 27 plan reconciliation selects
-`hunter-poc-20261027`, preserving the simplified photo and lot-finder deliveries.
-This is a recorded runtime identity, not a fresh inspection of the running process.
-Before maintenance, resolve the configured runtime and root using the startup
-instructions and inspect its dependency inventory.
-
-The October 25 inventory recorded filelock 4.0.12 and opentelemetry-api 1.45.0;
-retained audit findings flagged those versions. Subsequent photo, lot-finder and
-Hunter delivery records explicitly report no dependency changes. The dependency
-repair therefore remains open unless a newer installed inventory establishes it.
-The old SHOP-10 runtime statement is superseded by later delivery records; its
-dependency inventory remains historical evidence, not a current measurement.
-Evidence is local-only: `reports/docs-audit-20261025/installation-identity.json`
-and the delivery closeouts described in [Shopping](hunts.md#delivered-behavior-and-verification-limits)
-and [photo entry](photo-entry.md#delivered-verification-and-owner-review).
-
-Select a bounded dependency repair preserving delivered behavior, or explicitly
-reconcile a cumulative source successor. Never label a cumulative source update a
-lockfile-only change. Qualify the selected package, preserve rollback and independent
-journals, then follow [runtime updates](operations.md#runtime-updates-and-recovery).
-A code rollback must not restore old consumed capacity or revoked data.
-
-PERF-01 directly reverified the selected `hunter-poc-20261027` interpreter, package
-and listening process against the existing customer root. Its dependency inventory
-still contains filelock 4.0.12 and opentelemetry-api 1.45.0; no dependency repair was
-performed. The installed package digest is
-`3e084d7e1d51db566e67febf4f23ffc41454d199408d95d008662a2178c3da5f`.
-The checkout differs in 30 beta source/asset paths (four are source-only extraction
-modules); there are no installed-only beta files. See the
-[baseline and qualification limits](CI.md#perf-01-baseline-evidence) before selecting
-a cumulative successor. The final process was restored to ordinary CLI startup,
-without diagnostic wrappers.
-
-## Working OPS-READINESS runtime
-
-The candidate's ordinary CLI validates catalog readiness before starting its existing
-workers and records sanitized, bounded request timing. Use one process; its ASGI
-admission limit is one dynamic Django request at a time, plus four static-file requests. Do not use reload/multiple workers
-to work around latency. Local SQLite qualification does not qualify PostgreSQL/staging.
-
-Check `/livez/`, then `/readyz/`, then `/api/v2/readiness/` through ordinary sign-in.
-The last signal is account-specific; another account's failure does not mean the public
-catalog failed. Finally navigate to cards and measure usable content. A listening port,
-launcher success or 200 HTML shell does not establish those later states.
-
-See [commands and recovery](operations.md#ops-readiness-local-contracts) for explicit
-migration/preparation/status and repair ordering. Older prepared goal headers require
-account preparation with the new policy; startup never upgrades them. The customer
-installation remains unchanged. [OPS evidence](ops-readiness-evidence-20261028.md)
-records candidate-specific checks and remaining gates.
-
-## RUNTIME-DEPS candidate selection
-
-October 29 read-only inspection confirmed the configured `hunter-poc-20261027`
-runtime and ordinary CLI process using the existing customer root. That runtime
-remains unchanged. The separate cumulative `0.1.1rc1` candidate includes the preserved
-PERF-02/03/04, OPS-READINESS, extraction and recognition-removal changes; it is not a
-lockfile-only repair. See [candidate qualification](CI.md#runtime-deps-local-qualification).
-
-The selected local interpreter is CPython 3.12.15, built October 14, 2026 with
-Clang 23.1.3, matching the inspected customer's interpreter version. SQLite 3.53.1
-supports the required FTS5 create/insert/MATCH operations. Python >=3.12 remains the
-supported contract; the hosted Python/OS matrix is unchanged. Neither the old 3.14.0
-nor selected 3.12.15 reproduced the historical stall in a bounded 20-cycle
-arm/fire/cancel probe. This is not an upstream diagnosis or proof that 3.14.0 is
-fixed. Qualification uses the existing 90-second pytest diagnostic timer plus an
-external process-group deadline; no diagnostic or performance gate is disabled.

@@ -21,7 +21,7 @@ from django.conf import settings
 from django.db import close_old_connections
 from django.http import Http404
 
-from . import discovery_paging, ebay_hunts, goal_hunts, parity, store
+from . import discovery_listing, discovery_paging, ebay_hunts, goal_hunts, parity, store
 from .diagnostics import async_closing, failure
 from .discovery_contracts import MAX_BROWSE as MAX_BROWSE
 from .discovery_contracts import Choices as Choices
@@ -292,6 +292,9 @@ def _expire(run_id):
         run.seen.clear()
         run.revealed.clear()
         run.state = "expired"
+    from . import listing_interpretation
+
+    listing_interpretation.erase_parent("discovery", run_id)
 
 
 def _scope_label(run):
@@ -356,8 +359,7 @@ def status(actor, session_key, run_id, *, selected_result=None):
         raws = [
             raw
             for raw in raws
-            if hashlib.sha256((run.id + "\0" + str(raw.get("itemId", ""))).encode()).hexdigest()[:24]
-            == selected_result
+            if discovery_listing.result_handle(run.id, str(raw.get("itemId", ""))) == selected_result
         ]
     # Admission, expiry, withdrawal, rights and current ownership are evaluated on
     # every local read. Restricted guide cells/derivatives are never cached.
@@ -381,7 +383,7 @@ def status(actor, session_key, run_id, *, selected_result=None):
         ):
             continue
         item_id = str(row.pop("item_id", ""))
-        handle = hashlib.sha256((run.id + "\0" + item_id).encode()).hexdigest()[:24]
+        handle = discovery_listing.result_handle(run.id, item_id)
         row["id"], row["revealed"] = handle, True
         if run.choices.budget is not None:
             minimum = row.get("delivered_total") or row.get("listing_price")
@@ -410,6 +412,35 @@ def reveal(actor, session_key, run_id, result_id):
     return status(actor, session_key, run_id)
 
 
+def _summary_lease(run, result_id):
+    """Read the original seller-content lease while the caller holds run.lock."""
+    remaining = run.created + EPHEMERAL_SECONDS - time.monotonic()
+    if run.cancel.is_set() or not _readable(run) or remaining <= 0:
+        raise Http404
+    raw = next(
+        (
+            r
+            for r in run.raws
+            if discovery_listing.result_handle(run.id, str(r.get("itemId", ""))) == result_id
+        ),
+        None,
+    )
+    if raw is None:
+        raise Http404
+    return {"raw": deepcopy(raw), "created": run.created, "expires_in_seconds": remaining}
+
+
+def summary_lease(actor, session_key, run_id, result_id):
+    """Recheck admitted seller content without rebuilding catalog/value comparisons.
+
+    Initial review admission belongs to review_candidate. This read rechecks the
+    account, session, parent state and original expiry; it grants no new admission.
+    """
+    run = _lookup(actor, session_key, run_id)
+    with run.lock:
+        return _summary_lease(run, result_id)
+
+
 def review_candidate(actor, session_key, run_id, result_id):
     """Lease one explicitly selected summary to review without any new request.
 
@@ -433,27 +464,13 @@ def review_candidate(actor, session_key, run_id, result_id):
             raise Http404
         selected_target = identity(printing)
     with run.lock:
-        if run.cancel.is_set() or not _readable(run):
-            raise Http404
-        raw = next(
-            (
-                r
-                for r in run.raws
-                if hashlib.sha256((run.id + "\0" + str(r.get("itemId", ""))).encode()).hexdigest()[:24]
-                == result_id
-            ),
-            None,
-        )
-        if raw is None:
-            raise Http404
+        lease = _summary_lease(run, result_id)
         return {
-            "raw": deepcopy(raw),
+            **lease,
             "choices": run.choices.model_dump(mode="json"),
             "scope": deepcopy(run.scope),
             "scope_label": _scope_label(run),
             "selected_target": selected_target,
-            "created": run.created,
-            "expires_in_seconds": current["expires_in_seconds"],
             "result": {
                 key: deepcopy(row.get(key))
                 for key in ("identity_candidates", "discovery_kind", "proposed_identity")
@@ -468,6 +485,9 @@ def stop(actor, session_key, run_id):
         run.state = "stopped"
         run.raws.clear()
         run.revealed.clear()
+        from . import listing_interpretation
+
+        listing_interpretation.erase_parent("discovery", run_id)
         _journal(run, "action", "stopped")
         return _summary(run)
 

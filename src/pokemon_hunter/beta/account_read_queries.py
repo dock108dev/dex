@@ -1,104 +1,25 @@
 """Private V2 reads: bounded expansion of checked durable account representations."""
 
 import json
-from functools import wraps
-from urllib.parse import urlencode
 
-from django.db import DatabaseError
 from django.http import Http404
 
 from . import account_read_build as builds
-from . import account_read_schema as schema
 from . import card_groups, collection, store
-from .catalog_read_build import Unavailable, active
+
+# Keep existing route and service imports stable while sharing one read boundary.
+from .account_read_context import BASE as BASE
+from .account_read_context import page_result as page_result
+from .account_read_context import payload as payload
+from .account_read_context import read as read
+from .account_read_context import url as url
+from .account_read_goal_queries import goal_items as goal_items
+from .account_read_goal_queries import goal_options as goal_options
+from .account_read_goal_queries import goal_sources as goal_sources
+from .account_read_goal_queries import goal_workspace as goal_workspace
+from .catalog_read_build import Unavailable
 from .catalog_read_queries import paging
 from .catalog_read_select import offset
-from .catalog_read_snapshot import snapshot
-
-BASE = "/api/v2/"
-
-
-def url(state, path, **params):
-    return (
-        BASE
-        + path
-        + "?"
-        + urlencode(
-            dict(
-                catalog_revision=state["catalog_token"],
-                generation=state["generation"],
-                account_revision=state["seal"],
-                **params,
-            )
-        )
-    )
-
-
-def read(fn):
-    @wraps(fn)
-    def wrapped(actor, raw=None, **kwargs):
-        actor = store.verified(actor)
-        raw = dict(raw or {})
-        selectors = {
-            key: raw.pop(key) for key in ("catalog_revision", "generation", "account_revision") if key in raw
-        }
-        if any(not isinstance(v, str) or len(v) > 160 for v in selectors.values()):
-            raise ValueError("Choose short revision selectors")
-        if "generation" in selectors:
-            card_groups._integer(selectors["generation"], "generation", 0)
-        try:
-            with snapshot():
-                manifest, token = active(selectors.get("catalog_revision"))
-                schema.check()
-                state = builds.state(
-                    actor,
-                    token,
-                    requested_generation=selectors.get("generation"),
-                    requested_revision=selectors.get("account_revision"),
-                )
-                current = (state["generation"], state["revision"])
-                state["catalog_stride"] = manifest["stride"]
-                result = fn(actor, manifest["id"], state, raw, **kwargs)
-            store.verified(actor)
-            final = store.rows(
-                "SELECT COALESCE((SELECT value FROM collection_generations WHERE user_id=%s),0) AS generation,COALESCE((SELECT value FROM account_read_revisions WHERE user_id=%s),0) AS revision,(SELECT value FROM catalog_read_revision WHERE id=1) AS catalog,(SELECT status FROM account_read_state WHERE user_id=%s) AS status",
-                [actor.user_id] * 3,
-            )[0]
-            if (final["generation"], final["revision"]) != current or final["catalog"] != manifest[
-                "revision"
-            ]:
-                raise collection.Conflict("Read revision changed")
-            if final["status"] != "ready":
-                raise Unavailable("account_state_changed")
-            result.update(
-                read_version=2,
-                public=False,
-                catalog_revision=token,
-                account_revision=state["seal"],
-                account_id=actor.user_id,
-                generation=current[0],
-            )
-            return result
-        except (DatabaseError, IndexError, KeyError, json.JSONDecodeError) as exc:
-            raise Unavailable("account_integrity") from exc
-
-    return wrapped
-
-
-def payload(row, state, kind, *, full=False):
-    if row["payload"] is None or (not full and len(row["payload"].encode()) > 1100):
-        return dict(id=row["id"], oversized=True, url=url(state, f"resources/{kind}/{row['id']}/"))
-    return builds.decode(row)
-
-
-def page_result(items, field, total, page, size):
-    return {
-        field: items,
-        "total": total,
-        "page": page,
-        "page_size": size,
-        "pages": (total + size - 1) // size,
-    }
 
 
 def group_row(actor, build, key):
@@ -839,23 +760,6 @@ def species_owned_groups(actor, build, state, raw, *, dex):
 
 
 @read
-def goal_options(actor, build, state, raw):
-    page, size = paging(raw)
-    total = store.rows("SELECT COUNT(*) AS n FROM ar_goals WHERE user_id=%s", [actor.user_id])[0]["n"]
-    rows = store.rows(
-        "SELECT id,summary AS payload,summary_sha AS sha FROM ar_goals WHERE user_id=%s ORDER BY id LIMIT %s OFFSET %s",
-        [actor.user_id, size, offset(page, size)],
-    )
-    return page_result(
-        [{k: v for k, v in builds.decode(r).items() if k in {"id", "name", "supported"}} for r in rows],
-        "goals",
-        total,
-        page,
-        size,
-    )
-
-
-@read
 def binders(actor, build, state, raw):
     page, size = paging(raw)
     total = store.rows("SELECT COUNT(*) AS n FROM binders WHERE user_id=%s", [actor.user_id])[0]["n"]
@@ -932,107 +836,6 @@ def entry_options(actor, build, state, raw):
         page,
         size,
     )
-
-
-@read
-def goal_workspace(actor, build, state, raw, key=None):
-    """Goal summaries and indexed progress, never copies or current catalog projection."""
-    page, size = paging(raw)
-    clause = "user_id=%s" + (" AND id=%s" if key else "")
-    args = [actor.user_id, key] if key else [actor.user_id]
-    total = store.rows("SELECT COUNT(*) AS n FROM ar_goals WHERE " + clause, args)[0]["n"]
-    if key and not total:
-        raise Http404
-    rows = store.rows(
-        "SELECT id,summary AS payload,summary_sha AS sha FROM ar_goals WHERE "
-        + clause
-        + " ORDER BY id LIMIT %s OFFSET %s",
-        [*args, size, offset(page, size)],
-    )
-    ids = [r["id"] for r in rows]
-    stats = (
-        store.rows(
-            "SELECT goal_id,status,COUNT(*) AS n FROM ar_goal_items WHERE user_id=%s AND goal_id IN ("
-            + ",".join(["%s"] * len(ids))
-            + ") GROUP BY goal_id,status",
-            [actor.user_id, *ids],
-        )
-        if ids
-        else []
-    )
-    items = []
-    for row in rows:
-        goal = builds.decode(row)
-        if "header" not in goal:
-            raise Unavailable("goal_header_preparation_required")
-        counts = {r["status"]: r["n"] for r in stats if r["goal_id"] == goal["id"]}
-        goal.update(
-            total=sum(counts.values()),
-            satisfied=counts.get("owned", 0),
-            missing=counts.get("missing", 0),
-            unavailable=counts.get("unavailable", 0),
-        )
-        goal["items_url"] = url(state, f"goals/{goal['id']}/items/")
-        if len(builds.encode(goal).encode()) > 1100:
-            goal = dict(id=goal["id"], oversized=True, url=url(state, f"resources/goal-header/{goal['id']}/"))
-        items.append(goal)
-    return page_result(items, "goals", total, page, size)
-
-
-@read
-def goal_items(actor, build, state, raw, key):
-    page, size = paging(raw, ("q", "status"))
-    if not store.rows("SELECT id FROM ar_goals WHERE user_id=%s AND id=%s", [actor.user_id, key]):
-        raise Http404
-    clause, args = "user_id=%s AND goal_id=%s", [actor.user_id, key]
-    if raw.get("status"):
-        if raw["status"] not in {"owned", "missing", "unavailable"}:
-            raise ValueError("Choose supported progress")
-        clause += " AND status=%s"
-        args.append(raw["status"])
-    if raw.get("q"):
-        if len(raw["q"]) > 160:
-            raise ValueError("Choose a short query")
-        clause += " AND instr(lower(json_extract(payload,'$.label')),%s)>0"
-        args.append(raw["q"].lower())
-    total = store.rows("SELECT COUNT(*) AS n FROM ar_goal_items WHERE " + clause, args)[0]["n"]
-    rows = store.rows(
-        "SELECT id,CASE WHEN bytes<=1100 THEN payload END AS payload,sha FROM ar_goal_items WHERE "
-        + clause
-        + " ORDER BY rank LIMIT %s OFFSET %s",
-        [*args, size, offset(page, size)],
-    )
-    return page_result([payload(r, state, "goal-item") for r in rows], "items", total, page, size)
-
-
-@read
-def goal_sources(actor, build, state, raw):
-    from . import collection_goals
-
-    page, size = paging(raw)
-    total = store.rows("SELECT COUNT(*) AS n FROM ownership_declarations WHERE user_id=%s", [actor.user_id])[
-        0
-    ]["n"]
-    rows = store.rows(
-        "SELECT * FROM ownership_declarations WHERE user_id=%s ORDER BY id LIMIT %s OFFSET %s",
-        [actor.user_id, size, offset(page, size)],
-    )
-    items = []
-    for row in rows:
-        available = collection_goals.full_source(row)
-        owned = len(collection_goals.owned(row)) if available else None
-        items.append(
-            dict(
-                id=row["id"],
-                name=f"{owned} owned species · source {row['source_sha256'][:12]}"
-                if available
-                else "Regional source — unavailable for a full-source goal",
-                available=available,
-                owned=owned,
-                source_sha256=row["source_sha256"],
-            )
-        )
-    return page_result(items, "sources", total, page, size)
 
 
 @read

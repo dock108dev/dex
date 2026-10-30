@@ -13,5 +13,3 @@ jobs:
   ci:
     name: CI
     uses: ./.github/workflows/validate.yml
-    with:
-      compatibility: false

@@ -1,0 +1,40 @@
+/* Isolated renderer checks: no customer content or model/provider traffic. */
+const {JSDOM} = require('jsdom');
+const fs = require('node:fs');
+const assert = require('node:assert/strict');
+const source = fs.readFileSync('src/pokemon_hunter/beta/static/listing-interpretation.js', 'utf8');
+(async () => {
+  const dom = new JSDOM('<body data-navigation-binding="bound" data-navigation-account="owner"><input name="csrfmiddlewaretoken" value="csrf"><main></main>', {url:'http://127.0.0.1:8011/', runScripts:'outside-only'});
+  const w = dom.window, requests = []; let valid = true, state = 'complete';
+  w.fetch = async (url, options) => {
+    requests.push([url, options]);
+    return {ok:true, json:async () => ({id:'job', state, authority:{binding:'bound',account_id:'owner'}, result:{notice:'Review seller claims', facts:[{field:'name',value:'<script>bad</script>',source:'title',quote:'<script>bad</script>'}],warnings:['Ambiguous'],unknown_fields:['number'],catalog_matches:[]}})};
+  };
+  w.eval(source);
+  const parent=w.document.querySelector('main');
+  w.DexInterpretation.mount(parent, {kind:'hunter',run_id:'run',result_id:'row'},()=>valid);
+  assert.equal(requests.length,0, 'Mount never starts inference');
+  parent.querySelector('button').click();
+  await new Promise(r=>setTimeout(r,20));
+  assert.equal(requests.length,2);
+  assert.equal(JSON.parse(requests[0][1].body).kind,'hunter');
+  assert.equal(parent.querySelector('script'),null,'Seller evidence is text');
+  const edit=parent.querySelector('section input'); edit.value='Corrected';
+  await new Promise(r=>setTimeout(r,1600));
+  assert.equal(edit.value,'Corrected','Lease revalidation preserves corrections');
+  valid=false;
+  await new Promise(r=>setTimeout(r,1600));
+  assert.equal(parent.querySelector('section input'),null,'Revocation removes suggestions');
+  assert(requests.some(([url])=>url.endsWith('/stop/')));
+  valid=true; state='running';
+  parent.querySelector('button').click();
+  await new Promise(r=>setTimeout(r,20));
+  const stop=[...parent.querySelectorAll('button')].find(button=>button.textContent==='Stop analysis');
+  assert.equal(stop.hidden,false,'Stop stays reachable while analysis runs');
+  stop.focus(); stop.click();
+  assert.equal(parent.querySelector('[role=status]').textContent,'Analysis stopped.');
+  assert.equal(w.document.activeElement,parent.querySelector('button'),'Stop returns focus to analysis action');
+  assert.equal(stop.hidden,true);
+  dom.window.close();
+  console.log('Listing interpretation: explicit action, escaped evidence, preserved edits, revocation and Stop/focus passed');
+})().catch(error=>{console.error(error);process.exitCode=1;});

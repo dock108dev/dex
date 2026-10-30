@@ -50,6 +50,7 @@ if settings.B2_ENABLED:
         bulk_views,
         discovery_views,
         hunter_views,
+        interpretation_views,
         listing_views,
         lookup_views,
         navigation,
@@ -62,6 +63,10 @@ if settings.B2_ENABLED:
     from . import collection_views as b2
 
     urlpatterns = [
+        path("api/listing-interpretation/readiness/", interpretation_views.readiness),
+        path("api/listing-interpretation/", interpretation_views.start),
+        path("api/listing-interpretation/<uuid:key>/", interpretation_views.status),
+        path("api/listing-interpretation/<uuid:key>/stop/", interpretation_views.stop),
         path("collection-tools/", navigation.task_home),
         path("add-card/", navigation.task_home),
         path("add-many/", bulk_views.home),

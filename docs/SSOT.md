@@ -58,6 +58,9 @@ Paths are relative to `src/pokemon_hunter/`.
 | Hunter lot text and quantity proposals | `beta/hunter_lot_parser.py` interprets supplied authorized text and printing identities; `hunter_lots.parse` remains the compatible export |
 | Hunter temporary lot reviews | `beta/hunter_lots.py` reauthorizes leases and supplies all-era adapters to `lot_calculator.prepare`; `hunter_lot_details.py` explicit official details share original lease and durable allowance, disabled by default |
 | Listing identifiers and response projection | `beta/listing_details.py`; `listing_check.py` retains compatible public imports |
+| Temporary result handles | `beta/discovery_listing.py:result_handle`; Discovery projection/leases and Hunter projection/leases share the unchanged run-scoped identity |
+| Temporary seller-content leases | `beta/discovery.py:summary_lease/review_candidate` and `beta/hunter.py:summary_lease`; listing analysis delegates to its parent service |
+| Explicit local text analysis | `beta/ollama_gateway.py` owns configuration and bounded transport; `listing_interpretation.py` owns job lifecycle; `hunter_lot_parser.py` validates source-linked claims |
 | Visual local Shopping search | `beta/discovery_catalog.py`, using checked card groups, current/frozen collection scope and image bindings |
 | Captured query, category and finite continuation | `beta/discovery_search.py`, `beta/discovery_paging.py`; no ownership or reference-value authority |
 | Temporary listing image/time admission and rendering | `beta/discovery_listing.py`, `beta/static/discovery-display.js`, shared `beta/static/listing-time.js`; safe seller URLs remain in `security.ebay_url` |
@@ -68,6 +71,7 @@ Paths are relative to `src/pokemon_hunter/`.
 | Synthetic sealed-offer replay | `beta/refresh.py`; no live acquisition adapter |
 | Bounded group-metadata acquisition | `metadata_collector.py`; explicit fixed TCGCSV group request, independent Stop and consumed reservation |
 | Image identity and private access | `beta/image_mappings.py`, pinned mapping data, `beta/image_bindings.py`; `scans.authorized_photo_rows` owns photo authorization |
+| Prepared private account reads | `beta/account_read_context.py` owns the shared authorization/revision boundary; `account_read_queries.py` projects catalog/membership resources and retains compatible exports; `account_read_goal_queries.py` projects prepared goals, distinct from `account_read_goals.py` preparation |
 | Private navigation and Shopping context | `beta/navigation.py`, `beta/shopping_context.py`, `beta/static/navigation.js` |
 | Card/species rendering | `beta/static/card-screens.js`, `species-screens.js`, `public-species.js`; `collection.js:render` dispatches by route |
 | Overview, hunt history and retained per-copy guides | `beta/parity.py`, `beta/static/parity.js`; no card/species renderer or new hunt acquisition |
@@ -146,6 +150,15 @@ validation and job recovery are defined in [photo entry](photo-entry.md),
 [operations](operations.md) and [recovery](ERROR_HANDLING.md).
 Persisted schema names, root markers, routes and CLI flags are compatibility contracts;
 retiring them requires a migration or explicit support decision.
+
+An off-by-default allowance is not an unused execution path:
+`hunter_operator.py` selects `hunter_budget.TRAVERSAL_ALLOWANCE` for its bounded
+operator flow, and installed/profile readers enforce its independent history.
+Retain it with ordinary `hunter_policy` rather than merging or resetting consumed
+capacity. Legacy photo mode names remain persisted-history inputs, not executable
+provider fallbacks. Retiring either contract requires accounting/history compatibility
+verification in a separate pass. The original FastAPI app and watcher remain separate
+documented entry points, not fallback implementations of authenticated collection state.
 
 ## Image authority
 
@@ -236,6 +249,32 @@ account/session-bound in-memory review through `listing_views.review` and
 `listing_check.review`; autosave/Back share its original lease. Permanent saved
 research and export are unavailable for these temporary reviews.
 
+Domain: temporary listing result identity.
+SSOT module/file: `beta/discovery_listing.py:result_handle`.
+Why this is authoritative: both result projection and lease lookup use the same
+run-scoped hash, retaining the existing 24-character identifiers. Handles select
+content; they do not authorize access.
+Known callers: Discovery status/selected-result projection and summary leases;
+Hunter status and summary leases. The former `hunter._handle` implementation is removed.
+
+Domain: Discovery seller-content lifetime and access.
+SSOT module/file: `beta/discovery.py:summary_lease`, backed by `_summary_lease` under
+the parent run lock; `review_candidate` owns initial visible-result admission.
+Why this is authoritative: this service owns account/session binding, parent state,
+Stop and the original expiry. Both review admission and cheap revalidation share
+the same locked content lookup and copied result. Revalidation performs no catalog
+comparison, repricing or provider request.
+Known callers: `listing_check.py` admits/revalidates full reviews through
+`review_candidate`; `listing_interpretation.py` uses initial admission followed by
+`summary_lease`. Hunter retains its own lease policy because completed-run and
+listing-eligibility rules differ from Discovery's partial named-page results.
+
+Listing interpretation owns only its derived job, content fingerprint and cancellation;
+it does not inspect Discovery run internals or reproduce result-handle logic.
+The local gateway is the sole text-model transport; deterministic parsing and source
+validation remain authoritative for accepting suggestions. See
+[local interpretation](hunts.md#local-text-adapter-and-listing-review).
+
 ## Manual bulk entry
 
 Bulk input joins the same collection preview/confirm/undo authority, with revisioned
@@ -263,17 +302,14 @@ binding selected crops through ordinary collection confirmation. See
 [photo storage and shared review](photo-entry.md#storage-and-shared-review) and
 [photo rows in collection review](effective-collection.md#photo-rows-in-the-shared-review).
 
-## Planned indexed browsing authority
+## Indexed browsing authority
 
-PERF-01's [read architecture](card-groups.md#perf-01-read-architecture-contract)
-assigns shared indexed metadata to PERF-02 and revision-bound account composition
-to PERF-03. The original records and mutation services above remain authoritative;
-derived tables never authorize access, establish ownership or retain provider rights.
-The [invalidation matrix](card-groups.md#invalidation-ownership) covers publication,
-identity/source changes, edits/Undo and account revocation. Explicit preparation,
-activation and recovery belong to [operations](operations.md#perf-01-derived-state-lifecycle).
-This design has not been installed. Existing no-persistent-cache descriptions still
-describe current behavior until those slices are implemented and qualified.
+The [read architecture](card-groups.md#read-architecture) separates shared indexed
+metadata from revision-bound account composition. Original records and mutation
+services remain authoritative; derived tables never grant access, ownership or
+provider rights. The [invalidation matrix](card-groups.md#invalidation-ownership)
+covers publication, identity/source changes, edits, Undo and account revocation.
+Preparation, activation and recovery are explicit [operations](operations.md#derived-state-lifecycle).
 
 ## Implemented shared read authority
 
@@ -285,10 +321,10 @@ and postings, and `catalog_read_compact.py` shares identical rows only.
 `catalog_read_species.py` own
 bounded SQL selection and public projection; `catalog_read_views.py` adapts V2 HTTP.
 `catalog_read_internal.py` supplies backend snapshot/identity/revision interfaces for
-PERF-03. `catalog_read_snapshot.py` owns deferred read transactions without changing
+account reads. `catalog_read_snapshot.py` owns deferred read transactions without changing
 collection mutation transactions. V1 and effective-collection authority remain intact.
-See [implemented APIs and handoffs](card-groups.md#perf-02-implemented-shared-read-services)
-and [explicit maintenance](operations.md#perf-02-read-schema-maintenance).
+See [implemented APIs](card-groups.md#shared-read-services)
+and [explicit maintenance](operations.md#read-schema-maintenance).
 
 ## Photo recognition authority
 
@@ -314,9 +350,8 @@ Known callers: scan/photo APIs, worker retirement of historical jobs, bulk hando
 Legacy provider labels, dollar reservations and the old payload lock filename remain
 storage/history contracts only. There is no executable provider compatibility shim.
 
-PERF-03's disposable account read records and private V2 contracts are documented
-in [PERF-03 account reads](perf03-account-reads.md). Effective ownership, reviewed
+Disposable account read records and private V2 contracts are documented
+in [account reads](account-reads.md). Effective ownership, reviewed
 operation receipts, frozen goal definitions and retained declarations remain the
 sources of truth. Derived preparation/recovery never replays a confirmed write.
-Source implementation, exact-candidate SQLite qualification, frontend adoption,
-installation and owner acceptance remain separate statuses.
+Source changes do not update an installed runtime automatically.

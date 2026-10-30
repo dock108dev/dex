@@ -171,16 +171,15 @@ See [photo storage](photo-entry.md#storage-and-shared-review) and
 [failure handling](ERROR_HANDLING.md).
 
 
-## Next-version startup and read diagnostics
+## Startup and read diagnostics
 
-The responsive local version requires bounded, sanitized request timing and useful
+The local runtime provides bounded, sanitized request timing and useful
 startup/readiness diagnostics. Existing error logging is described in
 [recovery](ERROR_HANDLING.md#diagnostics); request timing and derived-index recovery
-are implemented in the working OPS candidate described below, with qualification
-limits recorded separately. Do not enable raw access logging
+are implemented by the runtime described below. Do not enable raw access logging
 that exposes setup links, search text, credentials or private records.
 
-The implementation must distinguish process listening, application readiness and
+Readiness signals distinguish process listening, application readiness and
 usable catalog reads; document startup time and failures. Browsing must not start
 acquisition, recognition, schema migration or catalog rebuilding. Necessary derived
 state updates need a versioned, atomic preparation/activation path, bounded recovery
@@ -194,11 +193,10 @@ recovery in engineering isolation, then verify ordinary startup and read-only br
 on the actual installation. A code rollback uses current authoritative data and
 independent journals; an old cache or backup must never restore revoked data or capacity.
 
-## PERF-01 derived-state lifecycle
+## Derived-state lifecycle
 
-This is a required design for OPS-READINESS; the current installed app does not
-implement it. Use the [read architecture](card-groups.md#perf-01-read-architecture-contract)
-and [fixed budgets](CI.md#perf-01-performance-budgets).
+See the [read architecture](card-groups.md#read-architecture) and
+[fixed budgets](CI.md#performance-budgets).
 
 An explicit preparation command builds candidate catalog/overlay rows with a unique
 build ID, schema/policy keys, authority revisions, counts and content checksum.
@@ -239,8 +237,7 @@ keeps valid context and offers explicit recovery instead of an endless spinner.
 
 The additive migration creates derived tables, manifests, catalog revision and
 account read-revision rows and revision triggers. Run it only through an explicit reviewed maintenance command
-with the documented protected-state backup and rollback procedure. No migration is
-performed in PERF-01. Older code may ignore additive tables; triggers must still
+with the documented protected-state backup and rollback procedure. Startup and reads never migrate. Older code may ignore additive tables; triggers must still
 invalidate newer derived state if older code writes authority. Reuse only compatible
 schema versions after returning to a newer runtime. Never roll back collections,
 secrets, consumed usage, Stop decisions, tombstones or source revocations. Keep old
@@ -264,11 +261,10 @@ preserved. Durable job absence alone cannot establish that all temporary reviews
 safe to discard. Reuse the exact installed interpreter/root/ordinary startup command;
 measure process spawn, listening, readiness and first usable page independently.
 
-## PERF-02 read-schema maintenance
+## Read-schema maintenance
 
-The new source provides explicit SQLite-only maintenance primitives. They have not
-been applied to the customer installation. Follow the protected-state backup and
-runtime-selection procedure above before a later authorized delivery. Require the
+These SQLite-only maintenance commands require a protected-state backup and a
+compatible runtime. Require the
 existing catalog, collection and declaration schemas. A subsequently installed
 catalog-pipeline schema requires re-running the read migration to install its revision
 backstop; that transition invalidates older prepared state.
@@ -315,7 +311,7 @@ and additive read tables/triggers intact. Older code can continue V1 reads; its
 catalog/source/copy writes still invalidate newer prepared state through triggers.
 Returning to newer code requires compatible schema/policy and a current revision.
 Do not restore old collections, accounting, secrets, revocations, tombstones or Stop
-choices to make a derived index appear valid. The working OPS candidate adds scoped
+choices to make a derived index appear valid. The runtime provides scoped
 readiness, startup validation and bounded timing diagnostics; see the contracts below.
 
 ### Explicit derived-state repair
@@ -350,20 +346,17 @@ to do so caused SQLite re-entrant FTS failure and was removed. Use the supported
 commands and explicit repair paths above. Failed repair leaves the transaction
 rolled back and does not authorize serving known damaged state.
 
-## PERF-03 account-read lifecycle
+## Account-read lifecycle
 
-[PERF-03 account reads](perf03-account-reads.md#later-delivery-and-recovery) documents
+[Account reads](account-reads.md#preparation-and-recovery) documents
 explicit migrate/prepare/status/discard/repair commands and catalog-before-account
-ordering. These commands were added for later delivery; PERF-03 does not authorize
-running them against `.local/customer`. Preserve the backup/runtime procedures
-above. A 503 is an unavailable read representation, never a reason to replay a
+ordering. Use them only during deliberate maintenance, following the backup/runtime
+procedures above. A 503 is an unavailable read representation, never a reason to replay a
 confirmed operation or reset authoritative collection data.
 
-## OPS-READINESS local contracts
+## Readiness signals
 
-The working candidate adds the following read-only signals. This describes source,
-not the installed customer runtime. Qualification and retained failures are in
-[OPS evidence](ops-readiness-evidence-20261028.md).
+The runtime exposes these read-only signals:
 
 | Signal | Meaning | Failure |
 | --- | --- | --- |
@@ -412,9 +405,9 @@ A SQLite read error is not evidence that only derived data is damaged. Index reb
 cannot repair damaged authoritative rows. Existing raw-data backups are disaster-recovery
 inputs, not permission to roll back live accounting, revocations or collection generations.
 
-### Candidate and repair commands
+### Preparation and repair commands
 
-For later RUNTIME-DELIVER, after selecting the qualified installed interpreter and
+After selecting the compatible installed interpreter and
 backing up protected state, use this order (these commands were not run on the customer):
 
 ```sh
@@ -458,7 +451,12 @@ without replaying the mutation or receipt.
 ### Serving, connection and worker policy
 
 Use one ordinary CLI process, with no reload or multiprocess workers. The ASGI wrapper
-admits one dynamic Django request at a time. The fixed `/collection-assets/`
+admits one legacy dynamic request and reserves one additional lane for bounded
+browsing GETs (V2 reads except resources, card/Pokédex shells and readiness).
+Mutations and legacy collection, Shopping and Hunter reads cannot enter the browsing
+lane. Both lanes have capacity one; total dynamic concurrency is capped at two.
+This rc5 policy prevents an expensive legacy comparison refresh from refusing a
+card navigation. The fixed `/collection-assets/`
 file-serving route has a separate four-slot lane; it never opens a catalog snapshot.
 This prevents script/style delivery waiting behind the data slot. Admission waits at most 500 ms, then
 returns `503 {"error":"runtime_busy"}` without invoking Django. `Server-Timing: admission`
@@ -467,11 +465,12 @@ TCP backlog, browser scheduling, or paint. Cancellation always releases the slot
 
 Django's zero persistent-connection setting closes request connections. Each catalog
 connection retains its existing 64 MiB SQLite page-cache ceiling: at most 64 MiB for
-the admitted catalog request. This is a page-cache allowance, not an RSS ceiling:
+each admitted catalog request (up to 128 MiB across both dynamic lanes).
+This is a page-cache allowance, not an RSS ceiling:
 Python heaps, SQLite temporary sorting (`temp_store=MEMORY`), sockets, assets and the
 existing cleanup-worker connections need additional memory. Do not multiply processes
 or assume the cache is always resident. Actual RSS and concurrent timings belong
-to the exact-candidate evidence. No additional acquisition/recognition worker is started.
+in measurements for the selected runtime. No additional acquisition/recognition worker is started.
 
 The existing expiry thread and selected-current-process photo worker retain their
 selection, leases and Stop behavior. Startup validates before starting them. Shutdown
@@ -529,121 +528,25 @@ same-child/substring residual ranks, following the existing catalog search strat
 It preserves ordering, child semantics and empty/deep pages without reconstructing
 ownership or decoding the whole matching catalog. Owned search is now explicitly
 qualified alongside catalog search. Four simultaneous Django requests increased SQL
-wall time beyond its fixed budget; the single admission slot bounds that contention
-and reduces the maximum active catalog cache allowance to 64 MiB. Four-client load is
-still measured, with queue time reported separately.
+wall time beyond its fixed budget. The original single admission slot bounded that
+contention, but installed QA later exposed legacy Hunter refresh blocking browsing.
+The rc5 reserved browsing lane above supersedes that policy. Four-client load and
+actual legacy-read overlap are recorded in [installed QA](installed-qa-20261029.md);
+queue time remains separate from application time.
 
-### RUNTIME-DELIVER handoff (not executed)
+## Package binding and schema compatibility
 
-1. **Release selection:** complete RUNTIME-DEPS and exact-candidate CI-VERIFY
-   first. OPS source and isolated qualification are complete; see the
-   [candidate evidence](ops-readiness-evidence-20261028.md). Select the built wheel/interpreter/dependency lock,
-   record their hashes and reconcile the cumulative dirty checkout. A beta-source
-   digest or version `0.1.0` alone is not an installed package identity. Retain the
-   previous interpreter and package for compatible rollback.
-2. **Interruption and preservation:** verify the existing process, selected root and
-   interpreter before stopping anything. Inspect selected/queued jobs, acquisition
-   leases and temporary in-memory Hunt work. Establish the delivery interruption
-   window without admitting provider work. Stop the ordinary process, verify worker
-   exit, then make a consistent SQLite backup and private copies of the authentication
-   secret, permitted photos/configuration/drafts/history. Exclude `price-snapshots/`.
-   Inventory and preserve current independent price revocations, source registries,
-   `.dex-shopping-discovery`, `.dex-tcgcsv-*`, and `.dex-photo-batches` journals outside
-   app restore. Verify backup readability and owner-only permissions.
-3. **Install code:** install the selected qualified runtime separately, preserve the
-   root and secret, and perform only the explicitly supported package-binding update.
-   Changing a runtime must not renew capacity, reset credentials or select old photo
-   work. Do not initialize/reseed the existing root.
-4. **Prepare explicitly:** run catalog migrate, account migrate, catalog prepare,
-   activate the returned current build, catalog status, then each intended account's
-   prepare/status using the exact commands above. For established derived-schema
-   damage use both schema repairs in order first. Record catalog and whole-account
-   durations separately. A failed activation or changed authority revision stops
-   delivery; prepare a current candidate instead of forcing an old revision.
-5. **Verify normally:** start the selected CLI once. Confirm process/root/package,
-   `/livez/`, `/readyz/`, then account readiness through ordinary sign-in. Confirm
-   worker lifecycle records and retained authority/accounting. QA-INTEGRATION then
-   measures first usable cards after restart and guest/member interactions on the
-   full actual state. A 200 shell or backend ready response does not close that gate.
-6. **Rollback if necessary:** stop/join the candidate and select the previous runtime
-   only if compatible with the current authoritative schema. Leave current data,
-   generations, receipts, independent consumed usage, Stop choices, revocations and
-   tombstones intact. If that runtime cannot read current authority, stop for an
-   explicit compatible transition; do not restore an older database/accounting merely
-   to make it start. Returning to this candidate requires its explicit preparation
-   whenever policy/revision checks fail. Cleanup of abandoned derived builds remains
-   a separate explicit command after active readers/writers have stopped.
-
-At OPS closeout, package/dependency and hosted CI qualification were still open.
-The later RUNTIME-DEPS status below supersedes package qualification only. No
-customer runtime, data, source rights or provider allowance changed during OPS
-engineering; installation remains a separate slice.
-
-### RUNTIME-DEPS candidate compatibility
-
-The October 29 `0.1.1rc1` candidate is a cumulative successor. Its immutable package
-and lock identities, fresh-install checks and remaining limits are in
-[CI qualification](CI.md#runtime-deps-local-qualification). No customer root, runtime
-link, process, credentials, configuration or independent journal was modified.
-The previous `hunter-poc-20261027` runtime remains available for later compatible
-rollback. CI-VERIFY and delivery remain separate.
-
-The candidate retains the checkout's existing FastAPI 0.161.1 and Pillow 13.0.0
-choices, versus installed 0.143.0 and 12.3.0. Certifi and OpenTelemetry also differ;
-[security](SECURITY.md#runtime-deps-advisory-review--october-29-2026) lists the audit
-resolution. Runtime-only installation deliberately excludes CI/dev extras. Photo
-upload, crop, review, confirmation and undo remain; the preserved owner-requested
-source change removes Codex/OpenAI inference. Do not enable or replay historical
-recognition jobs. Ollama is not implemented by this candidate.
-
-Before the catalog/account commands above, verify that the current authoritative
-catalog, collection and ownership-declaration schemas exist. The catalog migration
-fails closed if a prerequisite is absent. For a missing declaration table only,
-the existing `ownership_declarations.initialize(db)` with the supported inventory
-connection is the explicit additive prerequisite used in the disposable installed
-smoke; it is not ordinary startup. Incompatible existing authority requires its
-own reviewed transition. Then follow catalog migrate → account migrate → catalog
-prepare/activate/status → each intended account prepare/status. The policy
-`effective-collection-2-goal-headers` rejects older prepared headers. No GET, login
-or retry upgrades them. Catalog schema repair still requires account schema repair.
-
-The inspected installed package binding digest is
-`3e084d7e1d51db566e67febf4f23ffc41454d199408d95d008662a2178c3da5f`;
-the candidate binding digest is
-`e75522f90fb21bc6ba18fb9e4d69ff1191c0db2f61d6a9253e1f5ab7b2761460`.
-The package comparison records 36 added, 56 changed and two removed members, with
-194 unchanged. The removed members are the deferred recognition adapters; the
-comparison and full inventories are retained with candidate evidence.
-
-Package binding uses `hunter_installed.package_digest()`, which hashes installed
-application members, not the wheel archive hash. Never substitute one for the other.
-For an existing everyday policy, the supported privileged
+`hunter_installed.package_digest()` hashes installed application members, not the
+wheel archive. Existing everyday Hunter policy can be rebound with the privileged
 `hunter_policy.rebind_package(root, expected_previous=..., package_sha256=...,
-contract='hunt-09-daily-v1')` requires the exact current previous binding and newly
-installed digest. Delivery must verify the same acquisition contract before using
-it; changed acquisition semantics require a separately qualified contract/selection.
-The journal appends a rebind event without replacing policy revisions, parent IDs,
-debits, expiry or Stop choices. Fixed installed/qualification allowances are separate:
-do not rewrite their documents to bypass package mismatch or renew spent capacity.
-This slice invokes no customer binding operation and grants no acquisition allowance.
+contract='hunt-09-daily-v1')` only when the current binding and acquisition contract
+match. The appended event preserves policy revisions, parent IDs, debits, expiry
+and Stop choices. Never rewrite fixed allowances to renew consumed capacity.
 
-Rollback is code selection over **current** compatible authoritative data. Stop and
-join the candidate, check the previous runtime's schema/feature compatibility, and
-retain all current receipts, generation/revision values, photo deletion tombstones,
-price revocations and independent acquisition journals. Additive derived tables do
-not justify rolling back authority. If the old code cannot read current authority,
-use an explicit compatible transition instead of restoring an older database.
-Returning to the candidate requires fresh explicit preparation when its policy or
-revision checks fail. Do not reinstate removed inference automatically on rollback.
-
-### CI-VERIFY successor delivery boundary
-
-Integration verification produced a repaired successor to the RUNTIME-DEPS artifact,
-with the package identities in [CI-VERIFY evidence](ci-verify-20261029.md). Its
-installed member binding is `de40192b130022b98a09d31d4df070f75f26c405c6e9239d0054ab86f058f364`. This is distinct from its wheel archive hash and the earlier candidate binding.
-RUNTIME-DELIVER must use the finally qualified successor, verify the actual current
-previous binding, and follow the existing schema/preparation/rebinding sequence.
-CI-VERIFY is not complete while required hosted results remain missing. No customer
-installation or binding operation has been performed; local runtime/integration
-engineering remains the responsible delivery lead after verification and applicable
-delivery authorization. Current-data-compatible rollback constraints above apply.
+Account storage schema 2 adds a bounded display index; see
+[the account guide](account-reads.md#account-storage-schema-2). Stop the server,
+back up the database, run the selected runtime's account `migrate` command, and
+check readiness before restarting. Valid prepared rows and seals are preserved.
+Older runtimes expecting schema 1 are not compatible without an explicit reviewed
+schema transition. Do not restore older collections or independent journals as a
+shortcut to code rollback.

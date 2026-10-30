@@ -1,9 +1,15 @@
 """Display admission for temporary Browse images and aware auction timestamps."""
 
+import hashlib
 import re
 from urllib.parse import urlsplit
 
 from .hunter_query import utc_time
+
+
+def result_handle(run_id, item_id):
+    """Stable opaque identity within one temporary run; never grants access."""
+    return hashlib.sha256((run_id + "\0" + item_id).encode()).hexdigest()[:24]
 
 
 def end_timestamp(value):

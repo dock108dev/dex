@@ -1,10 +1,4 @@
-# PERF-04 frontend adoption — isolated qualification complete
-
-**Status: implementation and isolated qualification are complete.**
-This checkout contains the qualified frontend migration, not a delivered or accepted
-customer application. Existing PERF-02/03 and other uncommitted work is preserved.
-No customer installation, database, credentials, provider settings or account records
-were changed. No acquisition, recognition, purchase, deployment or installation ran.
+# Bounded frontend reads
 
 ## Implemented consumers
 
@@ -48,10 +42,10 @@ focus/scroll/tab memory remains account-bound. Public browsing has per-tab Back 
 Filter-option pages expose explicit continuation; selected literals remain selectable
 when absent from a loaded option page. No automatic complete dictionary download runs.
 
-## Compatible backend corrections in this candidate
+## Supporting API resources
 
-All additions are `/api/v2/` independently authorized, revision-bound reads using the
-existing private representation; no new schema or preparation policy was introduced.
+These `/api/v2/` resources are independently authorized, revision-bound reads
+using the prepared private representation.
 
 | Resource | Purpose |
 |---|---|
@@ -116,23 +110,12 @@ Private photos still use their independently authorized per-copy resources.
 - Scan/photo/bulk mutations, saved-operation, draft/history and recovery endpoints keep
   their existing contracts. They are not full-catalog browsing fallbacks.
 
-## Continuation qualification
+## Renderer and workflow tests
 
-Both required renderer suites now run the shipped renderers and transport in a real DOM:
-36 CX05 and 24 CX06 scenarios. The [scenario inventory](perf04-renderer-scenarios.md)
-records changed paging/progressive boundaries. These remain required CI checks.
-New browser workflows cover Goals creation/checklist/rename/Undo, cross-page bulk
-selection/save/reload/confirm/receipt recovery/Undo, and manual photo correction/confirm/
-Undo without recognition. Visible 400/403/404/409/503 recovery and secondary failures have
-separate checks. Access revocation now leaves an explicit sign-in state after clearing
-private content. Further final-candidate results are recorded in the evidence report;
-implementation progress alone is not complete isolated qualification.
-
-## Qualification and reproduction
-
-See [PERF-04 evidence](perf04-evidence-20261028.md) for exact measurements, failure
-history, source identity and test limitations. Engineering data is disposable and
-synthetic; it is not shown as the customer experience.
+Renderer scripts exercise shipped assets and revision-bound transport in a DOM.
+Workflow tests cover Goals, bulk selection and receipts, manual photo correction,
+access revocation and secondary failures. Install the development dependencies
+listed in [CI](CI.md#local-checks), then select the affected checks:
 
 ```sh
 uv run --no-sync pytest -q tests/test_perf04_browser.py tests/test_perf04_interactions.py --disable-socket --allow-unix-socket
@@ -153,36 +136,3 @@ requests. Its WSGI test adapter maps that port's Host to the ordinary local ingr
 Host without changing production security. It uses 33,083/66,166 synthetic printings
 and 5,000/10,000 recorded copies, with 10,000/20,000 historical operations. It never
 opens the customer root or starts a provider/recognition worker.
-
-## OPS-READINESS and delivery handoff
-
-OPS-READINESS is the next executable slice against the existing PERF-02/03 operator
-primitives. Hosted integration, runtime delivery and actual-installed acceptance remain open.
-Use catalog migrate → prepare → activate, then account migrate → prepare/status in
-engineering isolation. Expose distinct listening/catalog/account readiness and sanitized
-phase timing; a 503 requires explicit operator recovery. Preserve successful mutation
-receipts even when derived state is unavailable. Do not add GET-triggered preparation,
-automatic V1 fallback, receipt replay, or duplicate workers.
-
-After readiness integration and exact-candidate CI pass, RUNTIME-DELIVER owns
-protected-state backups, runtime selection, explicit migration/preparation, rollback
-compatibility and installation. Preserve independent usage/revocation/photo journals.
-QA-INTEGRATION owns actual-installed guest/member restart timings, visual review,
-keyboard/focus/narrow/enlarged-text workflows and owner acceptance. Use the existing
-customer installation and real current state for those checks; this engineering report
-establishes none of them.
-
-## Required-work closeout
-
-| Requirement | Isolated status |
-|---|---|
-| Bounded Goals/source/update and preservation/replacement | Complete; historical filters are not reconstructed |
-| CX05/CX06 renderer coverage | Complete; 36 / 24 scenarios |
-| Selected IDs and readable labels | Complete; bounded resolution and off-page/search/reopen/reload/Back checks |
-| Bulk equivalence and manual photo workflow | Complete; all-matching/range, review, duplicate decisions, receipt recovery and Undo |
-| Correctness, recovery and accessibility | Complete for the specified engineering cases; installed visual acceptance remains separate |
-| Progressive authorized list artwork | Complete; bounded batches, visible-image concurrency, no primary-readiness dependency |
-| Fixed-budget full-size/2× performance | Complete; navigation, guest/private interactions, phases, restart, payload and post-readiness traffic gates |
-
-See the evidence for every final measurement and retained outlier. The checkout remains
-uncommitted and uninstalled. Existing customer data and unrelated work are preserved.

@@ -288,6 +288,7 @@
     $('discovery-shown').textContent = `${rows.length} of ${results.length} results${filter === 'all' ? '' : ' · ' + ({below:'Comparable · below reference',conditional:'Conditional comparisons',unpriced:'Unpriced or ambiguous'}[filter] || '')}`;
     const markup = rows.map(card).join('') || `<div class="discovery-empty"><h3>${results.length ? 'No results match this filter' : acquiring ? 'Searching this small batch…' : 'No listings to show'}</h3><p>${results.length ? 'Choose All results to see the other listings.' : acquiring ? 'You can stop acquisition at any time.' : 'Try different keywords or filters, or choose More results when available. No new search starts automatically.'}</p></div>`;
     if (window.DexDiscoveryDisplay) window.DexDiscoveryDisplay.patch($('discovery-cards'),markup);else $('discovery-cards').innerHTML = markup;
+    $('discovery-cards').querySelectorAll('[data-result]').forEach(card => { const id = run?.run_id; window.DexInterpretation?.mount(card, {kind:'discovery',run_id:id,result_id:card.dataset.result}, () => currentAuthority() && run?.run_id === id && !['stopped','expired'].includes(run?.state) && !changed()); });
     $('discovery-cards').querySelectorAll('[data-review-id]').forEach(anchor => {if (anchor.dataset.reviewBound) return;anchor.dataset.reviewBound = '1';anchor.addEventListener('click',() => {anchor.href = '/shopping/check/?' + new URLSearchParams({discovery_run:run.run_id,item_id:anchor.dataset.reviewId,return:reviewReturn(anchor.dataset.reviewId)});});});
   }
   function render(value) {

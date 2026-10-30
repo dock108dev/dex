@@ -10,6 +10,10 @@ import zipfile
 from pathlib import Path, PurePosixPath
 
 REQUIRED_FILES = (
+    "pokemon_hunter/beta/ollama_gateway.py",
+    "pokemon_hunter/beta/listing_interpretation.py",
+    "pokemon_hunter/beta/interpretation_views.py",
+    "pokemon_hunter/beta/static/listing-interpretation.js",
     "pokemon_hunter/beta/catalog_read_operator.py",
     "pokemon_hunter/beta/catalog_read_schema.py",
     "pokemon_hunter/beta/account_read_operator.py",

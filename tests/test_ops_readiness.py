@@ -301,3 +301,82 @@ def test_static_assets_have_a_bounded_separate_lane():
         assert limited.slots._value == 1
 
     asyncio.run(scenario())
+
+
+@pytest.mark.parametrize("path", ["/cards/", "/card-library/", "/pokedex/", "/api/v2/my-card-groups/"])
+def test_browsing_is_not_blocked_by_legacy_comparison(path):
+    from pokemon_hunter.beta.serving import LimitedApplication
+
+    async def scenario():
+        entered = asyncio.Event()
+        release = asyncio.Event()
+        called = []
+
+        async def app(scope, receive, send):
+            called.append(scope["path"])
+            if scope["path"] == "/api/shopping/hunter/":
+                entered.set()
+                await release.wait()
+
+        messages = []
+
+        async def send(message):
+            messages.append(message)
+
+        limited = LimitedApplication(app)
+        slow = asyncio.create_task(
+            limited({"type": "http", "method": "GET", "path": "/api/shopping/hunter/"}, None, send)
+        )
+        await entered.wait()
+        try:
+            await limited({"type": "http", "method": "GET", "path": path}, None, send)
+            assert path in called
+            assert not messages
+        finally:
+            release.set()
+            await slow
+
+    asyncio.run(scenario())
+
+
+def test_reserved_browsing_slot_stays_bounded_and_never_admits_mutations():
+    from pokemon_hunter.beta.serving import LimitedApplication
+
+    async def scenario():
+        release = asyncio.Event()
+        entered = []
+        messages = []
+
+        async def app(scope, receive, send):
+            entered.append(scope["path"])
+            await release.wait()
+
+        async def send(message):
+            messages.append(message)
+
+        limited = LimitedApplication(app)
+        ordinary = asyncio.create_task(
+            limited({"type": "http", "method": "POST", "path": "/api/operations/"}, None, send)
+        )
+        browsing = asyncio.create_task(
+            limited({"type": "http", "method": "GET", "path": "/cards/"}, None, send)
+        )
+        await asyncio.sleep(0.02)
+        try:
+            assert len(entered) == 2
+            for method, path in [
+                ("GET", "/api/v2/my-card-groups/"),
+                ("POST", "/api/v2/card-groups/"),
+                ("GET", "/api/v2/public/resources/group/example/"),
+            ]:
+                messages.clear()
+                await limited({"type": "http", "method": method, "path": path}, None, send)
+                assert messages[0]["status"] == 503
+                assert len(entered) == 2
+        finally:
+            ordinary.cancel()
+            browsing.cancel()
+            await asyncio.gather(ordinary, browsing, return_exceptions=True)
+        assert limited.slots._value == limited.browse_slots._value == 1
+
+    asyncio.run(scenario())

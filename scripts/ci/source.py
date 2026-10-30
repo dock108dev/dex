@@ -20,6 +20,8 @@ DOCS = (
     "docs/photo-entry.md",
     "docs/artwork.md",
     "docs/card-groups.md",
+    "docs/account-reads.md",
+    "docs/frontend-reads.md",
     "docs/effective-collection.md",
     "docs/ERROR_HANDLING.md",
     "docs/ORIGINAL_APP.md",

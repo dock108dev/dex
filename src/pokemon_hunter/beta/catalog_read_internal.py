@@ -1,4 +1,4 @@
-"""Backend-only primitives for PERF-03. These do not establish access or possession.
+"""Backend-only primitives for private account reads. These do not establish access or possession.
 
 Consumers must hold an ordinary authorized operation and perform the final authority
 check. No HTTP selector can choose retained scope or another account's revision.
@@ -82,7 +82,7 @@ def alias_candidates(snapshot, alias, *, page=1, size=40):
 
 
 def account_key(actor):
-    """Revision infrastructure only; PERF-03 must add effective-source/ownership keys."""
+    """Revision infrastructure only; callers add effective-source and ownership keys."""
     actor = store.verified(actor)
     rows = store.rows("SELECT value FROM account_read_revisions WHERE user_id=%s", [actor.user_id])
     return dict(

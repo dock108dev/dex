@@ -120,7 +120,15 @@ published and no retry follows. Keep the journal and diagnostics together when
 investigating. A failed journal write can leave only the earlier admitted/in-flight
 record: that is incomplete accounting, never evidence of unused capacity.
 
-## PERF-04 bounded read recovery
+Local listing interpretation rechecks the session and original seller-content lease
+before scheduling gateway work and again before publishing, even for responses that
+finish inside the one-second polling interval. Stop remains `stopped` when a worker
+later fails or exits; it clears suggestions and any earlier failure message. Parent
+Stop/expiry erases the derived job. Failures release the single analysis slot, expose
+only fixed public error text, and never retry automatically. These jobs are temporary:
+process restart loses them; a new explicit analysis must pass current authorization.
+
+## Bounded read recovery
 
 The working V2 client binds account/catalog/account-read revisions, cancels obsolete
 channels and rejects late results. A 403 or sign-in redirect discards private authority
@@ -131,11 +139,9 @@ do not prepare state, automatically retry, or fall back to full V1 data.
 Failed secondary choices retain primary cards and expose an explicit page retry.
 Confirmed mutation receipts are retained before display refresh; read failure reports
 that the change was saved and never repeats confirmation. Copy-price evidence is
-unloaded until requested, not falsely empty. These source behaviors have targeted
-checks; [PERF-04 evidence](perf04-evidence-20261028.md) lists the broader unqualified
-workflows and remaining legacy consumers.
+unloaded until requested, not falsely empty.
 
-### Bounded browsing recovery (PERF-04)
+### Empty and unavailable states
 
 An access-denied V2 read discards private authority and clears private results and open
 editors, leaving a visible sign-in/reload state. Bulk and photo review listen to the
@@ -148,9 +154,9 @@ remain reachable if derived catalog/account reads return 503. No recovery path r
 confirmation. Whole-query/range selection collects revision-bound pages before changing
 a draft; an error or oversized unresolved selection cannot silently apply a partial set.
 
-## OPS readiness and slow-read investigation
+## Readiness and slow-read investigation
 
-Use the [scoped readiness contracts and failure table](operations.md#ops-readiness-local-contracts).
+Use the [scoped readiness contracts and failure table](operations.md#readiness-signals).
 `read_state_unavailable` remains HTTP 503, supplied stale resource revisions remain 409,
 and authorization failure remains independent. `runtime_busy` indicates the bounded
 ASGI admission wait expired; it is not proof of damaged derived data.

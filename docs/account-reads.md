@@ -1,15 +1,13 @@
-# PERF-03 account reads
+# Private account reads
 
-This is the backend contract for the disposable SQLite account representation.
-It does not install a successor or change the customer's collection. V1 callers
-remain compatible. PERF-04 must adopt V2 before these reads affect the interface;
-RUNTIME-DELIVER and owner acceptance remain separate work.
+Private V2 reads combine prepared catalog metadata with account-local derived
+records. V1 callers remain compatible; mutations still use the collection services.
 
 ## Representation and authority
 
 `account_read_schema`, `account_read_build`, `account_read_records`,
 `account_read_goals`, `account_read_species`, `account_read_select`,
-`account_read_queries` and `account_read_views` compose the checked PERF-02 build
+`account_read_context`, `account_read_goal_queries`, `account_read_queries` and `account_read_views` compose the checked catalog build
 with account-local derived records. The existing effective-collection evaluator
 and frozen-goal progress evaluator remain authoritative. Their pure evaluation
 steps are shared with preparation; arbitrary caller-provided rows cannot obtain
@@ -51,7 +49,7 @@ idempotency authority.
 
 Imports and source replacement may explicitly prepare the entire account in the
 mutation transaction. Goal definition changes prepare frozen-goal records. The
-existing PERF-02 authority triggers cover maintenance writes independently of
+existing catalog authority triggers cover maintenance writes independently of
 application hooks. Missing prior preparation, a changed catalog, failed refresh
 or an oversized dependency closure leaves V2 unavailable. The code never replays
 a confirmed mutation to repair reads. Catalog activation requires subsequent
@@ -102,7 +100,7 @@ coherent SQLite snapshot, immediately before releasing its result.
 | `copies/<id>/photos/` | Independently authorized active-copy photos, current tombstone/rights checks |
 | `resources/<kind>/<key>/` | Independently authorized full record, explicit JSON attachment |
 
-Pagination defaults/maxima follow PERF-02 (`page`, `page_size`, maximum 100).
+Pagination defaults/maxima follow the public read contract (`page`, `page_size`, maximum 100).
 Group selectors preserve V1 same-child matching. Private membership is retained
 independently of public membership. Optimized public selection is used only after
 preparation proves equivalent catalog membership; owned selection always uses the
@@ -123,12 +121,10 @@ Missing/foreign resources return 404; inactive/revoked/unauthenticated access
 returns 403. All resource routes repeat these checks. Public V2 uses no account
 representation, and mutation validation never trusts cached possession.
 
-## Later delivery and recovery
+## Preparation and recovery
 
-Do not run these against the customer root as part of PERF-03. Later delivery must
-follow the backup and runtime-selection rules in `operations.md` and
-`local-development.md`. On an approved existing installation, use the selected
-application Python and root, after PERF-02 migration/preparation/activation:
+Follow [operations](operations.md) for backups and runtime selection. After catalog
+migration, preparation and activation, prepare each intended account explicitly:
 
 ```sh
 "$DEX_APP_PYTHON" -I -m pokemon_hunter.beta.account_read_operator --root "$DEX_APP_ROOT" migrate
@@ -143,21 +139,11 @@ schema; every account then requires preparation. Authority, users, copies,
 receipts, goals, source text and revision counters remain intact. No command
 creates a new installation, resets credentials or silently runs on GET/startup.
 
-PERF-04 should use response links/revision selectors, clear private screen state
-on logout/account changes, cancel obsolete requests, fetch artwork separately,
-and render unknown quantities and 503 recovery honestly. Use paged filter options
-instead of assuming first-page completeness. Keep UI focus/scroll selectors out
-of data requests. The printing picker returns `printings`, not the public
-adapter's `cards`; map that explicitly. No V1 JavaScript adoption is in this slice.
+Clients use response links and revision selectors, cancel obsolete requests and
+clear private state on logout. Paged choices do not imply complete dictionaries.
+Private printing pickers return `printings`; public pickers return `cards`.
 
-OPS-READINESS should orchestrate catalog activation then account preparation,
-expose readiness per active account/revision, make recovery an explicit operation,
-and distinguish a listening process from browsing readiness. Source replacement
-and large closure preparation can take longer than an ordinary edit. SQLite
-qualification does not establish PostgreSQL compatibility, hosted CI, installation
-or owner acceptance. See `CI.md` for exact-candidate measurements and limitations.
-
-## PERF-04 compatible interface additions
+## Bounded editor and artwork resources
 
 Ordinary Goals reads now use `goals/` (paged headers and indexed progress counts),
 `goals/<id>/items/` (paged frozen targets), and `goal-sources/` (paged selectable
@@ -185,25 +171,37 @@ separately from qualified-current-copy progress. Goal edits with `preserve_membe
 accept only ID, revision, name and unchanged kind, and retain the exact stored definition
 and version. Replacement is a separate goal; it never reconstructs historical filters.
 
-Deploying these consumers requires explicit account preparation with this candidate.
+Deploying these consumers requires explicit account preparation with the current representation policy.
 An older goal representation without the new header is unavailable (503), rather than
 being mislabelled as a historical definition without filters. No GET upgrades it.
 The ordinary entry-picker page includes at most 50 choices; oversized choices on its
 first page remain reachable through explicit complete-record expansion as well as
 later-page choices.
 
-## OPS representation and runtime follow-up
+## Representation policy
 
-OPS versions the prepared representation policy as `effective-collection-2-goal-headers`.
-Old goal headers now fail account readiness even when the old manifest is otherwise
-intact; explicit preparation is required. No additive schema-version reset is needed.
-Catalog-schema repair must be followed by account-schema repair because indexes on
-replaced catalog tables belong to both read services.
+`effective-collection-2-goal-headers` identifies the prepared goal policy. Older
+headers require explicit preparation. Catalog-schema repair must be followed by
+account-schema repair because both services install indexes on catalog tables.
+Owned search counts remain exact; page selection uses common-text matches and
+residual ranks rather than repeatedly joining the full metadata set.
 
-Ordinary-runtime profiling also exposed repeated positive FTS posting selection in
-owned search, which the earlier catalog-search performance case did not exercise.
-Count remains exact; page selection now uses common-text matches plus exact residual
-ranks, following the existing public-search strategy. New owned-search/short-query
-performance cases and ordering/empty/deep-page parity checks qualify that adjustment.
-See [OPS evidence](ops-readiness-evidence-20261028.md) for retained budget failures;
-prior PERF-03 qualification does not automatically qualify this integrated candidate.
+## Account storage schema 2
+
+Schema 2 adds `ar_group_display(user_id,id,CASE WHEN bytes<=1100 THEN payload END,sha)`, a covering index for
+bounded card-summary projections. Wide schema-1 rows can require an
+overflow page in the wider `ar_groups` table. This index removes most of that extra
+page traversal without changing summary bytes, ownership, revision policy or API
+contracts. The response decoder and digest checks are unchanged. The index stores NULL for
+oversized payloads, exactly matching the bounded list projection; full resource
+records are not duplicated into this display index.
+
+With the ordinary process stopped and a consistent protected backup retained,
+`account_read_operator --root "$DEX_APP_ROOT" migrate` explicitly transitions schema
+1 to 2 in one transaction. It also recreates a missing display index on schema 2.
+Existing prepared rows, account seals, generations and authority are preserved;
+valid prepared accounts do not need reconstruction. New/unprepared accounts still
+require explicit preparation. GETs and startup never create the index. Readiness
+rejects schema 1 or a missing display index under schema 2. Other unknown versions are
+rejected without changes. Missing triggers still require the documented schema
+repair; do not use all-account repair merely to recreate this one index.

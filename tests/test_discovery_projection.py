@@ -8,6 +8,56 @@ from test_discovery import discovery as discovery
 from test_discovery import ledger, run_for
 
 from pokemon_hunter.beta import discovery as d
+from pokemon_hunter.beta import discovery_listing
+
+
+def test_result_handles_preserve_existing_identity_and_run_scope():
+    expected = hashlib.sha256(b"test-run\0v1|123456789012|0").hexdigest()[:24]
+    assert discovery_listing.result_handle("test-run", "v1|123456789012|0") == expected
+    assert discovery_listing.result_handle("other-run", "v1|123456789012|0") != expected
+
+
+@pytest.mark.parametrize("state", ["complete", "failed", "running", "queued", "stopped", "expired"])
+def test_summary_lease_uses_parent_state_without_comparison(discovery, state):
+    from pokemon_hunter.beta import discovery_comparison
+
+    run = run_for(discovery)
+    run.state, run.named_pages = state, ["controlled-page"]
+    run.raws = [{"itemId": "listing", "title": "Original", "nested": {"quantity": "unknown"}}]
+    d._runs[run.id] = run
+    discovery.monkeypatch.setattr(
+        discovery_comparison, "compare", lambda *args: pytest.fail("Lease must not revalue content")
+    )
+    key = discovery_listing.result_handle(run.id, "listing")
+    if state in {"stopped", "expired"}:
+        with pytest.raises(Http404):
+            d.summary_lease(discovery.actor, "session", run.id, key)
+        return
+    first = d.summary_lease(discovery.actor, "session", run.id, key)
+    assert first["created"] == run.created
+    first["raw"]["nested"]["quantity"] = "0"
+    second = d.summary_lease(discovery.actor, "session", run.id, key)
+    assert second["raw"]["nested"]["quantity"] == "unknown"
+    assert second["expires_in_seconds"] <= first["expires_in_seconds"]
+    for session, handle in [("other-session", key), ("session", "unknown-handle")]:
+        with pytest.raises(Http404):
+            d.summary_lease(discovery.actor, session, run.id, handle)
+    run.cancel.set()
+    with pytest.raises(Http404):
+        d.summary_lease(discovery.actor, "session", run.id, key)
+
+
+def test_summary_lease_keeps_original_expiry(discovery):
+    run = run_for(discovery)
+    run.state = "complete"
+    run.raws = [{"itemId": "listing"}]
+    d._runs[run.id] = run
+    run.created -= d.EPHEMERAL_SECONDS
+    with pytest.raises(Http404):
+        d.summary_lease(
+            discovery.actor, "session", run.id, discovery_listing.result_handle(run.id, "listing")
+        )
+    assert not run.raws
 
 
 def test_deals_include_owned_without_goal_and_query_dedup(discovery):
