@@ -187,7 +187,7 @@ jobs:
         sudo apt-get install -y --no-install-recommends gdb
         uv run --no-sync playwright install --with-deps chromium
         mkdir -p reports/ci/native-diagnostic
-        git rev-parse HEAD HEAD^{tree} > reports/ci/native-diagnostic/source.txt
+        git rev-parse HEAD 'HEAD^{tree}' > reports/ci/native-diagnostic/source.txt
         sha256sum uv.lock > reports/ci/native-diagnostic/lock.txt
         uv run --no-sync python -VV > reports/ci/native-diagnostic/python.txt
         uv run --no-sync python -c 'import json, platform, sqlite3, greenlet; print(json.dumps({"platform": platform.platform(), "sqlite": sqlite3.sqlite_version, "greenlet": greenlet.__version__}))' > reports/ci/native-diagnostic/native-versions.json

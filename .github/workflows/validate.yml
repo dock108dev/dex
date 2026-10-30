@@ -30,7 +30,19 @@ jobs:
       id: actions
       run: |-
         uv run --no-sync python scripts/ci/install_tools.py actionlint --destination "$RUNNER_TEMP/ci-tools"
-        uv run --no-sync "$RUNNER_TEMP/ci-tools/actionlint" -color
+        mkdir -p reports/ci/quality
+        if uv run --no-sync "$RUNNER_TEMP/ci-tools/actionlint" -no-color 2>&1 | tee reports/ci/quality/actionlint.log; then
+          echo "Workflow validation passed."
+        else
+          echo "::error title=Workflow validation failed::See the workflow validation diagnostics in the job summary and ci-quality artifact."
+          {
+            echo '### Workflow validation diagnostics'
+            echo '```text'
+            cat reports/ci/quality/actionlint.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+        fi
       if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
     - name: Lint
       id: lint

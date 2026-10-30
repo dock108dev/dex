@@ -16,6 +16,43 @@ def job(workflow, name):
     return yaml.safe_load((ROOT / ".github/workflows" / workflow).read_text())["jobs"][name]
 
 
+@pytest.mark.parametrize("validator_exit", [0, 1])
+def test_workflow_validation_retains_diagnostics_and_exit_status(tmp_path, validator_exit):
+    command = next(
+        step["run"] for step in job("validate.yml", "quality")["steps"] if step.get("id") == "actions"
+    )
+    binary = tmp_path / "bin"
+    binary.mkdir()
+    uv = binary / "uv"
+    uv.write_text(
+        '#!/bin/bash\nif [[ "$3" == python ]]; then exit 0; fi\n'
+        'echo "workflow.yml:5: shell validation diagnostic" >&2\n'
+        f"exit {validator_exit}\n"
+    )
+    uv.chmod(0o755)
+    summary = tmp_path / "summary.md"
+    result = subprocess.run(
+        ["bash", "-e", "-o", "pipefail", "-c", command],
+        cwd=tmp_path,
+        env={
+            **os.environ,
+            "PATH": str(binary) + os.pathsep + os.environ["PATH"],
+            "RUNNER_TEMP": str(tmp_path),
+            "GITHUB_STEP_SUMMARY": str(summary),
+        },
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+    assert result.returncode == validator_exit, result.stderr
+    assert "shell validation diagnostic" in (tmp_path / "reports/ci/quality/actionlint.log").read_text()
+    if validator_exit:
+        assert "shell validation diagnostic" in summary.read_text()
+        assert "::error title=Workflow validation failed::" in result.stdout
+    else:
+        assert not summary.exists()
+
+
 @pytest.mark.parametrize(
     "workflow,name", [("validate.yml", "behavior"), ("assurance.yml", "native-diagnostic")]
 )
