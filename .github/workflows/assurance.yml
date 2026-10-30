@@ -159,7 +159,7 @@ jobs:
         sudo apt-get install -y --no-install-recommends gdb
         uv run --no-sync playwright install --with-deps chromium
         mkdir -p reports/ci/native-diagnostic
-        git rev-parse HEAD HEAD^{tree} > reports/ci/native-diagnostic/source.txt
+        git rev-parse HEAD 'HEAD^{tree}' > reports/ci/native-diagnostic/source.txt
         sha256sum uv.lock > reports/ci/native-diagnostic/lock.txt
         uv run --no-sync python -VV > reports/ci/native-diagnostic/python.txt
         uv run --no-sync python -c 'import json, platform, sqlite3, greenlet; print(json.dumps({"platform": platform.platform(), "sqlite": sqlite3.sqlite_version, "greenlet": greenlet.__version__}))' > reports/ci/native-diagnostic/native-versions.json
@@ -196,7 +196,9 @@ jobs:
           > reports/ci/native-diagnostic/sigpipe-policy.log 2>&1 || result=$?
         test "$result" -eq 1
         grep -q BrokenPipeError reports/ci/native-diagnostic/sigpipe-policy.log
-        ! grep -q 'received signal SIGPIPE' reports/ci/native-diagnostic/sigpipe-policy.log
+        if grep -q 'received signal SIGPIPE' reports/ci/native-diagnostic/sigpipe-policy.log; then
+          exit 1
+        fi
         timeout 40m gdb --batch --return-child-result \
           -ex 'set pagination off' -ex 'set print frame-arguments none' \
           -ex 'handle SIGPIPE nostop noprint pass' \
@@ -232,7 +234,7 @@ jobs:
       run: |
         uv run --no-sync playwright install --with-deps chromium
         mkdir -p reports/ci/bulk-goal
-        git rev-parse HEAD HEAD^{tree} > reports/ci/bulk-goal/source.txt
+        git rev-parse HEAD 'HEAD^{tree}' > reports/ci/bulk-goal/source.txt
         sha256sum uv.lock > reports/ci/bulk-goal/lock.txt
         uv run --no-sync python -VV > reports/ci/bulk-goal/python.txt
         uv pip freeze > reports/ci/bulk-goal/dependencies.txt
