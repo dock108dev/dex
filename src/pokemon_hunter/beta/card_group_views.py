@@ -3,6 +3,7 @@
 from urllib.parse import parse_qsl, urlsplit
 
 from django.http import HttpResponseRedirect, JsonResponse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_GET, require_POST
 
 from . import card_groups, collection, collection_views, store
@@ -78,7 +79,11 @@ def legacy(request, key):
     from . import account_read_queries
 
     resolved = account_read_queries.resolve(actor(request), {}, key=key)
-    response = HttpResponseRedirect(resolved["url"])
+    target = resolved["url"]
+    # Recheck at the redirect boundary, including browser backslash handling.
+    if not url_has_allowed_host_and_scheme(target, allowed_hosts=set()):
+        raise ValueError("Choose a local card destination")
+    response = HttpResponseRedirect(target)
     response["Cache-Control"] = "private, no-store"
     return response
 

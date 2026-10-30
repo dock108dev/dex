@@ -18,8 +18,11 @@ def readiness(request):
             configured=True,
             message="Local text analysis configured; model connectivity is checked only on explicit analysis.",
         )
-    except ollama_gateway.Unavailable as exc:
-        value = dict(configured=False, message=str(exc))
+    except ollama_gateway.Unavailable:
+        value = dict(
+            configured=False,
+            message="Local listing analysis is not configured. Manual review remains available.",
+        )
     return shopping_views.private_json(value, request)
 
 

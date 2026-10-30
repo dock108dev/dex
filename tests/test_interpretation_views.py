@@ -11,6 +11,31 @@ from test_migration import snapshot as snapshot
 from test_shopping import shop as shop
 
 from pokemon_hunter.beta import listing_interpretation as service
+from pokemon_hunter.beta import ollama_gateway
+
+
+def test_readiness_does_not_expose_exception_details(workspace, monkeypatch):
+    def unavailable(root):
+        raise ollama_gateway.Unavailable("private config /secret/ollama.json token=engineering-secret")
+
+    monkeypatch.setattr(ollama_gateway, "configuration", unavailable)
+    response = workspace["a"].get("/api/listing-interpretation/readiness/")
+    assert response.status_code == 200
+    assert response.json()["configured"] is False
+    assert response.json()["message"] == (
+        "Local listing analysis is not configured. Manual review remains available."
+    )
+    assert b"engineering-secret" not in response.content
+    assert b"/secret/" not in response.content
+    assert "no-store" in response["Cache-Control"]
+
+
+def test_readiness_configured_without_provider_call(workspace, monkeypatch):
+    monkeypatch.setattr(ollama_gateway, "configuration", lambda root: object())
+    response = workspace["a"].get("/api/listing-interpretation/readiness/")
+    assert response.status_code == 200
+    assert response.json()["configured"] is True
+    assert "no-store" in response["Cache-Control"]
 
 
 def test_explicit_action_authority(workspace, monkeypatch):
