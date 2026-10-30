@@ -640,3 +640,15 @@ No suggestion automatically updates cards or financial calculations. This versio
 can abstain on useful details even when they occur in seller text. Explicit “One
 card” is either recovered or visibly flagged when omitted. The model is an aid to
 manual review, not an authoritative card identifier.
+
+## Optional extensions
+
+Photo recognition, broader provider/catalog coverage, stronger relevance ranking,
+fresh-price guarantees, graded/bulk Hunter workflows and probability-weighted EV
+are outside the current local-product completion goal. Existing manual photo and
+ungraded workflows remain supported. Framework/database replacements, cloud hosting,
+public release automation and enterprise administration require a separate need and
+compatibility plan. Portability of the installation-bound acquisition/qualification
+operators is a separate maintenance change; their guards must not be weakened merely
+to remove local paths. None of these extensions is a prerequisite for accepting the
+current scoped product.

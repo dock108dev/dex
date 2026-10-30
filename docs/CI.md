@@ -220,3 +220,26 @@ Remote art is not on the primary critical path. Report first visible art, failur
 and completed/failed image counts separately; reserve layout dimensions. The 1-second
 restart-navigation target is separate from the 2-second startup target: do not add
 the latter to the former and call a 3-second navigation a pass.
+
+## Verification coverage and limits
+
+The retained October 30 local checks cover implemented listing-analysis lifecycle
+repairs, shared lease/identifier ownership, renderer changes and CI failure handling.
+The CI review ran 150 distinct focused tests (98 initial, 51 integration-helper,
+and one additional workflow regression; four workflow cases were repeated), clean
+JavaScript installation, security scans, synthetic browser journeys and reproducible
+fresh-package smoke. The later account-read extraction passed 30 account-read and
+11 goal-contract tests. Its function bodies, decorators and SQL were preserved.
+These are scoped results, not a combined full-suite or performance qualification.
+Local outputs remain under `reports/ci-review-20261030/` and
+`reports/cleanup-20261030/`; they are not checkout prerequisites.
+
+The recorded installed rc7 checks predate these later source repairs. They covered
+98 affected correctness tests, eight full-size/2× performance gates, 54 fresh-install
+HTTP assertions and paced checks on the actual installation. That record explicitly
+claims neither a new full-suite result nor hosted qualification. No result inspected
+in this documentation reconciliation establishes complete qualification of current
+source commit `9eaab8e`. A clean or committed checkout is not an installed update.
+See [runtime updates](operations.md#runtime-updates-and-recovery) and
+[interface review](UI_DESIGN.md#review-scope-and-known-limitations) for the separate
+installation and user-facing boundaries.

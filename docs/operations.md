@@ -531,7 +531,8 @@ qualified alongside catalog search. Four simultaneous Django requests increased 
 wall time beyond its fixed budget. The original single admission slot bounded that
 contention, but installed QA later exposed legacy Hunter refresh blocking browsing.
 The rc5 reserved browsing lane above supersedes that policy. Four-client load and
-actual legacy-read overlap are recorded in [installed QA](installed-qa-20261029.md);
+actual legacy-read overlap require installed validation as described in
+[interface review](UI_DESIGN.md#review-scope-and-known-limitations);
 queue time remains separate from application time.
 
 ## Package binding and schema compatibility

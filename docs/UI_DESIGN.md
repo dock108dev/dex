@@ -331,3 +331,27 @@ confirmed receipts remain recoverable and undoable when derived browsing is unav
 
 Check keyboard focus, scroll restoration, narrow screens and enlarged text with
 the [frontend test commands](frontend-reads.md#renderer-and-workflow-tests).
+
+## Review scope and known limitations
+
+Review the actual installed app through ordinary sign-in: guest discovery and
+private cards; search, filters, paging, detail and Back; Shopping seller access,
+editable interpretation and Stop; ungraded Hunter dates, costs and unavailable
+estimates. Include narrow layouts, keyboard focus and recovery. Manual photo entry,
+saved reports, confirmation and Undo must remain available; AI photo recognition
+is not part of the current product scope. Engineering fixtures cannot substitute
+for this review, and test results do not constitute owner acceptance.
+
+The recorded rc7 owner session described My Cards as straightforward, but did not
+accept browsing overall, Shopping or Hunter. Disclosed observations included roughly
+four-second collection confirmation, roughly 1.2-second saved-photo report loading,
+a raw variant label in one temporary lot proposal and a retained 403.30 ms search
+sample within the passing p95 calculation. These observations belong to that runtime;
+they do not establish the behavior of later source changes. In particular, the
+browsing timing targets do not silently become new mutation-time guarantees.
+
+Retained seller evidence is dated and temporary results may have expired. Review
+current availability honestly. A new acquisition or model call requires its own
+explicit authorization and available allowance; reopening a review must not renew
+consumed capacity. A reproducible problem requires a bounded repair and affected
+re-verification before acceptance of the changed behavior.
