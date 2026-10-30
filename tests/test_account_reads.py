@@ -138,7 +138,23 @@ def test_display_projection_is_covering_and_preserves_oversized_records():
         assert db.execute(query, ("u" * 36,)).fetchall() == expected
         assert expected[-1][1] is None
         plan = db.execute("EXPLAIN QUERY PLAN " + query, ("u" * 36,)).fetchall()
-        assert any("USING COVERING INDEX ar_group_display" in row[3] for row in plan)
+        assert any("ar_group_display" in row[3] for row in plan), (sqlite3.sqlite_version, plan)
+        # Older SQLite versions omit COVERING for expression indexes even when
+        # all projected values come from the index. Check the actual column
+        # reads, allowing an opened table cursor used only for an identity check.
+        program = db.execute("EXPLAIN " + query, ("u" * 36,)).fetchall()
+        index_root = db.execute(
+            "SELECT rootpage FROM sqlite_master WHERE name='ar_group_display'"
+        ).fetchone()[0]
+        persistent_cursors = {row[2]: row[3] for row in program if row[1] == "OpenRead"}
+        column_reads = [row for row in program if row[1] == "Column" and row[2] in persistent_cursors]
+        assert column_reads, (sqlite3.sqlite_version, program)
+        assert all(persistent_cursors[row[2]] == index_root for row in column_reads), (
+            sqlite3.sqlite_version,
+            program,
+        )
+        assert {1, 2, 3} <= {row[3] for row in column_reads}, program
+        assert db.execute("SELECT payload FROM ar_groups WHERE id='2'").fetchone()[0] == "x" * 120000
 
 
 def test_add_undo_incremental_policy_parity(prepared):
