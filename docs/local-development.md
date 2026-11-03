@@ -7,12 +7,12 @@ physical copies, collecting goals and Shopping.
 
 ## Requirements
 
-Use Python 3.14 and uv on macOS or Linux. JavaScript checks use Node.js 24
+Use Python 3.15 and uv on macOS or Linux. JavaScript checks use Node.js 24
 from `.nvmrc`. Windows process handling is unsupported. Run development commands
 from the repository root:
 
 ```sh
-uv sync --locked --python 3.14 --extra dev
+uv sync --locked --python 3.15 --extra dev
 ```
 
 ## Existing installations
