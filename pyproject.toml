@@ -1,12 +1,12 @@
 [build-system]
-requires = ["hatchling==1.32.4"]
+requires = ["hatchling==1.33.0"]
 build-backend = "hatchling.build"
 
 [project]
 name = "pokemon-hunter"
 version = "0.1.1rc7"
 description = "A local Pokémon collection app with explicit, conservative eBay research"
-requires-python = ">=3.14,<3.15"
+requires-python = ">=3.14,<3.16"
 dependencies = [
     "django>=5.2,<6.2",
     "django-axes>=8.3,<9",
@@ -23,7 +23,7 @@ dependencies = [
 dev = ["pytest>=8,<10", "ruff>=0.11,<1"]
 ci = [
     "bandit==1.9.4",
-    "hatchling==1.32.4",
+    "hatchling==1.33.0",
     "pip-audit==2.10.1",
     "playwright==1.64.1",
     "pytest-cov==7.1.0",

@@ -95,7 +95,7 @@ jobs:
         retention-days: 14
 
   performance-diagnostic:
-    name: Diagnostic only (${{ matrix.os }}, Python 3.14)
+    name: Diagnostic only (${{ matrix.os }}, Python 3.15)
     needs: inputs
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.scope == 'performance-diagnostic' }}
     runs-on: ${{ matrix.os }}
@@ -111,7 +111,7 @@ jobs:
     - id: setup
       uses: ./.github/actions/setup
       with:
-        python-version: '3.14'
+        python-version: '3.15'
     - name: Install the same pinned Chromium
       id: chromium
       run: uv run --no-sync playwright install --with-deps chromium
@@ -158,7 +158,7 @@ jobs:
         retention-days: 14
 
   native-diagnostic:
-    name: Native diagnostic only (Ubuntu, Python 3.14)
+    name: Native diagnostic only (Ubuntu, Python 3.15)
     needs: inputs
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.scope == 'native-diagnostic' }}
     runs-on: ubuntu-24.04
@@ -171,7 +171,7 @@ jobs:
     - id: setup
       uses: ./.github/actions/setup
       with:
-        python-version: '3.14'
+        python-version: '3.15'
     - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       id: node
       with:

@@ -20,10 +20,10 @@ not validate personal collections, live marketplace results or a hosted deployme
 | `assurance.yml / container` | Non-publishing image build and non-root installed imports without networking | Schedule or manual `compatibility` |
 | `assurance.yml / health` | Bounded Actions history and storage metadata | Schedule or manual; advisory collection |
 
-Normal hosted behavior uses Ubuntu 24.04 with Python 3.14. Compatibility
+Normal hosted behavior uses Ubuntu 24.04 with Python 3.15 and retained Python 3.14 compatibility. Compatibility
 adds the Linux container build, not obsolete Python versions. Every PR also installs
-and compiles the fresh package on the declared Python 3.14 runtime. Other jobs use
-Ubuntu and Python 3.14, with Node 24 where needed. Matrix fail-fast is disabled.
+and compiles the fresh package on the declared Python 3.15 runtime. Other jobs use
+Ubuntu and Python 3.15, with Node 24 where needed. Matrix fail-fast is disabled.
 Behavior has a 45-minute limit on every runtime; pytest prints
 slow-test timings and diagnostic stacks after a 90-second stall without terminating
 the test. Package inputs and tool versions are defined by the workflows, composite
@@ -38,7 +38,7 @@ not configured by these workflows; add `merge_group` before requiring queue gate
 
 ## Platform coverage
 
-Hosted checks use Ubuntu 24.04 and Python 3.14. macOS is supported locally;
+Hosted checks use Ubuntu 24.04 and Python 3.15. macOS is supported locally;
 validate platform-sensitive changes there with the same locked dependencies and
 disposable test state. Local results do not substitute for hosted checks, and
 engineering tests do not establish behavior of a separately installed runtime.

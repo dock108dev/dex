@@ -14,7 +14,7 @@ storage. See [local development](docs/local-development.md) for startup and
 
 ## Requirements
 
-- Python 3.14 and [uv](https://docs.astral.sh/uv/).
+- Python 3.15 and [uv](https://docs.astral.sh/uv/).
 - macOS or Linux for the local application. Windows process handling is unsupported.
 - Port 8011 for the ordinary local server; reuse an already running installation.
 - Node.js 24 (see `.nvmrc`) for JavaScript checks. Playwright and other CI tools

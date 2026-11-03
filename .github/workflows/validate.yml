@@ -25,7 +25,7 @@ jobs:
     - id: setup
       uses: ./.github/actions/setup
       with:
-        python-version: '3.14'
+        python-version: '3.15'
     - name: Actions-aware validation
       id: actions
       run: |-
@@ -159,6 +159,8 @@ jobs:
       matrix:
         include:
         - os: ubuntu-24.04
+          python: '3.15'
+        - os: ubuntu-24.04
           python: '3.14'
 
   distribution:
@@ -172,7 +174,7 @@ jobs:
     - id: setup
       uses: ./.github/actions/setup
       with:
-        python-version: '3.14'
+        python-version: '3.15'
     - name: Build and install in an empty environment
       id: build
       run: |
@@ -187,7 +189,7 @@ jobs:
         [[ ${#rebuilt[@]} -eq 1 ]]
         cmp "${wheel[0]}" "${rebuilt[0]}"
         # Every PR must install/start on the actual declared minimum runtime.
-        uv venv --python 3.14 "$RUNNER_TEMP/dex-wheel"
+        uv venv --python 3.15 "$RUNNER_TEMP/dex-wheel"
         uv export --locked --no-dev --no-emit-project --format requirements-txt --output-file "$RUNNER_TEMP/runtime-requirements.txt" > /dev/null
         uv pip sync --python "$RUNNER_TEMP/dex-wheel/bin/python" --require-hashes "$RUNNER_TEMP/runtime-requirements.txt"
         uv pip install --python "$RUNNER_TEMP/dex-wheel/bin/python" --no-deps "${wheel[0]}"
@@ -221,7 +223,7 @@ jobs:
     - id: setup
       uses: ./.github/actions/setup
       with:
-        python-version: '3.14'
+        python-version: '3.15'
     - name: Install pinned Chromium and OS dependencies
       id: chromium
       run: uv run --no-sync playwright install --with-deps chromium
@@ -261,7 +263,7 @@ jobs:
     - id: setup
       uses: ./.github/actions/setup
       with:
-        python-version: '3.14'
+        python-version: '3.15'
     - name: Install checksum-pinned secret scanner
       id: gitleaks
       run: uv run --no-sync python scripts/ci/install_tools.py gitleaks --destination "$RUNNER_TEMP/ci-tools"
@@ -311,7 +313,7 @@ jobs:
     - id: setup
       uses: ./.github/actions/setup
       with:
-        python-version: '3.14'
+        python-version: '3.15'
     - name: Copied migration, account access and reviewed PostgreSQL mutations
       id: staging
       env:
