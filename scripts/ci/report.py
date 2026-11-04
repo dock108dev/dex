@@ -22,6 +22,7 @@ from urllib.parse import quote, urlsplit
 if not __package__:
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from scripts.ci.behavior_shards import SHARDS, modules
 from scripts.ci.report_readers import MAX_REPORT_BYTES as MAX_REPORT_BYTES
 from scripts.ci.report_readers import STATUSES as STATUSES
 from scripts.ci.report_readers import SUITE_NAME as SUITE_NAME
@@ -141,6 +142,13 @@ def job(args: argparse.Namespace) -> int:
         try:
             args.expect_suite = sorted(set(args.expect_suite) | set(discovered_suites()))
         except ReportError as exc:
+            errors.append(str(exc))
+    if args.suite_shard:
+        try:
+            args.expect_suite = sorted(
+                set(args.expect_suite) | {"tests." + p.stem for p in modules(args.suite_shard)}
+            )
+        except ValueError as exc:
             errors.append(str(exc))
     if args.expect_suite and not args.junit:
         errors.append("Expected suites require a JUnit report")
@@ -440,6 +448,7 @@ def main(argv: list[str] | None = None) -> int:
     job_parser.add_argument("--junit")
     job_parser.add_argument("--expect-suite", action="append", default=[])
     job_parser.add_argument("--expect-discovered-suites", action="store_true")
+    job_parser.add_argument("--suite-shard", choices=SHARDS)
     job_parser.add_argument("--coverage")
     job_parser.add_argument("--security", action="append", default=[])
     job_parser.add_argument("--measurement", action="append", default=[])

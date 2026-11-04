@@ -61,7 +61,10 @@ def test_full_suites_install_locked_renderer_dependencies(workflow, name):
     install = next(i for i, step in enumerate(steps) if step.get("id") == "javascript")
     assert any("actions/setup-node@" in step.get("uses", "") for step in steps[:install])
     assert steps[install]["run"] == "npm ci --ignore-scripts --no-audit --no-fund"
-    assert any("pytest" in step.get("run", "") for step in steps[install + 1 :])
+    assert any(
+        "pytest" in step.get("run", "") or "behavior_shards.py" in step.get("run", "")
+        for step in steps[install + 1 :]
+    )
     assert any("javascript=$JAVASCRIPT" in step.get("run", "") for step in steps[install + 1 :])
 
 
@@ -89,7 +92,7 @@ def test_performance_summary_retains_every_missing_suite_and_fails(tmp_path):
     command = next(step["run"] for step in steps if step.get("name") == "Performance diagnostic summaries")
     scripts = tmp_path / "scripts/ci"
     scripts.mkdir(parents=True)
-    for name in ("report.py", "report_readers.py"):
+    for name in ("report.py", "report_readers.py", "behavior_shards.py"):
         shutil.copyfile(ROOT / "scripts/ci" / name, scripts / name)
     result = subprocess.run(
         ["bash", "-e", "-o", "pipefail", "-c", command],

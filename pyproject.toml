@@ -44,6 +44,7 @@ faulthandler_timeout = 90 # Diagnose stalled tests before the bounded hosted job
 markers = ["no_cover: run timing-sensitive tests without pytest-cov instrumentation"]
 
 [tool.coverage.run]
+relative_files = true
 branch = true
 source = ["pokemon_hunter"]
 

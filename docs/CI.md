@@ -10,7 +10,7 @@ not validate personal collections, live marketplace results or a hosted deployme
 | --- | --- | --- |
 | `tests.yml` → `validate.yml` | Shared validation and required aggregate | Pull request and push to `main` |
 | `validate.yml / quality` | actionlint, Ruff, compilation, shipped JS/docs and renderer contracts | Shared validation |
-| `validate.yml / behavior` | Full pytest, socket guard, JUnit and line/branch coverage | Shared validation |
+| `validate.yml / behavior` | Complete pytest suite in four serial shards per runtime, socket guard, JUnit and line/branch coverage | Shared validation |
 | `validate.yml / distribution` | Repeat builds, wheel-from-sdist equality, empty hash-locked install and smoke checks | Shared validation |
 | `validate.yml / browser` | Public/member, collection, Shopping and listing-review journeys | Shared validation |
 | `validate.yml / security` | Gitleaks, Bandit, locked dependency audit and license metadata | Shared validation |
@@ -24,9 +24,15 @@ Normal hosted behavior uses Ubuntu 24.04 with Python 3.15 and retained Python 3.
 adds the Linux container build, not obsolete Python versions. Every PR also installs
 and compiles the fresh package on the declared Python 3.15 runtime. Other jobs use
 Ubuntu and Python 3.15, with Node 24 where needed. Matrix fail-fast is disabled.
-Behavior has a 45-minute limit on every runtime; pytest prints
-slow-test timings and diagnostic stacks after a 90-second stall without terminating
-the test. Package inputs and tool versions are defined by the workflows, composite
+Behavior has a 45-minute limit per shard on every runtime. The core modules,
+Shopping 12–13, Shopping 14–15, and Shopping 16 onward run on independent runners;
+tests inside each shard remain serial so performance measurements do not compete.
+`scripts/ci/behavior_shards.py` assigns every discovered test module exactly once,
+including future modules. Every shard and both runtimes must pass. Full-size datasets,
+sample counts, performance budgets and the 90-second diagnostic timer are unchanged.
+Verbose pytest output identifies the active test before a diagnostic stack dump;
+that dump reports a long-running test and does not terminate it.
+Package inputs and tool versions are defined by the workflows, composite
 setup action, `pyproject.toml` and `uv.lock`.
 
 Manual `full` runs normal validation, without the additional image.
@@ -115,7 +121,12 @@ JSON records and native GitHub job summaries. Records include the tested merge S
 PR head, ref/event, run/attempt, runtime, tool versions and actual outcomes. Missing
 values stay unavailable; a previous successful run does not qualify changed source.
 
-The hosted aggregate expects six job reports. The compatibility container reports
+The hosted aggregate expects thirteen job reports: eight behavior shards and five
+other checks. It verifies execution of every module assigned to each shard.
+The gate additionally validates all four shard identities and combines their raw
+branch coverage separately for Python 3.14 and 3.15. Combined XML/JSON coverage is
+retained in the gate artifact; percentages from individual shards are not added or
+averaged. Missing or invalid coverage fails the required gate. The compatibility container reports
 separately and must succeed for its assurance workflow to pass. It rejects
 missing, duplicate, malformed, stale or contradictory evidence, unexpected skips
 and cancellations. Every discovered `tests/test_*.py` module must execute; zero-test
