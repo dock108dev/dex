@@ -4,14 +4,31 @@
   const selector=()=>location.pathname==='/shopping/check/'?'#listing-preview:not([hidden]) #use-listing:not(:disabled)':'#discovery-cards .review-offer';
   const old=Response.prototype.json;
   const arrival=sessionStorage.getItem('shop-navigation-selector');sessionStorage.removeItem('shop-navigation-selector');
-  window.shopProbe={selector:arrival,parses:[],ready:null,previous_server_intervals:JSON.parse(sessionStorage.getItem('shop12-prior-spans')||'[]')};
+  window.shopProbe={selector:arrival,parses:[],ready:null,input:JSON.parse(sessionStorage.getItem('shop12-input')||'null'),previous_server_intervals:JSON.parse(sessionStorage.getItem('shop12-prior-spans')||'[]')};
+  sessionStorage.removeItem('shop12-input');
   addEventListener('pagehide',()=>{
     const action=Number(sessionStorage.getItem('shop12-clock'));
     const intervals=performance.getEntriesByType('resource').filter(r=>performance.timeOrigin+r.responseEnd>=action).flatMap(r=>r.serverTiming.filter(t=>t.name==='application').map(t=>[Math.max(action,performance.timeOrigin+r.responseStart-t.duration),performance.timeOrigin+r.responseStart]));
     sessionStorage.setItem('shop12-prior-spans',JSON.stringify(intervals));
   });
   Response.prototype.json=async function(){const start=performance.now();const value=await old.call(this);window.shopProbe.parses.push({url:this.url,start,end:performance.now()});return value;};
-  window.shopMark=(kind,css,destination)=>{if(destination)sessionStorage.setItem('shop-navigation-selector',destination);window.shopProbe.previous_server_intervals=[];sessionStorage.removeItem('shop12-prior-spans');sessionStorage.setItem('shop12-clock',String(absolute()));window.shopProbe.ready=null;window.shopProbe.kind=kind;window.shopProbe.selector=css||'#shop12-navigation-pending';document.documentElement.removeAttribute('data-shop-ready');performance.clearResourceTimings();};
+  let armed=null;
+  function disarm(){if(armed)removeEventListener('keydown',armed,true);armed=null;}
+  window.shopMark=(kind,css,destination,action=absolute())=>{disarm();if(destination)sessionStorage.setItem('shop-navigation-selector',destination);window.shopProbe.previous_server_intervals=[];window.shopProbe.input=null;sessionStorage.removeItem('shop12-input');sessionStorage.removeItem('shop12-prior-spans');sessionStorage.setItem('shop12-clock',String(action));window.shopProbe.ready=null;window.shopProbe.kind=kind;window.shopProbe.selector=css||'#shop12-navigation-pending';document.documentElement.removeAttribute('data-shop-ready');performance.clearResourceTimings();};
+  // Arm from the driver, but start on real browser input before product handlers.
+  // Keep driver delivery latency visible without charging it to product work.
+  window.shopArm=(kind,css,destination)=>{
+    disarm();const armedAt=absolute();
+    window.shopProbe.ready=null;window.shopProbe.selector='#shop12-input-pending';
+    document.documentElement.removeAttribute('data-shop-ready');
+    armed=event=>{
+      if(event.key!=='Enter')return;
+      const action=absolute(),input={type:event.type,key:event.key,trusted:event.isTrusted,armed_at:armedAt,action,driver_wait_ms:action-armedAt};
+      window.shopMark(kind,css,destination,action);
+      window.shopProbe.input=input;sessionStorage.setItem('shop12-input',JSON.stringify(input));
+    };
+    addEventListener('keydown',armed,true);
+  };
   let queued=false;
   function ready(){
     if(window.shopProbe.ready!==null||queued)return;

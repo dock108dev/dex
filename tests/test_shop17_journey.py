@@ -208,7 +208,14 @@ def journey(page, base, goal, cx, report, width, zoom, exercise_changes):
             destination = None
             if label == "back":
                 destination = 'body:has(#discovery-target:enabled option[value="3"]:checked) .review-offer'
-            page.evaluate("([kind,css,dest])=>shopMark(kind,css,dest)", [label, css, destination])
+            # Keyboard actions start in the browser before product event handlers,
+            # excluding the driver's round trip between arming and key delivery.
+            # Seller return is a close/focus sequence with its own explicit boundary.
+            marker = "shopMark" if label == "return" else "shopArm"
+            page.evaluate(
+                "([marker,kind,css,dest])=>window[marker](kind,css,dest)",
+                [marker, label, css, destination],
+            )
             action()
             take(page, report["browser"], [], label, path)
             datum = report["browser"]["samples"][label][-1]

@@ -259,6 +259,14 @@ installation and user-facing boundaries.
 
 Run the ordinary Chromium journey and private snapshot volume checks with the locked test environment. Both create disposable state. The browser test replaces the marketplace transport, submits a real Shopping search through the local server, and intercepts the seller tab. The volume check independently measures the source-validation work inside a decision. Both sizes retain the raw samples in `reports/shop-17-prepared/`. The browser case uses the two-source release at 7,653 or 15,306 observations. Preserve previous reports before repeating a series.
 
+Keyboard-driven phase measurements start in the browser's capture-phase Enter
+handler, before the application handles that input. Arming the probe and delivering
+the key through Playwright happen beforehand; their elapsed time is recorded as
+`input.driver_wait_ms`, separately from product latency. The action timestamp and
+input metadata survive navigation. Browser scheduling, transfer, parsing and two
+animation-frame opportunities still count, with the same budgets and 20 samples.
+The seller-tab return retains its explicit close/return boundary.
+
 ```sh
 uv run --no-sync pytest -q tests/test_shop17_journey.py tests/test_shop17_snapshot_volume.py --disable-socket --allow-unix-socket
 ```
