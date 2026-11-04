@@ -111,8 +111,13 @@ def _text(value, maximum=500):
     return str(value or "")[:maximum]
 
 
-def details(identifier, raw):
+def details(identifier, raw, *, source_kind="official_detail"):
     item = validate_response(identifier, raw)
+    from .hunter_lot_parser import MAX_TEXT_BYTES
+
+    text = [raw.get(k, "") for k in ("title", "shortDescription", "description", "condition")]
+    if any(not isinstance(v, str) for v in text) or sum(len(v.encode()) for v in text) > MAX_TEXT_BYTES:
+        raise ValueError("Seller text exceeds the bounded contents review; review manually")
     aspects = [
         {"name": _text(a.get("name"), 80), "value": _text(a.get("value"))}
         for a in raw.get("localizedAspects", [])[:100]
@@ -176,6 +181,12 @@ def details(identifier, raw):
     ]
     parsed = parse_identifier(item)
     return dict(
+        _contents_kind=source_kind,
+        _contents_source={
+            key: raw[key]
+            for key in ("title", "shortDescription", "description", "condition", "itemId", "buyingOptions")
+            if key in raw
+        },
         item_id=item,
         item_url=f"https://www.ebay.com/itm/{parsed['legacy']}"
         + (f"?var={parsed['variation']}" if parsed["variation"] != "0" else ""),

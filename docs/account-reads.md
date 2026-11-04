@@ -180,13 +180,17 @@ later-page choices.
 
 ## Representation policy
 
-`effective-collection-2-goal-headers` identifies the prepared goal policy. Older
-headers require explicit preparation. Catalog-schema repair must be followed by
+`effective-collection-4-shopping-contents` identifies the current source policy.
+It retains the goal-header and literal-name indexes, and adds the local correction picker. Older prepared
+representations require explicit preparation. Catalog-schema repair must be followed by
 account-schema repair because both services install indexes on catalog tables.
 Owned search counts remain exact; page selection uses common-text matches and
 residual ranks rather than repeatedly joining the full metadata set.
 
 ## Account storage schema 2
+
+This is the historical schema-2 transition. Current source migrates explicitly to
+schema 4 as described below; the following commands describe the older runtime.
 
 Schema 2 adds `ar_group_display(user_id,id,CASE WHEN bytes<=1100 THEN payload END,sha)`, a covering index for
 bounded card-summary projections. Wide schema-1 rows can require an
@@ -205,3 +209,39 @@ require explicit preparation. GETs and startup never create the index. Readiness
 rejects schema 1 or a missing display index under schema 2. Other unknown versions are
 rejected without changes. Missing triggers still require the documented schema
 repair; do not use all-account repair merely to recreate this one index.
+
+
+## Account storage schema 3
+
+Schema 3 adds `ar_shopping_names`, indexed by literal name anchor, full name and
+printing identity. Explicit preparation retains every name alias, original catalog
+order and complete matching families. Candidate reads narrow identities before
+metadata decoding; they never truncate an ambiguity family to a page. Explorer
+reads intersect membership and indexed exact number words before decoding their
+40-group page. These are derived indexes, not new ownership or assessment authority.
+
+For an authorized successor installation, stop the ordinary process and retain a
+consistent protected backup. The schema-3 runtime's account `migrate` transitioned
+schema 1 or 2 to 3 additively. It preserves authoritative data but does **not** make
+old prepared state current. Prepare and activate a shared catalog build under policy
+`1:dg1:published-pokemon-en:images-1:shopping-numbers-1`, then explicitly prepare
+accounts under the new account policy and verify readiness before restarting.
+Use the existing [operator procedure](operations.md#read-schema-maintenance).
+No GET or ordinary startup performs migration or reconstruction. Stale infrastructure
+fails closed; it never silently falls back to broad legacy projection.
+
+Older runtimes expecting account schema 1/2 or the previous catalog policy are not
+compatible with this prepared state. Rollback needs an explicitly reviewed compatible
+derived-state transition; never restore older collection data, receipts or acquisition
+journals to roll back code. Local transition tests exercise the 2→3 transition and data
+preservation. This source work has not migrated the customer installation.
+
+## Account storage schema 4
+
+Schema 4 adds `ar_shopping_picker` for local correction search. Explicit preparation records each printing's literal search text, catalog order, shared search rank, publication state, Pokémon membership and ordinary Shopping eligibility. Reads intersect that index with the authorized account's goal-only printing IDs, count before decoding, and return at most 40 correction search results. This page limit does not apply to the complete alternative family within a contents entry. The table contains catalog metadata only; its corruption triggers invalidate prepared state. No seller content, acquisition permission or ownership is stored there.
+
+A future authorized successor needs an explicit account schema transition to 4 and preparation under `effective-collection-4-shopping-contents`; the schema 3 procedure above is historical. A GET never performs either step. Do not select this unqualified candidate for the customer installation. Follow the existing protected backup and compatibility procedure only after release gates and separate delivery authorization.
+
+Both standalone schema checks and combined catalog/account reads require exactly one
+account schema marker at the supported version. Conflicting markers fail closed before
+prepared data is returned; a read never repairs them.

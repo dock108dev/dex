@@ -1,6 +1,8 @@
 """Single ownership boundary for HTTP, file bytes, export and future worker execution."""
 
 import json
+from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass
 
 from django.core.exceptions import PermissionDenied
@@ -23,19 +25,49 @@ def rows(sql, params=()):
         return [dict(zip([c[0] for c in cursor.description], r, strict=True)) for r in cursor.fetchall()]
 
 
-def principal(subject):
+def principal(subject, *, with_generation=False):
     found = rows(
-        """SELECT u.id,u.role FROM users u JOIN auth_user a
+        "SELECT u.id,u.role"
+        + (
+            ",COALESCE((SELECT value FROM collection_generations WHERE user_id=u.id),0) AS generation"
+            if with_generation
+            else ""
+        )
+        + """ FROM users u JOIN auth_user a
                     ON u.auth_subject=CAST(a.id AS TEXT)
                     WHERE a.id=%s AND a.is_active=TRUE AND u.state='active'""",
         [subject],
     )
     if not found:
         raise PermissionDenied
-    return Principal(subject, found[0]["id"], found[0]["role"])
+    result = Principal(subject, found[0]["id"], found[0]["role"])
+    return (result, found[0]["generation"]) if with_generation else result
+
+
+_read_authority = ContextVar("store_read_authority", default=None)
+
+
+@contextmanager
+def read_authority(actor):
+    """Reuse one principal only within a checked read snapshot.
+
+    The outer reader verifies before entry and again after leaving its transaction.
+    The mutable lifetime flag prevents copied contexts retaining this permission.
+    Never use this scope around mutations or worker dispatch.
+    """
+    scope = [actor, True]
+    token = _read_authority.set(scope)
+    try:
+        yield
+    finally:
+        scope[1] = False
+        _read_authority.reset(token)
 
 
 def verified(actor):
+    scope = _read_authority.get()
+    if scope is not None and scope[1] and scope[0] == actor:
+        return actor
     # Re-resolve at every operation; a queued actor cannot retain revoked privileges.
     current = principal(actor.subject)
     if current != actor:

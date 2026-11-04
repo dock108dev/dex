@@ -48,6 +48,10 @@ Paths are relative to `src/pokemon_hunter/`.
 | Official listing money and cost projection | `beta/listing_prices.py`, delegating decimal admission/rounding to `shopping_math`; Discovery, Hunter, official details and Hunter lot reviews share it |
 | Shopping history and original research | `beta/shopping.py:store_payload/reopen/reevaluate`, delegated to by `shopping_views.py` |
 | Lot selection, wants and guide cells | `beta/lot_calculator.py`; `beta/lot_guides.py` projects supplied admitted records |
+| Indexed Shopping reads and collection intent | `beta/shopping_index.py` reuses `account_read_context.py` authorization/revision checks; `shopping_explorer.py` pages metadata, and `shopping_intent.py` checks current/frozen scope for Discovery and listing review |
+| Temporary seller contents | `beta/shopping_contents.py` projects `hunter_lot_parser.py` evidence; client annotations never authorize quantity, identity or value |
+| Conditional auction ceiling | `beta/lot_assessment.py` owns applicable references and whole-cent limits; `listing_check.py:saved_comparison` checks original offers, review revision and source authority before publication |
+| Prepared source offsets | `beta/price_snapshot_index.py` indexes the sole managed shard; `price_snapshot_sources.py` owns admission, withdrawals and expiry |
 | Private price lifecycle | `beta/price_snapshot_contract.py`, `beta/price_snapshots.py`, `beta/price_snapshot_sources.py` |
 | Shopping input and temporary state types | `beta/discovery_contracts.py`; `discovery.py` preserves the `Choices`/`Run` imports used by Hunter and other callers |
 | Finite Shopping acquisition | `beta/discovery.py`, `beta/discovery_transport.py`, `beta/listing_check.py`; orchestration retains account/session checks, locks, deadlines and accounting |

@@ -126,7 +126,7 @@ def _conflicting_fields(clues):
     return fields
 
 
-def parse(raw, printings, *, detail=None, _index=None):
+def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False):
     """Parse supplied authorized text only, with hard work and quantity limits.
 
     ``detail`` is an internal authorized adapter input, never a client-supplied body.
@@ -179,9 +179,20 @@ def parse(raw, printings, *, detail=None, _index=None):
     if len(segments) > MAX_SEGMENTS:
         raise ValueError("Seller text exceeds 400 segments; manual review required")
     index = _index or hunter_catalog.IdentityIndex(printings)
+    lookups = {}
+
+    def candidates_for(clues):
+        if not complete_candidates:
+            return index.candidates(clues)
+        text_key = clues["text"].strip()
+        if text_key not in lookups:
+            lookups[text_key] = index.candidates(clues)
+        return lookups[text_key]
+
+    multiple_catalog_names = complete_candidates and len({p["name"].casefold() for p in printings}) > 1
     combined_text = " ".join(value for _, value in fields)
     combined_clues = dc._clues(dict(title=combined_text))
-    literal_names = discovery_matching.literal_candidates(index.candidates(combined_clues), combined_text)
+    literal_names = discovery_matching.literal_candidates(candidates_for(combined_clues), combined_text)
     product_claims = discovery_matching.without_names(literal_names, combined_text)
     exact_sets = [p for p in literal_names if discovery_matching.evidence(p, combined_clues)["matched"]]
     product_claims = discovery_matching.without_sets(exact_sets, product_claims)
@@ -197,8 +208,13 @@ def parse(raw, printings, *, detail=None, _index=None):
         identity_text = re.sub(r"\b(?:qty|quantity)\s*[:=]?\s*[1-9][0-9]{0,5}\b", " ", text, flags=re.I)
         identity_text = re.sub(r"\b[x×]\s*[1-9][0-9]{0,5}\b", " ", identity_text, flags=re.I)
         clues = dc._clues(dict(title=identity_text, condition=raw.get("condition", "")))
-        candidates = index.candidates(clues)
+        candidates = candidates_for(clues)
         plausible = dc._approx_matches(candidates, clues)
+        if multiple_catalog_names:
+            literal = discovery_matching.literal_candidates(printings, identity_text)
+            if len({p["name"].casefold() for p in literal}) > 1:
+                # A shared set/number cannot disambiguate different named cards.
+                plausible = literal
         if not plausible:
             # Headers/counts and innocuous listing prose are not invented cards.
             # Unrecognized explicit quantity lines are retained as unresolved.
@@ -230,10 +246,12 @@ def parse(raw, printings, *, detail=None, _index=None):
         if chosen and discovery_matching.unavailable(chosen):
             reasons.append(discovery_matching.unavailable(chosen))
             chosen = None
-        candidate_rows = exact or plausible
-        visible_candidates = candidate_rows[
-            : min(MAX_CANDIDATES, MAX_CANDIDATE_BINDINGS - candidate_bindings)
-        ]
+        candidate_rows = plausible if complete_candidates and len(names) > 1 else exact or plausible
+        visible_candidates = (
+            candidate_rows
+            if complete_candidates
+            else candidate_rows[: min(MAX_CANDIDATES, MAX_CANDIDATE_BINDINGS - candidate_bindings)]
+        )
         candidate_bindings += len(visible_candidates)
         if len(visible_candidates) < len(candidate_rows):
             reasons.append("Plausible printing choices exceed the bounded response; refine locally")

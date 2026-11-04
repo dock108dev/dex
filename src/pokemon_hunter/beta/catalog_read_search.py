@@ -4,7 +4,8 @@ from . import store
 from .catalog_read_select import offset as page_offset
 
 
-def select_search(build, filters, *, printing=False):
+def select_search(build, filters, *, printing=False, ids_only=False):
+    projection = "g.id" if ids_only else "g.id,CASE WHEN g.bytes<=900 THEN g.payload END AS payload,g.sha"
     tokens = filters["q"].casefold().split()
     grams = sorted(
         {token[i : i + min(3, len(token))] for token in tokens for i in range(max(1, len(token) - 2))}
@@ -58,7 +59,7 @@ def select_search(build, filters, *, printing=False):
         table = "cr_groups"
     join = "g.id=page.id" if printing else "g.rank_set=page.rank_set"
     index = "" if printing else " INDEXED BY cr_public_order_set"
-    query = f"WITH matching AS MATERIALIZED ({matched}), page AS MATERIALIZED ({page}), total AS (SELECT {total} AS n FROM matching WHERE children>0) SELECT total.n,g.id,CASE WHEN g.bytes<=900 THEN g.payload END AS payload,g.sha FROM total LEFT JOIN page ON 1=1 LEFT JOIN {table} g{index} ON g.build=%s AND g.scope IN ('public','shared') AND {join} ORDER BY page.{rank},g.id"
+    query = f"WITH matching AS MATERIALIZED ({matched}), page AS MATERIALIZED ({page}), total AS (SELECT {total} AS n FROM matching WHERE children>0) SELECT total.n,{projection} FROM total LEFT JOIN page ON 1=1 LEFT JOIN {table} g{index} ON g.build=%s AND g.scope IN ('public','shared') AND {join} ORDER BY page.{rank},g.id"
     if rank == "rank_set":
         # Count the complete positive posting list, but materialize only enough
         # positive candidates for this page. Residual matches remain exact.
@@ -67,7 +68,7 @@ def select_search(build, filters, *, printing=False):
         count_params = [build, stride, fast_match] if printing else [fast_match]
         count_query = f"SELECT {positive_count} FROM cr_gram_index WHERE cr_gram_index MATCH %s"
         total_query = f"SELECT ({count_query})+(SELECT {total} FROM residual WHERE children>0) AS n"
-        query = f"WITH residual AS MATERIALIZED ({residual_query}), matching AS MATERIALIZED (SELECT * FROM ({positive_query} ORDER BY rowid LIMIT %s) UNION ALL SELECT * FROM residual), page AS MATERIALIZED ({page}), total AS ({total_query}) SELECT total.n,g.id,CASE WHEN g.bytes<=900 THEN g.payload END AS payload,g.sha FROM total LEFT JOIN page ON 1=1 LEFT JOIN {table} g{index} ON g.build=%s AND g.scope IN ('public','shared') AND {join} ORDER BY page.{rank},g.id"
+        query = f"WITH residual AS MATERIALIZED ({residual_query}), matching AS MATERIALIZED (SELECT * FROM ({positive_query} ORDER BY rowid LIMIT %s) UNION ALL SELECT * FROM residual), page AS MATERIALIZED ({page}), total AS ({total_query}) SELECT total.n,{projection} FROM total LEFT JOIN page ON 1=1 LEFT JOIN {table} g{index} ON g.build=%s AND g.scope IN ('public','shared') AND {join} ORDER BY page.{rank},g.id"
         params = [
             *match_params[5:],
             *match_params[:5],
@@ -95,7 +96,7 @@ def select_search(build, filters, *, printing=False):
             page_params = [build, *tokens, size, offset]
         else:
             page, page_params = "SELECT * FROM candidates", []
-        query = f"WITH residual AS MATERIALIZED ({residual_query}), candidates AS MATERIALIZED ({candidates}), page AS MATERIALIZED ({page}), total AS ({total_query}) SELECT total.n,g.id,CASE WHEN g.bytes<=900 THEN g.payload END AS payload,g.sha FROM total LEFT JOIN page ON 1=1 LEFT JOIN {table} g{index} ON g.build=%s AND g.scope IN ('public','shared') AND {join} ORDER BY page.{rank},g.id"
+        query = f"WITH residual AS MATERIALIZED ({residual_query}), candidates AS MATERIALIZED ({candidates}), page AS MATERIALIZED ({page}), total AS ({total_query}) SELECT total.n,{projection} FROM total LEFT JOIN page ON 1=1 LEFT JOIN {table} g{index} ON g.build=%s AND g.scope IN ('public','shared') AND {join} ORDER BY page.{rank},g.id"
         params = [*match_params[5:], *candidate_params, *page_params, *count_params]
     rows = store.rows(query, [*params, build])
     return rows[0]["n"], [r for r in rows if r["id"] is not None]

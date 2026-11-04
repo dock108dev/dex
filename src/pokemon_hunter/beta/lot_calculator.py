@@ -53,16 +53,9 @@ def catalog(actor, query="", *, include_goals=False, goal_ids=None, include_curr
     )
     # For bounded review validation, ordinary vintage/current cards do not need
     # frozen-goal progress. Goal-only entries still use the established policy.
-    if (
-        printing_ids is not None
-        and goal_ids is None
-        and all(
-            p["game_id"] not in games
-            or p["set_name"] in SETS
-            or include_current
-            and current_species_printing(p)
-            for p in entries
-        )
+    if goal_ids is None and all(
+        p["game_id"] not in games or p["set_name"] in SETS or include_current and current_species_printing(p)
+        for p in entries
     ):
         goal_ids = set()
     goal_ids = (

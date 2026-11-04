@@ -48,9 +48,21 @@ def condition(actor, build, filters, stride):
     ):
         from .account_read_select import search_ranks
 
-        sql, values = search_ranks(build, stride, filters["q"], "retained")
-        clauses.append("+g.rank_set IN (" + sql + ")")
-        params.extend(values)
+        # Restrict the common-text lookup to authorized owned ranks. The
+        # residual postings also admit substrings and matches in one child.
+        search, values = search_ranks(build, stride, filters["q"], "retained")
+        residual = search.split(" UNION ALL ", 1)[1]
+        tokens = filters["q"].casefold().split()
+        common = " AND ".join("instr(c.search,%s)>0" for _ in tokens)
+        clauses.append(
+            "(EXISTS(SELECT 1 FROM cr_groups c INDEXED BY cr_order_set WHERE c.build=%s "
+            "AND c.scope IN ('retained','shared') AND c.rank_set=g.rank_set AND "
+            + common
+            + ") OR g.rank_set IN ("
+            + residual
+            + "))"
+        )
+        params.extend([build, *tokens, *values[3:]])
     elif filters.get("q") or any(filters.get(f) for f in ("edition", "finish", "variant")):
         child_scope = "retained"
         child_clauses = ["m.build=%s", f"m.scope IN ('{child_scope}','shared')"]
@@ -89,7 +101,21 @@ def groups(actor, build, state, raw, *, dex=None, owned=False):
     if state["catalog_equivalent"] and filters.get("scope", "catalog") == "catalog":
         from .catalog_read_select import select
 
-        total, selected = select(build, filters)
+        unfiltered = not any(
+            filters.get(field)
+            for field in ("q", "species", "set", "language", "edition", "finish", "variant")
+        )
+        total = json.loads(state["counts"]).get("public_group_total") if unfiltered else None
+        if total is None:
+            total, selected = select(build, filters, ids_only=True)
+        else:
+            # Use the same public ordering and the total sealed with this account
+            # snapshot. Older prepared states retain the complete count fallback.
+            sort = filters["sort"]
+            selected = store.rows(
+                f"SELECT id FROM cr_groups INDEXED BY cr_public_order_{sort} WHERE build=%s AND scope IN ('public','shared') ORDER BY rank_{sort},id LIMIT %s OFFSET %s",
+                [build, size, offset(page, size)],
+            )
         ids = [r["id"] for r in selected]
         rows = (
             store.rows(
@@ -111,42 +137,14 @@ def groups(actor, build, state, raw, *, dex=None, owned=False):
         join = f" FROM ar_membership g INDEXED BY ar_membership_{flag}_{filters['sort']} WHERE " + where
         page, size = filters["page"], filters["page_size"]
         total = store.rows("SELECT COUNT(*) AS n" + join, params)[0]["n"]
-        page_join, page_params = join, params
-        if (
-            flag == "present"
-            and filters.get("q", "").strip()
-            and not any(filters.get(field) for field in ("edition", "finish", "variant"))
-        ):
-            # Exact total uses the complete FTS postings. Page membership can use
-            # compact common text and only same-child/substring residual ranks,
-            # avoiding a second full positive posting list for forty selected IDs.
-            from .account_read_select import search_ranks
-
-            tokens = filters["q"].casefold().split()
-            search, values = search_ranks(build, state["catalog_stride"], filters["q"], "retained")
-            residual = search.split(" UNION ALL ", 1)[1]
-            base_filters = dict(filters, q="")
-            base_where, base_params = condition(actor, build, base_filters, state["catalog_stride"])
-            common = " AND ".join("instr(c.search,%s)>0" for _ in tokens)
-            page_join = (
-                f" FROM ar_membership g INDEXED BY ar_membership_{flag}_{filters['sort']} WHERE "
-                + base_where
-                + " AND (EXISTS(SELECT 1 FROM cr_groups c WHERE c.build=%s "
-                + "AND c.scope IN ('retained','shared') AND c.id=g.id AND "
-                + common
-                + ") OR +g.rank_set IN ("
-                + residual
-                + "))"
-            )
-            page_params = [*base_params, build, *tokens, *values[3:]]
         rows = (
             store.rows(
                 "WITH page AS MATERIALIZED (SELECT g.id,g.rank_"
                 + filters["sort"]
                 + " AS rank"
-                + page_join
+                + join
                 + f" ORDER BY g.rank_{filters['sort']},g.id LIMIT %s OFFSET %s) SELECT a.id,CASE WHEN a.bytes<=1100 THEN a.payload END AS payload,a.sha FROM page JOIN ar_groups a ON a.id=page.id AND a.user_id=%s ORDER BY page.rank,a.id",
-                [*page_params, size, offset(page, size), actor.user_id],
+                [*params, size, offset(page, size), actor.user_id],
             )
             if offset(page, size) < total
             else []

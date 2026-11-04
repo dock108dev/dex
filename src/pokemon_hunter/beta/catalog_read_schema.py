@@ -3,7 +3,7 @@
 from django.db import connection, transaction
 
 VERSION = 1
-POLICY = "1:dg1:published-pokemon-en:images-1"
+POLICY = "1:dg1:published-pokemon-en:images-1:shopping-numbers-1"
 CATALOG_AUTHORITIES = (
     "games",
     "catalog_sets",

@@ -24,11 +24,12 @@ function setup(overrides={},control={}){
   const get=id=>{if(!nodes.has(id))nodes.set(id,new Element());return nodes.get(id);};
   get('check-binding').textContent='"binding"';get('check-account').textContent='"account"';get('check-entry').textContent=JSON.stringify({discovery_run:'engineering-run',item_id:'engineering-result'});
   const window={addEventListener:(name,fn)=>events[name]=fn,DexAuctionTime:()=> 'Auction · end time unknown'};
-  const context={window,document:{getElementById:get,createElement:tag=>new Element(tag),addEventListener:(name,fn)=>events[name]=fn},addEventListener:(name,fn)=>events[name]=fn,Date:{now:()=>now,parse:Date.parse},URL,URLSearchParams,Intl,setTimeout:fn=>{timeouts.push(fn);return timeouts.length;},clearTimeout(){},setInterval:fn=>intervals.push(fn),location:{reload(){},href:''},fetch:async(url,options)=>{
+  const context={crypto:require('node:crypto').webcrypto,history:{replaceState(){}},window,document:{getElementById:get,createElement:tag=>new Element(tag),addEventListener:(name,fn)=>events[name]=fn},addEventListener:(name,fn)=>events[name]=fn,Date:{now:()=>now,parse:Date.parse},URL,URLSearchParams,Intl,setTimeout:fn=>{timeouts.push(fn);return timeouts.length;},clearTimeout(){},setInterval:fn=>intervals.push(fn),location:{reload(){},href:'http://local.test/shopping/check/'},fetch:async(url,options)=>{
     calls.push({url,method:options.method||'GET',body:options.body});let payload;
     if(url.includes('/candidate/'))payload={listing:structuredClone({...sample,...overrides}),expires_in_seconds:30,context:{scope_label:'Named engineering search'}};
     else payload={review:null,lease:'lease',expires_in_seconds:30,context:null};
     if(options.method==='POST' && control.post) await control.post(JSON.parse(options.body));
+    if(control.request)payload=await control.request(url,options,payload);
     return {status:200,ok:true,redirected:false,headers:{get:()=> 'application/json'},json:async()=>({...payload,authority:{binding:'binding',account_id:'account'}})};
   }};
   vm.createContext(context);vm.runInContext(display,context);vm.runInContext(source,context);
@@ -77,10 +78,10 @@ const passed=[];async function test(name,fn){await fn();passed.push(name);}
   edit('first');t.timeouts.at(-1)();await flush();assert.equal(held.length,1);
   edit('intermediate');t.timeouts.at(-1)();await flush();
   edit('latest');const navigation=t.events.click(backEvent());await flush();
-  assert.equal(t.calls.filter(c=>c.method==='POST').length,1);assert.equal(t.location.href,'');
+  assert.equal(t.calls.filter(c=>c.method==='POST').length,1);assert.equal(t.location.href,'http://local.test/shopping/check/');
   held[0]();await flush();assert.equal(held.length,2);
   const posts=t.calls.filter(c=>c.method==='POST');assert.equal(JSON.parse(posts[1].body).review.title,'latest');
-  assert.equal(t.get('review-title').value,'latest');assert.equal(t.location.href,'');
+  assert.equal(t.get('review-title').value,'latest');assert.equal(t.location.href,'http://local.test/shopping/check/');
   held[1]();await navigation;assert.equal(t.location.href,'http://127.0.0.1:8011/shopping/');
   await t.events.click(backEvent());assert.equal(t.calls.filter(c=>c.method==='POST').length,2);
  });
@@ -92,7 +93,7 @@ const passed=[];async function test(name,fn){await fn();passed.push(name);}
  await test('failed save keeps the latest input and blocks navigation until a successful retry',async()=>{
   let fail=true;const t=setup({}, {post:async()=>{if(fail)throw Error('Save unavailable');}});await flush();
   t.get('review-title').value='keep this edit';t.get('review-title').listeners.input();
-  await t.events.click(backEvent());assert.equal(t.location.href,'');assert.equal(t.get('review-title').value,'keep this edit');
+  await t.events.click(backEvent());assert.equal(t.location.href,'http://local.test/shopping/check/');assert.equal(t.get('review-title').value,'keep this edit');
   assert.match(t.get('check-status').textContent,/Save unavailable/);
   fail=false;await t.events.click(backEvent());assert.ok(t.location.href);
   assert.equal(JSON.parse(t.calls.filter(c=>c.method==='POST').at(-1).body).review.title,'keep this edit');
@@ -101,8 +102,32 @@ const passed=[];async function test(name,fn){await fn();passed.push(name);}
   let release;const t=setup({}, {post:()=>new Promise(resolve=>release=resolve)});await flush();
   t.get('review-title').value='private edit';t.get('review-title').listeners.input();
   const pending=t.events.click(backEvent());await flush();t.get('listing-check').querySelectorAll=()=>[t.get('review-title')];t.events['dex:authority-revoked']();release();await pending;
-  assert.equal(t.location.href,'');assert.equal(t.get('offer-summary').children.length,0);
+  assert.equal(t.location.href,'http://local.test/shopping/check/');assert.equal(t.get('offer-summary').children.length,0);
   assert.ok(t.get('review-title').disabled);
+ });
+ await test('lost detail response disables acquisition and reload only reconciles',async()=>{
+  const t=setup({}, {request:async(url,options,payload)=>{
+    if(url==='/api/shopping/listing/' && options.method==='POST')throw Error('Lost response');
+    if(url.includes('request_id='))return {run_id:'detail-run',running:false,state:'complete',expires_in_seconds:20};
+    return payload;
+  }});await flush();
+  await t.get('listing-load').onsubmit({preventDefault(){}});await flush();
+  assert.equal(t.get('load-listing').disabled,true);assert.equal(t.get('stop-listing').disabled,false);
+  await t.get('listing-load').onsubmit({preventDefault(){}});
+  assert.equal(t.calls.filter(c=>c.url==='/api/shopping/listing/' && c.method==='POST').length,1);
+  await t.get('check-reload').listeners.click();await flush();
+  assert.ok(t.calls.some(c=>c.url.includes('request_id=') && c.method==='GET'));
+  assert.equal(t.get('load-listing').disabled,false);
+ });
+ await test('unresolved detail status remains locked and Stop is not falsely confirmed',async()=>{
+  const t=setup({}, {request:async(url,options,payload)=>{
+    if(url==='/api/shopping/listing/' && options.method==='POST')throw Error('Lost response');
+    if(url.includes('request_id='))return {outcome_unknown:true};
+    return payload;
+  }});await flush();await t.get('listing-load').onsubmit({preventDefault(){}});await flush();
+  await t.get('stop-listing').onclick();await flush();
+  assert.match(t.get('check-status').textContent,/outcome is unknown/);
+  assert.equal(t.get('load-listing').disabled,true);assert.equal(t.get('stop-listing').disabled,false);
  });
  process.stdout.write(JSON.stringify({passed:passed.length,cases:passed,provider_calls:0,customer_data:false})+'\n');
 })().catch(e=>{console.error(e);process.exitCode=1;});

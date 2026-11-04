@@ -9,6 +9,7 @@ import fcntl
 import json
 import os
 from contextlib import contextmanager
+from contextvars import ContextVar
 from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
@@ -17,6 +18,30 @@ from django.conf import settings
 
 from . import price_snapshot_contract as rules
 from . import price_snapshot_sources as sources
+
+_read_only = ContextVar("price_snapshot_read_only", default=False)
+
+
+_selection = ContextVar("snapshot_selection", default=(None, None))
+
+
+@contextmanager
+def selected(ids, *, eligible_on=None):
+    token = _selection.set((frozenset(ids), eligible_on))
+    try:
+        yield
+    finally:
+        _selection.reset(token)
+
+
+@contextmanager
+def read_only():
+    """Revalidate display rights without running operator cleanup on seller return."""
+    token = _read_only.set(True)
+    try:
+        yield
+    finally:
+        _read_only.reset(token)
 
 
 def directory():
@@ -115,15 +140,46 @@ def denied():
     return values
 
 
-def entries():
-    from . import store
+def entries(printing_ids=None):
     from .collection_catalog import catalog_entries
 
     # The calculator's vintage browse selector is not a source/admission rule.
     # Reviewed contracts still pin every product/subtype and exact printing;
     # published all-era Pokémon metadata merely supplies validation identities.
-    games = {row["id"] for row in store.rows("SELECT id FROM games WHERE game_key='pokemon'")}
-    return {p["id"]: p for p in catalog_entries(published_only=True) if p["game_id"] in games}
+    if printing_ids is None:
+        return {p["id"]: p for p in catalog_entries(published_only=True, game_key="pokemon")}
+    from .shopping_index import known_published_pokemon
+
+    requested = set(printing_ids)
+    known = known_published_pokemon(requested)
+    if known is not None:
+        return known
+    ids = sorted(requested)
+    return {
+        p["id"]: p
+        for start in range(0, len(ids), 500)
+        for p in catalog_entries(
+            published_only=True, game_key="pokemon", printing_ids=ids[start : start + 500]
+        )
+    }
+
+
+def selectable(ids):
+    """Membership-only validation for observations whose identity is checked at use."""
+    from . import store
+    from .shopping_index import known_published_pokemon
+
+    ids = set(ids)
+    if not settings.B4_ENABLED:
+        return False
+    known = known_published_pokemon(ids)
+    if known is not None:
+        return ids.issubset(known)
+    count = store.rows(
+        "SELECT COUNT(*) AS n FROM printings p JOIN catalog_sets s ON s.id=p.set_id JOIN games g ON g.id=s.game_id WHERE p.publication_state='published' AND s.publication_state='published' AND g.game_key='pokemon' AND p.id IN (SELECT value FROM json_each(%s))",
+        [json.dumps(sorted(ids))],
+    )[0]["n"]
+    return count == len(ids)
 
 
 def reviewed(package):
@@ -160,8 +216,17 @@ def preview(path, *, now=None):
         raise ValueError("Revoked snapshot; restore excluded")
     reviewed(package)
     sealed = seals().get(package["version"])
-    if sealed is not None and sealed.get("sha256") != rules.digest(package):
-        raise ValueError("Snapshot bytes changed after version validation")
+    if sealed is not None:
+        if package["schema"] == "dex-price-snapshot-v2":
+            expected = {
+                rules.digest(part["contract"]): rules.digest(part)
+                for part in rules.source_packages(package).values()
+            }
+            valid = sealed.get("sources") == expected
+        else:
+            valid = sealed.get("sha256") == rules.digest(package)
+        if not valid:
+            raise ValueError("Snapshot bytes changed after version validation")
     return package
 
 
@@ -285,20 +350,31 @@ def purge_expired(*, now=None):
             remove(package["version"])
 
 
-def current(*, now=None):
+def current(*, now=None, sources_only=False):
     if not directory().exists():
         return [], "missing_snapshot"
     if not revocations().is_file():
         raise ValueError("Restore excluded: independent revocation registry is missing")
-    purge_expired(now=now)
+    ids, eligible_on = _selection.get()
+    if ids is None and not sources_only and not _read_only.get():
+        purge_expired(now=now)
     active = state()["current"]
     if not active:
         return [], "missing_snapshot"
-    if active not in seals():
+    if active in denied():
+        raise ValueError("Revoked snapshot; restore excluded")
+    manifest = seals()
+    if active not in manifest:
         raise ValueError("Restore excluded: snapshot version manifest is missing")
     path = directory() / (active + ".json")
     value = read(path)
-    package = sources.load(path, now=now) if value.get("schema") == sources.SCHEMA else preview(path, now=now)
+    if value.get("schema") == sources.SCHEMA:
+        if value["version"] != active:
+            raise ValueError("Active release identity changed")
+        return sources.prepared_rows(
+            value, manifest[active], ids, now=now, sources_only=sources_only, eligible_on=eligible_on
+        )
+    package = preview(path, now=now)
     if package is None:
         return [], "sources_unavailable"
     parts = rules.source_packages(package)
@@ -318,16 +394,26 @@ def current(*, now=None):
             )
             for row in part["records"]
         )
+    if eligible_on is not None:
+        catalog = entries(ids)
+        rows = [
+            r
+            for r in rows
+            if r["printing_id"] in catalog
+            and rules.reason(r, catalog[r["printing_id"]], eligible_on) == "eligible"
+        ]
     return rows, "active_snapshot"
 
 
-def display_current(*, now=None):
+def display_current(*, now=None, sources_only=False):
     """Fail closed with explicit unavailable status for current-page projections.
 
     Operator validation and permanent-save admission use strict current() and
     retain its errors. Historical guides remain independently admitted.
     """
     try:
+        if sources_only:
+            return current(now=now, sources_only=True) if now is not None else current(sources_only=True)
         return current() if now is None else current(now=now)
     except (ValueError, OSError, KeyError):
         return [], "invalid_snapshot"

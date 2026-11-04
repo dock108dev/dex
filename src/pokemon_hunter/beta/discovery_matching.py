@@ -7,11 +7,39 @@ physical-card verification, and no price or acquisition scope is selected here.
 
 import re
 import unicodedata
+from contextlib import contextmanager
+from contextvars import ContextVar
 from functools import lru_cache
 
 from .discovery_search import canonical_query
 
 _NUMBER = r"(?:[a-z]*[0-9]+[a-z]*|[a-z]+-[0-9]+)(?:\s*/\s*[a-z0-9-]+)?"
+
+
+# Seller wording belongs only to this authorized operation. Never put it in
+# the module's persistent catalog-pattern cache or reuse assessment/admission.
+_local = ContextVar("shopping_literal_work", default=None)
+
+
+@contextmanager
+def local_evidence():
+    work = {}
+    token = _local.set(work)
+    try:
+        yield
+    finally:
+        work.clear()
+        _local.reset(token)
+
+
+def _alias_key(primary, aliases):
+    return (primary, *(v for v in aliases if isinstance(v, str))) if isinstance(aliases, list) else (primary,)
+
+
+def _remember(cache, key, values):
+    if cache is not None and len(cache) < 4096:
+        cache[key] = tuple(values)
+    return values
 
 
 def literal(value):
@@ -47,6 +75,14 @@ def _phrase(value):
 
 def set_spans(printing, text):
     """Literal set-alias positions, including the Base Set / Base Set 2 rule."""
+    cache = _local.get()
+    key = (
+        ("set", _alias_key(printing["set_name"], printing.get("set_aliases")), text)
+        if cache is not None
+        else None
+    )
+    if cache is not None and key in cache:
+        return list(cache[key])
     text = canonical_query(literal(text))
     spans = []
     for name in set_names(printing):
@@ -54,7 +90,7 @@ def set_spans(printing, text):
         if name.casefold() == "base set":
             pattern += r"(?!\s*2\b(?!\s*/))"
         spans.extend(match.span() for match in re.finditer(pattern, text, re.I))
-    return sorted(set(spans))
+    return _remember(cache, key, sorted(set(spans)))
 
 
 def set_claimed(printing, text):
@@ -82,6 +118,14 @@ def _name_pattern(name):
 
 
 def name_spans(printing, text):
+    cache = _local.get()
+    key = (
+        ("name", _alias_key(printing["name"], printing.get("attributes", {}).get("name_aliases")), text)
+        if cache is not None
+        else None
+    )
+    if cache is not None and key in cache:
+        return list(cache[key])
     text = literal(text)
     spans = []
     for name in names(printing):
@@ -91,7 +135,7 @@ def name_spans(printing, text):
             if re.search(r"(?:dark|light|\w+['’]s)\s*$", prefix, re.I):
                 continue
             spans.append(match.span())
-    return sorted(set(spans))
+    return _remember(cache, key, sorted(set(spans)))
 
 
 class NameIndex:
@@ -155,6 +199,10 @@ def number_claims(printing, text):
     A bare year, set number, price or slab grade elsewhere cannot establish a
     collector number. Literal fractions remain whole, including denominators.
     """
+    cache = _local.get()
+    key = ("number", names(printing), printing["collector_number"], text) if cache is not None else None
+    if cache is not None and key in cache:
+        return list(cache[key])
     text = literal(text)
     adjacent, explicit = [], []
     for _, end in name_spans(printing, text):
@@ -193,7 +241,9 @@ def number_claims(printing, text):
                 and number_key(claim)[0] != expected
             )
         ]
-    return list(dict.fromkeys(re.sub(r"\s*/\s*", "/", claim) for claim in adjacent + explicit))
+    return _remember(
+        cache, key, list(dict.fromkeys(re.sub(r"\s*/\s*", "/", claim) for claim in adjacent + explicit))
+    )
 
 
 def evidence(printing, clues):

@@ -14,16 +14,19 @@ from . import (
     image_mappings,
     lot_calculator,
     shopping_context,
+    shopping_index,
 )
 
 PAGE_FIELDS = shopping_context.FIELDS | {
     "run_id",
+    "request_id",
     "q",
     "set_id",
     "intent",
     "missing_basis",
     "scope",
     "budget",
+    "prefer_vintage",
     "product_type",
     "sort",
     "english_vintage",
@@ -43,8 +46,9 @@ def validate_page(raw):
             raise ValueError("Choose bounded Shopping search fields")
         if any(ord(char) < 32 or ord(char) == 127 for char in value):
             raise ValueError("Choose supported Shopping text")
-    if raw.get("run_id"):
-        uuid.UUID(raw["run_id"])
+    for field in ("run_id", "request_id"):
+        if raw.get(field):
+            uuid.UUID(raw[field])
     for field, options in (
         ("intent", {"deals", "missing"}),
         ("missing_basis", {"species", "printing"}),
@@ -52,6 +56,7 @@ def validate_page(raw):
         ("product_type", {"singles", "mixed_lots", "both"}),
         ("sort", {"best_match", "ending_soonest"}),
         ("english_vintage", {"0", "1"}),
+        ("prefer_vintage", {"0", "1"}),
         ("result_filter", {"all", "below", "conditional", "unpriced"}),
     ):
         if field in raw and raw[field] not in options:
@@ -87,6 +92,7 @@ def query_parts(query, sets):
     return normalized, None
 
 
+@shopping_index.indexed
 def search(who, raw):
     if set(raw) - CATALOG_FIELDS:
         raise ValueError("Choose supported local search fields")
@@ -95,6 +101,11 @@ def search(who, raw):
     context = shopping_context.resolve(
         who, {key: value for key, value in raw.items() if key in shopping_context.FIELDS}
     )
+    indexed = shopping_index.current(who)
+    if indexed:
+        from .shopping_explorer import search as indexed_search
+
+        return indexed_search(indexed, raw, context, offset)
     snapshot = card_groups.project(who)
     available = [row for row in snapshot["groups"] if row["catalog_available"]]
     set_pairs = {(row["set_id"], row["set_name"]) for row in available}
@@ -267,7 +278,9 @@ def entry_refinements(who, raw, context):
     selected = species_scope.values(inherited.get("set", ""))
     # No inherited collection set needs a full ownership/group projection.
     # Use the same published catalog authority only when a set must be mapped.
-    sets = {(row["set_id"], row["set_name"]) for row in collection.catalog(who)} if selected else set()
+    from .collection_catalog import set_options
+
+    sets = {(row["id"], row["name"]) for row in set_options(who)} if selected else set()
     mapped = next((name for key, name in sets if len(selected) == 1 and selected[0] in {key, name}), None)
     initial = dict(raw)
     if mapped:

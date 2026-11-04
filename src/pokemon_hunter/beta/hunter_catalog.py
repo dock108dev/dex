@@ -98,8 +98,15 @@ class IdentityIndex:
         }
         narrowed = set_matches or named
         number_matches = set()
+        # Sibling editions/finishes share literal name and number syntax. Parse
+        # that syntax once per family while retaining every matching child.
+        claims = {}
         for index in narrowed:
-            for number in discovery_matching.number_claims(self.printings[index], clues["text"]):
+            printing = self.printings[index]
+            family = (discovery_matching.names(printing), printing["collector_number"])
+            if family not in claims:
+                claims[family] = discovery_matching.number_claims(printing, clues["text"])
+            for number in claims[family]:
                 number_matches.update(
                     narrowed.intersection(self.by_number.get(discovery_matching.number_key(number)[0], ()))
                 )

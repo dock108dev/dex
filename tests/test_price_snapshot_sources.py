@@ -270,3 +270,65 @@ def test_multisource_partial_coverage_and_old_new_format_rollback(setup):
     assert len(prices.current()[0]) == 4
     prices.rollback(old["version"], now=NOW)
     assert {r["grade"] for r in prices.current()[0]} == {"raw", "10"}
+
+
+def test_reprepare_existing_release_preserves_withdrawal_and_seals(setup):
+    value = multi_package(setup, restricted=False)
+    version = value["version"]
+    prices.activate(stage(value), None, now=NOW)
+    first = rules.digest(value["contracts"]["fixture-graded"]["contract"])
+    prices.sources.remove_source(first)
+    active = prices.directory() / (version + ".json")
+    descriptor = active.read_bytes()
+    seals = prices.seals()
+    # An earlier split release has no prepared lookup.
+    del seals[version]["indexes"]
+    prices.atomic(prices.directory() / "versions.json", seals)
+    with prices.selected([value["records"][0]["printing_id"]]):
+        assert prices.display_current(now=NOW) == ([], "invalid_snapshot")
+    prices.activate(active, version, now=NOW)
+    assert active.read_bytes() == descriptor
+    assert [r["grade"] for r in prices.current(now=NOW)[0]] == ["raw"]
+    assert not prices.sources.shard(version, first).with_suffix(".idx").exists()
+
+
+def test_interrupted_index_prepare_keeps_stage_and_old_release(setup, monkeypatch):
+    first, second = multi_package(setup), multi_package(setup)
+    prices.activate(stage(first), None, now=NOW)
+    path = stage(second)
+    prepare = prices.sources.index.prepare
+
+    def interrupted(*args):
+        raise OSError("index write interrupted")
+
+    monkeypatch.setattr(prices.sources.index, "prepare", interrupted)
+    with pytest.raises(OSError, match="interrupted"):
+        prices.activate(path, first["version"], now=NOW)
+    assert path.exists() and prices.state()["current"] == first["version"]
+    assert prices.current(now=NOW)[1] == "active_snapshot"
+    monkeypatch.setattr(prices.sources.index, "prepare", prepare)
+    prices.activate(path, first["version"], now=NOW)
+    assert not path.exists() and prices.state()["current"] == second["version"]
+
+
+@pytest.mark.parametrize("boundary", ["descriptor", "versions"])
+def test_prepared_activation_retries_same_stage_after_write_failure(setup, monkeypatch, boundary):
+    first, second = multi_package(setup), multi_package(setup)
+    prices.activate(stage(first), None, now=NOW)
+    staged = stage(second)
+    original = prices.atomic
+
+    def fail(path, value):
+        if path.name == (second["version"] + ".json" if boundary == "descriptor" else "versions.json"):
+            raise OSError("Interrupted prepared activation")
+        return original(path, value)
+
+    monkeypatch.setattr(prices, "atomic", fail)
+    with pytest.raises(OSError, match="Interrupted"):
+        prices.activate(staged, first["version"], now=NOW)
+    assert staged.exists()
+    assert prices.state()["current"] == first["version"]
+    assert prices.current(now=NOW)[1] == "active_snapshot"
+    monkeypatch.setattr(prices, "atomic", original)
+    prices.activate(staged, first["version"], now=NOW)
+    assert prices.state()["current"] == second["version"] and not staged.exists()

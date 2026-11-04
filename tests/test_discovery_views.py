@@ -34,7 +34,9 @@ def test_metadata_and_polling_are_private_reads(workspace, monkeypatch):
     assert metadata.status_code == 200 and "goals" in metadata.json()
     assert "no-store" in metadata.headers["Cache-Control"]
     seen = []
-    monkeypatch.setattr(discovery, "status", lambda *args: seen.append(args) or {"state": "complete"})
+    monkeypatch.setattr(
+        discovery, "status", lambda *args, **kwargs: seen.append(args) or {"state": "complete"}
+    )
     key = str(uuid.uuid4())
     assert workspace["a"].get("/api/shopping/discovery/", {"run_id": key}).status_code == 200
     assert seen[0][2] == key and seen[0][1]

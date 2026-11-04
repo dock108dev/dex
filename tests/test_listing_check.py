@@ -648,7 +648,7 @@ def test_multiple_card_seller_claims_never_become_one_confirmed_card(workspace, 
     monkeypatch.setattr(c.dc, "_matches", lambda entries, clues: [p])
     value = c._proposals(workspace["actor"], c.details(ITEM, raw(title=f"Abra Base Set 43 {suffix}")))
     assert len(value["proposals"]) == 1 and value["proposals"][0]["quantity"] == 0
-    assert value["unknown_contents"] is None
+    assert value["unknown_contents"] == (2 if suffix == "2 cards" else None)
 
 
 def test_structured_card_count_and_checked_mixed_lot_remain_unconfirmed(workspace, monkeypatch):

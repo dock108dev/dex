@@ -1,12 +1,13 @@
 """Ordinary owner usage settings use real private session/CSRF boundaries, offline."""
 
 import json
+from functools import partial
 
 import pytest
 from django.conf import settings
 from test_b1 import env as env
 from test_b2 import b2 as b2
-from test_lot_calculator import post
+from test_lot_calculator import post as post_json
 from test_lot_calculator import workspace as workspace
 from test_migration import snapshot as snapshot
 from test_shopping import shop as shop
@@ -14,6 +15,7 @@ from test_shopping import shop as shop
 from pokemon_hunter.beta import ebay_hunts, hunter, hunter_policy
 
 URL = "/api/shopping/hunter/usage/"
+post = partial(post_json, page="/shopping/hunter/")
 
 
 @pytest.fixture(autouse=True)

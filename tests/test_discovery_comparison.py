@@ -339,3 +339,21 @@ def test_mixed_category_never_values_whole_lot_as_one_named_card(setup):
     assert row["seller_image"].startswith("https://i.ebayimg.com/")
     assert row["item_url"] == raw["itemWebUrl"]
     assert "whole lot" in row["reason"]
+
+
+def test_review_can_skip_optional_art_without_changing_assessment(setup, monkeypatch):
+    _, printing = active(setup)
+    entries = list(setup["entries"].values())
+    full = discovery.compare(setup["actor"], [listing(printing)], entries, now=NOW)
+
+    def unrelated(*args, **kwargs):
+        pytest.fail("Review binds its selected proposal art separately")
+
+    monkeypatch.setattr(discovery.image_bindings, "catalog_images", unrelated)
+    lean = discovery.compare(setup["actor"], [listing(printing)], entries, now=NOW, include_artwork=False)
+    for result in (full, lean):
+        for row in result:
+            for identity in [row.get("proposed_identity"), *row["identity_candidates"]]:
+                if identity:
+                    identity.pop("artwork_url")
+    assert lean == full

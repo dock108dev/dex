@@ -4,17 +4,20 @@
   const $ = id => document.getElementById(id);
   if (!$('discovery-form')) return;
   const api = '/api/shopping/discovery/';
+  const receiptView = () => $('discovery-form').dataset.lotSearch === 'true' ? '&view=received' : '';
   const page = document.body, binding = page.dataset.navigationBinding || '', account = page.dataset.navigationAccount || '';
   const currentAuthority = () => !revoked && document.body === page && page.dataset.navigationBinding === binding && page.dataset.navigationAccount === account && !window.navigationAuthorityDiscarded && !window.navigationReauthorizing;
   const readJson = id => {try {return JSON.parse($(id)?.textContent || '{}');} catch {return {};}};
   const context = readJson('discovery-context'), initial = readJson('discovery-initial');
   let target = {species:context.species || null,group_id:context.group || null,printing_id:context.child || null};
   let intent = initial.intent === 'missing' ? 'missing' : 'deals', run = null, goals = readJson('discovery-goals'), captured = null, sequence = 0;
-  let catalogStarted = false;
+  let catalogStarted = false, targetSequence = 0, targetsReady = false;
   let catalogSequence = 0, catalogTimer = null, localSets = [], catalogOffset = 0, catalogHasMore = false;
   const generation = context.generation;
+  let goalVersion = initial.version || null;
   let focusResults = false;
-  let timer = null, acquiring = false, stopWanted = false, ready = false, revoked = false;
+  let timer = null, acquiring = false, stopWanted = false, ready = Boolean(initial.provider?.enabled && initial.provider?.configured), revoked = false;
+  let actionId = initial.request_id || null, uncertain = Boolean(actionId), admissionPending = false;
   let deadline = Infinity, deadlineRun = null, sourceState = null, sourceUnavailable = false, checkingSources = false, lifecycleTimer = null;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const csrf = () => $('discovery-form').querySelector('[name=csrfmiddlewaretoken]')?.value || '';
@@ -49,34 +52,37 @@
     $('discovery-status').textContent = message;
     $('discovery-status').dataset.error = error ? 'true' : 'false';
   }
-  async function request(url, body) {
-    const response = await fetch(url, {method:body === undefined ? 'GET' : 'POST',credentials:'same-origin',redirect:'error',cache:'no-store',headers:{'X-Dex-Shopping-Binding':binding,...(generation == null ? {} : {'X-Dex-Shopping-Generation':String(generation)}),...(body === undefined ? {} : {'Content-Type':'application/json','X-CSRFToken':csrf()})},...(body === undefined ? {} : {body:JSON.stringify(body)})});
+  async function request(url, body, action = null) {
+    const response = await fetch(url, {method:body === undefined ? 'GET' : 'POST',credentials:'same-origin',redirect:'error',cache:'no-store',headers:{'X-Dex-Shopping-Binding':binding,...(action ? {'X-Dex-Shopping-Action':action} : {}),...(generation == null ? {} : {'X-Dex-Shopping-Generation':String(generation)}),...(body === undefined ? {} : {'Content-Type':'application/json','X-CSRFToken':csrf()})},...(body === undefined ? {} : {body:JSON.stringify(body)})});
     if (response.status === 403 || response.status === 401) {
       window.discardNavigationAuthority?.();if (!revoked) invalidate();
       throw new Error('Your session is unavailable. Sign in again to continue.');
     }
     let data;
     try { data = await response.json(); } catch { throw new Error('Shopping did not return a readable response.'); }
-    if (!response.ok) throw new Error(typeof data.error === 'string' ? data.error : 'This search is unavailable. Start a new search to try again.');
+    if (!response.ok) {
+      const busy = response.status === 503 && data.error === 'runtime_busy';
+      throw Object.assign(new Error(busy ? 'Dex is busy with another local action. This request did not start.' : 'This section could not be loaded. Reload this section to check its current state.'), {status:response.status, category:busy ? 'not_dispatched' : 'unknown', code:data.error});
+    }
     if (!currentAuthority() || !binding || !account || data.authority?.binding !== binding || data.authority?.account_id !== account) {
       invalidate();throw new Error('Your session changed. Reload Shopping to continue.');
     }
     return data;
   }
   function choices() {
-    const selected = {intent,goal_id:intent === 'missing' ? $('discovery-goal').value || null : null,missing_basis:intent === 'missing' ? $('discovery-missing-basis').value : 'species',focus:$('discovery-focus').value,budget:$('discovery-budget').value.trim() || null,query:$('discovery-query').value.trim(),set_id:$('discovery-set').value || null,product_type:$('discovery-product-type').value,sort:$('discovery-sort').value,english_vintage:$('discovery-english-vintage').checked,...target,goal_version:intent === 'missing' ? (context.query?.goal === $('discovery-goal').value ? context.query.version : goals.find(row => row.id === $('discovery-goal').value)?.version) || null : null,generation,browse_requests:1};
-    if ($('discovery-form').dataset.lotSearch === 'true') Object.assign(selected, {intent:'deals',goal_id:null,goal_version:null,missing_basis:'species',focus:'all',budget:null,product_type:'mixed_lots',sort:'ending_soonest',english_vintage:false});
+    const selected = {intent,goal_id:intent === 'missing' ? $('discovery-goal').value || null : null,missing_basis:intent === 'missing' ? $('discovery-missing-basis').value : 'species',focus:$('discovery-focus').value,budget:$('discovery-budget').value.trim() || null,query:$('discovery-query').value.trim(),set_id:$('discovery-set').value || null,product_type:$('discovery-product-type').value,sort:$('discovery-sort').value,english_vintage:$('discovery-english-vintage').checked,...target,goal_version:intent === 'missing' ? (goalVersion || ($('discovery-form').dataset.lotSearch !== 'true' ? goals.find(row => row.id === $('discovery-goal').value)?.version : null)) : null,generation,browse_requests:1};
+    if ($('discovery-form').dataset.lotSearch === 'true') Object.assign(selected, {collection_intent:intent === 'missing',prefer_vintage:Boolean($('discovery-prefer-vintage').checked),currency:'USD',missing_basis:'species',product_type:'mixed_lots',sort:'ending_soonest',english_vintage:false});
     return selected;
   }
   function signature(value) {
-    return JSON.stringify({intent:value.intent || 'deals',goal_id:value.goal_id || '',missing_basis:value.missing_basis || 'species',focus:value.focus || 'all',budget:value.budget == null ? '' : String(value.budget),query:value.query || '',set_id:value.set_id || '',product_type:value.product_type || 'both',sort:value.sort || 'ending_soonest',english_vintage:value.english_vintage !== false,species:value.species || null,group_id:value.group_id || null,printing_id:value.printing_id || null,goal_version:value.goal_version || null,generation:value.generation ?? generation,browse_requests:1});
+    return JSON.stringify({prefer_vintage:Boolean(value.prefer_vintage),collection_intent:Boolean(value.collection_intent),intent:value.intent || 'deals',goal_id:value.goal_id || '',missing_basis:value.missing_basis || 'species',focus:value.focus || 'all',budget:value.budget == null ? '' : String(value.budget),query:value.query || '',set_id:value.set_id || '',product_type:value.product_type || 'both',sort:value.sort || 'ending_soonest',english_vintage:value.english_vintage !== false,species:value.species || null,group_id:value.group_id || null,printing_id:value.printing_id || null,goal_version:value.goal_version || null,generation:value.generation ?? generation,browse_requests:1});
   }
   function changed() { return captured !== null && signature(choices()) !== captured; }
   function updateButtons() {
-    $('discovery-search').disabled = !ready || revoked || acquiring;
-    $('discovery-stop').hidden = !acquiring;
-    $('discovery-stop').disabled = (!acquiring && !run?.run_id) || ['stopped','expired'].includes(run?.state) || stopWanted || revoked;
-    $('discovery-next').disabled = !run?.has_next || acquiring || changed() || revoked;
+    $('discovery-search').disabled = !ready || revoked || acquiring || uncertain || (intent === 'missing' && (!targetsReady || !target.species));
+    $('discovery-stop').hidden = !acquiring && !uncertain;
+    $('discovery-stop').disabled = (!acquiring && !run?.run_id) || ['stopped','expired'].includes(run?.state) || (stopWanted && !uncertain) || revoked;
+    $('discovery-next').disabled = !run?.has_next || acquiring || uncertain || changed() || revoked;
     $('discovery-next-note').textContent = acquiring && run?.run_id ? 'Loading more… You can keep browsing or Stop.' : changed() ? 'Select Find lots to search with these changes.' : run?.has_next ? 'More from this search.' : run ? 'You’ve reached the end of this search.' : '';
   }
   function selectionCaptions() {
@@ -105,26 +111,30 @@
     $('missing-controls').hidden = !missing;
     $('find-deals').setAttribute('aria-pressed',String(!missing));
     $('find-missing').setAttribute('aria-pressed',String(missing));
-    $('intent-description').textContent = missing ? 'Current collection · Original 151 · missing Pokémon species. Select a frozen goal or exact printings when needed.' : 'Search by name or broad words, including cards you own. Mixed lots may contain the card; contents are unverified.';
+    $('intent-description').textContent = missing ? 'Choose one missing Pokémon per search. A title mention is possible relevance, not confirmed contents or collection gain.' : 'Search by name or broad words, including cards you own. Mixed lots may contain the card; contents are unverified.';
     const goal = goals.find(item => String(item.id) === $('discovery-goal').value);
-    $('missing-basis-label').hidden = Boolean(goal);
+    $('missing-basis-label').hidden = true;
+    $('discovery-query').readOnly = missing;
+    for (const option of $('discovery-focus').options) option.disabled = missing && ['rares','bulk'].includes(option.value);
     const basis = goal?.policy || goal?.definition?.policy;
     $('missing-policy').textContent = goal ? `Frozen goal: ${goal.name}. ${basis === 'species' ? 'Missing species' : 'Missing exact printings'} use this goal’s retained membership and ownership policy.` : $('discovery-missing-basis').value === 'species' ? 'My current collection · missing Pokémon species. A collected species does not establish every edition or finish.' : 'My current collection · missing exact printings. Broad species declarations do not establish every edition or finish.';
     updateButtons();
   }
   function restoreChoices(value) {
     intent = value?.intent === 'missing' ? 'missing' : 'deals';
+    goalVersion = value?.goal_version || null;
     for (const [field,id] of Object.entries({goal_id:'discovery-goal',missing_basis:'discovery-missing-basis',focus:'discovery-focus',budget:'discovery-budget',query:'discovery-query',set_id:'discovery-set',product_type:'discovery-product-type',sort:'discovery-sort'})) {
       if (value?.[field] !== undefined && value[field] !== null) $(id).value = String(value[field]);
     }
     target = {species:value?.species || null,group_id:value?.group_id || null,printing_id:value?.printing_id || null};
     $('discovery-english-vintage').checked = value?.english_vintage !== false;
+    $('discovery-prefer-vintage').checked = Boolean(value?.prefer_vintage);
     policy();
     captured = signature(choices());
   }
   function rememberChoices(extra = {}, replace = true) {
     const selected = choices(), url = new URL(location.href);url.searchParams.delete('missing');
-    const fields = {q:selected.query,set_id:selected.set_id,intent,missing_basis:selected.missing_basis,scope:selected.focus,budget:selected.budget,product_type:selected.product_type,sort:selected.sort,english_vintage:selected.english_vintage ? '1' : '0',result_filter:$('discovery-filter').value,species:target.species,group:target.group_id,child:target.printing_id,goal:selected.goal_id,version:selected.goal_version,generation,...extra};
+    const fields = {prefer_vintage:selected.prefer_vintage ? '1' : '0',q:selected.query,set_id:selected.set_id,intent,missing_basis:selected.missing_basis,scope:selected.focus,budget:selected.budget,product_type:selected.product_type,sort:selected.sort,english_vintage:selected.english_vintage ? '1' : '0',result_filter:$('discovery-filter').value,species:target.species,group:target.group_id,child:target.printing_id,goal:selected.goal_id,version:selected.goal_version,generation,...extra};
     for (const [key,value] of Object.entries(fields)) {if (value == null || value === '') url.searchParams.delete(key);else url.searchParams.set(key,String(value));}
     if (replace) history.replaceState(null,'',url.pathname + url.search);
     return url.pathname + url.search;
@@ -142,8 +152,9 @@
     const selected = $('discovery-set').value;
     localSets = sets;
     $('discovery-set').innerHTML = '<option value="">All supported sets</option>' + sets.map(set => `<option value="${esc(set.name)}">${esc(set.name)}</option>`).join('');
+    if (selected && !sets.some(set => [set.id,set.name].includes(selected))) $('discovery-set').innerHTML += `<option value="${esc(selected)}">${esc(selected)}</option>`;
     const current = sets.find(set => [set.id,set.name].includes(selected));
-    if (current) $('discovery-set').value = current.name;
+    $('discovery-set').value = current ? current.name : selected;
     const quick = ['Base Set','Base Set 2','Jungle','Fossil','Team Rocket'];
     $('discovery-quick-sets').innerHTML = quick.filter(name => sets.some(set => set.name === name)).map(name => `<button type="button" class="secondary" data-set="${esc(name)}">${esc(name)}</button>`).join('');
     $('discovery-quick-sets').querySelectorAll('[data-set]').forEach(button => {button.setAttribute('aria-pressed',String(button.dataset.set === $('discovery-set').value));button.addEventListener('click',() => {$('discovery-set').value = button.dataset.set;target = {species:target.species,group_id:null,printing_id:null};catalogSearch();updateButtons();});});
@@ -157,13 +168,13 @@
     if (selected.goal_id && selected.goal_version) {params.set('goal',selected.goal_id);params.set('version',selected.goal_version);}
     return params;
   }
-  async function catalogSearch(more = false) {
+  async function catalogSearch(more = false, explicit = false) {
+    if (!explicit && !catalogStarted && !document.querySelector('.discovery-local').open) return;
     clearTimeout(catalogTimer);const token = ++catalogSequence;
     if (!currentAuthority()) return;
     catalogStarted = true;
     const offset = more ? catalogOffset + 40 : 0;
     $('catalog-status').textContent = 'Searching your local catalog…';$('catalog-next').disabled = true;
-    if (!more) {$('catalog-cards').replaceChildren();$('catalog-variants')?.remove();}
     try {
       const value = await request(api + 'catalog/?' + catalogParams(offset));
       if (token !== catalogSequence || revoked) return;
@@ -171,17 +182,17 @@
 
 
       const speciesMode = value.mode === 'species', rows = value.results || [];
-      const cards = rows.map(row => speciesMode ? `<article class="catalog-card"><button type="button" id="catalog-species-${row.dex}" data-species="${row.dex}" class="catalog-choice">${localImage(row.species_artwork,row.name,'species')}<span class="catalog-card-text"><strong>${esc(row.name)}</strong><span>#${String(row.dex).padStart(3,'0')} · ${row.current_present ? 'Collected species' : 'Not collected'}</span><span>${row.matching_cards} matching card references · See cards</span></span></button></article>` : `<article class="catalog-card${target.group_id === row.id ? ' selected' : ''}"><button type="button" id="catalog-${esc(row.id)}" data-group="${esc(row.id)}" class="catalog-choice">${localImage(row.reference_image,row.name,'card')}<span class="catalog-card-text"><strong>${esc(row.name)}</strong><span>${esc(row.set_name)} · #${esc(row.collector_number)}</span><span>${row.present ? 'Owned card' : 'Not owned'} · ${row.variant_count} printing${row.variant_count === 1 ? '' : 's'}</span><span>${target.group_id === row.id ? 'Selected card reference' : 'Select this card as a search target'}</span></span></button><a id="catalog-details-${esc(row.id)}" class="catalog-details" data-card-details="${esc(row.id)}" href="/card-groups/${esc(row.id)}/" aria-label="Card details for ${esc(row.name)} · ${esc(row.set_name)} #${esc(row.collector_number)}">Card details</a></article>`).join('');
+      const cards = rows.map(row => speciesMode ? `<article class="catalog-card"><button type="button" id="catalog-species-${row.dex}" data-species="${row.dex}" class="catalog-choice">${localImage(row.species_artwork,row.name,'species')}<span class="catalog-card-text"><strong>${esc(row.name)}</strong><span>#${String(row.dex).padStart(3,'0')} · ${row.current_present ? 'Collected species' : 'Not collected'}</span><span>${row.matching_cards} matching card references · See cards</span></span></button></article>` : `<article class="catalog-card${target.group_id === row.id ? ' selected' : ''}"><button type="button" id="catalog-${esc(row.id)}" data-group="${esc(row.id)}" class="catalog-choice">${localImage(row.reference_image,row.name,'card')}<span class="catalog-card-text"><strong>${esc(row.name)}</strong><span>${esc(row.set_name)} · #${esc(row.collector_number)}</span><span>${row.present ? 'Owned card' : 'Not owned'} · ${row.variant_count} printing${row.variant_count === 1 ? '' : 's'}</span><span>${intent === 'missing' ? 'Reference only · keep your selected Pokémon' : target.group_id === row.id ? 'Selected card reference' : 'Select this card as a search target'}</span></span></button><a id="catalog-details-${esc(row.id)}" class="catalog-details" data-card-details="${esc(row.id)}" href="/card-groups/${esc(row.id)}/" aria-label="Card details for ${esc(row.name)} · ${esc(row.set_name)} #${esc(row.collector_number)}">Card details</a></article>`).join('');
       if (more) $('catalog-cards').insertAdjacentHTML('beforeend',cards);else $('catalog-cards').innerHTML = cards || '<p class="catalog-empty">No local matches in this scope. Try another Pokémon, set or number. You can still submit a supported eBay search.</p>';
       $('catalog-variants')?.remove();
       if (target.group_id && Array.isArray(value.variants) && value.variants.length) {
         const area = document.createElement('div');area.id = 'catalog-variants';area.innerHTML = `<label for="catalog-printing-select">Exact printing <span class="optional">optional</span><select id="catalog-printing-select"><option value="">No exact printing selected</option>${value.variants.filter(row => row.available).map(row => `<option value="${esc(row.id)}">${esc(row.label || row.id)}</option>`).join('')}</select></label><p id="catalog-printing-caption" class="selection-caption"></p><p class="field-help">The image is a card reference scan. Exact edition/finish imagery is unavailable. Selecting a card does not choose its first printing.</p>`;$('catalog-cards').after(area);$('catalog-printing-select').value = target.printing_id || '';const printingCaption = () => {$('catalog-printing-caption').textContent = value.variants.find(row => row.id === target.printing_id)?.label || 'No exact printing selected';};printingCaption();$('catalog-printing-select').addEventListener('change',() => {target.printing_id = $('catalog-printing-select').value || null;printingCaption();rememberChoices();updateButtons();});
       }
       catalogOffset = offset;catalogHasMore = Boolean(value.has_more);$('catalog-next').hidden = !catalogHasMore;$('catalog-next').disabled = false;
-      $('catalog-clear-target').hidden = !target.species && !target.group_id;
+      $('catalog-clear-target').hidden = intent === 'missing' || !target.species && !target.group_id;
       $('catalog-status').textContent = `${value.total} ${speciesMode ? 'Pokémon' : 'card reference'} match${value.total === 1 ? '' : 'es'} · local catalog only${value.number_note ? '. ' + value.number_note : ''}`;
       $('catalog-cards').querySelectorAll('[data-species]').forEach(button => button.addEventListener('click',() => {target = {species:Number(button.dataset.species),group_id:null,printing_id:null};catalogSearch();updateButtons();}));
-      $('catalog-cards').querySelectorAll('[data-group]').forEach(button => button.addEventListener('click',() => {target = {species:null,group_id:button.dataset.group,printing_id:null};const row = rows.find(item => item.id === button.dataset.group);if (row) {$('discovery-query').value = row.name + ' ' + row.collector_number;$('discovery-set').value = row.set_name;}catalogSearch();updateButtons();}));
+      $('catalog-cards').querySelectorAll('[data-group]').forEach(button => {button.disabled = intent === 'missing';button.addEventListener('click',() => {if(intent === 'missing') return;target = {species:null,group_id:button.dataset.group,printing_id:null};const row = rows.find(item => item.id === button.dataset.group);if (row) {$('discovery-query').value = row.name + ' ' + row.collector_number;$('discovery-set').value = row.set_name;}catalogSearch();updateButtons();});});
       $('catalog-cards').querySelectorAll('[data-card-details]').forEach(anchor => {
         const destination = (replace = false) => {
           const id = anchor.dataset.cardDetails, params = new URLSearchParams({generation:String(generation),return:rememberChoices({focus:anchor.id,scroll:Math.min(10000000,Math.max(0,Math.round(window.scrollY)))},replace)});
@@ -196,7 +207,7 @@
       if (!more && (target.species || target.group_id)) $('catalog-results-title').focus({preventScroll:true});
     } catch (error) {if (token === catalogSequence && !revoked) {$('catalog-status').textContent = error.message;$('catalog-next').disabled = false;}}
   }
-  function queueCatalog() { ++catalogSequence;clearTimeout(catalogTimer);$('catalog-cards').replaceChildren();$('catalog-variants')?.remove();$('catalog-status').textContent = 'Searching your local catalog…';catalogTimer = setTimeout(() => catalogSearch(),180); }
+  function queueCatalog() { if (!catalogStarted && !document.querySelector('.discovery-local').open) return; ++catalogSequence;clearTimeout(catalogTimer);$('catalog-cards').replaceChildren();$('catalog-variants')?.remove();$('catalog-status').textContent = 'Searching your local catalog…';catalogTimer = setTimeout(() => catalogSearch(),180); }
   function clearResults(value = run) {
     if (!Array.isArray(value?.results)) return;
     for (const result of value.results) for (const key of Object.keys(result)) delete result[key];
@@ -277,7 +288,7 @@
     const sellerUrl = link(result.item_url, true);
     const seller = `${sellerUrl ? `<a href="${esc(sellerUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Open seller listing on eBay">View on eBay</a>` : '<p>Seller link unavailable.</p>'}`;
     const time = auction ? `<p data-auction-end="${esc(result.ends_at || '')}">${esc(window.DexDiscoveryDisplay?.auctionTime(result.ends_at) || 'Auction · end time unknown')}</p>` : '';
-    return `<article class="discovery-card" id="offer-${esc(result.id)}" tabindex="-1" data-result="${esc(result.id)}"><div class="discovery-card-heading">${image}<div><h3>${esc(result.title || identity.name || candidateLabel)}</h3>${identity.name ? `<p>Proposed: ${esc(identity.name)}</p>` : ''}${metadata ? `<p class="identity-meta">${esc(metadata)}</p>` : ''}${comparable || conditional ? `<span class="discovery-classification"${$('discovery-form').dataset.lotSearch === 'true' ? ' hidden' : ''}>${esc(classification)}</span>` : ''}</div></div><dl class="discovery-amounts"><div><dt>${auction ? 'Current bid' : 'Listing price'}</dt><dd class="${result.listing_price == null ? 'is-unknown' : ''}">${esc(money(result.listing_price))}</dd></div><div><dt>Shipping</dt><dd class="${result.shipping == null ? 'is-unknown' : ''}">${esc(money(result.shipping))}</dd></div><div><dt>Delivered · before tax</dt><dd class="${result.delivered_total == null ? 'is-unknown' : ''}">${esc(money(result.delivered_total))}</dd></div></dl>${time}<div class="seller">${seller}<a class="review-offer" data-review-id="${esc(result.id)}" href="/shopping/check/?discovery_run=${encodeURIComponent(run.run_id)}&amp;item_id=${encodeURIComponent(result.id)}">Assess lot</a></div><details hidden><summary>Comparison & listing details</summary>${result.reason ? `<p>${esc(result.reason)}</p>` : ''}${referenceHtml}${result.save_reason ? `<p>${esc(result.save_reason)}</p>` : ''}</details></article>`;
+    return `<article class="discovery-card" id="offer-${esc(result.id)}" tabindex="-1" data-result="${esc(result.id)}"><div class="discovery-card-heading">${image}<div><h3>${esc(result.title || identity.name || candidateLabel)}</h3>${identity.name ? `<p>Proposed: ${esc(identity.name)}</p>` : ''}${metadata ? `<p class="identity-meta">${esc(metadata)}</p>` : ''}${comparable || conditional ? `<span class="discovery-classification"${$('discovery-form').dataset.lotSearch === 'true' ? ' hidden' : ''}>${esc(classification)}</span>` : ''}</div></div><dl class="discovery-amounts"><div><dt>${auction ? 'Current bid' : 'Listing price'}</dt><dd class="${result.listing_price == null ? 'is-unknown' : ''}">${esc(money(result.listing_price))}</dd></div><div><dt>Shipping</dt><dd class="${result.shipping == null ? 'is-unknown' : ''}">${esc(money(result.shipping))}</dd></div><div><dt>Delivered · before tax</dt><dd class="${result.delivered_total == null ? 'is-unknown' : ''}">${esc(money(result.delivered_total))}</dd></div></dl>${time}<p>Seller summary: possible relevance only. Contents, unique new species and value are unconfirmed.</p><div class="seller">${seller}<a class="review-offer" data-review-id="${esc(result.id)}" href="/shopping/check/?discovery_run=${encodeURIComponent(run.run_id)}&amp;item_id=${encodeURIComponent(result.id)}">Assess lot</a></div><details hidden><summary>Comparison & listing details</summary>${result.reason ? `<p>${esc(result.reason)}</p>` : ''}${referenceHtml}${result.save_reason ? `<p>${esc(result.save_reason)}</p>` : ''}</details></article>`;
   }
 
   function renderCards() {
@@ -285,7 +296,7 @@
     const results = Array.isArray(run?.results) ? run.results : [];
     const filter = $('discovery-form').dataset.lotSearch === 'true' ? 'all' : $('discovery-filter').value;
     const rows = results.filter(result => filter === 'all' || filter === 'below' && below(result) || filter === result.classification);
-    $('discovery-shown').textContent = `${rows.length} of ${results.length} results${filter === 'all' ? '' : ' · ' + ({below:'Comparable · below reference',conditional:'Conditional comparisons',unpriced:'Unpriced or ambiguous'}[filter] || '')}`;
+    $('discovery-shown').textContent = run?.coverage ? `${rows.length} shown · ${run.coverage.received} summaries received · ${run.coverage.filtered} filtered locally. Limited provider coverage; unknown costs are not zero.` : `${rows.length} of ${results.length} results${filter === 'all' ? '' : ' · ' + ({below:'Comparable · below reference',conditional:'Conditional comparisons',unpriced:'Unpriced or ambiguous'}[filter] || '')}`;
     const markup = rows.map(card).join('') || `<div class="discovery-empty"><h3>${results.length ? 'No results match this filter' : acquiring ? 'Searching this small batch…' : 'No listings to show'}</h3><p>${results.length ? 'Choose All results to see the other listings.' : acquiring ? 'You can stop acquisition at any time.' : 'Try different keywords or filters, or choose More results when available. No new search starts automatically.'}</p></div>`;
     if (window.DexDiscoveryDisplay) window.DexDiscoveryDisplay.patch($('discovery-cards'),markup);else $('discovery-cards').innerHTML = markup;
     $('discovery-cards').querySelectorAll('[data-result]').forEach(card => { const id = run?.run_id; window.DexInterpretation?.mount(card, {kind:'discovery',run_id:id,result_id:card.dataset.result}, () => currentAuthority() && run?.run_id === id && !['stopped','expired'].includes(run?.state) && !changed()); });
@@ -308,6 +319,7 @@
   function rememberRun(id) {
     if (typeof id !== 'string' || !/^[0-9a-f-]{36}$/i.test(id)) return;
     const url = new URL(location.href);url.searchParams.set('run_id',id);
+    url.searchParams.delete('request_id');actionId = null;uncertain = false;
     history.replaceState(null,'',url.pathname + url.search);
   }
   function schedule(token) {
@@ -315,19 +327,21 @@
     if (!acquiring || revoked || stopWanted) return;
     timer = setTimeout(async () => {
       try {
-        const value = await request(api + '?run_id=' + encodeURIComponent(run.run_id));
+        const value = await request(api + '?run_id=' + encodeURIComponent(run.run_id) + receiptView());
         if (sequence !== token || revoked || stopWanted) return;
         render(value);schedule(token);
       } catch (error) {
         if (sequence !== token || revoked || stopWanted) return;
-        clearTimeout(timer);status(error.message + ' Acquisition status is unknown; use Stop before starting another search.',true);
+        clearTimeout(timer);uncertain = true;status(error.message + ' Acquisition status is unknown. Reload this section or use Stop.',true);$('discovery-reload').hidden = false;updateButtons();
       }
     },650);
   }
   async function start(next = false) {
-    if (acquiring || revoked || !ready || next && (!run?.has_next || changed())) return;
+    if (acquiring || uncertain || revoked || !ready || next && (!run?.has_next || changed())) return;
     const prior = run, selected = choices();
+    if ($('discovery-form').dataset.lotSearch === 'true' && intent === 'missing' && (!targetsReady || !target.species)) return;
     if (!next && $('discovery-form').dataset.lotSearch === 'true' && !selected.query) {status('Enter a Pokémon or card name.');$('discovery-query').focus();return;}
+    captured = next ? captured : signature(selected);
     const token = ++sequence;
     const keepBrowsing = next && Boolean(prior.choices?.query);
     focusResults = !next;
@@ -337,8 +351,12 @@
     clearTimeout(timer);updateButtons();
     status(next ? 'Starting the next results batch…' : 'Starting search…');
     try {
-      const value = await request(api,next ? {continuation_run:prior.run_id} : selected);
+      actionId = crypto.randomUUID();uncertain = true;admissionPending = true;
+      const destination = new URL(location.href);destination.searchParams.set('request_id',actionId);
+      history.replaceState(null,'',destination.pathname + destination.search);
+      const value = await request(api,next ? {continuation_run:prior.run_id} : selected,actionId);
       if (sequence !== token || revoked) return;
+      admissionPending = false;
       // Admission acknowledges the same named run without reprojecting listings.
       // Keep its received page under the original deadline while polling; local
       // reference expiry/withdrawal checks continue on these visible results.
@@ -349,39 +367,58 @@
       render(value);schedule(token);
     } catch (error) {
       if (sequence !== token || revoked) return;
-      acquiring = false;stopWanted = false;status(error.message,true);updateButtons();
+      admissionPending = false;
+      if (error.category === 'not_dispatched') {
+        acquiring = false;uncertain = false;stopWanted = false;actionId = null;
+        const destination = new URL(location.href);destination.searchParams.delete('request_id');
+        history.replaceState(null,'',destination.pathname + destination.search);
+        status(error.message + ' Select Find lots when you are ready to try again.',true);
+      } else {
+        uncertain = true;acquiring = true;
+        status('The search response was lost or unavailable. Its outcome is unknown. Reload this section to check; no new search will be sent.',true);
+        $('discovery-reload').hidden = false;
+      }
+      updateButtons();
     }
   }
   async function stop() {
     if ((!acquiring && !run?.run_id) || revoked) return;
     stopWanted = true;clearTimeout(timer);updateButtons();status('Stopping search…');
+    if (admissionPending) {
+      if (!run?.run_id) return;
+      // Named More keeps the original handle. Stop it even if the page
+      // acknowledgement is pending. Its late response belongs to the old sequence.
+      rememberRun(run.run_id);admissionPending = false;
+    }
+    if (uncertain && actionId) {await reloadRun();return;}
     if (!run?.run_id) return;
     const token = ++sequence;
     try {
       const value = await request(api + encodeURIComponent(run.run_id) + '/stop/',{});
       if (sequence !== token || revoked) return;
-      render(value);stopWanted = false;updateButtons();
+      uncertain = false;render(value);stopWanted = false;updateButtons();
     } catch (error) {
       if (sequence !== token || revoked) return;
-      stopWanted = false;status(error.message + ' Stop was not confirmed. Use Stop again.',true);updateButtons();
+      stopWanted = false;uncertain = true;status(error.message + ' Stop was not confirmed. Use Stop again.',true);updateButtons();
     }
   }
   function invalidate() {
-    revoked = true;++catalogSequence;clearTimeout(catalogTimer);$('catalog-cards').replaceChildren();++sequence;clearTimeout(timer);clearInterval(lifecycleTimer);clearResults();run = null;captured = null;
+    revoked = true;++targetSequence;$('discovery-target').replaceChildren();$('discovery-goal').replaceChildren();goals=[];target={species:null,group_id:null,printing_id:null};$('discovery-query').value='';document.querySelector('.discovery-context')?.replaceChildren();$('discovery-context').textContent='{}';$('discovery-goals').textContent='[]';$('discovery-initial').textContent='{}';targetsReady = false;++catalogSequence;clearTimeout(catalogTimer);$('catalog-cards').replaceChildren();++sequence;clearTimeout(timer);clearInterval(lifecycleTimer);clearResults();run = null;captured = null;
     $('discovery-cards').replaceChildren();$('discovery-results').hidden = true;
     status('Your session changed. Sign in again to continue.',true);updateButtons();
   }
   $('discovery-form').addEventListener('submit',event => {event.preventDefault();rememberChoices();start();});
-  $('catalog-search').addEventListener('click',() => catalogSearch());
+  $('catalog-search').addEventListener('click',() => catalogSearch(false,true));
   $('catalog-next').addEventListener('click',() => {if (catalogHasMore) catalogSearch(true);});
   $('catalog-clear-target').addEventListener('click',() => {target = {species:null,group_id:null,printing_id:null};catalogSearch();updateButtons();});
-  $('find-deals').addEventListener('click',() => {intent = 'deals';policy();catalogSearch();});
-  $('find-missing').addEventListener('click',() => {intent = 'missing';if (!$('discovery-goal').value) {$('discovery-focus').value = 'kanto';$('discovery-missing-basis').value = 'species';}policy();catalogSearch();});
+  $('find-deals').addEventListener('click',() => {intent = 'deals';++targetSequence;target = {species:null,group_id:null,printing_id:null};policy();rememberChoices();});
+  $('find-missing').addEventListener('click',() => {intent = 'missing';if (!$('discovery-goal').value) {$('discovery-focus').value = 'kanto';$('discovery-missing-basis').value = 'species';}policy();loadTargets();});
   $('discovery-stop').addEventListener('click',stop);
   $('discovery-next').addEventListener('click',() => start(true));
   $('discovery-filter').addEventListener('change',() => {renderCards();rememberChoices();});
-  $('discovery-form').addEventListener('input',policy);
-  $('discovery-form').addEventListener('change',event => {policy();if (['discovery-set','discovery-goal','discovery-missing-basis','discovery-focus'].includes(event.target.id)) {if (event.target.id === 'discovery-goal' && $('discovery-goal').value) $('discovery-focus').value = 'all';if (event.target.id === 'discovery-set') target = {species:target.species,group_id:null,printing_id:null};catalogSearch();}});
+  $('discovery-form').addEventListener('input',() => {policy();rememberChoices();});
+  $('discovery-form').addEventListener('change',event => {policy();if (['discovery-set','discovery-goal','discovery-missing-basis','discovery-focus'].includes(event.target.id)) {if (event.target.id === 'discovery-goal') {goalVersion = goals.find(row => row.id === $('discovery-goal').value)?.version || null;if ($('discovery-goal').value) $('discovery-focus').value = 'all';}if (intent === 'missing' && ['discovery-goal','discovery-focus'].includes(event.target.id)) loadTargets();if (event.target.id === 'discovery-set') target = {species:target.species,group_id:null,printing_id:null};catalogSearch();}});
+  $('discovery-form').addEventListener('change',() => rememberChoices());
   let dismissedSpelling = '';
   function spelling() {
     const value = $('discovery-query').value;
@@ -399,6 +436,7 @@
   lifecycleTimer = setInterval(() => {if (pruneLocal()) renderCards();window.DexDiscoveryDisplay?.tick($('discovery-cards'));checkSources();},1000);
   for (const [field,id] of Object.entries({q:'discovery-query',scope:'discovery-focus',missing_basis:'discovery-missing-basis',budget:'discovery-budget',product_type:'discovery-product-type',sort:'discovery-sort'})) if (initial[field] !== undefined) $(id).value = initial[field];
   if (intent === 'missing' && !initial.scope && !initial.goal) $('discovery-focus').value = 'kanto';
+  if (initial.prefer_vintage !== undefined) $('discovery-prefer-vintage').checked = initial.prefer_vintage === '1';
   if (initial.english_vintage !== undefined) $('discovery-english-vintage').checked = initial.english_vintage === '1';
   populateSets(initial.set_id ? [{id:initial.set_id,name:initial.set_id}] : []);
   if (initial.set_id) $('discovery-set').value = initial.set_id;
@@ -412,46 +450,107 @@
     ['discovery-set','discovery-product-type','discovery-focus','discovery-goal'].forEach(id => captions.observe($(id)));
   }
   policy();spelling();
-  (async () => {
-    const token = sequence;
+  $('find-deals').disabled = false;$('find-missing').disabled = false;
+  async function loadOptions() {
+    $('discovery-options-reload').hidden = true;
     try {
-      // Start local revalidation alongside independent options, not after them.
-      // Capture failure immediately so an early rejected read is never unhandled.
-      const options = request(api);
-      const runId = initial.run_id;
-      const restoring = runId && /^[0-9a-f-]{36}$/i.test(runId);
-      const restored = restoring ? request(api + '?run_id=' + encodeURIComponent(runId)).then(value => ({value}),error => ({error})) : null;
-      const metadata = await options;
-      if (sequence !== token || revoked) return;
+      const metadata = await request(api);
+      if (!currentAuthority()) return;
+      // Preserve edits made while these optional choices were loading.
+      const selectedGoal = $('discovery-goal').value;
       goals = Array.isArray(metadata.goals) ? metadata.goals : [];
       $('discovery-goal').innerHTML = '<option value="">My current collection</option>' + goals.map(goal => `<option value="${esc(goal.id)}">Frozen goal · ${esc(goal.name)}</option>`).join('');
+      if (selectedGoal && !goals.some(g => g.id === selectedGoal)) $('discovery-goal').add(new Option('Retained goal unavailable',selectedGoal));
+      $('discovery-goal').value = selectedGoal;
       ready = Boolean(metadata.provider?.enabled && metadata.provider?.configured);
-      policy();status(ready ? '' : metadata.note || metadata.reason || metadata.provider?.note || metadata.provider?.reason || 'eBay search is unavailable for this installation.');
-      if (initial.goal) $('discovery-goal').value = initial.goal;
       populateSets(metadata.sets);policy();
-      if (restoring) {
-        status('Restoring your search…');
-        const response = await restored;
-        if (response.error) throw response.error;
-        const value = response.value;
-        if (sequence !== token || revoked) return;
-        restoreChoices(value.choices);render(value);schedule(token);
-        for (const [field,id] of Object.entries({q:'discovery-query',scope:'discovery-focus',missing_basis:'discovery-missing-basis',budget:'discovery-budget',product_type:'discovery-product-type',sort:'discovery-sort'})) if (initial[field] !== undefined) $(id).value = initial[field];
-        if (initial.intent) intent = initial.intent;
-        if (initial.goal) $('discovery-goal').value = initial.goal;
-        if (initial.english_vintage !== undefined) $('discovery-english-vintage').checked = initial.english_vintage === '1';
-        target = {species:context.species || null,group_id:context.group || null,printing_id:context.child || null};
-        if (initial.set_id) $('discovery-set').value = localSets.find(row => [row.id,row.name].includes(initial.set_id))?.name || initial.set_id;
-        policy();
-        if (initial.result_filter) $('discovery-filter').value = initial.result_filter;
-        renderCards();
+      $('discovery-options-status').textContent = ready ? '' : 'eBay search is unavailable for this installation.';
+    } catch (error) {
+      if (!currentAuthority()) return;
+      $('discovery-options-status').textContent = 'Search options could not be loaded. Your current inputs and results remain available.';
+      $('discovery-options-reload').hidden = false;
+    }
+  }
+  async function reloadRun() {
+    const token = sequence, runId = run?.run_id || initial.run_id;
+    const restoreInput = !run && captured === null, inputBefore = signature(choices());
+    $('discovery-reload').hidden = true;
+    if (!actionId && !runId) return;
+    try {
+      const value = await request(api + '?' + (actionId ? 'request_id=' + encodeURIComponent(actionId) : 'run_id=' + encodeURIComponent(runId)) + receiptView());
+      if (sequence !== token || !currentAuthority()) return;
+      if (value.outcome_unknown) {
+        uncertain = true;acquiring = true;stopWanted = false;
+        status('The search outcome is still unknown. Reload this section later. A missing status does not mean the request was unused; a new search is disabled.',true);
+        $('discovery-reload').hidden = false;updateButtons();return;
       }
-      // Restore received offers and the reading position before optional local
-      // catalog work. No provider content is cached across navigation.
+      rememberRun(value.run_id);run = value;
+      if (stopWanted) {await stop();return;}
+      const restore = restoreInput && inputBefore === signature(choices());
+      if (restore) restoreChoices(value.choices);
+      render(value);schedule(token);
+      if (restore) {
+      for (const [field,id] of Object.entries({q:'discovery-query',scope:'discovery-focus',missing_basis:'discovery-missing-basis',budget:'discovery-budget',product_type:'discovery-product-type',sort:'discovery-sort'})) if (initial[field] !== undefined) $(id).value = initial[field];
+      if (initial.intent) intent = initial.intent;
+      if (initial.goal) {$('discovery-goal').value = initial.goal;goalVersion = initial.version || null;}
+      if (initial.prefer_vintage !== undefined) $('discovery-prefer-vintage').checked = initial.prefer_vintage === '1';
+  if (initial.english_vintage !== undefined) $('discovery-english-vintage').checked = initial.english_vintage === '1';
+      if (initial.species || initial.group) target = {species:context.species || null,group_id:context.group || null,printing_id:context.child || null};
+      if (initial.set_id) $('discovery-set').value = localSets.find(row => [row.id,row.name].includes(initial.set_id))?.name || initial.set_id;
+      policy();
+      if (initial.result_filter) $('discovery-filter').value = initial.result_filter;
+      renderCards();
+      if (intent === 'missing' && !targetsReady) loadTargets();
+      }
       requestAnimationFrame(() => {if (!currentAuthority()) return;if (initial.scroll) window.scrollTo(0,Number(initial.scroll));if (initial.focus) $(initial.focus)?.focus({preventScroll:true});});
-      // A closed local explorer does not need another all-catalog ownership read.
-      // Opening it explicitly still uses the ordinary checked local service.
-      if (!catalogStarted && (!restoring || document.querySelector('.discovery-local').open)) await catalogSearch();
-    } catch (error) { if (sequence === token && !revoked) status(error.message,true); }
-  })();
+    } catch (error) {
+      if (sequence !== token || !currentAuthority()) return;
+      uncertain = true;acquiring = true;stopWanted = false;
+      status(error.message + ' Search status is unknown. Reload this section; no new search will be sent.',true);
+      $('discovery-reload').hidden = false;updateButtons();
+    }
+  }
+  async function loadTargets() {
+    if ($('discovery-form').dataset.lotSearch !== 'true') return;
+    const token = ++targetSequence, selected = choices();targetsReady = false;$('discovery-target').disabled = true;updateButtons();
+    $('discovery-target-status').textContent = 'Loading missing Pokémon…';
+    $('discovery-target-reload').hidden = true;
+    const params = new URLSearchParams({scope:selected.focus,generation:String(generation)});
+    if (selected.goal_id) {params.set('goal',selected.goal_id);params.set('version',selected.goal_version || '');}
+    try {
+      const value = await request(api + 'targets/?' + params);
+      if (token !== targetSequence || !currentAuthority() || intent !== 'missing') return;
+      const retained = target.species;
+      $('discovery-target').innerHTML = '<option value="">Choose one Pokémon</option>' + value.targets.map(row => `<option value="${row.species}">${esc(row.name)}</option>`).join('');
+      if (retained && value.targets.some(row => row.species === retained)) $('discovery-target').value = String(retained);
+      else {target = {species:null,group_id:null,printing_id:null};$('discovery-query').value = '';}
+      targetsReady = true;$('discovery-target').disabled = false;
+      $('discovery-target-status').textContent = value.targets.length ? 'Select one target. No search starts automatically.' : 'No missing Pokémon in this scope.';
+      updateButtons();
+    } catch (error) {
+      if (token !== targetSequence || !currentAuthority()) return;
+      $('discovery-target-status').textContent = error.message;
+      $('discovery-target-reload').hidden = false;updateButtons();
+    }
+  }
+  $('discovery-target').addEventListener('keydown',event => {if(event.key === 'Enter') event.preventDefault();});
+  $('discovery-target').addEventListener('change',() => {
+    target = {species:Number($('discovery-target').value) || null,group_id:null,printing_id:null};
+    $('discovery-query').value = target.species ? $('discovery-target').selectedOptions[0].text : '';
+    policy();rememberChoices();
+  });
+  $('discovery-target-reload').addEventListener('click',loadTargets);
+  $('discovery-options-reload').addEventListener('click',loadOptions);
+  $('discovery-reload').addEventListener('click',reloadRun);
+  if (initial.run_id || actionId) {
+    uncertain = true;
+    acquiring = true;
+    updateButtons();
+    // Dispatch the receipt first on the shared local admission lane.
+    // Optional sections can still recover independently of its response.
+    reloadRun();
+  }
+  if (intent === 'missing') loadTargets();
+  loadOptions();
+  if (!catalogStarted && document.querySelector('.discovery-local').open) catalogSearch();
 })();

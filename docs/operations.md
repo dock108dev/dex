@@ -29,6 +29,31 @@ rollback uses current compatible data; never restore older independent acquisiti
 journals, revocations or reservations to regain capacity. Schema changes need their
 own migration/restore procedure and are not ordinary startup steps.
 
+## Shopping owner review after delivery
+
+Release and customer installation remain held pending qualification and delivery
+approval. Local passing checks do not waive historical performance holds or establish
+installed behavior. Verify the delivered runtime, original root and listening process
+using the [existing-installation procedure](local-development.md#existing-installations).
+Use ordinary sign-in and the real current collection. Record missing offers or eligible
+references explicitly; any new search needs separately authorized finite acquisition.
+Preserve original leases, acquisition accounting and independent revocations.
+
+After delivery, let the owner complete this task without coaching:
+
+1. Select a missing Pokémon or frozen goal, an all-in USD budget and filters in Shopping.
+2. Assess a lot. Explain possible collection gain, supported printing identities and
+   quantities, and unresolved seller claims. Correct identities only when justified.
+3. Enter a planned bid and known costs. Explain the applicable sources, dates and
+   conditions, and the conditional maximum bid or its specific blocker.
+4. Open the seller tab, return to Dex, then go Back. Check revalidation, preserved
+   target/goal/budget/edits and focus; repeat with a frozen goal when available.
+
+Record the runtime, available evidence, the owner's answers, elapsed search/assessment/
+Compare/return times, retries, corrections and any help required. An unavailable-only
+comparison does not qualify the real-lot decision. Obtain an explicit owner disposition;
+engineering fixture results do not substitute for it.
+
 ## Everyday Hunter policy
 
 An owner selects enabled/paused state, per-Hunt and shared daily limits, timezone,
@@ -544,10 +569,12 @@ contract='hunt-09-daily-v1')` only when the current binding and acquisition cont
 match. The appended event preserves policy revisions, parent IDs, debits, expiry
 and Stop choices. Never rewrite fixed allowances to renew consumed capacity.
 
-Account storage schema 2 adds a bounded display index; see
-[the account guide](account-reads.md#account-storage-schema-2). Stop the server,
-back up the database, run the selected runtime's account `migrate` command, and
-check readiness before restarting. Valid prepared rows and seals are preserved.
-Older runtimes expecting schema 1 are not compatible without an explicit reviewed
-schema transition. Do not restore older collections or independent journals as a
-shortcut to code rollback.
+Account storage schema 3 adds the Shopping name index and requires explicit account
+preparation; the catalog representation also adds indexed Shopping number words.
+See [the account guide](account-reads.md#account-storage-schema-3) for the
+supported additive transition, preparation order and rollback boundary. Stop the
+server and retain a consistent protected backup before authorized delivery. Older
+runtime/schema combinations are not interchangeable. Never restore older collections
+or independent journals as a shortcut to code rollback. Source qualification has not installed or migrated this successor.
+
+Current source adds the separate [schema 4 correction picker](account-reads.md#account-storage-schema-4). A future qualified successor must explicitly migrate and prepare it under the new account policy. Do not treat schema 3 readiness as schema 4 readiness or run this transition on the customer root as part of isolated testing. Historical performance holds remain open; current passing checks do not waive them.

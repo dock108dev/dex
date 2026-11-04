@@ -4,8 +4,8 @@ from django.db import connection, transaction
 
 from . import collection, store
 
-VERSION = 2
-POLICY = "effective-collection-2-goal-headers"
+VERSION = 4
+POLICY = "effective-collection-4-shopping-contents"
 SCOPE_FIELDS = (
     "set_id TEXT,set_name TEXT,era TEXT,type TEXT,rarity TEXT,finish TEXT,card TEXT,start TEXT,end TEXT"
 )
@@ -28,7 +28,15 @@ TABLES = {
 }
 TRIGGERS = tuple(
     f"{table}_{event}"
-    for table in (*TABLES, "ar_catalog", "ar_scope_catalog", "ar_scope_date_counts", "ar_scope_options")
+    for table in (
+        *TABLES,
+        "ar_catalog",
+        "ar_scope_catalog",
+        "ar_scope_date_counts",
+        "ar_scope_options",
+        "ar_shopping_names",
+        "ar_shopping_picker",
+    )
     for event in ("insert", "update", "delete")
 )
 
@@ -42,10 +50,11 @@ def migrate():
             raise ValueError("Migrate shared catalog reads first")
         if "account_read_schema" in tables:
             version = store.rows("SELECT version FROM account_read_schema")
-            if version not in ([{"version": 1}], [{"version": VERSION}]):
+            if version not in ([{"version": 1}], [{"version": 2}], [{"version": 3}], [{"version": VERSION}]):
                 raise ValueError("Incompatible account read schema")
             display_index(cursor)
-            if version == [{"version": 1}]:
+            shopping_index(cursor)
+            if version != [{"version": VERSION}]:
                 cursor.execute("UPDATE account_read_schema SET version=%s", [VERSION])
             return
         cursor.execute("CREATE TABLE account_read_schema(version INTEGER PRIMARY KEY)")
@@ -142,6 +151,30 @@ def migrate():
                     f"CREATE TRIGGER {table}_{event.lower()} AFTER {event} ON {table} BEGIN UPDATE account_read_state SET status='corrupt' WHERE status='ready'; END"
                 )
         display_index(cursor)
+        shopping_index(cursor)
+
+
+def shopping_index(cursor):
+    """Explicit additive migration; never run during a Shopping request."""
+    cursor.execute(
+        "CREATE TABLE IF NOT EXISTS ar_shopping_names(build INTEGER,anchor TEXT,name TEXT,printing_id TEXT,ordinal INTEGER,PRIMARY KEY(build,anchor,name,printing_id)) WITHOUT ROWID"
+    )
+    cursor.execute("CREATE INDEX IF NOT EXISTS ar_shopping_name ON ar_shopping_names(build,name,printing_id)")
+    cursor.execute(
+        "CREATE TABLE IF NOT EXISTS ar_shopping_picker(build INTEGER,id TEXT,ordinal INTEGER,rank_set INTEGER,search TEXT,pokemon INTEGER,standard INTEGER,published INTEGER,PRIMARY KEY(build,id)) WITHOUT ROWID"
+    )
+    cursor.execute(
+        "CREATE INDEX IF NOT EXISTS ar_shopping_picker_order ON ar_shopping_picker(build,published,pokemon,ordinal,standard,rank_set,search,id)"
+    )
+    for event in ("INSERT", "UPDATE", "DELETE"):
+        cursor.execute(
+            f"CREATE TRIGGER IF NOT EXISTS ar_shopping_picker_{event.lower()} AFTER {event} ON ar_shopping_picker BEGIN UPDATE account_read_state SET status='corrupt' WHERE status='ready'; END"
+        )
+
+    for event in ("INSERT", "UPDATE", "DELETE"):
+        cursor.execute(
+            f"CREATE TRIGGER IF NOT EXISTS ar_shopping_names_{event.lower()} AFTER {event} ON ar_shopping_names BEGIN UPDATE account_read_state SET status='corrupt' WHERE status='ready'; END"
+        )
 
 
 def display_index(cursor):
@@ -154,18 +187,23 @@ def display_index(cursor):
     )
 
 
+CHECK_COLUMNS = (
+    "(SELECT version FROM account_read_schema) AS account_schema_version, (SELECT COUNT(*) FROM account_read_schema) AS account_schema_versions, (SELECT COUNT(*) FROM sqlite_master WHERE type='trigger' AND name IN ("
+    + ",".join(["%s"] * len(TRIGGERS))
+    + ")) AS account_triggers, (SELECT COUNT(*) FROM sqlite_master WHERE type='index' AND name='ar_group_display' AND tbl_name='ar_groups') AS display_index"
+)
+
+
 def check():
+    validate_schema(store.rows("SELECT " + CHECK_COLUMNS, TRIGGERS)[0])
+
+
+def validate_schema(found):
     from .catalog_read_build import Unavailable
 
-    found = store.rows(
-        "SELECT (SELECT version FROM account_read_schema) AS version, (SELECT COUNT(*) FROM sqlite_master WHERE type='trigger' AND name IN ("
-        + ",".join(["%s"] * len(TRIGGERS))
-        + ")) AS triggers, (SELECT COUNT(*) FROM sqlite_master WHERE type='index' AND name='ar_group_display' AND tbl_name='ar_groups') AS display_index",
-        TRIGGERS,
-    )[0]
-    if found["version"] != VERSION:
+    if found["account_schema_version"] != VERSION or found["account_schema_versions"] != 1:
         raise Unavailable("incompatible_schema")
-    if found["triggers"] != len(TRIGGERS) or found["display_index"] != 1:
+    if found["account_triggers"] != len(TRIGGERS) or found["display_index"] != 1:
         raise Unavailable("account_schema_infrastructure")
 
 
@@ -188,6 +226,8 @@ def repair():
         for table in (
             *TABLES,
             "ar_catalog",
+            "ar_shopping_names",
+            "ar_shopping_picker",
             "ar_scope_catalog",
             "ar_scope_date_counts",
             "ar_scope_options",

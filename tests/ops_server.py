@@ -95,8 +95,22 @@ def serve(application, **options):
     async def mapped(scope, receive, send):
         started = time.perf_counter()
         if scope["type"] == "http":
+            # Adapt the same isolated loopback origin with Host. CSRF still
+            # rejects all other origins and requires the ordinary cookie/token.
+            host = next((v for k, v in scope["headers"] if k == b"host"), b"")
             scope = dict(
-                scope, headers=[(k, b"127.0.0.1:8011" if k == b"host" else v) for k, v in scope["headers"]]
+                scope,
+                headers=[
+                    (
+                        k,
+                        b"127.0.0.1:8011"
+                        if k == b"host"
+                        else b"http://127.0.0.1:8011"
+                        if k == b"origin" and v == b"http://" + host
+                        else v,
+                    )
+                    for k, v in scope["headers"]
+                ],
             )
 
         async def timed(message):

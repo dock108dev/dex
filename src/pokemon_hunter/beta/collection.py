@@ -135,9 +135,6 @@ def exact_owned_printings(active, published_ids=None):
 
 def goals(actor, *, goal_id=None, include_updates=True):
     store.verified(actor)
-    active = copies(actor)
-    available_ids = {p["id"] for p in catalog(actor)}
-    published_ids = available_ids if settings.B4_ENABLED else None
     from .goal_progress import evaluate
 
     result = store.rows(
@@ -146,6 +143,11 @@ def goals(actor, *, goal_id=None, include_updates=True):
         + " ORDER BY name,id",
         [actor.user_id, goal_id] if goal_id is not None else [actor.user_id],
     )
+    if not result:
+        return []
+    active = copies(actor)
+    available_ids = {p["id"] for p in catalog(actor)}
+    published_ids = available_ids if settings.B4_ENABLED else None
     successor_ids = {}
     for row in result:
         predecessor = json.loads(row["definition"]).get("lineage", {}).get("predecessor_id")

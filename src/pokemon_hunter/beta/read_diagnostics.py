@@ -35,6 +35,7 @@ FIELDS = frozenset(
         "account_policy",
         "id",
         "route",
+        "operation",
         "status",
         "sql_execute_ms",
         "sql_fetch_ms",
@@ -173,6 +174,19 @@ class Middleware:
             event="request",
             id=uuid.uuid4().hex,
             route="unresolved",
+            operation=(
+                "discovery_start"
+                if request.method == "POST"
+                else "discovery_status"
+                if "run_id" in request.GET
+                else "discovery_reconcile"
+                if "request_id" in request.GET
+                else "discovery_options"
+            )
+            if request.path == "/api/shopping/discovery/"
+            else "collection_targets"
+            if request.path == "/api/shopping/discovery/targets/"
+            else "other",
             status=500,
             sql_execute_ms=0.0,
             sql_fetch_ms=0.0,

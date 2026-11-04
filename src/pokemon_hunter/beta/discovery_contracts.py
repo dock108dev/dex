@@ -18,6 +18,9 @@ MAX_BROWSE = 4
 class Choices(BaseModel):
     model_config = {"extra": "forbid"}
 
+    collection_intent: StrictBool = False
+    prefer_vintage: StrictBool = False
+    currency: Literal["USD"] = "USD"
     intent: Literal["deals", "missing"] = "deals"
     missing_basis: Literal["printing", "species"] = "species"
     goal_id: str | None = Field(default=None, min_length=1, max_length=64)
@@ -42,6 +45,20 @@ class Choices(BaseModel):
 
     @model_validator(mode="after")
     def checked_context(self):
+        if self.collection_intent:
+            if (
+                self.intent != "missing"
+                or self.species is None
+                or self.generation is None
+                or self.missing_basis != "species"
+                or self.group_id
+                or self.printing_id
+                or self.focus not in {"all", "kanto", "johto"}
+                or self.goal_id
+                and not self.goal_version
+                or self.english_vintage
+            ):
+                raise ValueError("Choose one missing species and retain its collection context")
         if self.species is not None and self.group_id is not None:
             raise ValueError("Choose a Pokémon or a card group")
         if self.printing_id is not None and self.group_id is None:

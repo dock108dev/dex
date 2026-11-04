@@ -31,7 +31,8 @@ def setup(shop, monkeypatch):
     collection.execute("UPDATE catalog_sets SET name='Base Set'")
     collection.execute("UPDATE printings SET edition='standard',finish='normal',variant='normal'")
     entries = {p["id"]: p for p in collection.catalog(shop["actor"])}
-    monkeypatch.setattr(prices, "entries", lambda: entries)
+    monkeypatch.setattr(prices, "entries", lambda printing_ids=None: entries)
+    monkeypatch.setattr(prices, "selectable", lambda ids: set(ids).issubset(entries))
     # These old fixtures patch the guide loader. Restore the production loader for new-path checks.
     monkeypatch.setattr(lot, "retained_records", RETAINED_RECORDS)
     monkeypatch.setattr(lot, "legacy_records", lambda: shop["guides"])

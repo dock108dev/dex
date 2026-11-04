@@ -23,19 +23,28 @@ def revision():
     return store.rows("SELECT value FROM catalog_read_revision WHERE id=1")[0]["value"]
 
 
-def check_schema():
+CHECK_COLUMNS = (
+    "(SELECT version FROM catalog_read_schema) AS version, (SELECT COUNT(*) FROM catalog_read_schema) AS versions, (SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='catalog_batches') AS pipeline, (SELECT COUNT(*) FROM sqlite_master WHERE type='trigger' AND name IN ('cr_rev_catalog_batches_insert','cr_rev_catalog_batches_update','cr_rev_catalog_batches_delete')) AS triggers, (SELECT COUNT(*) FROM sqlite_master WHERE type='trigger' AND name IN ("
+    + ",".join(["%s"] * len(TRIGGER_NAMES))
+    + ")) AS required"
+)
+
+
+def check_capability():
     if not settings.B4_ENABLED:
         raise Unavailable("publication_capability_unavailable")
     if connection.vendor != "sqlite":
         raise Unavailable("unsupported_database")
-    if store.rows("SELECT version FROM catalog_read_schema") != [{"version": VERSION}]:
+
+
+def check_schema():
+    check_capability()
+    validate_schema(store.rows("SELECT " + CHECK_COLUMNS, TRIGGER_NAMES)[0])
+
+
+def validate_schema(coverage):
+    if coverage["version"] != VERSION or coverage["versions"] != 1:
         raise Unavailable("incompatible_schema")
-    coverage = store.rows(
-        "SELECT (SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='catalog_batches') AS pipeline, (SELECT COUNT(*) FROM sqlite_master WHERE type='trigger' AND name IN ('cr_rev_catalog_batches_insert','cr_rev_catalog_batches_update','cr_rev_catalog_batches_delete')) AS triggers, (SELECT COUNT(*) FROM sqlite_master WHERE type='trigger' AND name IN ("
-        + ",".join(["%s"] * len(TRIGGER_NAMES))
-        + ")) AS required",
-        TRIGGER_NAMES,
-    )[0]
     if coverage["required"] != len(TRIGGER_NAMES):
         raise Unavailable("missing_revision_infrastructure")
     if coverage["pipeline"] and coverage["triggers"] != 3:
@@ -218,21 +227,33 @@ def activate(build):
         )
 
 
-def active(token=None):
+def active(token=None, *, account=False):
+    from . import account_read_schema
     from .read_diagnostics import category
 
     category("catalog", "unavailable")
-    check_schema()
-    source = revision()
+    check_capability()
+    columns = CHECK_COLUMNS
+    params = list(TRIGGER_NAMES)
+    if account:
+        columns += "," + account_read_schema.CHECK_COLUMNS
+        params.extend(account_read_schema.TRIGGERS)
+    found = store.rows(
+        "SELECT "
+        + columns
+        + ", b.*,r.value AS authority_revision, CASE WHEN b.id IS NOT NULL THEN (SELECT COUNT(*) FROM cr_gram_index WHERE cr_gram_index MATCH CAST(b.id AS TEXT)) END AS documents FROM catalog_read_revision r LEFT JOIN catalog_read_active a ON a.id=r.id LEFT JOIN catalog_read_builds b ON b.id=a.build WHERE r.id=1",
+        params,
+    )
+    validate_schema(found[0])
+    if account:
+        account_read_schema.validate_schema(found[0])
+    source = found[0]["authority_revision"]
     current = f"{source}:{POLICY}"
     if token is not None and token != current:
         from .collection import Conflict
 
         raise Conflict("Catalog revision changed")
-    found = store.rows(
-        "SELECT b.* FROM catalog_read_active a JOIN catalog_read_builds b ON b.id=a.build WHERE a.id=1"
-    )
-    if not found:
+    if found[0]["id"] is None:
         interrupted = store.rows(
             "SELECT 1 FROM catalog_read_builds WHERE status IN ('preparing','indexing') LIMIT 1"
         )
@@ -248,10 +269,7 @@ def active(token=None):
         raise Unavailable("derived_corrupt")
     if len(row["checksum"] or "") != 64 or row["seal"] != manifest_seal(row):
         raise Unavailable("manifest_corrupt")
-    documents = store.rows(
-        "SELECT COUNT(*) AS n FROM cr_gram_index WHERE cr_gram_index MATCH %s", [str(found[0]["id"])]
-    )[0]["n"]
-    if documents != json.loads(found[0]["counts"])["cr_grams"]:
+    if row["documents"] != json.loads(row["counts"])["cr_grams"]:
         raise Unavailable("search_index_incomplete")
     category("catalog", "ready")
     return found[0], current

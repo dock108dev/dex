@@ -122,3 +122,11 @@ durable noncontent accounting constrain selected resources, pacing, byte limits,
 Stop and uncertainty. Restart, rename, failed attempts and app restore never renew
 consumed capacity. Hard-coded finite qualification allocations are not reusable
 provider budgets. See [operations](operations.md#snapshot-retention-and-backups).
+
+## Shopping comparison at scale
+
+Explicit multi-source activation validates the full release, writes each independently sealed source and prepares a private `.idx` file beside that source. It contains byte ranges into the sole managed price copy, rights metadata and the source fingerprint. Removing a source removes its index. Indexes belong under the same backup and retention exclusions as their shards.
+
+A reviewed lot looks up the included printing IDs. Each decision checks the active version, source approvals, independent revocations, expiry, shard and index integrity, current printing identity, and the reviewed condition or literal grade. A new process verifies file digests before using an index. While file identity, size and modification/change times remain identical it can reuse that verification. It does not cache prices or a computed ceiling. A missing or stale index withholds the recommendation. An explicit purge continues to own physical reclamation.
+
+For an existing split release, the operator can prepare the surviving authorized sources again using `price-activate` with its installed version descriptor as `--file` and the same active version as `--expected-current`. Use the ordinary installation procedure only under separately approved delivery or maintenance scope. Independent source withdrawals remain in force. See [qualification boundaries](CI.md#integrated-shopping-decision-qualification).

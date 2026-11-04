@@ -243,3 +243,37 @@ source commit `9eaab8e`. A clean or committed checkout is not an installed updat
 See [runtime updates](operations.md#runtime-updates-and-recovery) and
 [interface review](UI_DESIGN.md#review-scope-and-known-limitations) for the separate
 installation and user-facing boundaries.
+
+## Integrated Shopping decision qualification
+
+Run the ordinary Chromium journey and private snapshot volume checks with the locked test environment. Both create disposable state. The browser test replaces the marketplace transport, submits a real Shopping search through the local server, and intercepts the seller tab. The volume check independently measures the source-validation work inside a decision. Both sizes retain the raw samples in `reports/shop-17-prepared/`. The browser case uses the two-source release at 7,653 or 15,306 observations. Preserve previous reports before repeating a series.
+
+```sh
+uv run --no-sync pytest -q tests/test_shop17_journey.py tests/test_shop17_snapshot_volume.py --disable-socket --allow-unix-socket
+```
+
+Retained local qualification reports apply only to their recorded source, runtime and
+inputs. Historical failed samples and release holds remain independent of later passing
+runs. Packaging, hosted verification, installation and [owner review](operations.md#shopping-owner-review-after-delivery)
+are separate checkpoints. Local handoff notes are not prerequisites for a clean checkout.
+
+For routine cleanup, select affected test modules; no dependency-aware selector is
+configured. Include changed/new tests and callers of shared schema, authority and lease
+code. Reuse retained results only after checking source, tests, lockfiles and environment.
+Run new measurements in a disposable working directory or preserve previous reports
+before running tests that write fixed report paths. A selected pass is not full release
+qualification.
+
+The following reviewed cases protect the Shopping boundaries; other cases and the
+complete suite are outside this focused test-value review:
+
+| Behavior | Tests | Defect detected and boundary | Disposition |
+| --- | --- | --- | --- |
+| Reject conflicting schema versions | `test_shop12_indexed.py::test_schema_checks_reject_multiple_markers` | Standalone and actual indexed reads must reject extra account/catalog markers in disposable SQLite | Strengthened; account cases reproduced the prior defect |
+| Preserve ambiguity and seller quantities | `test_shop14_contents.py` | Exact quantities, conflict reasons, complete families and source evidence prevent claims becoming confirmed contents; parser fixtures only | Strengthened formerly redundant uncertainty assertion |
+| Reconcile lost responses without redispatch | `test_shop12_recovery.py` | Same-session handles, concurrent submission and admission failure cannot replay acquisition; controlled transport | Keep |
+| Recheck value and original authority | `test_shop15_assessment.py` | Independent cent-by-cent arithmetic oracle and interleaved source withdrawal, expiry, changed review and Stop reject stale ceilings; fabricated admitted references | Keep |
+
+These checks do not establish current market prices, live provider behavior or customer
+usability. Rendered review of changed source remains separate from source inspection;
+use the actual customer installation only after authorized delivery.

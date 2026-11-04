@@ -26,35 +26,41 @@
     </div>
     </div>
     <div hidden id="discovery-quick-sets" class="discovery-quick-sets" aria-label="Quick set choices"></div>
-    <details hidden class="discovery-options"><summary>Search options</summary>
+    <details open class="discovery-options"><summary>Search options</summary>
     <div class="discovery-intents" aria-label="Shopping task">
-      <button type="button" id="find-deals" aria-pressed="true">Find deals</button>
-      <button type="button" id="find-missing" aria-pressed="false">Find missing cards</button>
+      <button type="button" id="find-deals" disabled aria-pressed="true">Find deals</button>
+      <button type="button" id="find-missing" disabled aria-pressed="false">Find missing cards</button>
 
     </div>
     <p id="intent-description" class="intent-description">Search supported cards automatically, including cards you already own. No goal needed.</p>
     <div class="discovery-controls">
       <label for="discovery-focus">Card scope<select id="discovery-focus" name="focus"><option value="all">All supported Pokémon cards</option><option value="kanto">Kanto · 1–151</option><option value="johto">Johto · 152–251</option><option value="rares">Rare cards</option><option value="bulk">Common and uncommon cards</option></select><span id="discovery-focus-caption" class="selection-caption">All supported Pokémon cards</span></label>
-      <label for="discovery-budget">Spending budget, USD <span class="optional">optional</span><input id="discovery-budget" name="budget" type="number" min="0" max="10000" step="0.01" placeholder="Any budget"><span class="field-help">Delivered price before tax. Unknown shipping stays unknown.</span></label>
+      <label for="discovery-budget">All-in budget, USD <span class="optional">optional</span><input id="discovery-budget" name="budget" type="number" min="0" max="10000" step="0.01" placeholder="Any budget"><span class="field-help">Includes shipping and tax. Unknown costs stay unknown; this is not a value estimate.</span></label>
     </div>
     <div id="missing-controls" class="discovery-controls" hidden>
       <label for="discovery-goal">Missing from<select id="discovery-goal" name="goal_id"><option value="">My current collection</option></select><span id="discovery-goal-caption" class="selection-caption">My current collection</span></label>
-      <label id="missing-basis-label" for="discovery-missing-basis">Ownership basis<select id="discovery-missing-basis" name="missing_basis"><option value="species">Missing Pokémon species</option><option value="printing">Missing exact printings</option></select></label>
+      <label for="discovery-target">Missing Pokémon<select id="discovery-target"><option value="">Choose one Pokémon</option></select></label>
+      <p id="discovery-target-status" role="status"></p><button id="discovery-target-reload" type="button" hidden>Reload missing Pokémon</button>
+      <label hidden id="missing-basis-label" for="discovery-missing-basis">Ownership basis<select id="discovery-missing-basis" name="missing_basis"><option value="species">Missing Pokémon species</option><option value="printing">Missing exact printings</option></select></label>
       <p id="missing-policy" class="field-help full"></p>
     </div>
-    <label class="discovery-checkbox"><input id="discovery-english-vintage" type="checkbox"> English · vintage · US listings</label><p class="field-help">Uses English/vintage search words and US listing/delivery filters. Seller titles do not verify language or year.</p>
+    <label class="discovery-checkbox"><input id="discovery-prefer-vintage" type="checkbox"> Prefer vintage; any qualifying era can fill the gap</label>
+    <label hidden class="discovery-checkbox"><input id="discovery-english-vintage" type="checkbox"> English · vintage · US listings</label><p class="field-help">US listing/delivery filters still apply. Vintage preference does not exclude other eras. Seller titles do not verify language or year.</p>
     <p class="field-help">Only Search eBay and More results request listings. Typing, local browsing and filters make no eBay requests.</p>
     </details>
-    <p id="discovery-status" role="status" aria-live="polite" tabindex="-1">Loading search options…</p>
-    <details hidden class="discovery-local"><summary>Explore local Pokémon and cards</summary><button type="button" id="catalog-search" class="secondary">Search local cards</button>
+    <p id="discovery-status" role="status" aria-live="polite" tabindex="-1">Ready to search.</p>
+    <button id="discovery-reload" type="button" class="secondary" hidden>Reload search status</button>
+    <p id="discovery-options-status" role="status" aria-live="polite"></p>
+    <button id="discovery-options-reload" type="button" class="secondary" hidden>Reload search options</button>
+    <details class="discovery-local"><summary>Explore local Pokémon and cards</summary><button type="button" id="catalog-search" class="secondary">Search local cards</button>
     <section id="catalog-results" class="catalog-results" aria-labelledby="catalog-results-title"><div class="catalog-heading"><h2 id="catalog-results-title" tabindex="-1">Pokémon and cards</h2><button id="catalog-clear-target" type="button" class="secondary" hidden>Show all matching cards</button></div><p id="catalog-status" role="status" aria-live="polite">Loading your local catalog…</p><div id="catalog-cards" class="catalog-cards"></div><button id="catalog-next" type="button" class="secondary" hidden>More local cards</button><p class="field-help">Catalog images do not show the seller’s cards.</p></section>
     </details>
   </form>
   <section id="discovery-results" aria-labelledby="discovery-results-title" hidden>
-    <div class="discovery-results-heading"><div><h2 id="discovery-results-title" tabindex="-1">Lots</h2><p hidden id="discovery-scope" class="muted"></p></div>
+    <div class="discovery-results-heading"><div><h2 id="discovery-results-title" tabindex="-1">Lots</h2><p id="discovery-scope" class="muted"></p></div>
     <div class="discovery-filters"><div hidden><label for="discovery-filter">Show<select id="discovery-filter"><option value="all">All results</option><option value="below">Comparable · below reference</option><option value="conditional">Conditional comparisons</option><option value="unpriced">Unpriced or ambiguous</option></select></label></div><p id="discovery-shown" class="field-help" role="status"></p></div>
     </div>
-    <div class="results-notes"><p class="browse-note">US lots · ending soonest. Check seller photos for your card; bids can rise.</p><details hidden class="results-guidance"><summary>About these results</summary><p id="discovery-limitation"></p></details></div>
+    <div class="results-notes"><p class="browse-note">US lots · ending soonest. Check seller photos for your card; bids can rise.</p><details class="results-guidance"><summary>About these results</summary><p id="discovery-limitation"></p></details></div>
     <div id="discovery-cards" class="discovery-cards"></div>
     <div class="discovery-actions"><button id="discovery-next" type="button" class="secondary" disabled>More results</button><span id="discovery-next-note" class="field-help"></span></div>
 
@@ -66,5 +72,5 @@
 <script src="/collection-assets/listing-interpretation.js?v=20261029" defer></script>
 <script src="/collection-assets/listing-time.js?v=20261020-shop04" defer></script>
 <script src="/collection-assets/discovery-display.js?v=20261020-shop04" defer></script>
-<script src="/collection-assets/discovery.js?v=20261027-lots" defer></script>
+<script src="/collection-assets/discovery.js?v=20261102-shop13" defer></script>
 {% endblock %}

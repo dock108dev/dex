@@ -1,6 +1,5 @@
 """Authenticated, CSRF-protected shopping routes; listing URLs are never fetched."""
 
-from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_GET, require_POST
 
@@ -11,36 +10,40 @@ from .collection_views import body, endpoint
 from .views import actor
 
 
-def request_authority(request):
+def request_authority(request, *, include_generation=False):
     """Optional page boundary checked before every explicit write or local read."""
-    who = store.verified(actor(request))
-    from .navigation import binding
+    who, current_generation = store.principal(request.user.pk, with_generation=True)
+    from .navigation import bound_to
 
     expected = request.headers.get("X-Dex-Shopping-Binding")
-    if expected is not None and expected != binding(request)["navigation_binding"]:
+    if expected is not None and expected != bound_to(request, who)["navigation_binding"]:
         from django.core.exceptions import PermissionDenied
 
         raise PermissionDenied
     generation = request.headers.get("X-Dex-Shopping-Generation")
     if generation is not None:
-        shopping_context.resolve(who, {"generation": generation})
+        shopping_context.validate_identity({"generation": generation})
+        if int(generation) != current_generation:
+            raise collection.Conflict("Collection changed; reopen Shopping from your collection")
     goal = request.headers.get("X-Dex-Shopping-Goal")
     version = request.headers.get("X-Dex-Shopping-Version")
     if goal is not None or version is not None:
         shopping_context.resolve(who, {"goal": goal or "", "version": version or ""})
-    return who
+    return (who, current_generation) if include_generation else who
 
 
 def private_json(value, request):
-    from .navigation import binding
+    from .navigation import bound_to
 
-    who = request_authority(request)
+    who, generation = request_authority(request, include_generation=True)
     value["authority"] = dict(
         account_id=who.user_id,
-        generation=collection.generation(who),
-        binding=binding(request)["navigation_binding"],
+        generation=generation,
+        binding=bound_to(request, who)["navigation_binding"],
     )
-    response = JsonResponse(value)
+    from .read_diagnostics import json_response
+
+    response = json_response(value)
     response["Cache-Control"] = "no-store, private"
     return response
 
@@ -69,7 +72,7 @@ def legacy(request):
 def home(request):
     who = actor(request)
     context = shopping_context.resolve(who, query(request, shopping_context.FIELDS))
-    from .navigation import binding
+    from .navigation import bound_to
 
     goals = sorted(
         store.rows(
@@ -87,7 +90,7 @@ def home(request):
             wants=lot.locks(who, request.session),
             missing_goals=[dict(id=g["id"], name=g["name"], version=g["version"]) for g in goals],
             shopping_context=shopping_context.finish(who, context),
-            shopping_binding=binding(request)["navigation_binding"],
+            shopping_binding=bound_to(request, who)["navigation_binding"],
         ),
     )
 
@@ -178,7 +181,11 @@ def source_status(request):
     from .store import verified
 
     verified(request_authority(request))
-    rows, status = price_snapshots.display_current()
+    if request.headers.get("X-Dex-Review-Lease"):
+        with price_snapshots.read_only():
+            rows, status = price_snapshots.display_current(sources_only=True)
+    else:
+        rows, status = price_snapshots.display_current(sources_only=True)
     return private_json(
         dict(
             sources=sorted({row["_contract_sha256"] for row in rows}),

@@ -13,9 +13,24 @@ def enabled():
 
 def catalog_images(actor, catalog):
     """Bind all supported private catalog references regardless of possession."""
+    from .shopping_index import current
+
+    indexed = current(actor)
+    if indexed:
+        return indexed.artwork(catalog)
     actor = store.verified(actor)
     generation = collection.generation(actor)
-    authoritative = collection.catalog(actor, include_archived=True)
+    # Restore only requested identities and their complete sibling groups. The
+    # same literal group keys retain collision/variant ambiguity; no first child
+    # is substituted and no caller-supplied metadata establishes authority.
+    from .collection_catalog import catalog_entries
+
+    bounded = len(catalog) <= 100
+    authoritative = (
+        catalog_entries(include_archived=True, printing_ids=[row["id"] for row in catalog])
+        if bounded
+        else collection.catalog(actor, include_archived=True)
+    )
     by_id = {row["id"]: row for row in authoritative}
     if any(by_id.get(row["id"]) != row for row in catalog):
         raise ValueError("Image catalog differs from authorized metadata")
@@ -31,11 +46,15 @@ def catalog_images(actor, catalog):
         tuple(row.get(key) for key in ("game_id", "set_id", "language", "collector_number"))
         for row in catalog
     }
-    relevant = [
-        row
-        for row in authoritative
-        if tuple(row.get(key) for key in ("game_id", "set_id", "language", "collector_number")) in keys
-    ]
+    relevant = (
+        catalog_entries(include_archived=True, group_keys=sorted(keys, key=repr))
+        if bounded
+        else [
+            row
+            for row in authoritative
+            if tuple(row.get(key) for key in ("game_id", "set_id", "language", "collector_number")) in keys
+        ]
+    )
     built = card_groups.build_groups(relevant, pokemon_game_ids=game_ids)
     result = {}
     for group in built["groups"]:

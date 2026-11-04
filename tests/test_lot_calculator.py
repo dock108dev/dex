@@ -44,9 +44,9 @@ def request(workspace, quantities=(2, 1)):
     )
 
 
-def post(workspace, url, payload, client=None):
+def post(workspace, url, payload, client=None, *, page="/shopping/"):
     c = client or workspace["a"]
-    c.get("/shopping/")
+    c.get(page)
     return c.post(
         url,
         json.dumps(payload),

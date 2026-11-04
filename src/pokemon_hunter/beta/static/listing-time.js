@@ -7,6 +7,6 @@ window.DexAuctionTime = (value, now = Date.now()) => {
   if (year < 1 || month < 1 || month > 12 || day < 1 || day > days[month-1] || hour > 23 || minute > 59 || second > 59) return 'Auction · end time unknown';
   const end = new Date(value), left = end.getTime() - now;
   if (!Number.isFinite(left)) return 'Auction · end time unknown';
-  const date = end.toLocaleString();
+  const date = end.toLocaleString(undefined,{year:'numeric',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',second:'2-digit',timeZoneName:'short'});
   return left <= 0 ? `Auction ended · ${date}` : `Auction · ${Math.floor(left / 3600000)}h ${Math.floor(left % 3600000 / 60000)}m remaining · ends ${date}`;
 };

@@ -7,7 +7,6 @@ from urllib.parse import urlencode
 from django.db import DatabaseError
 
 from . import account_read_build as builds
-from . import account_read_schema as schema
 from . import card_groups, collection, store
 from .catalog_read_build import Unavailable, active
 from .catalog_read_snapshot import snapshot
@@ -45,8 +44,7 @@ def read(fn):
             card_groups._integer(selectors["generation"], "generation", 0)
         try:
             with snapshot():
-                manifest, token = active(selectors.get("catalog_revision"))
-                schema.check()
+                manifest, token = active(selectors.get("catalog_revision"), account=True)
                 state = builds.state(
                     actor,
                     token,

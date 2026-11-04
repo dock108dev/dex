@@ -51,9 +51,19 @@ def validate_identity(raw, *, legacy_goal=False):
 
 
 def resolve(who, raw, *, legacy_goal=False):
+    from .shopping_index import indexed
+
+    fn = indexed(_resolve) if raw.get("species") or raw.get("goal") else _resolve
+    return fn(who, raw, legacy_goal=legacy_goal)
+
+
+def _resolve(who, raw, *, legacy_goal=False):
     who = store.verified(who)
     validate_identity(raw, legacy_goal=legacy_goal)
-    generation = collection.generation(who)
+    from .shopping_index import current
+
+    indexed = current(who)
+    generation = indexed.state["generation"] if indexed else collection.generation(who)
     if (
         "generation" in raw
         and card_groups._integer(raw["generation"], "collection generation", 0, 10**18) != generation
@@ -81,7 +91,11 @@ def resolve(who, raw, *, legacy_goal=False):
     goal = None
     if raw.get("goal"):
         try:
-            goal = collection.one(who, "goal", raw["goal"])
+            goal = (
+                indexed.goal(raw["goal"], species=int(raw["species"]) if raw.get("species") else None)
+                if indexed
+                else collection.one(who, "goal", raw["goal"])
+            )
         except Http404 as error:
             if legacy_goal and "version" not in raw:
                 raise ValueError("Choose one of your collection goals") from error
@@ -99,7 +113,11 @@ def resolve(who, raw, *, legacy_goal=False):
         )
     if "species" in raw:
         number = card_groups._integer(raw["species"], "species", 1, 251)
-        current = effective_collection.project(who)
+        current = (
+            {"species": {str(number): indexed.species(number)}}
+            if indexed
+            else effective_collection.project(who)
+        )
         result.update(
             kind="species",
             species=number,
@@ -111,7 +129,11 @@ def resolve(who, raw, *, legacy_goal=False):
     if "group" in raw:
         if not re.fullmatch(r"dg1-[0-9a-f]{64}", raw["group"]):
             raise ValueError("Choose a canonical card group")
-        detail = card_groups.detail(who, raw["group"], selected_child=raw.get("child"))
+        detail = (
+            indexed.detail(raw["group"], selected_child=raw.get("child"))
+            if indexed
+            else card_groups.detail(who, raw["group"], selected_child=raw.get("child"))
+        )
         group, child = detail["group"], detail["selected_child"]
         result.update(
             kind="printing" if child else "group",
@@ -127,10 +149,12 @@ def resolve(who, raw, *, legacy_goal=False):
     if goal:
         import json
 
-        loaded_goal = collection.goals(who, goal_id=goal["id"], include_updates=False)[0]
+        loaded_goal = goal if indexed else collection.goals(who, goal_id=goal["id"], include_updates=False)[0]
         result["goal_progress"] = dict(satisfied=loaded_goal["satisfied"], total=loaded_goal["total"])
         result["goal_units"] = (
-            "species" if json.loads(goal["definition"]).get("policy") == "species" else "printings"
+            "species"
+            if (goal["definition"] if indexed else json.loads(goal["definition"])).get("policy") == "species"
+            else "printings"
         )
         result["goal_policy"] = (
             "Frozen declaration snapshot"
@@ -142,7 +166,7 @@ def resolve(who, raw, *, legacy_goal=False):
         if result["kind"] in {"group", "printing"}:
             result["label"] += f" · Saved goal: {goal['name']}"
     store.verified(who)
-    if collection.generation(who) != generation:
+    if not indexed and collection.generation(who) != generation:
         raise collection.Conflict("Collection changed during Shopping context read")
     return result
 
@@ -205,11 +229,22 @@ def catalog(who, context, query="", *, printing="", offset=0):
 
 
 def finish(who, context):
+    from .shopping_index import current
+
+    indexed = current(who)
+    if indexed:
+        # The outer account read verifies fresh catalog/account/generation state
+        # after leaving the snapshot, including every goal-authority mutation.
+        if context["account_id"] != who.user_id or context["generation"] != indexed.state["generation"]:
+            raise collection.Conflict("Collection changed during Shopping read")
+        return context
     store.verified(who)
-    if collection.generation(who) != context["generation"]:
+    state = store.rows(
+        "SELECT COALESCE((SELECT value FROM collection_generations WHERE user_id=%s),0) AS generation,(SELECT version FROM collection_goals WHERE user_id=%s AND id=%s) AS version",
+        [who.user_id, who.user_id, context["query"].get("goal", "")],
+    )[0]
+    if state["generation"] != context["generation"]:
         raise collection.Conflict("Collection changed during Shopping read")
-    if context["query"].get("goal"):
-        goal = collection.one(who, "goal", context["query"]["goal"])
-        if goal["version"] != context["goal_version"]:
-            raise collection.Conflict("Saved goal changed during Shopping read")
+    if context["query"].get("goal") and state["version"] != context["goal_version"]:
+        raise collection.Conflict("Saved goal changed during Shopping read")
     return context

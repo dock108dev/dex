@@ -135,6 +135,11 @@ def materialize(rows, pokemon, reviewed_aliases, metadata):
         unresolved.extend((scope, record) for record in built["unresolved"])
         for group in built["groups"]:
             key = group["id"]
+            import re
+
+            for number in re.findall(r"[\w]+", (group["name"] + " " + group["collector_number"]).casefold()):
+                if number.isdecimal():
+                    postings.add((scope, "shopping_number", number, key))
             payload = encode(summary(group, published))
             data["cr_groups"].append(
                 (

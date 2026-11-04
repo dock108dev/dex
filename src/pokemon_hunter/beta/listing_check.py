@@ -20,7 +20,7 @@ from pokemon_hunter.parser import extract_count
 
 from . import discovery as d
 from . import discovery_comparison as dc
-from . import ebay_hunts, image_bindings, shopping
+from . import ebay_hunts, image_bindings, lot_assessment, shopping, shopping_contents, shopping_index
 from . import lot_calculator as lot
 from .diagnostics import async_closing, failure
 from .discovery_search import product_kind
@@ -142,15 +142,33 @@ def status(actor, session, key):
         )
     if value:
         value = _proposals(actor, value)
+        # The projection cannot extend the original detail lease. Reauthorize
+        # before publishing even if the expiry timer has not fired yet.
+        if d._lookup(actor, session, key) is not run:
+            raise Http404
         with run.lock:
             if not run.cancel.is_set() and run.state == "complete":
                 result["listing"] = value
     return result
 
 
+@shopping_index.indexed
 def _proposals(actor, value):
     clues = dict(value["clues"], text=value.pop("match_text"))
-    matched = dc._matches(lot.catalog(actor, include_goals=True, include_current=True), clues)[:40]
+    indexed = shopping_index.current(actor)
+    entries = (
+        indexed.proposals(
+            dc._clues(value.get("_contents_source", {}))["text"]
+            + (
+                " " + value["_contents_source"]["description"]
+                if value.get("_contents_source", {}).get("description")
+                else ""
+            )
+        )
+        if indexed
+        else lot.catalog(actor, include_goals=True, include_current=True)
+    )
+    matched = dc._matches(entries, clues)
     single = (
         len(matched) == 1
         and not clues["conflicts"]
@@ -164,19 +182,32 @@ def _proposals(actor, value):
             re.I,
         )
     )
-    artwork = image_bindings.catalog_images(actor, matched) if matched else {}
+    artwork = image_bindings.catalog_images(actor, matched) if single else {}
     value["proposals"] = [
-        dict(shopping.identity(p), quantity=1 if single else 0, artwork=artwork.get(p["id"])) for p in matched
+        dict(shopping.identity(p), quantity=0, artwork=artwork.get(p["id"])) for p in matched
     ]
-    value["unknown_contents"] = 0 if single else value["seller_lot_size"]
+    value["unknown_contents"] = value["seller_lot_size"]
+    value["contents"] = shopping_contents.project(value, entries)
     return value
 
 
+@shopping_index.indexed
 def catalog(actor, query="", restore=None):
     """Bounded local identities and checked card references, without source values."""
-    entries = lot.catalog(actor, query, include_goals=True, include_current=True)
-    if restore is not None:
-        entries = [p for p in entries if p["id"] in restore]
+    if restore is not None and len(restore) > 200:
+        raise ValueError("Restore at most 200 identities")
+    indexed = shopping_index.current(actor)
+    if indexed and restore is None:
+        entries, total = shopping_contents.search(indexed, query)
+        artwork = image_bindings.catalog_images(actor, entries) if entries else {}
+        return dict(
+            cards=[dict(shopping.identity(p), artwork=artwork.get(p["id"])) for p in entries], total=total
+        )
+    entries = (
+        indexed.supported(indexed.printings(restore))
+        if indexed and restore is not None
+        else lot.catalog(actor, query, include_goals=True, include_current=True, printing_ids=restore)
+    )
     total, entries = len(entries), entries[: 200 if restore is not None else 40]
     artwork = image_bindings.catalog_images(actor, entries) if entries else {}
     return dict(
@@ -184,9 +215,17 @@ def catalog(actor, query="", restore=None):
     )
 
 
-def _context(source):
+def _context(source, actor=None, review=None):
     selected = source.get("selected_target")
+    from . import shopping_intent
+
+    fit = (
+        shopping_intent.fit(actor, source["choices"], source["raw"].get("title", ""), review)
+        if actor and source["choices"].get("collection_intent")
+        else None
+    )
     return dict(
+        collection_fit=fit,
         choices=source["choices"],
         scope=d.goal_hunts.public(source["scope"]),
         scope_label=source.get("scope_label")
@@ -199,11 +238,12 @@ def _context(source):
     )
 
 
+@shopping_index.indexed
 def candidate(actor, session, run_id, result_id):
     """Project an eligible selected summary; entering review never loads details."""
     source = d.review_candidate(actor, session, run_id, result_id)
     raw = source["raw"]
-    value = _proposals(actor, details(raw.get("itemId"), raw))
+    value = _proposals(actor, details(raw.get("itemId"), raw, source_kind="summary"))
     suggestions = source.get("result", {}).get("identity_candidates") or []
     ids = list(dict.fromkeys(row.get("printing_id") for row in suggestions if row.get("printing_id")))
     strict_ids = {row["id"] for row in value["proposals"]}
@@ -228,7 +268,7 @@ def candidate(actor, session, run_id, result_id):
     return dict(
         listing=value,
         expires_in_seconds=source["expires_in_seconds"],
-        context=_context(source),
+        context=_context(source, actor),
     )
 
 
@@ -240,6 +280,7 @@ def stop(actor, session, key):
     return _summary(run)
 
 
+@shopping_index.indexed
 def review(actor, session, value=None, lease=None):
     owner = d._owner(actor, session)
     context = None
@@ -268,7 +309,7 @@ def review(actor, session, value=None, lease=None):
             if value.get("discovery_origin"):
                 source = d.review_candidate(actor, session, **value["discovery_origin"])
                 created = min(created, source["created"])
-                context = _context(source)
+                context = _context(source, actor, value)
             if time.monotonic() - created >= d.EPHEMERAL_SECONDS:
                 raise ValueError("This temporary review expired. Your edits remain on screen.")
             previous_created = current[0]
@@ -282,6 +323,8 @@ def review(actor, session, value=None, lease=None):
                 timer.daemon = True
                 timer.start()
             current = _reviews[owner]
+        if lease is not None and (not current or current[2] != lease):
+            raise ValueError("The original review lease is unavailable.")
         if not current:
             created = time.monotonic()
             current = (created, None, str(uuid.uuid4()))
@@ -290,7 +333,11 @@ def review(actor, session, value=None, lease=None):
             timer.daemon = True
             timer.start()
         if current[1] and current[1].get("detail_run"):
-            origin = d._lookup(actor, session, current[1]["detail_run"])
+            try:
+                origin = d._lookup(actor, session, current[1]["detail_run"])
+            except Http404:
+                _reviews.pop(owner, None)
+                raise
             if origin.cancel.is_set() or origin.state != "complete":
                 _reviews.pop(owner, None)
                 raise ValueError(
@@ -298,7 +345,9 @@ def review(actor, session, value=None, lease=None):
                 )
         if current[1] and current[1].get("discovery_origin") and context is None:
             try:
-                context = _context(d.review_candidate(actor, session, **current[1]["discovery_origin"]))
+                context = _context(
+                    d.review_candidate(actor, session, **current[1]["discovery_origin"]), actor, current[1]
+                )
             except (Http404, ValueError):
                 _reviews.pop(owner, None)
                 raise ValueError(
@@ -306,6 +355,7 @@ def review(actor, session, value=None, lease=None):
                 ) from None
         return dict(
             review=deepcopy(current[1]),
+            revision=shopping.digest(current[1]),
             lease=current[2],
             expires_in_seconds=max(0, int(d.EPHEMERAL_SECONDS - (time.monotonic() - current[0]))),
             context=context,
@@ -335,6 +385,8 @@ def validate_review(actor, value):
             "detail_run",
             "discovery_origin",
             "price_kind",
+            "budget",
+            "tax_rate",
             "planned_bid",
             "buy_now_price",
             "buy_now_currency",
@@ -342,9 +394,29 @@ def validate_review(actor, value):
             "lot_units",
             "stock_quantity",
             "remainder_auto",
+            "contents",
+            "authored_fields",
         },
         {"cards", "currency", "unknown_contents"},
     )
+    shopping_contents.check_authored(
+        value,
+        {
+            "title",
+            "listing_url",
+            "price",
+            "currency",
+            "shipping",
+            "tax",
+            "other_costs",
+            "budget",
+            "tax_rate",
+            "planned_bid",
+            "unknown_contents",
+            "price_kind",
+        },
+    )
+    shopping_contents.validate(value.get("contents", []))
     for key in (
         "title",
         "listing_url",
@@ -352,11 +424,18 @@ def validate_review(actor, value):
         "shipping",
         "tax",
         "other_costs",
+        "budget",
+        "tax_rate",
         "planned_bid",
         "buy_now_price",
     ):
         if not isinstance(value.get(key, ""), str) or len(value.get(key, "")) > 2048:
             raise ValueError("Use bounded review fields.")
+    for key in ("budget", "tax_rate"):
+        if value.get(key):
+            shopping.math.amount(value[key])
+    if value.get("tax_rate") and (value.get("tax") or shopping.math.amount(value["tax_rate"]) > 100):
+        raise ValueError("Choose either fixed tax or a rate on bid plus shipping up to 100%.")
     if not isinstance(value["currency"], str) or not re.fullmatch(r"[A-Z]{3}", value["currency"]):
         raise ValueError("Use a three-letter currency.")
     if value.get("detail_run") is not None:
@@ -387,8 +466,21 @@ def validate_review(actor, value):
     for row in value["cards"]:
         shopping.fields(
             row,
-            {"printing_id", "quantity", "condition", "grade", "grader", "language", "edition", "finish"},
+            {
+                "printing_id",
+                "quantity",
+                "condition",
+                "grade",
+                "grader",
+                "language",
+                "edition",
+                "finish",
+                "authored_fields",
+            },
             {"printing_id", "quantity"},
+        )
+        shopping_contents.check_authored(
+            row, {"quantity", "condition", "grade", "grader", "language", "edition", "finish"}
         )
         if not isinstance(row["printing_id"], str) or row["printing_id"] in seen:
             raise ValueError("Choose a distinct supported printing.")
@@ -400,15 +492,111 @@ def validate_review(actor, value):
                 raise ValueError("Use bounded card attributes.")
     if sum(r["quantity"] for r in value["cards"]) + (unknown or 0) > 100000:
         raise ValueError("At most 100000 cards in one review.")
-    allowed = {
-        p["id"] for p in lot.catalog(actor, include_goals=True, include_current=True, printing_ids=seen)
-    }
+    indexed = shopping_index.current(actor)
+    selected = (
+        indexed.supported(indexed.printings(seen))
+        if indexed
+        else lot.catalog(actor, include_goals=True, include_current=True, printing_ids=seen)
+    )
+    allowed = {p["id"] for p in selected}
     if seen - allowed:
         raise ValueError("Choose a distinct supported printing.")
 
+    return selected
 
-def compare(actor, value):
-    validate_review(actor, value)
+
+@shopping_index.indexed
+def saved_comparison(actor, session, revision, lease):
+    owner = d._owner(actor, session)
+
+    def checked():
+        with d._lock:
+            current = _reviews.get(owner)
+            if (
+                not current
+                or current[2] != lease
+                or current[1] is None
+                or shopping.digest(current[1]) != revision
+                or time.monotonic() >= current[0] + d.EPHEMERAL_SECONDS
+            ):
+                raise ValueError("Review changed or expired. Reopen the current review.")
+            value = current[1]
+            offers = []
+            origin = value.get("discovery_origin")
+            if origin:
+                run = d._lookup_owned(owner, origin["run_id"])
+                with run.lock:
+                    raw = d._summary_lease(run, origin["result_id"])["raw"]
+                offers.append(details(raw.get("itemId"), raw, source_kind="summary"))
+            if value.get("detail_run"):
+                run = d._lookup_owned(owner, value["detail_run"])
+                with run.lock:
+                    if (
+                        run.operation != "detail"
+                        or run.state != "complete"
+                        or run.cancel.is_set()
+                        or not run.raws
+                    ):
+                        raise ValueError("Listing details expired or stopped.")
+                    offers.append(deepcopy(run.raws[0]))
+            if len({offer["item_id"] for offer in offers}) > 1:
+                raise ValueError("Summary and details refer to different offers.")
+            for offer in offers:
+                if offer["price_kind"] != value.get("price_kind"):
+                    raise ValueError("Offer type differs from the selected listing.")
+                if offer.get("ends_at") and datetime.fromisoformat(offer["ends_at"]) <= datetime.now(
+                    shopping.TZ
+                ):
+                    raise ValueError("This listing has ended.")
+            return value, offers
+
+    value, offers = checked()
+    if value.get("discovery_origin"):
+        run = d._lookup_owned(owner, value["discovery_origin"]["run_id"])
+        d._context_current(actor, run.choices)
+    result = compare(actor, value, offers=offers)
+    result["assessment"]["seller_url"] = offers[-1]["item_url"] if offers else None
+    result["assessment"]["ends_at"] = min((o["ends_at"] for o in offers if o.get("ends_at")), default=None)
+
+    def publish():
+        references = result["assessment"]["evidence"]
+        if result["assessment"]["maximum"] is not None or any(r["snapshot_version"] for r in references):
+            with lot.price_snapshots.selected(
+                (r["printing_id"] for r in value["cards"]), eligible_on=datetime.now(shopping.TZ).date()
+            ):
+                active, status = lot.price_snapshots.display_current()
+            allowed = {
+                (r["_snapshot_version"], r["_contract_sha256"], r["printing_id"], r["grade"], r["grader"])
+                for r in active
+            }
+            if status == "invalid_snapshot" or any(
+                (
+                    r["snapshot_version"],
+                    item["source_contract"],
+                    r["printing_id"],
+                    item["grade"],
+                    item["grader"],
+                )
+                not in allowed
+                for r in references
+                if r["snapshot_version"]
+                for item in (r, *r["conflicts"])
+            ):
+                raise ValueError("A reference expired, changed or was withdrawn. Compare again.")
+        if checked()[1] != offers:
+            raise ValueError("Offer changed during comparison. Compare again.")
+
+    indexed = shopping_index.current(actor)
+    if indexed:
+        indexed.publication_checks.append(publish)
+    else:
+        d.store.verified(actor)
+        publish()
+    return result
+
+
+def compare(actor, value, *, offers=()):
+    selected = validate_review(actor, value)
     now = datetime.now(shopping.TZ)
     currency = value["currency"]
 
@@ -443,10 +631,31 @@ def compare(actor, value):
             for basis in shopping.math.BASES
         },
     )
+    if value.get("tax_rate") and value.get("shipping"):
+        for basis in shopping.math.BASES:
+            if raw[basis]["amount"] is not None:
+                tax = lot_assessment.tax_due(
+                    *(
+                        shopping.math.amount(v)
+                        for v in (raw[basis]["amount"], value["shipping"], value["tax_rate"])
+                    )
+                )
+                raw["delivery_cost_inputs"][basis]["tax"].update(amount=str(tax), status="known")
+    with lot.price_snapshots.selected(p["id"] for p in selected):
+        records = lot.retained_records()
+    from .read_diagnostics import phase
+
+    with phase("composition_ms"):
+        return _assessed(actor, value, selected, raw, records, now, offers)
+
+
+def _assessed(actor, value, selected, raw, records, now, offers):
     payload = lot.prepare(
         actor,
         raw,
         now=now,
+        catalog_entries=selected,
+        reference_records=records,
         review_traits={r["printing_id"]: r for r in value["cards"]},
         unknown_quantity=value["unknown_contents"],
     )
@@ -457,6 +666,15 @@ def compare(actor, value):
             result=scenario["result"], references=[dc._reference(r) for r in scenario["references"]]
         )
     return dict(
+        assessment=lot_assessment.assess(
+            value,
+            {p["id"]: p for p in selected},
+            records,
+            now.date(),
+            scenarios["raw"]["result"]["comparisons"],
+            offers,
+            raw,
+        ),
         scenarios=scenarios,
         save_allowed=False,
         note="Temporary review and comparison only; saving and export are unavailable. Dated references are not fresh quotations or a maximum bid. Current bids and planned manual bids are not final purchase costs. Generic grade scenarios do not establish an exact slab match. Unknown contents receive no value.",

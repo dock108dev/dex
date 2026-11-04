@@ -37,6 +37,30 @@ def exercise(page, base, output):
             grade="raw", grader=None, condition="", language=None, edition=None, finish=None, conflicts=[]
         ),
         proposals=[dict(p, quantity=0)],
+        contents=[
+            dict(
+                key="engineering",
+                name=p["name"],
+                candidates=[
+                    {
+                        k: p.get(k)
+                        for k in (
+                            "id",
+                            "name",
+                            "set_name",
+                            "collector_number",
+                            "language",
+                            "edition",
+                            "finish",
+                            "variant",
+                        )
+                    }
+                ],
+                quantity=None,
+                reasons=["Seller quantity unknown"],
+                evidence=[],
+            )
+        ],
         unknown_contents=12,
     )
     mode = ["success"]
@@ -44,6 +68,7 @@ def exercise(page, base, output):
     loads = []
     stops = []
     compares = []
+    saves = []
 
     def boundary(route):
         req = route.request
@@ -89,14 +114,13 @@ def exercise(page, base, output):
             # actual review validation, retention and comparison stay server-owned.
             data["review"]["detail_run"] = None
             data["review"]["discovery_origin"] = None
+            saves.append(data["review"])
             route.continue_(post_data=json.dumps(data))
             return
         if path == "/api/shopping/listing/compare/":
             data = req.post_data_json
-            data["review"]["detail_run"] = None
-            data["review"]["discovery_origin"] = None
             compares.append(data)
-            route.continue_(post_data=json.dumps(data))
+            route.continue_()
             return
         route.continue_()
 
@@ -127,7 +151,7 @@ def exercise(page, base, output):
         page.locator("#discard-listing").click()
         passed("revealed temporary summary and checked return arrive without an eBay detail request")
         page.locator("#review-editor > summary").click()
-        page.get_by_text("Listing reference, tax and other costs", exact=True).click()
+        page.get_by_text("Bid, budget and purchase costs", exact=True).click()
         page.locator("#review-title").fill("My reviewed edits")
         page.locator("#review-price").fill("7.25")
         page.locator("#listing-tools > summary").click()
@@ -145,7 +169,8 @@ def exercise(page, base, output):
         expect(page.locator("#review-price")).to_have_value("3.00")
         expect(page.locator("#review-price-kind")).to_have_value("current_bid")
         expect(page.locator("#review-buy-now")).to_contain_text("9.00")
-        assert "Ungraded" in page.locator("#review-cards summary").first.inner_text()
+        page.get_by_text("Correct identity and quantity", exact=True).click()
+        expect(page.locator("#review-cards")).to_contain_text("Ungraded")
         assert "Reference image unavailable" in page.locator("#review-cards").inner_text()
         expect(page.locator("#review-shipping")).to_have_value("")
         q = page.get_by_label("Cards inside this one lot", exact=True)
@@ -156,13 +181,14 @@ def exercise(page, base, output):
         page.locator("#review-unknown").fill("10")
         page.locator("#check-compare").click()
         expect(page.locator("#check-results")).to_be_visible()
-        assert compares[-1]["review"]["cards"][0]["quantity"] == 2
-        assert compares[-1]["review"]["price"] == "3.00"
-        assert compares[-1]["review"]["price_kind"] == "current_bid"
-        assert compares[-1]["review"]["planned_bid"] == "4"
-        assert compares[-1]["review"]["cards"][0]["grade"] == "raw"
-        assert compares[-1]["review"]["unknown_contents"] == 10
-        assert "incomplete" in page.locator("#check-results").inner_text()
+        assert set(compares[-1]) == {"lease", "revision"}
+        assert saves[-1]["cards"][0]["quantity"] == 2
+        assert saves[-1]["price"] == "3.00"
+        assert saves[-1]["price_kind"] == "current_bid"
+        assert saves[-1]["planned_bid"] == "4"
+        assert saves[-1]["cards"][0]["grade"] == "raw"
+        assert saves[-1]["unknown_contents"] == 10
+        expect(page.locator("#check-results")).to_contain_text("Whole-lot reference Unavailable")
         passed(
             "stock is separate; corrected quantities and whole-lot costs reach existing arithmetic; partial contents stay subtotal"
         )

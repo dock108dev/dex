@@ -20,9 +20,15 @@ def binding(request):
     if not request.user.is_authenticated or not settings.B2_ENABLED:
         return {"navigation_account_id": "", "navigation_binding": ""}
     try:
-        principal = store.verified(actor(request)).user_id
+        principal = actor(request)
     except PermissionDenied:
         return {"navigation_account_id": "", "navigation_binding": ""}
+    return bound_to(request, principal)
+
+
+def bound_to(request, principal):
+    """Pure binding for an already verified principal in the current operation."""
+    principal = principal.user_id
     session = request.session.session_key
     if not session:
         return {"navigation_account_id": "", "navigation_binding": ""}
@@ -116,11 +122,26 @@ def authorize_destination(who, value):
     if raw.get("goal"):
         species_projection.authorize_goal(who, raw["goal"], raw.get("version"))
     if parts.path.startswith("/card-groups/"):
-        from . import account_read_queries
+        from . import account_read_queries, shopping_index
 
-        result = account_read_queries.detail(
-            who, {k: v for k, v in raw.items() if k in {"child", "generation"}}, key=parts.path.split("/")[2]
-        )
+        indexed = shopping_index.current(who)
+        if indexed:
+            # Reuse the same detail query and the enclosing account snapshot;
+            # starting a second SQLite snapshot would break nested Back chains.
+            result = account_read_queries.detail.__wrapped__(
+                who,
+                indexed.build,
+                indexed.state,
+                {k: v for k, v in raw.items() if k == "child"},
+                key=parts.path.split("/")[2],
+            )
+            result.update(generation=indexed.state["generation"], public=False)
+        else:
+            result = account_read_queries.detail(
+                who,
+                {k: v for k, v in raw.items() if k in {"child", "generation"}},
+                key=parts.path.split("/")[2],
+            )
         check_generation(raw, result)
         if result.get("public") is not False:
             raise ValueError("This collection destination is unavailable")

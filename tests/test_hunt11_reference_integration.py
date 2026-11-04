@@ -57,7 +57,8 @@ def reference_case(setup, monkeypatch):
             provenance=json.dumps({"legacy_id": "hunt11-" + key}),
         )
     setup["entries"] = entries
-    monkeypatch.setattr(prices, "entries", lambda: entries)
+    monkeypatch.setattr(prices, "entries", lambda printing_ids=None: entries)
+    monkeypatch.setattr(prices, "selectable", lambda ids: set(ids).issubset(entries))
     monkeypatch.setattr(collection, "catalog", lambda *args, **kwargs: list(entries.values()))
     monkeypatch.setattr(lot_calculator, "legacy_records", lambda: [])
     directory = prices.directory() / "staging" / "synthetic-input"

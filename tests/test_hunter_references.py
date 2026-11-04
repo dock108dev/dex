@@ -20,6 +20,7 @@ from pokemon_hunter.beta import price_snapshot_contract as rules
 from pokemon_hunter.beta import price_snapshots as prices
 
 REAL_ENTRIES = prices.entries
+REAL_SELECTABLE = prices.selectable
 
 
 @pytest.fixture
@@ -34,6 +35,7 @@ def modern(setup, monkeypatch):
     )
     setup["entries"] = {p["id"]: p for p in collection.catalog(setup["actor"])}
     monkeypatch.setattr(prices, "entries", REAL_ENTRIES)
+    monkeypatch.setattr(prices, "selectable", REAL_SELECTABLE)
     monkeypatch.setattr(lot_calculator, "legacy_records", lambda: [])
     return setup
 

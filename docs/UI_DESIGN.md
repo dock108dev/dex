@@ -174,6 +174,8 @@ selected. Archived or unsupported targets remain unavailable. Entry opens the co
 remain explicit.
 Current possession and frozen goal policy remain distinct.
 
+In the source implementation, Search options exposes the missing-species picker, scope, all-in budget and vintage preference. Assess lot shows seller-text entries and unverified printing alternatives. Use offer in review opens the editor. Correct identity and quantity expands one entry, and optional card details holds the condition and literal grader. Compare groups the observed bid and planned costs above itemized reference evidence, the conditional ceiling or its blockers, and the seller link. Returning to Dex rechecks the original assessment before displaying it again. See [post-delivery owner review](operations.md#shopping-owner-review-after-delivery).
+
 The compact assisted review leads with Ungraded and included quantities. Printing,
 condition, grading and cost corrections are optional disclosures. Current auction
 bids, buy-now asking prices, planned manual bids and final purchase costs remain

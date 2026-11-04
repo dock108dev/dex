@@ -652,3 +652,84 @@ compatibility plan. Portability of the installation-bound acquisition/qualificat
 operators is a separate maintenance change; their guards must not be weakened merely
 to remove local paths. None of these extensions is a prerequisite for accepting the
 current scoped product.
+
+## Loading and recovery
+
+The lot finder displays received seller summaries before calculating catalog/reference
+assessments. Contents and collection fit remain unassessed at that point; unknown
+shipping and currency stay unknown. Assess lot requires the checked review admission.
+Optional search settings and a closed explorer do not delay received results. Section
+reload controls make local reads.
+
+Search and official-detail actions use account/session/operation-bound request
+correlations. A lost response is reconciled against its original run, never replayed.
+A missing correlation, including after process restart, remains unknown and cannot
+refund consumed attempts or authorize a retry. Stop can reconcile a lost run identity
+before completing the requested Stop; a failed Stop stays unconfirmed and retryable.
+Original deadlines, leases, revocations and durable acquisition accounting apply.
+
+Candidate assessment narrows complete name/alias families before decoding metadata.
+The explorer filters and pages through prepared indexes while preserving selected-group
+ambiguity. Checked account/catalog snapshots and final revision, Stop and original-lease
+checks govern publication. See [account read preparation](account-reads.md#representation-policy).
+
+These source capabilities require a separately qualified and delivered runtime.
+Customer installation, current-reference usability and owner acceptance remain open;
+see [delivery and owner review](operations.md#shopping-owner-review-after-delivery).
+
+## Collection intent
+
+Find missing cards offers one current missing Pokémon per explicit search, or a species
+in a retained goal. The picker reads the prepared account index independently of catalog
+exploration. Select a region, target and optional all-in USD budget. Vintage preference
+does not exclude other eras. General Shopping and explicit card/printing selection
+remain available.
+
+Target, scope, budget, preference, collection generation and goal version travel with
+the temporary run and review. Back preserves authored form choices. Local recovery
+neither acquires more results nor extends the lease. Changed ownership or an unavailable
+or changed frozen goal requires explicit revalidation, never a replacement version.
+Unsupported or stale prepared state remains unavailable.
+
+Received, shown and filtered counts describe only the bounded provider batch. An
+observed price below budget does not confirm all-in affordability. Unknown shipping,
+tax and contents stay unknown. Assessment separates title mentions from included review
+identities and counts each potentially new missing species once. Applied proposals and
+selected identities remain unverified seller contents. Exact-printing ownership is
+separate; possible collection fit does not establish reference value.
+
+## Seller contents review
+
+Opening an offer shows seller-text entries before the review forms. Each entry separates
+stated quantity, unverified printing alternatives, identity cautions and source wording.
+Repeated mentions need not mean extra copies. Expand a printing family or choose a local
+correction; positive included quantities affect only the temporary review and its
+conditional collection fit. Stock, lot units, seller card count and unknown remainder
+remain separate. Correction search is paged; a contents family retains all alternatives.
+Opening an offer or correcting a printing makes no new detail or model request.
+
+## Returning from an assessed eBay lot
+
+Compare shows the validated destination from the original offer. Auction ending time
+uses the browser's timezone, or remains unknown. Opening eBay leaves Dex in its own tab.
+On return Dex checks the saved comparison against the original review and source leases.
+A changed or unavailable reference removes the prior ceiling and identifies the affected
+card. Compare again uses eligible saved inputs. An expired review requires reopening
+Shopping.
+
+## Deciding on a lot
+
+Use **Search options → Find missing cards** to choose one missing Pokémon, the current
+collection or a frozen goal, a budget and vintage preference. **Assess lot** opens seller
+entries. Expand **Source evidence**, then **Use offer in review** and **Correct identity
+and quantity**. Include only printing identities and units supported by your review.
+The scope line separates title mentions from possible gain on included identities.
+A frozen goal can exclude a printing even when its species is missing.
+
+Under **Bid, budget and purchase costs**, enter the planned bid and known charges.
+**Compare** separates observed and planned all-in costs. Reference evidence identifies
+each applicable printing, raw condition or literal grader/grade, quantity, source and
+dates. Partial evidence supports only a subtotal. An auction ceiling requires complete
+eligible value and costs and uses the lower of the reference and budget limits at whole
+cents. Read the reason when it is unavailable. The next required bid and actual condition
+still need checking. This is a conditional reference comparison, not a guarantee of value.

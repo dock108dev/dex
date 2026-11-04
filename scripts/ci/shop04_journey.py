@@ -84,9 +84,9 @@ def exercise(page, base, output):
     page.goto(base + "/shopping/")
     expect(page.locator("#discovery-search")).to_be_enabled()
     assert page.locator("#discovery-product-type").input_value() == "mixed_lots"
-    assert not page.locator("#discovery-budget").is_visible()
+    expect(page.locator("#discovery-budget")).to_be_visible()
     assert not page.locator("#catalog-cards").is_visible()
-    checks.append("One primary search, mixed lots default, optional controls collapsed")
+    checks.append("One primary search, mixed lots default, budget available, local explorer collapsed")
 
     for query in ("Hypno Fossil", "Jolteon", "Gengar Fossil", "Pokemon Jungle", "Pokemon Cards"):
         before = len(actions)

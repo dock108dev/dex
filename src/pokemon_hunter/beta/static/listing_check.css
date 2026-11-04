@@ -88,3 +88,11 @@
   .offer-overview-amounts { grid-template-columns:minmax(0,1fr); }
   .listing-check .check-panel { padding:12px; }
 }
+
+.contents-entry { border-top:1px solid var(--border); padding:16px 0; min-width:0; overflow-wrap:anywhere; }
+.contents-entry summary { min-height:44px; padding:10px 0; }
+.listing-check .preview-actions>h2:not(#listing-preview-heading) { display:block; }
+
+#check-results { overflow-wrap:anywhere; }
+
+#check-results[data-pending] > :not(:last-child) { visibility: hidden; }

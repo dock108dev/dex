@@ -11,6 +11,7 @@ from uuid import UUID
 from django.conf import settings
 
 from . import price_snapshot_contract as rules
+from . import price_snapshot_index as index
 from . import price_snapshots as storage
 
 SCHEMA = "dex-price-release-v2"
@@ -89,8 +90,23 @@ def install(package, source):
             fixture=policy["provider"] == "dex-engineering-fixture",
         )
         fingerprints[digest] = rules.digest(part)
-    if path.exists():
-        if storage.read(path) != value or storage.seals().get(version, {}).get("sources") != fingerprints:
+    versions = storage.seals()
+    if not registry_path().exists():
+        if any("sources" in seal for seal in versions.values()):
+            raise ValueError("Restore excluded: independent source registry is missing")
+        storage.atomic(registry_path(), dict(contracts=[], releases=[]))
+    installing = not path.exists()
+    if not installing:
+        existing = descriptor(storage.read(path))
+        seal = versions.get(version, {})
+        if path.resolve() == source.resolve():
+            # Repair the surviving sources of the sealed release in place. The
+            # original descriptor and all independent withdrawals remain binding.
+            if seal.get("sha256") != rules.digest(existing) or not all(
+                seal["sources"].get(k) == v for k, v in fingerprints.items()
+            ):
+                raise ValueError("Stored release differs from its seal")
+        elif existing != value or seal.get("sources") != fingerprints:
             raise ValueError("A version cannot be overwritten")
     else:
         if source.parent.resolve() != (storage.directory() / "staging").resolve() or source.is_symlink():
@@ -102,13 +118,17 @@ def install(package, source):
             if target.exists() and storage.read(target) != part:
                 raise ValueError("A source version cannot be overwritten")
             storage.atomic(target, part)
+    indexes = {
+        digest: index.prepare(shard(version, digest), parts[meta["review_id"]], fingerprints[digest])
+        for digest, meta in value["sources"].items()
+    }
+    if version not in versions:
+        versions[version] = dict(sha256=rules.digest(value), expires_at=None, sources=fingerprints)
+    versions[version]["indexes"] = indexes
+    storage.atomic(storage.directory() / "versions.json", versions)
+    if installing:
         storage.atomic(path, value)
         source.unlink()
-    versions = storage.seals()
-    versions[version] = dict(sha256=rules.digest(value), expires_at=None, sources=fingerprints)
-    storage.atomic(storage.directory() / "versions.json", versions)
-    if not registry_path().exists():
-        storage.atomic(registry_path(), dict(contracts=[], releases=[]))
 
 
 def load(path, *, now=None):
@@ -161,8 +181,8 @@ def load(path, *, now=None):
         records=rows,
     )
     # Validate both independent shards and the combined row/mapping/byte budget.
-    # Read the full catalog once; renewal of authentication cannot change it.
-    rules.validate(combined, storage.entries(), now=now)
+    # Every remaining sealed observation must still refer to a published Pokémon printing.
+    rules.validate(combined, storage.entries(row["printing_id"] for row in rows), now=now)
     return combined
 
 
@@ -173,9 +193,13 @@ def drop(version, digest):
     if key not in value["releases"]:
         storage.atomic(registry_path(), dict(value, releases=value["releases"] + [key]))
     shard(version, digest).unlink(missing_ok=True)
+    shard(version, digest).with_suffix(".idx").unlink(missing_ok=True)
+    index.offsets.cache_clear()
+    index.verify.cache_clear()
     versions = storage.seals()
     if version in versions:
         versions[version].get("sources", {}).pop(digest, None)
+        versions[version].get("indexes", {}).pop(digest, None)
         storage.atomic(storage.directory() / "versions.json", versions)
 
 
@@ -189,6 +213,7 @@ def prune(*, now=None):
         admitted = storage.read(registry) if registry.exists() else {}
         if not isinstance(admitted, dict):
             raise ValueError("Invalid source contract registry")
+        managed = set()
         for path in base.glob("*.json"):
             if path.name in {"active.json", "versions.json"}:
                 continue
@@ -200,6 +225,7 @@ def prune(*, now=None):
             if seal and seal.get("sha256") != rules.digest(value):
                 raise ValueError("Snapshot bytes changed after version validation")
             for digest, meta in value["sources"].items():
+                managed.add(shard(value["version"], digest))
                 expiry = meta["expires_at"]
                 reviewed = (
                     meta["fixture"]
@@ -216,7 +242,7 @@ def prune(*, now=None):
         # Interrupted pre-descriptor activation can leave shards. Their v1 contents
         # still identify their source, expiry and release; cleanup never needs prices.
         for path in base.glob("*/*.json"):
-            if path.parent.name == "staging":
+            if path.parent.name == "staging" or path in managed:
                 continue
             part = storage.read(path)
             digest = rules.digest(part["contract"])
@@ -286,3 +312,70 @@ def remove_release(version):
     for path in (storage.directory() / "staging").glob("*.json"):
         if storage.read(path).get("version") == version:
             path.unlink()
+
+
+def prepared_rows(value, seal, ids, *, now=None, sources_only=False, eligible_on=None):
+    """Check current source authority, then read only the requested printing ranges."""
+    value = descriptor(value)
+    version = value["version"]
+    if (
+        not isinstance(seal, dict)
+        or seal.get("sha256") != rules.digest(value)
+        or not registry_path().is_file()
+    ):
+        raise ValueError("Invalid release descriptor or missing source registry")
+    if not isinstance(seal.get("sources"), dict) or not isinstance(seal.get("indexes"), dict):
+        raise ValueError("Private source indexes require explicit preparation")
+    revoked = denied()
+    registry = settings.ROOT / "price-contracts.json"
+    approvals = storage.read(registry) if registry.exists() else {}
+    if not isinstance(approvals, dict):
+        raise ValueError("Invalid source approvals")
+    now = now or datetime.now(timezone.utc)
+    result = []
+    active = False
+    for digest, meta in value["sources"].items():
+        if digest in revoked["contracts"] or version + ":" + digest in revoked["releases"]:
+            continue
+        if meta["expires_at"] and rules.timestamp(meta["expires_at"]) <= now:
+            continue
+        if not (
+            (meta["fixture"] and (settings.ROOT / "SYNTHETIC_ONLY").is_file())
+            or approvals.get(meta["review_id"]) == digest
+        ):
+            continue
+        check_digest(seal["sources"].get(digest))
+        check_digest(seal["indexes"].get(digest))
+        rows, prepared = index.records(
+            shard(version, digest),
+            seal["sources"][digest],
+            seal["indexes"][digest],
+            () if sources_only else ids,
+        )
+        active = True
+        if sources_only:
+            result.append(dict(_snapshot_version=version, _contract_sha256=digest))
+            continue
+        for row in rows:
+            row.update(
+                _snapshot_version=version,
+                _contract_sha256=digest,
+                _save_allowed=prepared["save"],
+                _policy_url=prepared["policy_url"],
+                _review_id=meta["review_id"],
+                _expires_at=meta["expires_at"],
+            )
+        result.extend(rows)
+    present = set() if sources_only else {row["printing_id"] for row in result}
+    if present:
+        if eligible_on is None:
+            if not storage.selectable(present):
+                raise ValueError("Printing is absent from the installed selectable catalog")
+        else:
+            catalog = storage.entries(present)
+            if not present.issubset(catalog):
+                raise ValueError("Printing is absent from the installed selectable catalog")
+            result = [
+                r for r in result if rules.reason(r, catalog[r["printing_id"]], eligible_on) == "eligible"
+            ]
+    return result, "active_snapshot" if active else "sources_unavailable"

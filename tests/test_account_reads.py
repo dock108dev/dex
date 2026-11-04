@@ -79,7 +79,7 @@ def test_display_index_transition_preserves_prepared_rows_and_authority(prepared
         schema.migrate()
         assert reads.groups(actor) == expected
     assert before == {name: store.rows(f'SELECT * FROM "{name}"') for name in tables}
-    assert store.rows("SELECT version FROM account_read_schema") == [{"version": 2}]
+    assert store.rows("SELECT version FROM account_read_schema") == [{"version": schema.VERSION}]
     schema.check()
     collection.execute("DROP INDEX ar_group_display")
     with pytest.raises(Unavailable, match="account_schema_infrastructure"):
@@ -348,6 +348,38 @@ def test_group_search_filter_and_pagination_parity(prepared):
                 actual = reads.groups(prepared["actor"], raw)
                 assert actual["total"] == expected["total"]
                 assert [r["id"] for r in actual["groups"]] == [r["id"] for r in expected["groups"]]
+
+
+def test_equivalent_catalog_pages_with_and_without_prepared_total(prepared):
+    import json
+
+    from pokemon_hunter.beta import account_read_queries as reads
+
+    actor = prepared["actor"]
+    row = store.rows("SELECT * FROM account_read_state WHERE user_id=%s", [actor.user_id])[0]
+    counts = json.loads(row["counts"])
+    assert row["catalog_equivalent"] and counts["public_group_total"] > 0
+    variants = store.rows(
+        "SELECT edition,finish FROM cr_match WHERE scope IN ('public','shared') AND edition IS NOT NULL AND finish IS NOT NULL LIMIT 1"
+    )
+    filters = [dict(sort="number"), *variants]
+    for with_total in (True, False):
+        if not with_total:
+            counts.pop("public_group_total")
+            row["counts"] = accounts.encode(counts)
+            collection.execute(
+                "UPDATE account_read_state SET counts=%s,seal=%s WHERE user_id=%s",
+                [row["counts"], accounts.seal(row), actor.user_id],
+            )
+        for selection in filters:
+            for page in ("1", "2", "99999"):
+                options = dict(selection, page=page, page_size="1")
+                expected = card_groups.list_groups(actor, options)
+                actual = reads.groups(actor, options)
+                assert actual["total"] == expected["total"]
+                assert [item["id"] for item in actual["groups"]] == [
+                    item["id"] for item in expected["groups"]
+                ]
 
 
 def test_wal_read_detects_external_maintenance(prepared):

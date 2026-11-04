@@ -283,7 +283,7 @@ def test_review_summary_lease_immediate_and_original_session_expiry(discovery):
     discovery.monkeypatch.setattr(
         discovery_comparison,
         "compare",
-        lambda *args: [
+        lambda *args, **kwargs: [
             {"item_id": run.raws[0]["itemId"], "title": "PRIVATE SUMMARY"},
         ],
     )
@@ -328,7 +328,7 @@ def test_review_lease_preserves_checked_exact_target_and_separate_auction_amount
     discovery.monkeypatch.setattr(
         discovery_comparison,
         "compare",
-        lambda *args: [
+        lambda *args, **kwargs: [
             {"item_id": run.raws[0]["itemId"], "title": "PRIVATE AUCTION SUMMARY"},
         ],
     )
@@ -376,7 +376,8 @@ def test_review_projects_only_selected_offer_and_preserves_lease(discovery, monk
     d._runs[run.id] = run
     batches = []
 
-    def compare(actor, raws, candidates):
+    def compare(actor, raws, candidates, *, include_artwork=True):
+        assert include_artwork is False
         batches.append([raw["itemId"] for raw in raws])
         return [{"item_id": raw["itemId"], "discovery_kind": "mixed_lot"} for raw in raws]
 

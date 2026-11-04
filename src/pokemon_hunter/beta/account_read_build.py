@@ -133,6 +133,49 @@ def components(rows):
 
 def catalog_inputs(snapshot, rows):
     mapping = components(rows)
+    from .shopping_index import name_records
+
+    if not store.rows("SELECT 1 FROM ar_shopping_names WHERE build=%s LIMIT 1", [snapshot.build]):
+        with connection.cursor() as cursor:
+            cursor.executemany(
+                "INSERT INTO ar_shopping_names VALUES(%s,%s,%s,%s,%s)",
+                [(snapshot.build, *r) for r in name_records(rows)],
+            )
+    if not store.rows("SELECT 1 FROM ar_shopping_picker WHERE build=%s LIMIT 1", [snapshot.build]):
+        from .lot_calculator import SETS, current_species_printing
+
+        games = {r["id"] for r in store.rows("SELECT id FROM games WHERE game_key='pokemon'")}
+        ranks = {
+            r["id"]: r["rank_set"]
+            for r in store.rows(
+                "SELECT id,MIN(rank_set) AS rank_set FROM cr_match WHERE build=%s AND scope IN ('retained','shared') GROUP BY id",
+                [snapshot.build],
+            )
+        }
+        with connection.cursor() as cursor:
+            cursor.executemany(
+                "INSERT INTO ar_shopping_picker VALUES(%s,%s,%s,%s,%s,%s,%s,%s)",
+                [
+                    (
+                        snapshot.build,
+                        r["id"],
+                        i,
+                        ranks.get(r["id"]),
+                        " ".join(
+                            str(r.get(k) or "")
+                            for k in ("name", "collector_number", "set_name", "variant_label")
+                        ).casefold(),
+                        int(r["game_id"] in games),
+                        int(r["set_name"] in SETS or current_species_printing(r)),
+                        int(
+                            r.get("publication_state", "published")
+                            == r.get("set_publication_state", "published")
+                            == "published"
+                        ),
+                    )
+                    for i, r in enumerate(rows)
+                ],
+            )
     existing = store.rows("SELECT COUNT(*) AS n FROM ar_catalog WHERE build=%s", [snapshot.build])[0]["n"]
     if existing:
         # Catalog tokens bind immutable builds; no untrusted caller can replace rows.
@@ -202,6 +245,8 @@ def finish_state(actor, snapshot, source_bundle):
         )[0]["n"]
         for table in schema.TABLES
     }
+    if "public_group_total" in source_bundle:
+        counts["public_group_total"] = source_bundle["public_group_total"]
     text = encode(source_bundle)
     record = dict(
         user_id=actor.user_id,
@@ -280,7 +325,7 @@ def prepare(actor):
         # equality against retained private groups. Otherwise retain private SQL.
         public = "SELECT id FROM cr_groups WHERE build=%s AND scope IN ('public','shared')"
         private = "SELECT id FROM cr_groups WHERE build=%s AND scope IN ('retained','shared') AND json_extract(payload,'$.catalog_available')=1"
-        mismatch = store.rows(
+        membership = store.rows(
             "SELECT EXISTS("
             + public
             + " EXCEPT "
@@ -289,15 +334,18 @@ def prepare(actor):
             + private
             + " EXCEPT "
             + public
-            + ") AS different",
-            [snapshot.build] * 4,
-        )[0]["different"]
+            + ") AS different, (SELECT COUNT(*) FROM ("
+            + public
+            + ")) AS total",
+            [snapshot.build] * 5,
+        )[0]
         bundle = dict(
             scope_facts=scope_facts,
             sources=sources,
             pokemon=sorted(pokemon),
             conflicts=projected["conflicts"],
-            catalog_equivalent=not mismatch,
+            catalog_equivalent=not membership["different"],
+            public_group_total=membership["total"],
             selection_ids=[
                 op["id"]
                 for op in history

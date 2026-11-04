@@ -360,7 +360,7 @@ def _arithmetic(price, shipping, ref, today, *, auction=False):
     )
 
 
-def compare(actor, raw_rows, candidates, *, now=None):
+def compare(actor, raw_rows, candidates, *, now=None, include_artwork=True):
     """Project supplied single/loose-lot summaries without calls or saves.
 
     Candidates must be internally scoped, authorized catalog rows. Additional
@@ -369,16 +369,35 @@ def compare(actor, raw_rows, candidates, *, now=None):
     """
     store.verified(actor)
     now = now or datetime.now(shopping.TZ)
-    authoritative = {p["id"]: p for p in collection.catalog(actor, include_archived=True)}
+    from .shopping_index import current
+
+    indexed = current(actor)
+    authoritative = {
+        p["id"]: p
+        for p in (
+            indexed.printings(c["id"] for c in candidates)
+            if indexed
+            else collection.catalog(actor, include_archived=True)
+        )
+    }
     printings = []
     for candidate in candidates:
         p = authoritative.get(candidate.get("id"))
         if p is None or any(candidate.get(k) != p.get(k) for k in p):
             raise ValueError("Discovery catalog differs from authorized metadata")
         printings.append(p)
-    records = lot_calculator.retained_records()
+    with lot_calculator.price_snapshots.selected(p["id"] for p in printings):
+        records = lot_calculator.retained_records()
     names = discovery_matching.NameIndex(printings)
-    return _project(actor, raw_rows, printings, records, now=now, candidates_for=names.candidates)
+    return _project(
+        actor,
+        raw_rows,
+        printings,
+        records,
+        now=now,
+        candidates_for=names.candidates,
+        artwork=None if include_artwork else {},
+    )
 
 
 def _project(

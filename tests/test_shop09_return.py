@@ -1,6 +1,6 @@
 """SHOP-09 disposable equivalence and authority checks; no customer/provider use."""
 
-from copy import deepcopy
+import json
 
 import pytest
 from test_b1 import env as env
@@ -11,7 +11,7 @@ from test_lot_calculator import workspace as workspace
 from test_migration import snapshot as snapshot
 from test_shopping import shop as shop
 
-from pokemon_hunter.beta import collection, discovery, discovery_catalog, image_bindings
+from pokemon_hunter.beta import collection, discovery, discovery_catalog, image_bindings, store
 
 
 def denied(*args, **kwargs):
@@ -78,9 +78,19 @@ def test_image_subset_equals_full_binding_and_preserves_conflicting_siblings(wor
     subset = image_bindings.catalog_images(who, [chosen])
     assert subset == {chosen["id"]: full[chosen["id"]]}
     assert len(calls) == 1
-    contradictory = deepcopy(chosen)
-    contradictory.update(id="engineering-collision", name="Conflicting literal name")
-    monkeypatch.setattr(collection, "catalog", lambda *args, **kwargs: [chosen, contradictory])
+    contradictory = store.rows("SELECT * FROM printings WHERE id=%s", [chosen["id"]])[0]
+    contradictory["id"] = "engineering-collision"
+    contradictory["attributes"] = json.dumps(
+        dict(json.loads(contradictory["attributes"]), name="Conflicting literal name")
+    )
+    collection.execute(
+        "INSERT INTO printings ("
+        + ",".join(contradictory)
+        + ") VALUES ("
+        + ",".join(["%s"] * len(contradictory))
+        + ")",
+        list(contradictory.values()),
+    )
     assert image_bindings.catalog_images(who, [chosen]) == {}
     with pytest.raises(ValueError, match="authorized"):
         image_bindings.catalog_images(who, [dict(chosen, name="Forged")])

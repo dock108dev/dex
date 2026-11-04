@@ -183,6 +183,12 @@ def comparisons(data, known, full, useful_known, useful_full):
             price_kind=basis["price_kind"],
             price_date=basis.get("date"),
             base_price=money(base),
+            before_tax=money(sum(values[k] for k in ("base_price", "shipping", "other_costs")))
+            if all(k in values for k in ("base_price", "shipping", "other_costs"))
+            else None,
+            base_plus_shipping=money(base + values["shipping"])
+            if base is not None and "shipping" in values
+            else None,
             known_cost_subtotal=money(cost),
             full_delivered_cost=money(delivered),
             unknown_or_ineligible_components=missing,

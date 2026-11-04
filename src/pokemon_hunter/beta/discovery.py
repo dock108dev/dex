@@ -21,7 +21,7 @@ from django.conf import settings
 from django.db import close_old_connections
 from django.http import Http404
 
-from . import discovery_listing, discovery_paging, ebay_hunts, goal_hunts, parity, store
+from . import discovery_listing, discovery_paging, ebay_hunts, goal_hunts, parity, shopping_index, store
 from .diagnostics import async_closing, failure
 from .discovery_contracts import MAX_BROWSE as MAX_BROWSE
 from .discovery_contracts import Choices as Choices
@@ -50,6 +50,7 @@ VINTAGE = (
 
 
 _runs = {}
+_actions = {}
 _lock = threading.RLock()
 _journal_lock = threading.Lock()
 _token_lock = threading.Lock()
@@ -65,19 +66,28 @@ def _owner(actor, session_key):
 
 def _candidate_data(actor, choices, scope, *, ownership=True):
     _context_current(actor, choices)
-    if not ownership and choices.intent == "deals" and scope is None:
+    from .shopping_index import current
+
+    indexed = current(actor)
+    if indexed and indexed.candidate_rows is not None:
+        data = indexed.candidate_data(choices, scope)
+    elif not ownership and choices.intent == "deals" and scope is None:
         # Deals include every supported card, independently of ownership. Matching
         # uses catalog identity only; missing/frozen-goal policy still projects
         # the current account below. Never cache ownership or reference values.
         from . import collection
 
         catalog = collection.catalog(actor)
-        aliases = {
-            row["internal_id"]: row["external_id"]
-            for row in store.rows(
-                "SELECT * FROM external_mappings WHERE provider='legacy' AND entity_kind='set'"
-            )
-        }
+        aliases = (
+            indexed.aliases
+            if indexed
+            else {
+                row["internal_id"]: row["external_id"]
+                for row in store.rows(
+                    "SELECT * FROM external_mappings WHERE provider='legacy' AND entity_kind='set'"
+                )
+            }
+        )
         data = dict(
             catalog=catalog,
             cards={
@@ -98,7 +108,11 @@ def _candidate_data(actor, choices, scope, *, ownership=True):
     if choices.group_id:
         from . import card_groups
 
-        detail = card_groups.detail(actor, choices.group_id, selected_child=choices.printing_id)
+        detail = (
+            indexed.detail(choices.group_id, selected_child=choices.printing_id)
+            if indexed
+            else card_groups.detail(actor, choices.group_id, selected_child=choices.printing_id)
+        )
         allowed = {
             c["id"]
             for c in detail["variants"]
@@ -147,11 +161,19 @@ def _candidate_data(actor, choices, scope, *, ownership=True):
 
 
 def _context_current(actor, choices):
-    from . import collection
+    from . import collection, shopping_intent
 
-    if choices.generation is not None and collection.generation(actor) != choices.generation:
+    indexed = shopping_index.current(actor)
+    if choices.collection_intent and not indexed:
+        # targets() already checks the account generation and frozen goal version
+        # together against its snapshot, including the final publication checks.
+        shopping_intent.validate(actor, choices)
+        return
+    generation = indexed.state["generation"] if indexed else collection.generation(actor)
+    if choices.generation is not None and generation != choices.generation:
         raise collection.Conflict("Collection changed; reopen Shopping from your collection")
-    if choices.goal_version:
+    shopping_intent.validate(actor, choices)
+    if choices.goal_version and not (indexed and choices.collection_intent):
         if collection.one(actor, "goal", choices.goal_id)["version"] != choices.goal_version:
             raise collection.Conflict("Saved goal changed; reopen it from Goals")
 
@@ -172,18 +194,17 @@ def query_plan(candidates, query="", *, set_name=None, english_vintage=False):
 
 
 def _sets(actor):
-    from . import collection
+    from .collection_catalog import set_options
 
-    store.verified(actor)
+    sets = set_options(actor)
     aliases = {
         row["internal_id"]: row["external_id"]
         for row in store.rows("SELECT * FROM external_mappings WHERE provider='legacy' AND entity_kind='set'")
     }
-    return {aliases.get(p["set_id"], p["set_id"]): p["set_name"] for p in collection.catalog(actor)}
+    return {aliases.get(p["id"], p["id"]): p["name"] for p in sets}
 
 
 def metadata(actor):
-    store.verified(actor)
     sets = _sets(actor)
     return {
         "provider": ebay_hunts.status(),
@@ -221,7 +242,11 @@ def _journal(run, stage, state, **extra):
 
 
 def _lookup(actor, session_key, run_id):
-    owner = _owner(actor, session_key)
+    return _lookup_owned(_owner(actor, session_key), run_id)
+
+
+def _lookup_owned(owner, run_id):
+    """Test the original lease for a previously authorized account/session owner."""
     with _lock:
         run = _runs.get(str(run_id))
         if run is None or run.owner != owner:
@@ -298,6 +323,15 @@ def _expire(run_id):
 
 
 def _scope_label(run):
+    if run.choices.collection_intent:
+        from .canonical_species import registry
+
+        c = run.choices
+        basis = f"Frozen goal: {run.scope['name']}" if run.scope else "Current collection"
+        budget = f"{c.budget} USD all-in budget" if c.budget is not None else "All-in budget not set"
+        return f"{basis} · {c.focus} · {registry()[c.species]['name']} · {budget} · " + (
+            "Vintage preferred; any qualifying era" if c.prefer_vintage else "Any qualifying era"
+        )
     if run.choices.intent == "deals":
         return (
             ("Named search · " + run.choices.query + " · includes owned cards")
@@ -346,7 +380,8 @@ def _readable(run):
     )
 
 
-def status(actor, session_key, run_id, *, selected_result=None):
+@shopping_index.indexed
+def status(actor, session_key, run_id, *, selected_result=None, received=False):
     run = _lookup(actor, session_key, run_id)
     with run.lock:
         result = _summary(run)
@@ -365,8 +400,33 @@ def status(actor, session_key, run_id, *, selected_result=None):
     # every local read. Restricted guide cells/derivatives are never cached.
     from .discovery_comparison import compare
 
-    candidates = _candidate_data(actor, run.choices, run.scope, ownership=False)
-    rows = compare(actor, raws, candidates)
+    receipt_only = (
+        received
+        and selected_result is None
+        and run.choices.query
+        and run.choices.product_type == "mixed_lots"
+    )
+    if receipt_only:
+        _context_current(actor, run.choices)
+        rows = discovery_listing.received_rows(raws)
+    else:
+        from .shopping_index import current
+
+        indexed = current(actor)
+        if indexed:
+            from .discovery_comparison import _clues
+
+            indexed.candidate_rows = list(
+                {p["id"]: p for raw in raws for p in indexed.matching(_clues(raw)["text"])}.values()
+            )
+        candidates = _candidate_data(actor, run.choices, run.scope, ownership=False)
+        # Review renders its checked proposal artwork separately. Do not bind
+        # images for the whole comparison catalog merely to admit one offer.
+        rows = (
+            compare(actor, raws, candidates, include_artwork=False)
+            if selected_result is not None
+            else compare(actor, raws, candidates)
+        )
     if run.choices.sort == "ending_soonest":
         positions = {str(raw.get("itemId")): i for i, raw in enumerate(raws)}
         rows.sort(key=lambda row: positions.get(str(row.get("item_id")), len(positions)))
@@ -391,14 +451,34 @@ def status(actor, session_key, run_id, *, selected_result=None):
                 continue
         visible.append(row)
 
+    if receipt_only:
+        _context_current(actor, run.choices)
+        _lookup(actor, session_key, run_id)
     with run.lock:
         if not run.cancel.is_set() and _readable(run):
             result["results"] = visible
+            result["coverage"] = dict(
+                received=len(raws), shown=len(visible), filtered=len(rows) - len(visible)
+            )
     if not result["results"] and run.state == "complete":
         result["limitation"] = (
             "No supported summaries in this batch matched the selected product and budget choices. "
             "Imperfect identities remain browsable without a reference. More results continues only when available."
         )
+    indexed = shopping_index.current(actor)
+    if indexed:
+
+        def final_receipt():
+            # Stop/expiry can occur during the fresh account publication checks.
+            # This is a final lease check, never replacement assessment admission.
+            with _lock, run.lock:
+                expired = time.monotonic() - run.created >= EPHEMERAL_SECONDS
+                if _runs.get(run.id) is not run or run.cancel.is_set() or expired:
+                    result.update(_summary(run))
+                    result.update(state="expired" if expired else "stopped", running=False, has_next=False)
+                    result.pop("coverage", None)
+
+        indexed.publication_checks.append(final_receipt)
     return result
 
 
@@ -441,6 +521,7 @@ def summary_lease(actor, session_key, run_id, result_id):
         return _summary_lease(run, result_id)
 
 
+@shopping_index.indexed
 def review_candidate(actor, session_key, run_id, result_id):
     """Lease one explicitly selected summary to review without any new request.
 
@@ -465,6 +546,21 @@ def review_candidate(actor, session_key, run_id, result_id):
         selected_target = identity(printing)
     with run.lock:
         lease = _summary_lease(run, result_id)
+        indexed = shopping_index.current(actor)
+        if indexed:
+
+            def final_lease():
+                # Full assessment above was admitted inside a revision-bound
+                # snapshot. After its fresh final authority checks, Stop/expiry
+                # must still be able to prevent publication of that assessment.
+                with _lock, run.lock:
+                    if _runs.get(run.id) is not run:
+                        raise Http404
+                    final = _summary_lease(run, result_id)
+                    if final["raw"] != lease["raw"] or final["created"] != lease["created"]:
+                        raise Http404
+
+            indexed.publication_checks.append(final_lease)
         return {
             **lease,
             "choices": run.choices.model_dump(mode="json"),
@@ -490,6 +586,41 @@ def stop(actor, session_key, run_id):
         listing_interpretation.erase_parent("discovery", run_id)
         _journal(run, "action", "stopped")
         return _summary(run)
+
+
+def action_status(actor, session_key, request_id, *, operation="browse", received=False):
+    """Local reconciliation only. Absence is never permission to replay a POST."""
+    key = (_owner(actor, session_key), operation, str(uuid.UUID(request_id)))
+    with _lock:
+        run_id = _actions.get(key)
+    if not run_id:
+        return {"outcome_unknown": True, "request_id": request_id}
+    if operation == "detail":
+        from . import listing_check
+
+        return listing_check.status(actor, session_key, run_id)
+    return (
+        status(actor, session_key, run_id, received=True) if received else status(actor, session_key, run_id)
+    )
+
+
+def start_action(actor, session_key, raw, request_id, *, auth_session=None, operation="browse"):
+    key = (_owner(actor, session_key), operation, str(uuid.UUID(request_id)))
+    with _lock:
+        if key in _actions:
+            raise ValueError("This action was already submitted. Reload its status; do not resubmit.")
+        # Reserve before any admission work. Exceptions leave an unknown outcome;
+        # neither this correlation nor a lost HTTP response refunds journal charges.
+        _actions[key] = None
+    if operation == "detail":
+        from . import listing_check
+
+        result = listing_check.start(actor, session_key, raw["identifier"], auth_session=auth_session)
+    else:
+        result = start(actor, session_key, raw, auth_session=auth_session)
+    with _lock:
+        _actions[key] = result["run_id"]
+    return result
 
 
 def start(actor, session_key, raw, *, auth_session=None):
@@ -539,10 +670,24 @@ def start(actor, session_key, raw, *, auth_session=None):
         if choices.intent == "deals" and choices.goal_id:
             raise ValueError("Use Find missing cards to search a frozen goal")
         scope = goal_hunts.snapshot(actor, choices.goal_id)
+        if scope and choices.goal_version and scope["version"] != choices.goal_version:
+            from .collection import Conflict
+
+            raise Conflict("Saved goal changed; reopen it from Goals")
         # Named acquisition does not need a catalog/ownership projection before
         # dispatch. Scope is validated again on every result read and review.
         _context_current(actor, choices)
-        plain_named = choices.query and scope is None and choices.species is None and choices.group_id is None
+        if choices.collection_intent:
+            from .canonical_species import registry
+
+            choices.query = registry()[choices.species]["name"]
+        plain_named = (
+            choices.collection_intent
+            or choices.query
+            and scope is None
+            and choices.species is None
+            and choices.group_id is None
+        )
         candidates = [] if plain_named else _candidate_data(actor, choices, scope)
         set_name = None
         if choices.set_id:

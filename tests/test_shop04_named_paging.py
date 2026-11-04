@@ -250,7 +250,7 @@ def test_previous_page_review_stays_local_during_more_and_stop_revokes_it(named)
     named.monkeypatch.setattr(
         discovery_comparison,
         "compare",
-        lambda actor, raws, candidates: [
+        lambda actor, raws, candidates, **kwargs: [
             dict(item_id=r["itemId"], title=r["title"], discovery_kind="mixed_lot") for r in raws
         ],
     )

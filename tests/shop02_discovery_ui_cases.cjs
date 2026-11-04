@@ -10,7 +10,7 @@ const baseChoices = {intent:'deals',goal_id:null,missing_basis:'species',focus:'
 const row = {id:'one',proposed_identity:{name:'Engineering card',set_name:'Engineering set',collector_number:'1',artwork_url:null},listing_price:'10',shipping:null,delivered_total:null,classification:'conditional',reason:'Shipping is unknown.',basis:'Raw condition scenario.',reference:{amount:'20',as_of:'2020-01-01',valuation_as_of:null,captured_at:'2021-01-01',grade:'raw'},comparison:{reference_minus_listing_price:'10',reference_minus_delivered_total:null},revealed:false,save_allowed:false,save_reason:'Temporary comparison; saving unavailable.'};
 const complete = (id=runId, rows=[row]) => ({run_id:id,state:'complete',running:false,choices:baseChoices,scope_label:'Deals include owned cards',expires_in_seconds:1800,results:structuredClone(rows),counts:{summary_count:1},has_next:true,note:'Temporary results.'});
 class Element {
-  constructor(id) {this.id=id;this.value='';this.dataset={};this.listeners={};this.disabled=false;this.hidden=false;this.textContent='';this._html='';}
+  constructor(id) {this.id=id;this.options=[];this.value='';this.dataset={};this.listeners={};this.disabled=false;this.hidden=false;this.textContent='';this._html='';}
   addEventListener(type, fn) {(this.listeners[type] ||= []).push(fn);}
   async emit(type,extra={}) {for (const fn of this.listeners[type] || []) await fn({target:this,preventDefault(){},...extra});}
   focus() {this.focused=true;}
@@ -35,12 +35,12 @@ function setup(responses, search='') {
   const initial=Object.fromEntries(new URLSearchParams(search));get('discovery-context').textContent=JSON.stringify({generation:7,species:initial.species?Number(initial.species):null,group:initial.group||null,child:initial.child||null});get('discovery-initial').textContent=JSON.stringify(initial);get('discovery-goals').textContent='[]';get('discovery-product-type').value='both';get('discovery-sort').value='ending_soonest';get('discovery-english-vintage').checked=true;
   const location={origin:'http://local.test',href:'http://local.test/shopping/'+search,search,reload(){calls.push({reload:true});}};
   const window={scrollY:0,scrollTo(){},addEventListener(type,fn){events[type]=fn;}};
-  const context={document:{createElement:()=>({getContext:()=>null}),getElementById:get,querySelector:()=>get('local-explorer'),body:{dataset:{navigationBinding:'binding-test',navigationAccount:'account-test'}},addEventListener(type,fn){events[type]=fn;}},window,location,requestAnimationFrame:fn=>fn(),history:{replaceState(a,b,url){location.href=location.origin+url;}},URL,URLSearchParams,Intl,Date:{now:()=>clockNow,parse:Date.parse},setInterval(fn){intervals.set(++timerId,fn);return timerId;},clearInterval(id){intervals.delete(id);},setTimeout(fn){timers.set(++timerId,fn);return timerId;},clearTimeout(id){timers.delete(id);},fetch:async(url,init)=>{
+  const context={crypto:require('node:crypto').webcrypto,document:{createElement:()=>({getContext:()=>null}),getElementById:get,querySelector:()=>get('local-explorer'),body:{dataset:{navigationBinding:'binding-test',navigationAccount:'account-test'}},addEventListener(type,fn){events[type]=fn;}},window,location,requestAnimationFrame:fn=>fn(),history:{replaceState(a,b,url){location.href=location.origin+url;}},URL,URLSearchParams,Intl,Date:{now:()=>clockNow,parse:Date.parse},setInterval(fn){intervals.set(++timerId,fn);return timerId;},clearInterval(id){intervals.delete(id);},setTimeout(fn){timers.set(++timerId,fn);return timerId;},clearTimeout(id){timers.delete(id);},fetch:async(url,init)=>{
     if (url.startsWith('/api/shopping/discovery/catalog/')) {localCalls.push({url,init});const reply=await (localResponses.shift() || {mode:'cards',results:[],total:0,offset:0,sets:[],has_more:false});return {ok:true,status:200,json:async()=>({...reply,authority:{account_id:'account-test',binding:'binding-test'}})};}
     calls.push({url,init,body:init.body?JSON.parse(init.body):undefined});
     const response=responses.shift();if(response instanceof Error) throw response;
     const data=typeof response==='function'?await response(calls.at(-1)):await response;
-    return {ok:true,status:200,json:async()=>({...data,provider:{enabled:true,configured:true,...data.provider},authority:{account_id:'account-test',binding:'binding-test',...data.authority}})};
+    return {ok:!data.httpStatus,status:data.httpStatus || 200,json:async()=>({...data,provider:{enabled:true,configured:true,...data.provider},authority:{account_id:'account-test',binding:'binding-test',...data.authority}})};
   }};
   vm.createContext(context);vm.runInContext(source,context);
   return {get,calls,localCalls,localResponses,timers,intervals,events,window,location,context,advance(ms){clockNow+=ms;},now:()=>clockNow};
@@ -49,7 +49,7 @@ async function flush() {for(let i=0;i<80;i++) await Promise.resolve();}
 async function check(name,test) {await test();passed.push(name);}
 const passed=[];
 (async()=>{
-  await check('lot finder requires a name and ignores hidden legacy refinements',async()=>{
+  await check('lot finder requires a name and retains visible budget and scope',async()=>{
     const t=setup([{goals:[],sets:[]},complete()]);await flush();
     t.get('discovery-form').dataset.lotSearch='true';
     await t.get('discovery-form').emit('submit');await flush();
@@ -58,7 +58,7 @@ const passed=[];
     t.get('discovery-product-type').value='singles';t.get('discovery-budget').value='1';
     t.get('discovery-focus').value='bulk';
     await t.get('discovery-form').emit('submit');await flush();
-    assert.deepEqual(t.calls[1].body,{...baseChoices,query:'Venusaur',set_id:'Base Set',product_type:'mixed_lots',english_vintage:false});
+    assert.deepEqual(t.calls[1].body,{...baseChoices,query:'Venusaur',set_id:'Base Set',product_type:'mixed_lots',english_vintage:false,budget:'1',focus:'bulk',collection_intent:false,prefer_vintage:false,currency:'USD'});
     assert.equal(t.get('discovery-stop').hidden,true);
   });
   await check('lot finder preserves provider order without guessing a single-card identity',async()=>{
@@ -156,7 +156,7 @@ const passed=[];
     assert.doesNotMatch(t.get('discovery-cards').innerHTML,/Engineering card/);
   });
   await check('reopening reads the temporary run without acquiring; account revocation clears private results',async()=>{
-    const t=setup([{goals:[]},complete()],'?run_id='+runId);await flush();
+    const t=setup([complete(),{goals:[]}],'?run_id='+runId);await flush();
     assert.equal(t.calls.length,2);assert.ok(t.calls.every(call=>call.init.method==='GET'));
     assert.match(t.get('discovery-cards').innerHTML,/Engineering card/, t.get('discovery-status').textContent);
     t.events['dex:authority-revoked']();assert.equal(t.get('discovery-cards').innerHTML,'');assert.equal(t.get('discovery-search').disabled,true);
@@ -172,7 +172,7 @@ const passed=[];
     await t.get('discovery-form').emit('submit');await flush();
     assert.equal(t.get('discovery-cards').innerHTML,'');assert.equal(t.get('discovery-search').disabled,true);
     assert.match(t.get('discovery-status').textContent,/session changed/);
-    const restored=setup([{goals:[]},complete()],'?run_id='+runId);await flush();
+    const restored=setup([complete(),{goals:[]}],'?run_id='+runId);await flush();
     restored.events.pagehide();assert.equal(restored.get('discovery-cards').innerHTML,'');
     restored.events.pageshow({persisted:true});assert.equal(restored.calls.at(-1).reload,true);
   });
@@ -288,7 +288,7 @@ const passed=[];
   });
   await check('Back restores offers and focus without a closed explorer read; explicit opening stays usable',async()=>{
     let release;const held=new Promise(resolve=>{release=resolve;});
-    const t=setup([{goals:[]},complete()],'?run_id='+runId+'&focus=offer-one&scroll=1500');
+    const t=setup([complete(),{goals:[]}],'?run_id='+runId+'&focus=offer-one&scroll=1500');
     t.localResponses.push(held);await flush();
     assert.match(t.get('discovery-cards').innerHTML,/Engineering card/);
     assert.equal(t.get('offer-one').focused,true);
@@ -301,14 +301,14 @@ const passed=[];
   });
   await check('return starts metadata and local run revalidation together and rejects late revoked content',async()=>{
     let release;const held=new Promise(resolve=>{release=resolve;});
-    const t=setup([held,complete()],'?run_id='+runId);await flush();
-    assert.equal(t.calls.length,2);assert.match(t.calls[1].url,/run_id=/);
-    assert.equal(t.get('discovery-cards').innerHTML,'');
+    const t=setup([complete(),held],'?run_id='+runId);await flush();
+    assert.equal(t.calls.length,2);assert.match(t.calls[0].url,/run_id=/);
+    assert.match(t.get('discovery-cards').innerHTML,/Engineering card/);
     t.events['dex:authority-revoked']();release({goals:[]});await flush();
     assert.equal(t.get('discovery-cards').innerHTML,'');assert.equal(t.localCalls.length,0);
   });
   await check('an initially open explorer uses one local request across toggle and bootstrap',async()=>{
-    const t=setup([{goals:[]},complete()],'?run_id='+runId+'&focus=catalog-one');
+    const t=setup([complete(),{goals:[]}],'?run_id='+runId+'&focus=catalog-one');
     await t.get('local-explorer').emit('toggle');await flush();
     assert.equal(t.localCalls.length,1);assert.equal(t.calls.length,2);
     assert.match(t.get('discovery-cards').innerHTML,/Engineering card/);
@@ -319,6 +319,52 @@ const passed=[];
     assert.match(t.get('discovery-suggestions').innerHTML,/Use Venusaur/);
     assert.match(t.get('discovery-suggestions').innerHTML,/Keep Venasaur as typed/);
     assert.equal(t.calls.length,1);assert.equal(t.calls[0].init.method,'GET');
+  });
+  await check('failed optional options cannot hide authorized restored results',async()=>{
+    const t=setup([complete(),new Error('options offline')],'?run_id='+runId+'&budget=100&q=Gengar');await flush();
+    assert.match(t.get('discovery-cards').innerHTML,/Engineering card/);
+    assert.equal(t.get('discovery-budget').value,'100');assert.equal(t.get('discovery-query').value,'Gengar');
+    assert.equal(t.get('discovery-options-reload').hidden,false);
+    assert.equal(t.localCalls.length,0);assert.ok(t.calls.every(c=>c.init.method==='GET'));
+  });
+  await check('fresh closed explorer does no catalog work',async()=>{
+    const t=setup([{goals:[]}]);await flush();assert.equal(t.localCalls.length,0);
+  });
+  await check('lost search response locks submit and reconciles without replay',async()=>{
+    const t=setup([{goals:[]},new Error('connection lost'),complete()]);await flush();
+    await t.get('discovery-form').emit('submit');await flush();
+    assert.equal(t.get('discovery-search').disabled,true);assert.equal(t.get('discovery-stop').hidden,false);
+    await t.get('discovery-form').emit('submit');await flush();assert.equal(t.calls.length,2);
+    assert.match(t.location.href,/request_id=/);
+    t.get('discovery-query').value='Edited target';t.get('discovery-budget').value='75';
+    await t.get('discovery-reload').emit('click');await flush();
+    assert.match(t.calls[2].url,/request_id=/);assert.equal(t.calls[2].init.method,'GET');
+    assert.equal(t.get('discovery-query').value,'Edited target');assert.equal(t.get('discovery-budget').value,'75');
+    assert.match(t.get('discovery-cards').innerHTML,/Engineering card/);
+    assert.equal(t.get('discovery-search').disabled,false);assert.doesNotMatch(t.location.href,/request_id=/);
+    assert.equal(t.calls.filter(c=>c.init.method==='POST').length,1);
+  });
+  await check('missing correlation never permits retry, including page reload',async()=>{
+    const t=setup([{outcome_unknown:true},{goals:[]}], '?request_id='+runId);await flush();
+    assert.equal(t.get('discovery-search').disabled,true);
+    assert.match(t.get('discovery-status').textContent,/still unknown/);
+    await t.get('discovery-form').emit('submit');assert.equal(t.calls.length,2);
+  });
+  await check('known pre-dispatch busy allows only an explicit new search',async()=>{
+    const t=setup([{goals:[]},{httpStatus:503,error:'runtime_busy'},complete()]);await flush();
+    await t.get('discovery-form').emit('submit');await flush();
+    assert.match(t.get('discovery-status').textContent,/did not start/);
+    assert.doesNotMatch(t.get('discovery-status').textContent,/runtime_busy/);
+    assert.equal(t.calls.length,2);assert.equal(t.get('discovery-search').disabled,false);
+    await t.get('discovery-form').emit('submit');await flush();assert.equal(t.calls.length,3);
+  });
+  await check('failed Stop stays available and blocks a new acquisition',async()=>{
+    const active={...complete(),state:'running',running:true};
+    const t=setup([{goals:[]},active,new Error('Stop response lost'),{...complete(runId,[]),state:'stopped',has_next:false}]);await flush();
+    await t.get('discovery-form').emit('submit');await flush();await t.get('discovery-stop').emit('click');await flush();
+    assert.match(t.get('discovery-status').textContent,/Stop was not confirmed/);
+    assert.equal(t.get('discovery-stop').disabled,false);assert.equal(t.get('discovery-search').disabled,true);
+    await t.get('discovery-stop').emit('click');await flush();assert.match(t.get('discovery-status').textContent,/Search stopped/);
   });
   assert.doesNotMatch(source,/localStorage|sessionStorage|indexedDB/);
   console.log(JSON.stringify({passed:passed.length,cases:passed,provider_calls:0,customer_data:false}));

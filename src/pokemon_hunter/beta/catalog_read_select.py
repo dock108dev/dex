@@ -3,7 +3,7 @@
 from . import store
 
 
-def select(build, filters, *, printing=False):
+def select(build, filters, *, printing=False, ids_only=False):
     if not any(filters.get(f) for f in ("q", "species", "set", "language", "edition", "finish", "variant")):
         return unfiltered(build, filters, printing=printing)
     if filters.get("q", "").strip() and not any(
@@ -11,7 +11,7 @@ def select(build, filters, *, printing=False):
     ):
         from .catalog_read_search import select_search
 
-        return select_search(build, filters, printing=printing)
+        return select_search(build, filters, printing=printing, ids_only=ids_only)
     variants = any(filters.get(f) for f in ("edition", "finish", "variant"))
     grouped = not printing and not variants
     table = "cr_groups" if grouped else "cr_match"
@@ -61,6 +61,18 @@ def select(build, filters, *, printing=False):
     matched = f"SELECT {distinct}{columns} FROM {table} m INDEXED BY {index} WHERE " + " AND ".join(
         conditions
     )
+    if ids_only and variants and not printing and sort == "rank_set":
+        # Count distinct matching ranks directly in index order. Only the
+        # requested page needs IDs, and the account supplies its own summaries.
+        source = f" FROM {table} m INDEXED BY {index} WHERE " + " AND ".join(conditions)
+        total = store.rows("SELECT COUNT(DISTINCT m.rank_set) AS n" + source, params)[0]["n"]
+        page_rows = store.rows(
+            "WITH page AS MATERIALIZED (SELECT DISTINCT m.rank_set"
+            + source
+            + " ORDER BY m.rank_set LIMIT %s OFFSET %s) SELECT g.id FROM page CROSS JOIN cr_groups g INDEXED BY cr_public_order_set WHERE g.build=%s AND g.scope IN ('public','shared') AND g.rank_set=page.rank_set ORDER BY page.rank_set,g.id",
+            [*params, size, offset(page, size), build],
+        )
+        return total, page_rows
     if printing:
         selected = f"SELECT * FROM matching ORDER BY {sort},id LIMIT %s OFFSET %s"
         selected_params = [size, offset(page, size)]
