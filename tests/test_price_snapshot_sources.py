@@ -27,6 +27,39 @@ from pokemon_hunter.beta import price_snapshot_contract as rules
 from pokemon_hunter.beta import price_snapshots as prices
 
 
+@pytest.mark.parametrize("selected", [False, True])
+def test_prepared_decoder_preserves_literal_records_without_caching_prices(setup, selected):
+    value = multi_package(setup, restricted=False)
+    for row in value["records"]:
+        row["source_version"] = 'édition 雪 🃏 / "literal" \\ source'
+        policy = value["contracts"][row["contract_id"]]["contract"]
+        policy["mappings"][row["printing_id"]]["source_version"] = row["source_version"]
+    prices.activate(stage(value), None, now=NOW)
+    seal = prices.seals()[value["version"]]
+    for part in rules.source_packages(value).values():
+        digest = rules.digest(part["contract"])
+        path = prices.sources.shard(value["version"], digest)
+        ids = {part["records"][0]["printing_id"]} if selected else None
+        expected = [r for r in part["records"] if ids is None or r["printing_id"] in ids]
+
+        def read():
+            return prices.sources.index.records(path, seal["sources"][digest], seal["indexes"][digest], ids)[
+                0
+            ]
+
+        rows = read()
+        assert rows == expected
+        assert all(type(r["value"]) is str and type(r["estimated"]) is bool for r in rows)
+        rows[0]["value"] = "999"
+        rows[0]["provider_identity"]["product_id"] = "mutated caller"
+        assert read() == expected
+        changed = prices.read(path)
+        changed["records"][0]["value"] = "999"
+        prices.atomic(path, changed)
+        with pytest.raises(ValueError, match="bytes changed"):
+            read()
+
+
 def test_multisource_grades_and_independent_expiry_restore_exclusion(setup):
     value = multi_package(setup)
     prices.activate(stage(value), None, now=NOW)

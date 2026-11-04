@@ -5,6 +5,8 @@ import json
 import os
 from functools import lru_cache
 
+import orjson
+
 from . import price_snapshot_contract as rules
 from . import price_snapshots as storage
 
@@ -75,13 +77,16 @@ def records(path, fingerprint, index_sha, ids):
         if ids is None:
             start, length = index["array"]
             stream.seek(start)
-            rows = json.loads(stream.read(length))
+            # Only decode records after the immutable source seal is verified.
+            # Keep canonical writes/admission on the existing strict JSON path;
+            # this avoids Python's bulk decoder cost without retaining prices.
+            rows = orjson.loads(stream.read(length))
         else:
             rows = []
             for pid in sorted(ids):
                 for start, length in index["locations"].get(pid, ()):
                     stream.seek(start)
-                    row = json.loads(stream.read(length))
+                    row = orjson.loads(stream.read(length))
                     if row["printing_id"] != pid:
                         raise ValueError("Prepared source printing changed")
                     rows.append(row)

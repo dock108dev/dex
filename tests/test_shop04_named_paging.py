@@ -63,6 +63,8 @@ def named(discovery):
 def test_names_and_broad_words_need_no_catalog_match_or_forms(named, query):
     named.monkeypatch.setattr(d, "_candidate_data", lambda *args, **kwargs: [])
     result = d.start(named.actor, "session", {"query": query})
+    assert result["state"] == "queued"
+    result = d.status(named.actor, "session", result["run_id"], received=True)
     assert result["state"] == "complete" and result["has_next"]
     browse = [kw for stage, kw in named.calls if stage == "browse"]
     assert len(browse) == 1 and browse[0]["query"] is None
@@ -74,6 +76,7 @@ def test_names_and_broad_words_need_no_catalog_match_or_forms(named, query):
 def test_authoritative_set_survives_empty_candidates(named):
     named.monkeypatch.setattr(d, "_candidate_data", lambda *args, **kwargs: [])
     result = d.start(named.actor, "session", {"query": "Jolteon base 2", "set_id": "base_set"})
+    result = d.status(named.actor, "session", result["run_id"], received=True)
     request = next(kw for stage, kw in named.calls if stage == "browse")["search_options"]["named"]
     assert request.query == "Jolteon" and result["state"] == "complete"
     assert request.set_name == "Base Set"
@@ -88,6 +91,8 @@ def test_more_same_query_category_refinements_original_lease_and_finite_bound(na
     original_created = run.created
     for page in range(1, 4):
         result = d.start(named.actor, "session", {"continuation_run": run.id})
+        assert result["state"] == "queued"
+        result = d.status(named.actor, "session", result["run_id"], received=True)
         assert result["run_id"] == run.id and run.created == original_created
         assert result["pages_completed"] == page + 1 and result["state"] == "complete"
     requests = [kw["search_options"]["named"] for stage, kw in named.calls if stage == "browse"]
@@ -114,6 +119,7 @@ def test_both_one_category_per_explicit_action_alternates_without_hidden_scan(na
     result = d.start(named.actor, "session", {"query": "Pokemon Cards", "product_type": "both"})
     for _ in range(3):
         result = d.start(named.actor, "session", {"continuation_run": result["run_id"]})
+    result = d._summary(d._lookup(named.actor, "session", result["run_id"]))
     requests = [kw["search_options"]["named"] for stage, kw in named.calls if stage == "browse"]
     assert [(r.category, r.offset) for r in requests] == [
         ("183455", 0),
@@ -162,6 +168,7 @@ def test_stop_during_more_discards_late_page_and_preserves_consumed_accounting(n
 
     named.monkeypatch.setattr(d, "Transport", Stops)
     result = d.start(named.actor, "session", {"continuation_run": result["run_id"]})
+    result = d.status(named.actor, "session", result["run_id"], received=True)
     run = d._runs[result["run_id"]]
     assert run.state == "stopped" and not run.raws and not result["has_next"]
     assert run.counts["browse"] == 2
@@ -181,6 +188,7 @@ def test_error_ends_continuation_without_retry(named):
 
     named.monkeypatch.setattr(d, "Transport", Fails)
     result = d.start(named.actor, "session", {"continuation_run": result["run_id"]})
+    result = d.status(named.actor, "session", result["run_id"], received=True)
     assert result["state"] == "failed" and not result["has_next"]
     assert result["counts"]["browse"] == 2
 

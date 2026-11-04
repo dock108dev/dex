@@ -732,11 +732,16 @@ def start(actor, session_key, raw, *, auth_session=None):
     if not run.queries:
         run.acquired_at = time.monotonic()
         run.state = "complete"
+        return _summary(run)
     else:
+        # Capture the admitted queue receipt before dispatch can take run.lock
+        # for durable request accounting. The POST must not join worker disk I/O;
+        # subsequent status reads reconcile completion, Stop and failures.
+        result = _summary(run)
         threading.Thread(
             target=_worker, args=(run, actor, credentials), daemon=True, name="dex-shopping-discovery"
         ).start()
-    return _summary(run)
+        return result
 
 
 class _Stopped(Exception):

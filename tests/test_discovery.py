@@ -166,10 +166,57 @@ def test_next_uses_captured_choices_and_deduplicates(discovery):
     first = d.start(discovery.actor, "session", {})
     second = d.start(discovery.actor, "session", {"continuation_run": first["run_id"]})
     assert second["choices"] == first["choices"]
-    assert second["queries_completed"] == 2
+    assert second["state"] == "queued" and second["queries_completed"] == 1
+    assert d._runs[second["run_id"]].offset == 2
     assert len(d._runs[second["run_id"]].raws) == 1
     with pytest.raises(ValueError, match="changing"):
         d.start(discovery.actor, "session", {"continuation_run": first["run_id"], "query": "changed"})
+
+
+def test_start_receipt_does_not_wait_for_worker_accounting_lock(discovery):
+    entered, release, returned = threading.Event(), threading.Event(), threading.Event()
+    workers, replies, errors = [], [], []
+
+    def worker(run, actor, credentials):
+        with run.lock:
+            records = [json.loads(line) for line in ledger(discovery).read_text().splitlines()]
+            assert records[0]["stage"] == "action" and records[0]["state"] == "admitted"
+            entered.set()
+            assert release.wait(5)
+            run.state = "complete"
+
+    class Scheduled:
+        def __init__(self, target, args, **kwargs):
+            self.thread = threading.Thread(target=target, args=args, **kwargs)
+            workers.append(self.thread)
+
+        def start(self):
+            self.thread.start()
+            assert entered.wait(5)
+
+    def request():
+        try:
+            replies.append(d.start(discovery.actor, "session", {"query": "Abra"}))
+        except Exception as exc:
+            errors.append(exc)
+        finally:
+            returned.set()
+
+    discovery.monkeypatch.setattr(d, "_worker", worker)
+    discovery.monkeypatch.setattr(d, "threading", SimpleNamespace(Thread=Scheduled))
+    caller = threading.Thread(target=request)
+    caller.start()
+    try:
+        assert entered.wait(5)
+        assert returned.wait(2), "Search receipt waited for the worker's accounting lock"
+        assert not errors
+        assert replies[0]["state"] == "queued" and replies[0]["running"]
+    finally:
+        release.set()
+        caller.join(5)
+        for thread in workers:
+            thread.join(5)
+    assert not caller.is_alive() and all(not thread.is_alive() for thread in workers)
 
 
 def test_account_session_isolation_and_stop_no_dispatch(discovery):
@@ -466,7 +513,8 @@ def test_selected_set_typed_query_and_captured_provider_choices_reach_wire(disco
             "english_vintage": True,
         },
     )
-    assert result["state"] == "complete"
+    assert result["state"] == "queued"
+    assert d._runs[result["run_id"]].state == "complete"
     browse = next(kwargs for stage, kwargs in FakeTransport.calls if stage == "browse")
     assert browse["query"] is None
     assert browse["search_options"]["named"].query == "Abra English"
