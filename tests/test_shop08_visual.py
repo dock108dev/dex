@@ -3,6 +3,7 @@
 import json
 import shutil
 import subprocess
+from html.parser import HTMLParser
 from pathlib import Path
 
 import pytest
@@ -14,6 +15,39 @@ from test_migration import snapshot as snapshot
 from test_shopping import shop as shop
 
 from pokemon_hunter.beta import listing_details
+
+
+def test_inspection_styles_use_one_request_with_the_complete_existing_cascade(workspace):
+    class Styles(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.hrefs = []
+
+        def handle_starttag(self, tag, attrs):
+            attrs = dict(attrs)
+            if tag == "link" and attrs.get("rel") == "stylesheet":
+                self.hrefs.append(attrs["href"])
+
+    shell = workspace["a"].get("/shopping/check/")
+    styles = Styles()
+    styles.feed(shell.content.decode())
+    assert styles.hrefs == ["/collection-assets/listing-shell.css"]
+    response = workspace["a"].get(styles.hrefs[0])
+    assert response.status_code == 200 and response["Content-Type"].startswith("text/css")
+    static = Path(__file__).resolve().parents[1] / "src/pokemon_hunter/beta/static"
+    expected = "\n".join(
+        (static / name).read_text()
+        for name in (
+            "glass.css",
+            "collection-base.css",
+            "collection-browse.css",
+            "discovery.css",
+            "listing_check.css",
+        )
+    )
+    assert response.content.decode() == expected
+    assert len(response.content) < 128 * 1024
+    assert workspace["a"].get("/collection-assets/not-an-asset.css").status_code == 404
 
 
 def test_selected_inspection_orders_offer_before_optional_identifier_and_editor(workspace):

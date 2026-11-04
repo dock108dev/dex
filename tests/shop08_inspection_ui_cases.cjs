@@ -26,7 +26,7 @@ function setup(overrides={},control={}){
   const window={addEventListener:(name,fn)=>events[name]=fn,DexAuctionTime:()=> 'Auction · end time unknown'};
   const context={crypto:require('node:crypto').webcrypto,history:{replaceState(){}},window,document:{getElementById:get,createElement:tag=>new Element(tag),addEventListener:(name,fn)=>events[name]=fn},addEventListener:(name,fn)=>events[name]=fn,Date:{now:()=>now,parse:Date.parse},URL,URLSearchParams,Intl,setTimeout:fn=>{timeouts.push(fn);return timeouts.length;},clearTimeout(){},setInterval:fn=>intervals.push(fn),location:{reload(){},href:'http://local.test/shopping/check/'},fetch:async(url,options)=>{
     calls.push({url,method:options.method||'GET',body:options.body});let payload;
-    if(url.includes('/candidate/'))payload={listing:structuredClone({...sample,...overrides}),expires_in_seconds:30,context:{scope_label:'Named engineering search'}};
+    if(url.includes('/candidate/'))payload={listing:structuredClone({...sample,...overrides}),restore_cards:structuredClone(control.restoreCards || []),expires_in_seconds:30,context:{scope_label:'Named engineering search'}};
     else payload={review:null,lease:'lease',expires_in_seconds:30,context:null};
     if(options.method==='POST' && control.post) await control.post(JSON.parse(options.body));
     if(control.request)payload=await control.request(url,options,payload);
@@ -44,6 +44,45 @@ const passed=[];async function test(name,fn){await fn();passed.push(name);}
   const photo=t.get('offer-summary').children[0];assert.equal(photo.children.find(c=>c.tagName==='img').src,sample.seller_image);
   assert.equal(photo.href,sample.item_url);assert.equal(t.get('listing-tools').open,false);assert.equal(t.get('review-editor').open,false);
   assert.ok(t.calls.every(c=>c.method==='GET'));assert.ok(!t.calls.some(c=>c.url==='/api/shopping/listing/'));
+ });
+ const identity={id:'printing-one',name:'Checked card',set_name:'Checked set',collector_number:'1'};
+ const savedReview={title:'My saved review',currency:'USD',unknown_contents:null,cards:[{printing_id:identity.id,quantity:2,grade:'8',grader:'PSA'}]};
+ const restore=(url,payload,review=savedReview)=>url==='/api/shopping/listing/review/'?{...payload,review}:url.includes('/catalog/')?{cards:[identity]}:payload;
+ await test('selected admitted identities restore authored cards without a duplicate catalog read',async()=>{
+  const t=setup({proposals:[{...identity,quantity:99}]},{restoreCards:[identity],request:async(url,options,payload)=>restore(url,payload)});await flush();
+  assert.ok(!t.calls.some(c=>c.url.includes('/catalog/')));
+  assert.match(t.get('review-cards').textContent,/Checked card/);
+  assert.match(t.get('review-count').textContent,/2 individually identified cards/);
+  assert.match(t.get('review-cards').textContent,/Grade 8/);
+  assert.equal(t.get('review-title').value,'My saved review');
+  assert.equal(t.get('offer-overview').hidden,false);
+  assert.equal(t.calls.filter(c=>c.url.includes('/candidate/')).length,1);
+ });
+ await test('a retained card absent from candidate identities keeps the checked catalog restore',async()=>{
+  const t=setup({}, {restoreCards:[{...identity,id:'another-printing',name:'Other card'}],request:async(url,options,payload)=>restore(url,payload)});await flush();
+  assert.equal(t.calls.filter(c=>c.url.includes('/catalog/')).length,1);
+  assert.match(t.get('review-cards').textContent,/Checked card/);
+  assert.doesNotMatch(t.get('review-cards').textContent,/Other card/);
+ });
+ await test('candidate failure still restores the saved review for recovery',async()=>{
+  const t=setup({}, {request:async(url,options,payload)=>{if(url.includes('/candidate/'))throw Error('Offer unavailable');return restore(url,payload);}});await flush();
+  assert.equal(t.get('review-title').value,'My saved review');
+  assert.match(t.get('review-cards').textContent,/Checked card/);
+  assert.match(t.get('check-status').textContent,/Offer unavailable/);
+ });
+ await test('revocation while selecting cannot restore saved private fields',async()=>{
+  let release;
+  const t=setup({}, {request:async(url,options,payload)=>{if(url.includes('/candidate/'))await new Promise(resolve=>release=resolve);return restore(url,payload);}});await flush();
+  t.events['dex:authority-revoked']();release();await flush();
+  assert.equal(t.get('review-title').value,'');assert.equal(t.get('review-cards').children.length,0);
+  assert.equal(t.get('offer-overview').hidden,true);
+ });
+ await test('slow identity restoration does not extend an already received offer deadline',async()=>{
+  let release;
+  const t=setup({}, {request:async(url,options,payload)=>{if(url.includes('/catalog/'))await new Promise(resolve=>release=resolve);return restore(url,payload);}});await flush();
+  t.advance(31000);release();await flush();
+  assert.match(t.get('check-status').textContent,/offer expired/);
+  assert.ok(!t.get('offer-summary').children.length);
  });
  await test('unsafe image stays a readable fallback',async()=>{
   const t=setup({seller_image:'https://evil.invalid/photo.jpg'});await flush();const photo=t.get('offer-summary').children[0];assert.ok(!photo.children.some(c=>c.tagName==='img'));assert.match(photo.textContent,/Seller photo unavailable/);

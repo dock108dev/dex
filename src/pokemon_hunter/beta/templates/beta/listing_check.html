@@ -1,9 +1,8 @@
 {% extends 'beta/base.html' %}
 {% block title %}Check a listing/lot · Dex{% endblock %}
 {% block body_class %}discovery-page inspection-page{% endblock %}
+{% block styles %}<link rel="stylesheet" href="/collection-assets/listing-shell.css">{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="/collection-assets/discovery.css?v=20261026-interface">
-<link rel="stylesheet" href="/collection-assets/listing_check.css?v=20261026-interface">
 {{ shopping_binding|json_script:'check-binding' }}
 {{ account_id|json_script:'check-account' }}
 {{ listing_entry|json_script:'check-entry' }}

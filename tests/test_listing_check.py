@@ -618,6 +618,12 @@ def test_discovery_handoff_preserves_original_lease_and_local_only_projection(wo
     assert preview["listing"]["discovery_origin"] == origin
     assert preview["listing"]["proposals"][0]["quantity"] == 0
     assert "artwork" in preview["listing"]["proposals"][0]
+    restore_ids = {
+        p["id"]
+        for p in preview["listing"]["proposals"]
+        + [p for entry in preview["listing"]["contents"] for p in entry["candidates"]]
+    }
+    assert preview["restore_cards"] == c.catalog(actor, restore=restore_ids)["cards"]
     opened = c.review(actor, "session")
     value = review_value(p, discovery_origin=origin)
     kept = c.review(actor, "session", value, opened["lease"])
@@ -628,6 +634,53 @@ def test_discovery_handoff_preserves_original_lease_and_local_only_projection(wo
         c.review(actor, "session")
     assert c.review(actor, "session")["review"] is None
     assert calls
+
+
+@pytest.mark.parametrize("large_family,stop_during_restore", [(False, False), (True, False), (False, True)])
+def test_candidate_restore_includes_contents_identities_without_clipping_or_bypassing_stop(
+    workspace, monkeypatch, large_family, stop_during_restore
+):
+    from django.http import Http404
+
+    actor = workspace["actor"]
+    entries = c.catalog(actor)["cards"][:2]
+    family = [dict(entries[1], id=f"alternative-{i}") for i in range(41)] if large_family else [entries[1]]
+    source = dict(raw=raw(), choices=dict(intent="deals"), scope=None, expires_in_seconds=30)
+    available = True
+
+    def admitted(*args, **kwargs):
+        if not available:
+            raise Http404
+        return source
+
+    def project(actor, value):
+        return dict(value, proposals=[entries[0]], contents=[dict(candidates=family)])
+
+    original = c.catalog
+    requests = []
+
+    def restore(actor, query="", restore=None):
+        nonlocal available
+        requests.append(set(restore))
+        result = original(actor, query, restore)
+        if stop_during_restore:
+            available = False
+        return result
+
+    monkeypatch.setattr(d, "review_candidate", admitted)
+    monkeypatch.setattr(c, "_proposals", project)
+    monkeypatch.setattr(c, "catalog", restore)
+    if stop_during_restore:
+        with pytest.raises(Http404):
+            c.candidate(actor, "session", "run", "result")
+        return
+    value = c.candidate(actor, "session", "run", "result")
+    assert value["listing"]["contents"][0]["candidates"] == family
+    if large_family:
+        assert value["restore_cards"] == [] and requests == []
+    else:
+        assert requests == [{p["id"] for p in entries}]
+        assert value["restore_cards"] == original(actor, restore=[p["id"] for p in entries])["cards"]
 
 
 def test_handoff_catalog_endpoints_are_bound_and_do_not_acquire(workspace, monkeypatch):

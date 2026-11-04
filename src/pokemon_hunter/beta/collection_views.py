@@ -130,6 +130,21 @@ def private_home(request):
 
 @require_GET
 def asset(request, filename):
+    # The inspection shell always needs these styles in this cascade order.
+    # Serve the existing sources together instead of five separately admitted
+    # requests. Members are fixed package files, never supplied by the client.
+    if filename == "listing-shell.css":
+        styles = (
+            "glass.css",
+            "collection-base.css",
+            "collection-browse.css",
+            "discovery.css",
+            "listing_check.css",
+        )
+        return HttpResponse(
+            "\n".join((Path(__file__).parent / "static" / name).read_text() for name in styles),
+            content_type="text/css",
+        )
     if filename not in {
         "collection.js",
         "listing-interpretation.js",

@@ -262,11 +262,22 @@ def candidate(actor, session, run_id, result_id):
             proposal["quantity"] = 0
         value["unknown_contents"] = value["seller_lot_size"]
     value["discovery_origin"] = dict(run_id=run_id, result_id=result_id)
+    restore_ids = list(
+        dict.fromkeys(
+            [p["id"] for p in value["proposals"]]
+            + [p["id"] for entry in value["contents"] for p in entry["candidates"]]
+        )
+    )
+    # Reuse the current admitted index for a small optional restore projection,
+    # including the ordinary checked artwork descriptors. Large families remain
+    # complete above and use the existing bounded catalog restore on the client.
+    restore_cards = catalog(actor, restore=restore_ids)["cards"] if 0 < len(restore_ids) <= 40 else []
     # Recheck the source after image/catalog projection so Stop cannot publish
     # a summary whose original lease ended while local work was running.
     d.review_candidate(actor, session, run_id, result_id)
     return dict(
         listing=value,
+        restore_cards=restore_cards,
         expires_in_seconds=source["expires_in_seconds"],
         context=_context(source, actor),
     )

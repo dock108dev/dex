@@ -465,9 +465,47 @@
   addEventListener('pageshow',event=>{if(event.persisted)location.reload();});
   $('manual-entry').addEventListener('click',()=>{$('review-editor').open=true;});
   root.querySelectorAll('input,button,select').forEach(n=>n.disabled=true);
-  async function restoreSection(){try{if(reviewDirty){await persist();if(detailUnknown){await reconcileDetails();return;}say('Your latest edits are retained.');return;}if(!lease){const result=await request('/api/shopping/listing/review/');lease=result.lease;reviewRevision=result.revision;showContext(result.context);retentionDeadline=Date.now()+result.expires_in_seconds*1000;if(result.review){await applyReview(result.review);showContext(result.context);if(result.review.discovery_origin){sourceOrigin=result.review.discovery_origin;sourceItem=null;$('listing-identifier').value=result.review.listing_url || '';}retentionDeadline=Date.now()+result.expires_in_seconds*1000;say('Temporary review restored. Compare explicitly to use current local references.');}}
+  async function selectedOffer(){
+    const value=await request('/api/shopping/listing/candidate/?'+new URLSearchParams(entry));
+    return {value,deadline:Date.now()+value.expires_in_seconds*1000};
+  }
+  async function restoreSection(){
+    try{
+      if(reviewDirty){await persist();if(detailUnknown){await reconcileDetails();return;}say('Your latest edits are retained.');return;}
+      let selected=null;
+      if(!lease){
+        const result=await request('/api/shopping/listing/review/');
+        lease=result.lease;reviewRevision=result.revision;showContext(result.context);
+        retentionDeadline=Date.now()+result.expires_in_seconds*1000;
+        let selectionError=null;
+        if(entry.discovery_run && entry.item_id && !detailUnknown){
+          try{selected=await selectedOffer();}catch(e){if(!active)throw e;selectionError=e;}
+        }
+        if(result.review){
+          // These identities passed the same account-bound candidate admission.
+          // Reuse them only when they cover every saved card; other reviews keep
+          // their bounded catalog restore. Review quantities/grades stay authored.
+          const identities=selected?.value.restore_cards || [];
+          const complete=result.review.cards.every(r=>identities.some(p=>p.id===r.printing_id));
+          await applyReview(result.review,complete?identities:[]);
+          showContext(result.context);
+          if(result.review.discovery_origin){sourceOrigin=result.review.discovery_origin;sourceItem=null;$('listing-identifier').value=result.review.listing_url || '';}
+          say('Temporary review restored. Compare explicitly to use current local references.');
+        }
+        if(selectionError)throw selectionError;
+      }
       if(detailUnknown){await reconcileDetails();return;}
-      if(entry.discovery_run && entry.item_id){const picked=await request('/api/shopping/listing/candidate/?'+new URLSearchParams(entry));previewDeadline=Date.now()+picked.expires_in_seconds*1000;sourceDeadline=previewDeadline;sourceOrigin=picked.listing.discovery_origin;sourceItem=picked.listing.item_id;$('listing-identifier').value=sourceItem;$('load-listing').textContent='Load additional official details';showPreview(picked.listing);showContext(picked.context);say('');}}catch(e){say(e.message,true);}finally{if(active){root.querySelectorAll('input,button,select').forEach(n=>n.disabled=false);setLoading(loading || detailUnknown);}}}
+      if(entry.discovery_run && entry.item_id){
+        selected=selected || await selectedOffer();
+        // Identity restoration cannot extend the received offer's remaining life.
+        if(Date.now()>=selected.deadline)throw Error('The temporary offer expired. Reopen Shopping to continue.');
+        const picked=selected.value;previewDeadline=selected.deadline;sourceDeadline=previewDeadline;
+        sourceOrigin=picked.listing.discovery_origin;sourceItem=picked.listing.item_id;
+        $('listing-identifier').value=sourceItem;$('load-listing').textContent='Load additional official details';
+        showPreview(picked.listing);showContext(picked.context);say('');
+      }
+    }catch(e){say(e.message,true);}finally{if(active){root.querySelectorAll('input,button,select').forEach(n=>n.disabled=false);setLoading(loading || detailUnknown);}}
+  }
   $('check-reload').addEventListener('click',restoreSection);
   restoreSection();
 })();

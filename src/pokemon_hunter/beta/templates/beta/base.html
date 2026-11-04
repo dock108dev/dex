@@ -4,8 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>{% block title %}Dex · Pokémon collection{% endblock %}</title>
-  <link rel="stylesheet" href="/collection-assets/glass.css">
+  {% block styles %}<link rel="stylesheet" href="/collection-assets/glass.css">
   <link rel="stylesheet" href="/collection-assets/collection-base.css"><link rel="stylesheet" href="/collection-assets/collection-browse.css">
+  {% endblock %}
   {% if request.user.is_authenticated and collection_enabled %}<script src="/collection-assets/navigation.js" defer></script>{% endif %}
   {% if public %}<link rel="stylesheet" href="/collection-assets/public.css">{% endif %}
 </head>

@@ -274,6 +274,12 @@ def journey(page, base, goal, cx, report, width, zoom, exercise_changes):
         lambda: loc(".review-offer").first.press("Enter"),
         lambda: loc("#use-listing:enabled").wait_for(),
     )
+    resources = report["browser"]["samples"]["candidate"][-1]["resources"]
+    assert [r["path"] for r in resources if r["path"].endswith(".css")] == [
+        "/collection-assets/listing-shell.css"
+    ]
+    # This retained review uses the selected offer's admitted printing identities.
+    assert not any(r["path"] == "/api/shopping/listing/catalog/" for r in resources)
     preview = loc("#contents-preview").inner_text()
     assert "2 printing alternatives" in preview and "Seller quantity: 2" in preview, preview
     measure(
