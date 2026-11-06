@@ -316,6 +316,6 @@ and interrupted runs separately; passing repairs do not rewrite historical sampl
 creates only generated disposable state and blocks external networking. It rehearses
 previous-runtime preparation, successor transition, unsupported-reader rejection,
 append-only policy binding with spent capacity, derived-only rollback and re-upgrade.
-It has no customer-root option. See [the results](plans/lv-08-results.md) for exact
+It has no customer-root option. See the results (operator-local `docs/plans/lv-08-results.md`) for exact
 outcomes; these checks do not perform customer installation or replace required hosted
 Ubuntu reports and existing historical hold dispositions.

@@ -139,7 +139,7 @@ activation. Run it with the checkout's provisioned engineering interpreter. It
 separates dated raw guides from condition-applicable lot values, source lifecycle
 from approvals, and catalog inventory from checkout/runtime compatibility. A completed
 inspection may still report blocked readiness; its exit code alone is not a price gate.
-See the [LV-01 contract](plans/lv-01-contract.md) for fields, bounds and limitations.
+See the LV-01 contract (operator-local `docs/plans/lv-01-contract.md`) for fields, bounds and limitations.
 This operator is not installed application behavior or a replacement price store.
 
 ## LV-02 evidence and offline refresh (source implementation)
@@ -197,7 +197,7 @@ evidence; `partial` can still contain useful per-printing references. It is not 
 whole-lot, account, delivery or provider-entitlement claim. Synthetic evidence is
 labelled and never reports actual readiness. No acquisition or cleanup occurs on read.
 
-See [pricing proof](plans/lv-02a-pricing-proof.md) and [LV-02 results](plans/lv-02-results.md)
+See pricing proof (operator-local `docs/plans/lv-02a-pricing-proof.md`) and LV-02 results (operator-local `docs/plans/lv-02-results.md`)
 for current source gaps, isolated evidence and the unexecuted next action. This
 implementation is not installed; there is no active sold or guide release established.
 
@@ -249,7 +249,7 @@ Readiness version 3 reports native exact-printing coverage and parents with elig
 exact child alternatives separately from normalized/sold readiness and the original
 catalog denominator. It cannot infer provider-wide source absence from inactive
 references. Fixture references remain isolated engineering evidence, never actual
-customer coverage. See [implementation results](plans/lv-02-contract-implementation-results.md).
+customer coverage. See implementation results (operator-local `docs/plans/lv-02-contract-implementation-results.md`).
 
 ## Native offline input preparation
 
@@ -260,6 +260,6 @@ Exact physical applicability still gates each row; absent edition is not inferre
 This adapter rejects a v2 normalized `marketPrice` contract because that field's
 shipping/tax normalization is not established. Existing v1 compatibility is retained.
 Preparation is local and nonactivating; source admission, finite acquisition, staging
-and CAS activation retain separate authorities. The [LV-08 source action](plans/lv-08-source-action.md)
+and CAS activation retain separate authorities. The LV-08 source action (operator-local `docs/plans/lv-08-source-action.md`)
 records the exact proposed input/retention scope and the currently unavailable final
 admission digest. No active source or current coverage is created by this code.

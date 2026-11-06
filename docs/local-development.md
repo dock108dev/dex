@@ -232,7 +232,7 @@ Their synthetic fixtures are in non-collected `tests/photo_batch_helpers.py`.
 
 Use a separately built wheel and fresh noneditable environments for complete release
 qualification. Do not replace `.local/runtime` merely to test checkout changes.
-The [LV-08 procedure](plans/lv-08-delivery.md) separates qualification environments
+The LV-08 procedure (operator-local `docs/plans/lv-08-delivery.md`) separates qualification environments
 from the proposed immutable customer runtime and retains the existing root, credentials
 and independent accounting. Explicit migration/read preparation and compatible rollback
 are required; ordinary launch remains free of those mutations.

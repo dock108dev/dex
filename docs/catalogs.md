@@ -223,5 +223,5 @@ catalog-read migration creates a covering index on printing publication state an
 set ID. Shopping uses the existing visibility query: a listed set must itself be
 published and contain a published printing. The index changes no catalog rows,
 variants, ownership or access rules. No GET or startup creates it. Follow the
-[stopped-server transition](plans/lv-08-delivery.md) for a separately authorized
+stopped-server transition (operator-local `docs/plans/lv-08-delivery.md`) for a separately authorized
 installation; the presence of this procedure is not an installation receipt.

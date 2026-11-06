@@ -171,7 +171,7 @@ Stop and consumed attempts survive removal and restart. For the LV-02 proof, the
 operator prepares stage two only after reviewing the successful retained groups
 receipt/digest. Raw capture directories need explicit operator cleanup at the approved
 retention deadline; do not assume release-shard expiry owns unadmitted raw staging.
-See [the finite proposal](plans/lv-02a-capture-proposal.md).
+See the finite proposal (operator-local `docs/plans/lv-02a-capture-proposal.md`).
 
 Photo-batch admissions, consumed attempts and deletion tombstones are also outside
 the root in `ROOT.parent/.dex-photo-batches/<root-path-sha256>/journal.jsonl`.
@@ -613,7 +613,7 @@ not reopen capture, create retention rights, admit a source or authorize activat
 ## LV-08 successor delivery
 
 LV-08 packages the complete working-tree successor separately from the installed
-compatible patch. The [delivery procedure](plans/lv-08-delivery.md) fixes the selected
+compatible patch. The delivery procedure (operator-local `docs/plans/lv-08-delivery.md`) fixes the selected
 wheel/member identities, stopped-server backup exclusions, account-schema transition,
 catalog/account preparation, preserved configuration, append-only Hunter package
 binding and compatible rollback. Its new `account_read_operator ... retire-schema`
@@ -624,8 +624,8 @@ restored. Do not use retirement during ordinary startup or to bypass unknown sch
 
 Qualification, historical release holds, hosted checks, delivery permission, source
 admission/acquisition/activation, actual useful-price proof and owner acceptance remain
-separate. [LV-08 results](plans/lv-08-results.md) record their current status.
-The [finite source proposal](plans/lv-08-source-action.md) schedules new capture only
+separate. LV-08 results (operator-local `docs/plans/lv-08-results.md`) record their current status.
+The finite source proposal (operator-local `docs/plans/lv-08-source-action.md`) schedules new capture only
 when delivery and the verification window are ready. Completion of capture alone
 must not prematurely end newly approved staging/verification retention; the approved
 absolute deadline and source withdrawal still bound all managed data. This grants

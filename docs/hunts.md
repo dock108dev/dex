@@ -845,7 +845,7 @@ closed. There is no new customer schema or recovery from backed-up consumption.
 
 Filtering, sorting, Back, polling, local value reload and optional review acquire no
 provider data. Actual coverage, pricing admission, compatible delivery and customer
-acceptance remain separate and open. See [LV-03 results](plans/lv-03-results.md).
+acceptance remain separate and open. See LV-03 results (operator-local `docs/plans/lv-03-results.md`).
 
 
 ## LV-04 seller-stated contents (checkout only)
@@ -897,7 +897,7 @@ prices expire or are absent. Normalized and publisher-native references preserve
 their separate capabilities; native amounts never become savings or bid ceilings.
 The finite LV-03 contract is unchanged: two 20-summary pages, one detail slot per
 lane, at most two unique details, five total requests including OAuth, no retries.
-See [LV-04 results and evaluation scope](plans/lv-04-results.md). This is locally
+See LV-04 results and evaluation scope (operator-local `docs/plans/lv-04-results.md`). This is locally
 verified source behavior, not installed capability or real valued-result coverage.
 
 
@@ -967,7 +967,7 @@ details and five total requests including OAuth, with no retries or capacity tra
 
 This is locally verified source engineering, not an installed release or real priced
 coverage. Active normalized guides, native guides and sold references remain zero.
-See [LV-05 calculation results](plans/lv-05-results.md) and [LV-06 results](plans/lv-06-results.md).
+See LV-05 calculation results (operator-local `docs/plans/lv-05-results.md`) and LV-06 results (operator-local `docs/plans/lv-06-results.md`).
 
 
 ## LV-06 automatic results experience (checkout only)
@@ -1058,9 +1058,9 @@ activation, compatible delivery and real useful-price acceptance remain separate
 The complete automatic Hunt is packaged separately for release qualification. The
 finite five-request contract, independent lanes, original leases and accounting are
 unchanged. Native guide content remains separate from normalized deal ranking. The
-[qualification results](plans/lv-08-results.md) distinguish local artifacts from hosted
-checks, installation and actual useful-value proof. The [source action](plans/lv-08-source-action.md)
-and [delivery procedure](plans/lv-08-delivery.md) are prepared operational steps, not
+qualification results (operator-local `docs/plans/lv-08-results.md`) distinguish local artifacts from hosted
+checks, installation and actual useful-value proof. The source action (operator-local `docs/plans/lv-08-source-action.md`)
+and delivery procedure (operator-local `docs/plans/lv-08-delivery.md`) are prepared operational steps, not
 permission to acquire, activate, change customer state or claim owner acceptance.
 
 Automatic assessment reads reference ranges for the complete candidate families
