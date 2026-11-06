@@ -320,6 +320,51 @@
     return `<article class="discovery-card" id="offer-${esc(result.id)}" tabindex="-1" data-result="${esc(result.id)}" data-offer="${esc(result.id)}"><div class="discovery-card-heading">${image}<div><h3>${esc(result.title || identity.name || candidateLabel)}</h3>${identity.name ? `<p>Proposed: ${esc(identity.name)}</p>` : ''}${metadata ? `<p class="identity-meta">${esc(metadata)}</p>` : ''}${comparable || conditional ? `<span class="discovery-classification"${$('discovery-form').dataset.lotSearch === 'true' ? ' hidden' : ''}>${esc(classification)}</span>` : ''}</div></div><dl class="discovery-amounts">${window.DexLotValues?.costs(result,{esc,money}) || `<div><dt>Offer price</dt><dd>${esc(money(result.listing_price))}</dd></div><div><dt>Shipping</dt><dd>${esc(money(result.shipping))}</dd></div><div><dt>Delivered · before tax</dt><dd>${esc(money(result.delivered_total))}</dd></div>`}</dl>${time}<p>Offer observed: ${esc(result.observed_at ? new Date(result.observed_at).toLocaleString() : 'Unknown')}. Current bids are provisional; Buy It Now is not reserved.</p>${window.DexLotValues?.html(result,{esc,money,link,correction:`<a data-review-id="${esc(result.id)}" href="/shopping/check/?discovery_run=${encodeURIComponent(run.run_id)}&amp;item_id=${encodeURIComponent(result.id)}">Correct contents in temporary review</a>`}) || ''}<p>${result.evidence_kind === 'seller_details' ? 'Based on full seller details; seller-stated contents are not independently verified.' : 'Seller summary only; full details have not been assessed.'}</p><div class="seller">${seller}<a class="review-offer" aria-label="Assess lot" data-review-id="${esc(result.id)}" href="/shopping/check/?discovery_run=${encodeURIComponent(run.run_id)}&amp;item_id=${encodeURIComponent(result.id)}">Assess lot · optional correction</a></div><details hidden><summary>Comparison & listing details</summary>${result.reason ? `<p>${esc(result.reason)}</p>` : ''}${referenceHtml}${result.save_reason ? `<p>${esc(result.save_reason)}</p>` : ''}</details></article>`;
   }
 
+  async function expandEvidence(panel) {
+    if (!panel.open || panel.dataset.loading || !currentAuthority() || stopWanted) return;
+    const runId = run?.run_id, token = sequence;
+    const offer = panel.closest('[data-offer]')?.dataset.offer;
+    const find = () => run?.results.find(r => r.id === offer);
+    const row = find();
+    if (!row?.evidence_version || row.evidenceLoaded) return;
+    panel.dataset.loading = 'true';
+    const version = row.evidence_version, revision = row.content_revision;
+    const current = () => run?.run_id === runId && sequence === token && currentAuthority() && !stopWanted &&
+      Date.now() < deadline && panel.isConnected && panel.open && find()?.evidence_version === version &&
+      find()?.content_revision === revision && find()?.lot_value;
+    try {
+      const data = await request(api + encodeURIComponent(run.run_id) + '/evidence/' + encodeURIComponent(row.id) +
+        '/?revision=' + encodeURIComponent(row.content_revision));
+      if (!current()) return;
+      if (data.run_id !== run.run_id || data.id !== offer || data.content_revision !== revision ||
+          data.evidence_version !== version) {
+        revalidateRun(true);
+        throw new Error('The assessment changed. Reload local values.');
+      }
+      const target = find();
+      target.summaryValue = target.lot_value;
+      target.lot_value = data.lot_value;
+      target.evidenceLoaded = true;
+      renderCards();
+    } catch (error) {
+      if (current()) panel.querySelector('[role=status]').textContent = error.message;
+    } finally { delete panel.dataset.loading; }
+  }
+
+  $('discovery-cards').addEventListener('toggle', event => {
+    const panel = event.target;
+    if (!panel.isConnected || !panel.matches('details.lot-evidence')) return;
+    if (panel.open && panel.hasAttribute('data-local-evidence')) expandEvidence(panel);
+    if (!panel.open) {
+      const row = run?.results?.find(r => r.id === panel.closest('[data-offer]')?.dataset.offer);
+      if (row?.summaryValue) {
+        row.lot_value = row.summaryValue;
+        delete row.summaryValue;
+        delete row.evidenceLoaded;
+        renderCards();
+      }
+    }
+  }, true);
   function renderCards() {
     pruneLocal();
     const results = Array.isArray(run?.results) ? run.results : [];
@@ -343,7 +388,18 @@
     $('discovery-cards').querySelectorAll('[data-review-id]').forEach(anchor => {if (anchor.dataset.reviewBound) return;anchor.dataset.reviewBound = '1';anchor.addEventListener('click',() => {anchor.href = '/shopping/check/?' + new URLSearchParams({discovery_run:run.run_id,item_id:anchor.dataset.reviewId,return:reviewReturn(anchor.dataset.reviewId)});});});
   }
   function render(value) {
-    if (run !== value) clearResults();
+    window.DexLotValues?.unpack(value);
+    if (run !== value) {
+      // Reuse an open disclosure only after the new local read verifies its entire evidence version.
+      for (const next of value.results || []) {
+        const old = run?.results?.find(r => r.id === next.id && r.evidenceLoaded);
+        if (old && old.lot_value && run.run_id === value.run_id && old.content_revision === next.content_revision &&
+            old.evidence_version === next.evidence_version && next.evidence_version) {
+          next.summaryValue = next.lot_value; next.lot_value = old.lot_value; next.evidenceLoaded = true;
+        }
+      }
+      clearResults();
+    }
     run = value;captureDeadline(value);
     acquiring = Boolean(value.running);
     $('discovery-results').hidden = false;

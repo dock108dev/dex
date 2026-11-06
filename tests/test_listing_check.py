@@ -653,7 +653,7 @@ def test_candidate_restore_includes_contents_identities_without_clipping_or_bypa
             raise Http404
         return source
 
-    def project(actor, value):
+    def project(actor, value, *, summary=None):
         return dict(value, proposals=[entries[0]], contents=[dict(candidates=family)])
 
     original = c.catalog

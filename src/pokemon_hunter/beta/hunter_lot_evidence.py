@@ -61,6 +61,8 @@ def fields(raw, detail, plain):
             ("detail_title", detail.get("title", "")),
             ("official_description", detail.get("description", "")),
         ]
+        if detail.get("shortDescription") and detail["shortDescription"] != raw.get("shortDescription"):
+            values.append(("detail_summary", detail["shortDescription"]))
     aspects = (detail if detail is not None else raw).get("localizedAspects", [])
     if not isinstance(aspects, list) or len(aspects) > 100:
         raise ValueError("Official lot details exceed 100 structured aspects")

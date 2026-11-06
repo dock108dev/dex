@@ -11,9 +11,14 @@ window.DexLotValues = (() => {
     if (!value) return;
     if ((value.references || []).some(unavailable)) {
       Object.assign(value, {subtotal:null,total:null,basis:null,basis_label:null,bid_difference:null,buy_now_difference:null});
-      value.references = value.references.filter(ref => !unavailable(ref));
+      // Summaries retain unit counts per shared lifecycle dependency. Keep unaffected units.
+      if (value.priced_coverage) {
+        value.priced_coverage = value.priced_coverage.filter(([,ids])=>ids.every(i=>!unavailable(value.references[i])));
+        const surviving = new Set(value.priced_coverage.flatMap(([,ids])=>ids));
+        value.references = value.references.map((ref,i)=>surviving.has(i) ? ref : {});
+      } else value.references = value.references.filter(ref => !unavailable(ref));
       value.cards = (value.cards || []).map(card => card.reference && !unavailable(card.reference) ? card : {...card,reference:null,reference_subtotal:null});
-      value.priced_quantity = value.normalized_priced_quantity = value.cards.filter(card => card.reference).reduce((sum,card) => sum + card.quantity,0);
+      value.priced_quantity = value.normalized_priced_quantity = value.priced_coverage ? value.priced_coverage.reduce((sum,[n])=>sum+n,0) : value.cards.filter(card => card.reference).reduce((sum,card) => sum + card.quantity,0);
       value.identified_unpriced_quantity = (value.identified_quantity || 0) - value.priced_quantity;
       for (const cost of Object.values(value.benchmark_costs || {})) {cost.difference=null;cost.subtotal_difference=null;}
       if (row.value_order) {
@@ -22,14 +27,29 @@ window.DexLotValues = (() => {
       }
     }
     value.native_guides = (value.native_guides || []).filter(group => !(group.references || []).some(unavailable));
-    value.native_priced_quantity = Array.from(new Map(value.native_guides.flatMap(group => (group.lines || []).map(line => [line.printing_id,line.quantity]))).values()).reduce((sum,count) => sum + count,0);
+    value.native_priced_quantity = row.evidence_version ? value.native_guides.reduce((sum,g)=>sum+g.priced_quantity,0) : Array.from(new Map(value.native_guides.flatMap(group => (group.lines || []).map(line => [line.printing_id,line.quantity]))).values()).reduce((sum,count) => sum + count,0);
     if (row.value_order) row.value_order.native = row.value_order.native.filter(order => value.native_guides.some(group => group.cohort === order.cohort));
     for (const line of value.alternatives || []) for (const choice of line.alternatives) if (choice.reference && unavailable(choice.reference)) choice.reference = null;
+    if (row.assessment_state === 'ready' && value.total == null && !value.native_guides.some(g=>g.complete)) row.assessment_state='partial';
     value.reason = 'Some references are unavailable. Reload local values; catalog alternatives remain unchanged.';
+  }
+  function unpack(run) {
+    for (const row of run.results || []) {
+      const value = row.lot_value;
+      if (!value?.cohort_rows) continue;
+      for (const [cohort,label,reference_date,date_basis,priced_quantity,subtotal,complete,deps,bid,bin] of value.cohort_rows) {
+        value.native_guides.push({cohort,provider:run.cohort_labels[label],reference_date,date_basis,
+          priced_quantity,subtotal,complete,total:complete ? subtotal : null,references:deps.map(i=>run.cohort_sources[i])});
+        for (const [lane,rank] of [['auction',bid],['buy_it_now',bin]]) {
+          if (rank != null) row.value_order.native.push({cohort,lane,rank});
+        }
+      }
+      delete value.cohort_rows;
+    }
   }
   const laneFor = mode => mode === 'auction' ? 'auction' : mode === 'buy_now' ? 'buy_it_now' : null;
   const orderFor = (row, mode) => laneFor(mode) ? row.value_order?.lanes?.[laneFor(mode)] : row.value_order?.combined;
-  const labels = {complete:'Complete assessments',partial:'Partially assessed',unknown_cost:'Unknown delivered cost',unpriced:'Unpriced / unprocessed'};
+  const labels = {complete:'Complete assessments',partial:'Partially assessed',unknown_cost:'Unknown delivered cost',unpriced:'Assessed without a normalized value',unprocessed:'Unprocessed'};
   function select(rows, {hours = '72', mode = 'both', sort = 'value', basis = 'all', now = Date.now()} = {}) {
     const cutoff = now + Math.min(Number(hours) || 72,72) * 3600000;
     const selected = rows.filter(row => {
@@ -63,7 +83,7 @@ window.DexLotValues = (() => {
       }
       return [...[...cohorts.values()].sort((a,b)=>a.key.localeCompare(b.key)).map(g=>({...g,rows:g.items.sort((a,b)=>a.rank-b.rank).map(i=>i.row)})),...(remaining.length ? [{key:'no-native',label:'No compatible publisher guide',rows:remaining}] : [])];
     }
-    return Object.entries(labels).map(([key,label]) => ({key,label,rows:rows.filter(r=>(orderFor(r,mode)?.group || 'unpriced')===key)})).filter(g=>g.rows.length);
+    return Object.entries(labels).map(([key,label]) => ({key,label,rows:rows.filter(r=>(r.assessment_state === 'unprocessed' ? 'unprocessed' : orderFor(r,mode)?.group || 'unpriced')===key)})).filter(g=>g.rows.length);
   }
   function progress(run) {
     const states = {queued:'Hunt queued',discovering:'Discovering offers',fetching_details:'Fetching selected seller details',assessing:'Assessing supplied contents',success:'Assessment complete',partial:'Hunt finished with limited coverage',busy:'Dex is busy; this Hunt did not start',exhausted:'Available capacity is exhausted',failed:'Hunt ended after a failure',stopped:'Hunt stopped; results cleared',expired:'Temporary results expired',conflict:'The account, catalog or contents changed',unauthorized:'This session is no longer authorized',restart_uncertain:'Worker state is unavailable after restart; no requests were replayed'};
@@ -90,14 +110,18 @@ window.DexLotValues = (() => {
     const mentions = line => [...(line.mentions || []),...(line.scope_mentions || [])].map(m=>`<blockquote>${esc(m.text || m.quote || '')}<cite>Seller ${esc((m.source_field || '').replaceAll('_',' '))}</cite></blockquote>`).join('');
     const contents = (value.contents || []).map(line=>`<li>${count(line.quantity)} × ${esc(line.name || 'Seller contents')} · ${esc((line.reasons || []).join('; '))}${mentions(line)}${!line.included_quantity ? `<ul>${(line.candidates || []).map(c=>`<li>${esc(c.name)} · ${esc(c.set_name)} #${esc(c.collector_number)} · ${esc(c.language || 'language unknown')} · ${esc(c.edition || 'edition unknown')} · ${esc(c.finish || 'finish unknown')}</li>`).join('')}</ul>` : ''}</li>`).join('');
     const alternatives=(value.alternatives || []).map(line=>`<li>${count(line.quantity)} physical cards · ${line.selected_child_id?'seller-selected variant':'variant unresolved'} · alternatives are not additional cards or an automatic price range<ul>${line.alternatives.map(c=>`<li>${esc(c.name)} · ${esc(c.language || 'language unknown')} · ${esc(c.edition || 'edition unknown')} · ${esc(c.finish || 'finish unknown')} · ${esc(c.variant_label || '')}: ${evidence(c.reference)}</li>`).join('')}</ul></li>`).join('');
-    const nativeEvidence=(value.native_guides || []).map(g=>`<li>${esc(g.provider)} · ${esc(g.reference_date)}<ul>${g.references.map(r=>`<li>${esc((value.cards || []).find(c=>c.printing_id===r.printing_id)?.name || r.printing_id)} · ${evidence(r)}</li>`).join('')}</ul></li>`).join('');
-    const seller=Object.entries(value.source_fields || {}).map(([field,text])=>`<p>${esc(field.replaceAll('_',' '))}</p><blockquote>${esc(text)}</blockquote>`).join('');
-    return `<section class="lot-value"><strong>${esc(heading)}</strong><p>${count(value.priced_quantity)} normalized-priced / ${count(value.stated_quantity)} seller-stated cards · ${count(value.physically_selected_quantity ?? value.identified_quantity)} physical variants selected${value.basis_label?' · '+esc(value.basis_label):''}</p><p>${esc(value.reason || value.gaps?.[0] || 'Current local references are unavailable.')}</p>${differences}${partial}${native}<details class="lot-evidence"><summary>Cards and value evidence</summary><p>Seller assertions are not authentication or a condition guarantee. All supplied cards are considered, including those outside the search target.</p><p>${count(value.parent_identified_quantity)} numbered cards identified · ${count(value.physically_selected_quantity ?? value.identified_quantity)} physically selected · ${count(value.normalized_priced_quantity ?? value.priced_quantity)} normalized-priced · ${count(value.native_priced_quantity)} native-priced · ${count(value.identified_unpriced_quantity)} identified cards without normalized prices · ${count(value.unidentified_quantity)} unresolved physical cards. These measures overlap and must not be added.</p><p>Seller-stated contents ${value.contents_state==='resolved'?'resolved':'unresolved'}. Stock ${count(value.stock_quantity)} · offered lot units ${count(value.lot_units)}; these are not card counts.</p><ul>${cards}</ul><ul>${contents}</ul><ul>${alternatives}</ul><ul>${nativeEvidence}</ul>${seller}<p>${esc([...(value.gaps || []),...(value.quantity_issues || [])].join(' · '))}</p>${correction}</details></section>`;
+    const nativeEvidence=(value.native_guides || []).map(g=>`<li>${esc(g.provider)} · ${esc(g.reference_date)}<ul>${(g.references || []).map(r=>`<li>${esc((value.cards || []).find(c=>c.printing_id===r.printing_id)?.name || r.printing_id)} · ${evidence(r)}</li>`).join('')}</ul></li>`).join('');
+    const unmatched = (value.unresolved_contents || []).map(line => `<li>${esc(line.text)} · ${esc(line.reason)}</li>`).join('');
+    const seller=Object.entries(value.source_fields || {}).map(([field,text])=>`<p>${esc(value.aspect_names?.[field] || field.replaceAll('_',' '))}</p><blockquote>${esc(text)}</blockquote>`).join('');
+    const disclosure = row.evidence_version && !row.evidenceLoaded
+      ? '<details class="lot-evidence" data-local-evidence><summary>Cards and value evidence</summary><p role="status">Loading local evidence…</p></details>'
+      : `<details class="lot-evidence"><summary>Cards and value evidence</summary><p>Seller assertions are not authentication or a condition guarantee. All supplied cards are considered, including those outside the search target.</p><p>${count(value.parent_identified_quantity)} numbered cards identified · ${count(value.physically_selected_quantity ?? value.identified_quantity)} physically selected · ${count(value.normalized_priced_quantity ?? value.priced_quantity)} normalized-priced · ${count(value.native_priced_quantity)} native-priced · ${count(value.identified_unpriced_quantity)} identified cards without normalized prices · ${count(value.unidentified_quantity)} unresolved physical cards. These measures overlap and must not be added.</p><p>Seller-stated contents ${value.contents_state==='resolved'?'resolved':'unresolved'}. Stock ${count(value.stock_quantity)} · offered lot units ${count(value.lot_units)}; these are not card counts.</p><ul>${cards}</ul><ul>${contents}</ul><ul>${unmatched}</ul><ul>${alternatives}</ul><ul>${nativeEvidence}</ul>${seller}<p>${esc([...(value.gaps || []),...(value.quantity_issues || [])].join(' · '))}</p>${correction}</details>`;
+    return `<section class="lot-value"><strong>${esc(heading)}</strong><p>${count(value.priced_quantity)} normalized-priced / ${count(value.stated_quantity)} seller-stated cards · ${count(value.physically_selected_quantity ?? value.identified_quantity)} physical variants selected${value.basis_label?' · '+esc(value.basis_label):''}</p><p>${esc(value.reason || value.gaps?.[0] || 'Current local references are unavailable.')}</p>${differences}${partial}${native}${disclosure}</section>`;
   }
   function costs(row, {esc, money}) {
     const costs=row.lot_value?.benchmark_costs;
     if (costs) return Object.entries(costs).filter(([lane,c])=>c.base!=null || row.value_order?.lanes?.[lane]).map(([lane,c])=>`<div><dt>${lane==='auction'?'Current bid':'Buy It Now'}</dt><dd>${esc(money(c.base))}</dd></div><div><dt>Shipping</dt><dd>${esc(money(c.shipping))}</dd></div><div><dt>${lane==='auction'?'Bid':'Buy It Now'} + shipping · before tax</dt><dd>${esc(money(c.delivered_before_tax))}</dd></div>`).join('');
     return `<div><dt>${auction(row)?'Current bid':'Buy It Now'}</dt><dd>${esc(money(row.listing_price))}</dd></div><div><dt>Shipping</dt><dd>${esc(money(row.shipping))}</dd></div><div><dt>Delivered · before tax</dt><dd>${esc(money(row.delivered_total))}</dd></div>${auction(row)&&row.buy_now_price!=null?`<div><dt>Buy It Now</dt><dd>${esc(money(row.buy_now_price))}</dd></div><div><dt>Buy It Now + shipping · before tax</dt><dd>${esc(money(row.buy_now_delivered_total))}</dd></div>`:''}`;
   }
-  return {select, groups, progress, html, costs, references, invalidate};
+  return {select, groups, progress, html, costs, references, invalidate, unpack};
 })();

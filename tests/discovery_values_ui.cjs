@@ -77,3 +77,18 @@ assert.equal(dualRank.lot_value.priced_quantity,1);
 assert.equal(dualRank.lot_value.identified_unpriced_quantity,2);
 assert.equal(dualRank.lot_value.references.length,1);
 console.log('LV-05 server lane order, negative/partial groups and dependent score invalidation passed.');
+// A dense, factored list restores both server ranks without repeating source metadata.
+const packed = {id:'packed',evidence_version:'local',lot_value:{native_guides:[],cohort_rows:[
+  ['cohort',0,'2026-11-06','publisher_build',2,'7.50',false,[0],2,1]
+]},value_order:{native:[],lanes:{auction:{},buy_it_now:{}}}};
+display.unpack({results:[packed],cohort_labels:['Authored'],cohort_sources:[{source_contract:'gone'}]});
+assert.equal(packed.lot_value.native_guides[0].subtotal,'7.50');
+assert.equal(packed.lot_value.native_guides[0].total,null);
+assert.deepEqual(Array.from(packed.value_order.native,o=>o.rank),[2,1]);
+Object.assign(packed.lot_value,{references:[{source_contract:'gone'},{source_contract:'valid'}],
+  priced_coverage:[[3,[0]],[2,[1]]],identified_quantity:5,subtotal:'20'});
+display.invalidate(packed,ref=>ref.source_contract==='gone');
+assert.equal(packed.lot_value.priced_quantity,2);
+assert.equal(packed.lot_value.identified_unpriced_quantity,3);
+assert.equal(packed.lot_value.native_priced_quantity,0);
+assert.equal(packed.lot_value.subtotal,null);

@@ -987,8 +987,9 @@ Legacy longer-window return URLs are capped at 72 hours. Local evidence filterin
 supports Sold estimate, Guide, Mixed, native guides and the default all-evidence view,
 which includes unavailable results. Local controls never acquire or refresh data.
 
-**Complete assessments**, **Partially assessed**, **Unknown delivered cost** and
-**Unpriced / unprocessed** have separate visible headings. Negative comparisons stay
+The repaired Find lots list groups **Complete assessments**, **Partially assessed**,
+**Unknown delivered cost**, **Assessed without a normalized value** and **Unprocessed**
+separately. Negative comparisons stay
 visible. A partial difference is labelled identified-card subtotal minus delivered
 cost, not a whole-lot bargain score, and leaves the remainder unvalued. The client
 consumes `dex-lot-value-v3` amounts and server ranks; it does not calculate financial
@@ -1002,7 +1003,10 @@ auction timing and the main uncertainty. Both observed costs stay visible on a d
 option even when one buying lane is selected. Unknown is not free or zero. Current
 bids are provisional and BIN observations are not reservations.
 
-**Cards and value evidence** opens all supplied identified contents, including cards
+The authenticated list response fits within 120 KiB. **Cards and value evidence**
+reads one assessed listing from its original local lease. This read checks the account,
+session, catalog, content revision and contributing sources again. It opens all
+supplied identified contents, including cards
 outside the search target, card-level reference condition/source/dates/method and
 applicable sale counts, effective samples, exclusions and descriptive spread. It also
 shows literal seller evidence, unresolved alternatives and optional correction.
@@ -1023,7 +1027,12 @@ Progress names queued, discovering, fetching details, assessing and terminal out
 It shows successful pages searched, summaries received, enriched, assessed and
 unprocessed counts. The unchanged `dex-lot-hunt-v2` allows **two 20-summary pages,
 one detail slot per lane, at most two unique details and five requests including
-OAuth**. Forty summaries do not mean forty assessments. Busy, exhausted capacity,
+OAuth**. The selector first maximizes distinct eligible lane slots. Among feasible
+pairs it favors seller summaries without explicit random or mystery wording, then
+mixed lots naming the target with itemization signals. Selected-set mentions,
+collector fractions, quantities and structured contents help resolve ties. Stable
+offer IDs break remaining ties. Selection is a reason to read details. Only the
+seller-content parser can select a physical card. Busy, exhausted capacity,
 partial acquisition, assessment failure and restart uncertainty give finite outcomes
 and explain that reads do not retry. An all-unavailable batch remains visible;
 summary-only listings differ from fetched but unresolved contents. Status reload is

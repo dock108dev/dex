@@ -117,6 +117,7 @@ if settings.B2_ENABLED:
         path("api/shopping/hunter/lot-review/<uuid:review>/", hunter_views.lot_review),
         path("api/shopping/discovery/targets/", discovery_views.targets),
         path("api/shopping/discovery/catalog/", discovery_views.catalog),
+        path("api/shopping/discovery/<uuid:run>/evidence/<str:result>/", discovery_views.evidence),
         path("api/shopping/discovery/<uuid:run>/stop/", discovery_views.stop),
         path("api/shopping/discovery/<uuid:run>/reveal/<str:result>/", discovery_views.reveal),
         path("shopping/legacy/", shopping_views.legacy),

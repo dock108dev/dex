@@ -30,7 +30,8 @@ def configure(env, entries, monkeypatch):
 def test_automatic_contents_unpriced_and_manual_correction_same_lease(env, entries, monkeypatch):
     configure(env, entries, monkeypatch)
     run, result = env.execute(env.start(query="Charizard"))
-    value = result["results"][0]["lot_value"]
+    row = result["results"][0]
+    value = hunt.evidence(env.actor, "session", run.id, row["id"], row["content_revision"])["lot_value"]
     assert value["contents_state"] == "resolved"
     assert value["identified_quantity"] == value["identified_unpriced_quantity"] == 3
     assert value["priced_quantity"] == value["unidentified_quantity"] == 0

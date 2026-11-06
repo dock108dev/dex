@@ -232,7 +232,7 @@ def test_glance_groups_dual_costs_evidence_keyboard_and_layout(ui):
         "Complete assessments",
         "Partially assessed",
         "Unknown delivered cost",
-        "Unpriced / unprocessed",
+        "Assessed without a normalized value",
     ):
         expect(page.locator(".lot-group-heading").filter(has_text=label)).to_be_visible()
     first = page.locator("#offer-complete")
@@ -555,3 +555,141 @@ def test_forty_summary_two_assessment_local_filter_budget(ui):
     assert report["p95_ms"] <= 70, report
     assert all(method == "GET" for method, _, _ in calls)
     assert not errors
+
+
+@pytest.mark.parametrize("guide", [None, "normalized", "native"])
+def test_find_lots_forty_rows_worker_and_local_evidence(browser_app, monkeypatch, guide):
+    """Use the ordinary page/server/worker; substitute only local configuration and the provider."""
+    import json
+    from types import SimpleNamespace
+
+    import httpx
+    from playwright.sync_api import expect
+    from test_lv03_hunt import Stream
+    from test_lv03_hunt import offer as listing
+
+    from pokemon_hunter.beta import discovery as discovery
+    from pokemon_hunter.beta import hunter_policy, lot_hunt
+    from pokemon_hunter.beta.discovery_transport import Transport
+
+    state, page, base, requests, errors = browser_app
+    from concurrent.futures import ThreadPoolExecutor
+
+    from perf04_helpers import prepare_reads
+    from price_snapshot_helpers import package, stage
+    from test_lv02_native_guides import native_package
+    from test_lv02_valuation import v2_package
+
+    from pokemon_hunter.beta import collection, price_snapshots
+
+    def admit():
+        (state["root"] / "SYNTHETIC_ONLY").touch()
+        pid = state["by_legacy"]["a"]["id"]
+        collection.execute(
+            "UPDATE printings SET edition='unlimited',finish='normal',variant='normal',unresolved_fields='[]' WHERE id=%s",
+            [pid],
+        )
+        prepare_reads(state)
+        data = package(dict(entries={pid: price_snapshots.entries()[pid]}), permanent=False)
+        data = (native_package if guide == "native" else v2_package)(data)
+        now = datetime.now(UTC)
+        data.update(expires_at=(now + timedelta(days=1)).isoformat(), release_month=now.strftime("%Y-%m"))
+        data["records"][0].update(as_of=now.date().isoformat(), captured_at=now.isoformat())
+        price_snapshots.activate(stage(data), None, now=now)
+        return data["version"]
+
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        if guide:
+            source_version = executor.submit(admit).result()
+        executor.submit(
+            hunter_policy.select,
+            state["actor"],
+            dict(
+                enabled=True,
+                per_hunt_limit=5,
+                daily_limit=5,
+                timezone="UTC",
+                recurring=False,
+                expires_at=None,
+                revision=0,
+            ),
+        ).result()
+    monkeypatch.setattr(discovery, "_tokens", {})
+    monkeypatch.setattr(discovery.ebay_hunts, "status", lambda: dict(enabled=True, configured=True))
+    monkeypatch.setattr(
+        discovery.ebay_hunts,
+        "configuration",
+        lambda: (
+            SimpleNamespace(environment="production"),
+            dict(EBAY_CLIENT_ID="authored", EBAY_CLIENT_SECRET="authored"),
+        ),
+    )
+    calls = []
+    offers = [listing(i, lane="buy_it_now" if i < 20 else "auction", title="37-card lot") for i in range(40)]
+    for i in (7, 35):
+        offers[i]["title"] = "37-card mixed lot · Lapras Fossil · cards included: Lapras 10/62"
+    offers[7]["shippingOptions"][0]["shippingCostType"] = "FIXED"
+
+    async def respond(req):
+        calls.append(req.url.path)
+        if "oauth2" in req.url.path:
+            body = dict(access_token="authored", expires_in=3600, token_type="Bearer")
+        elif "item_summary" in req.url.path:
+            body = dict(
+                itemSummaries=offers[:20] if "FIXED_PRICE" in req.url.params["filter"] else offers[20:]
+            )
+        else:
+            source = next(row for row in offers if req.url.path.endswith(row["itemId"]))
+            body = dict(
+                source,
+                description="<p>Seller lists 1x Lapras, printing unspecified.</p>"
+                + "<p>Shipping "
+                + "a" * 1200
+                + "</p>",
+            )
+            if guide:
+                body["description"] += "<p>2x Ivysaur Base Set 2 #44 English Unlimited Non Holo</p>"
+        return httpx.Response(200, stream=Stream(json.dumps(body).encode()))
+
+    monkeypatch.setattr(lot_hunt, "Transport", lambda: Transport(transport=httpx.MockTransport(respond)))
+    page.goto(base + "/shopping/?q=Lapras")
+    page.get_by_role("button", name="Find lots", exact=True).click()
+    expect(page.locator("#discovery-status")).to_contain_text("2 assessed · 38 unprocessed", timeout=30000)
+    heads = page.locator(".lot-group-heading h3")
+    groups = (
+        ["Partially assessed · 1", "Unknown delivered cost · 1", "Unprocessed · 38"]
+        if guide == "normalized"
+        else ["Assessed without a normalized value · 2", "Unprocessed · 38"]
+    )
+    expect(heads).to_have_text(groups)
+    expect(page.locator(".discovery-card")).to_have_count(40)
+    row = page.locator(".discovery-card").filter(has=page.locator(".lot-evidence")).first
+    if guide:
+        expect(row.locator(".lot-value")).to_contain_text("$5.10")
+        if guide == "native":
+            page.locator("#lot-value-sort").select_option("native")
+            expect(heads.first).to_contain_text("Publisher guide contents")
+            expect(heads.first).to_contain_text(" · 2")
+            expect(heads.last).to_contain_text("No compatible publisher guide · 38")
+            page.locator("#lot-value-sort").select_option("value")
+    with page.expect_response(lambda r: "/evidence/" in r.url) as response:
+        row.locator(".lot-evidence > summary").click()
+    assert response.value.ok
+    expect(row.locator(".lot-evidence")).to_contain_text("Seller lists 1x Lapras")
+    assert len(calls) == 5
+    result_sizes = []
+    page.on("response", lambda r: result_sizes.append(r) if "/discovery/?" in r.url else None)
+    row.locator(".review-offer").click()
+    page.wait_for_url("**/shopping/check/**")
+    page.go_back()
+    expect(heads).to_have_text(groups)
+    sized = [len(r.body()) for r in result_sizes if r.ok and len(r.json().get("results", [])) == 40]
+    assert sized and max(sized) <= 120 * 1024
+    print("Find lots authenticated JSON bytes", max(sized), "groups", heads.all_text_contents())
+    assert len(calls) == 5 and not errors
+    if guide:
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            executor.submit(price_snapshots.remove, source_version).result()
+        expect(page.locator(".lot-value").filter(has_text="$5.10")).to_have_count(0, timeout=10000)
+        expect(heads).to_have_text(["Assessed without a normalized value · 2", "Unprocessed · 38"])
+        assert len(calls) == 5

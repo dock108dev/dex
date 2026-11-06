@@ -4,6 +4,7 @@ No detail/photo acquisition, guessed quantities, persistent results or scope-bas
 contents substitution. The caller owns account, revision and original run leases.
 """
 
+import json
 from datetime import datetime, timezone
 from decimal import Decimal
 
@@ -99,11 +100,26 @@ def project(actor, raws, rows, *, details=None, summaries=None, _checks=None):
                 unresolved_contents=proposal["unresolved_contents"],
                 evidence_basis=proposal["evidence_basis"],
                 source_fields=proposal["source_fields"],
+                aspect_names=proposal["aspect_names"],
             )
             unavailable["alternatives"] = lot_guides.family_alternatives(
                 proposal, entries, records, datetime.now(timezone.utc).date()
             )
             if not unavailable["identified_quantity"]:
+                if proposal["proposals"]:
+                    unavailable["reason"] = (
+                        "Seller mentions match catalog candidates. Printing or quantity remains unresolved."
+                    )
+                elif proposal["unresolved_contents"]:
+                    unavailable["reason"] = (
+                        "The parser could not match the supplied item lines to the local catalog."
+                    )
+                elif proposal["excluded_claims"]:
+                    unavailable["reason"] = proposal["excluded_claims"][0]["reason"]
+                else:
+                    unavailable["reason"] = (
+                        "No individually identifiable card lines were found in the supplied seller fields."
+                    )
                 continue
             _, assessment = hunter_lots._compare(actor, raw, proposal, None, entries, records, _checks=checks)
         except ValueError as error:
@@ -141,6 +157,8 @@ def project(actor, raws, rows, *, details=None, summaries=None, _checks=None):
                 if total is not None
                 else "Publisher guide covers the selected contents; shipping/tax basis and condition remain unknown."
                 if any(g["complete"] for g in assessment["native_guides"])
+                else "Selected physical cards have no applicable admitted references."
+                if subtotal is None and not assessment["native_guides"]
                 else "Partial contents/pricing only; this is not the whole-lot value."
             ),
         )
@@ -250,3 +268,133 @@ def rank(rows, raws, *, now=None):
     combined = [r["value_order"]["combined"] for r in rows if r["value_order"]["combined"]]
     for position, order in enumerate(sorted(combined, key=key), 1):
         order["combined_rank"] = position
+
+
+def _dependencies(refs):
+    """Deduplicate lifecycle checks. Full reference provenance is available on expansion."""
+    dependencies = set()
+    pending = list(refs)
+    while pending:
+        ref = pending.pop()
+        dependency = tuple(ref.get(k) for k in ("snapshot_version", "source_contract", "expires_at"))
+        if any(dependency):
+            dependencies.add(dependency)
+        pending.extend(ref.get("conflicts", ()))
+    return [
+        {k: v for k, v in zip(("snapshot_version", "source_contract", "expires_at"), dep, strict=True) if v}
+        for dep in sorted(dependencies, key=lambda d: tuple(v or "" for v in d))
+    ]
+
+
+def compact(value):
+    """Glance quantities, costs and values retain their original server semantics."""
+    fields = (
+        "assessment_version",
+        "basis",
+        "basis_label",
+        "subtotal",
+        "total",
+        "priced_quantity",
+        "identified_quantity",
+        "physically_selected_quantity",
+        "parent_identified_quantity",
+        "normalized_priced_quantity",
+        "native_priced_quantity",
+        "identified_unpriced_quantity",
+        "unidentified_quantity",
+        "stated_quantity",
+        "contents_state",
+        "reason",
+        "bid_difference",
+        "buy_now_difference",
+        "benchmark_costs",
+    )
+    dependencies = _dependencies(value["references"])
+    dependency_ids = {tuple(sorted(ref.items())): i for i, ref in enumerate(dependencies)}
+    quantities = {}
+    for card in value["cards"]:
+        if ref := card.get("reference"):
+            group = tuple(dependency_ids[tuple(sorted(dep.items()))] for dep in _dependencies([ref]))
+            quantities[group] = quantities.get(group, 0) + card["quantity"]
+    return {
+        **{key: value[key] for key in fields},
+        "references": dependencies,
+        "priced_coverage": [[quantity, ids] for ids, quantity in quantities.items()],
+        "native_guides": [
+            {
+                **{
+                    key: group[key]
+                    for key in (
+                        "cohort",
+                        "provider",
+                        "reference_date",
+                        "date_basis",
+                        "complete",
+                        "total",
+                        "subtotal",
+                        "priced_quantity",
+                    )
+                },
+                "references": _dependencies(group["references"]),
+            }
+            for group in value["native_guides"]
+        ],
+    }
+
+
+def bound_list(result):
+    """Fit the authenticated envelope, including worst-case quoted titles and repeated native cohorts."""
+    limit = 120 * 1024
+    if len(json.dumps(result).encode()) <= limit:
+        return
+    # Keep all offers and all financial fields. Factor repeated cohort and source
+    # metadata out of unusually dense lists. The full labels stay in local evidence.
+    dependencies, labels = {}, {}
+    for row in result["results"]:
+        # These legacy discovery placeholders carry no evidence on automatic Hunt rows.
+        for key in (
+            "save_reason",
+            "identity_candidates",
+            "proposed_identity",
+            "comparison",
+            "reference",
+            "discovery_eligibility",
+            "discovery_kind",
+            "save_allowed",
+            "revealed",
+        ):
+            row.pop(key, None)
+        row["title"] = row["title"][:60]
+        row["seller_image"] = None
+        value = row.get("lot_value")
+        if not value:
+            continue
+        ranks = {(r["cohort"], r["lane"]): r["rank"] for r in row["value_order"]["native"]}
+        groups = []
+        for g in value["native_guides"]:
+            deps = []
+            for ref in g["references"]:
+                key = tuple(sorted(ref.items()))
+                deps.append(dependencies.setdefault(key, len(dependencies)))
+            label = g["provider"][:60]
+            groups.append(
+                [
+                    g["cohort"],
+                    labels.setdefault(label, len(labels)),
+                    g["reference_date"],
+                    g["date_basis"],
+                    g["priced_quantity"],
+                    g["subtotal"],
+                    g["complete"],
+                    deps,
+                    ranks.get((g["cohort"], "auction")),
+                    ranks.get((g["cohort"], "buy_it_now")),
+                ]
+            )
+        value["native_guides"] = []
+        row["value_order"]["native"] = []
+        value["cohort_rows"] = groups
+    result["cohort_sources"] = [dict(ref) for ref in dependencies]
+    result["cohort_labels"] = list(labels)
+    if len(json.dumps(result, separators=(",", ":")).encode()) > limit:
+        raise ValueError("Hunt summary exceeded the supported response limit")

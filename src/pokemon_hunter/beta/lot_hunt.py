@@ -408,12 +408,70 @@ def _received(run, page, body):
         _progress(run)
 
 
+def _selection_priority(row, page):
+    # Search facets and returned position are never seller assertions.
+    text = " ".join(v[:4096] for k in ("title", "shortDescription") if isinstance(v := row.get(k), str))
+    aspects = row.get("localizedAspects")
+    aspects = aspects[:100] if isinstance(aspects, list) else []
+    contents = [
+        a["value"][:500]
+        for a in aspects
+        if isinstance(a, dict)
+        and isinstance(a.get("value"), str)
+        and str(a.get("name", "")).casefold() in {"contents", "cards included"}
+    ]
+    text = " ".join([text, *contents]).casefold()
+
+    def mentions(name):
+        return bool(name and re.search(r"(?<!\w)" + re.escape(name.casefold()) + r"(?!\w)", text))
+
+    target = mentions(page.query)
+    set_match = mentions(page.set_name) or any(
+        isinstance(a, dict)
+        and str(a.get("name", "")).casefold() == "set"
+        and page.set_name
+        and str(a.get("value", "")).casefold() == page.set_name.casefold()
+        for a in aspects
+    )
+    numbered = bool(re.search(r"\b\d+/\d+\b|\b\d+\s*[x×]\s*[a-z]", text))
+    list_signal = bool(
+        contents
+        or numbered
+        or re.search(
+            r"\b(?:contents|cards included|includes|contains)\s*[:–-]|\b(?:itemized|card list)\b", text
+        )
+    )
+    mixed = bool(re.search(r"\b(?:lot|bundle|collection|mixed|assortment)\b|\b\d+[ -]cards?\b", text))
+    uncertain = bool(re.search(r"\b(?:mystery|random|may include|not guaranteed|choose your)\b", text))
+    return (
+        not uncertain,
+        mixed and target and list_signal,
+        target and list_signal,
+        target,
+        bool(set_match),
+        numbered,
+        list_signal,
+        mixed,
+    )
+
+
 def _select(run):
-    selected = []
-    for lane in contract.LANES:
-        row = next((r for r in run.raws if r["itemId"] not in selected and lane in contract.lanes(r)), None)
-        if row:
-            selected.append(row["itemId"])
+    # Compare feasible pairs so a dual-option listing cannot starve the other lane.
+    choices = {lane: [] for lane in contract.LANES}
+    for row in sorted(run.raws, key=lambda r: r["itemId"]):
+        priority = _selection_priority(row, run.pages[0].named)
+        for lane in contract.lanes(row):
+            choices[lane].append((priority, row["itemId"]))
+    best, selected = (), []
+    for buy in [*choices["buy_it_now"], None]:
+        for auction in [*choices["auction"], None]:
+            pair = [entry for entry in (buy, auction) if entry]
+            keys = [key for _, key in pair]
+            if len(keys) != len(set(keys)):
+                continue
+            score = (len(pair), *map(sum, zip(*(priority for priority, _ in pair), strict=True)))
+            if score > best:
+                best, selected = score, keys
     return selected
 
 
@@ -503,20 +561,7 @@ async def _acquire(run, actor, credentials):
                     continue
             _progress(run, "assessing")
             try:
-                result = await asyncio.to_thread(_assess, actor, run, [deepcopy(run.details[key])])
-                await asyncio.to_thread(_guard, run, actor)
-                with run.lock:
-                    _acquisition_check(run)
-                    for check in result["reference_checks"]:
-                        check()
-                    run.assessed.add(key)
-                    run.progress["assessed"] += 1
-                    value = result["results"][0].get("lot_value", {})
-                    ready = _complete(value)
-                    run.progress["ready" if ready else "partial"] += 1
-                    if not ready:
-                        _reason(run, "contents_or_references_unavailable")
-                    _progress(run)
+                await asyncio.to_thread(_record_assessment, actor, run, key)
             except (ValueError, RuntimeError):
                 _reason(run, "assessment_unavailable")
                 _progress(run)
@@ -527,6 +572,30 @@ async def _acquire(run, actor, credentials):
         state = "success"
     run.acquired_at = time.monotonic()
     _finish(run, state)
+
+
+def _record_assessment(actor, run, key):
+    # Publication guards may re-open the local reference database. Keep that
+    # synchronous work on the worker thread, including the last source check.
+    with run.lock:
+        _guard(run, actor)
+        raw = deepcopy(run.details[key])
+        revision = run.content_revision
+    result = _assess(actor, run, [raw])
+    with run.lock:
+        _guard(run, actor)
+        _check_content(run, revision)
+        for check in result["reference_checks"]:
+            check()
+        _guard(run, actor)
+        _acquisition_check(run)
+        run.assessed.add(key)
+        run.progress["assessed"] += 1
+        ready = _complete(result["results"][0].get("lot_value", {}))
+        run.progress["ready" if ready else "partial"] += 1
+        if not ready:
+            _reason(run, "contents_or_references_unavailable")
+        _progress(run)
 
 
 def _worker(run, actor, credentials):
@@ -650,17 +719,21 @@ def _status(actor, session, run):
         with run.lock:
             _check_content(run, revision)
             for row in rows:
+                # The HTTP envelope applies its final serialized bound after authorization.
                 row["title"] = row.get("title", "")[:500]
                 if len(row.get("seller_image") or "") > 512:
                     row["seller_image"] = None
-            if len(json.dumps(rows).encode()) > 120 * 1024:
-                for row in rows:
-                    row.pop("lot_value", None)
-                    row.pop("value_order", None)
-                    row["assessment_state"] = "partial"
-                    row["reason"] = (
-                        "Assessment exceeds the bounded result view; inspect this offer for details"
-                    )
+                if value := row.get("lot_value"):
+                    row["lot_value"] = discovery_lot_values.compact(value)
+                    row["evidence_version"] = _evidence_version(value)
+                order = row["value_order"]
+                for lane, entry in list(order["lanes"].items()):
+                    order["lanes"][lane] = {k: entry[k] for k in ("group", "rank", "score")}
+                if combined := order["combined"]:
+                    order["combined"] = {k: combined[k] for k in ("group", "combined_rank", "score")}
+                order["native"] = [
+                    {k: entry[k] for k in ("lane", "cohort", "rank")} for entry in order["native"]
+                ]
             result["results"] = rows
             result["progress"]["ready"] = sum(r["assessment_state"] == "ready" for r in rows)
             result["progress"]["partial"] = sum(r["assessment_state"] == "partial" for r in rows)
@@ -674,6 +747,42 @@ def _status(actor, session, run):
         _finish(run, exc.state, exc.reason, erase=True)
         return _summary(run)
     return result
+
+
+def _evidence_version(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+def evidence(actor, session, key, handle, revision):
+    run, _ = _lookup(actor, session, key)
+    if run is None:
+        raise Http404
+    with run.lock:
+        return _evidence(actor, run, handle, revision)
+
+
+@shopping_index.indexed
+def _evidence(actor, run, handle, revision):
+    try:
+        _guard(run, actor, acquiring=False)
+        _check_content(run, revision)
+        item = next((k for k in run.assessed if discovery_listing.result_handle(run.id, k) == handle), None)
+        if item is None or not contract.lanes(run.details[item]):
+            raise Http404
+        assessment = _assess(actor, run, [run.details[item]])
+        value = assessment["results"][0]["lot_value"]
+        version = _evidence_version(value)
+        for check in assessment["reference_checks"]:
+            check()
+        if not contract.lanes(run.details.get(item, {})):
+            raise Http404
+        _guard(run, actor, acquiring=False)
+        _check_content(run, revision)
+    except Halt as exc:
+        raise ValueError(exc.reason) from exc
+    return dict(
+        run_id=run.id, id=handle, content_revision=revision, evidence_version=version, lot_value=value
+    )
 
 
 def stop(actor, session, key):

@@ -141,6 +141,19 @@ def searches(request):
 
 
 @endpoint
+@require_GET
+def evidence(request, run, result):
+    who, session = principal(request)
+    raw = query(request, {"revision"})
+    revision = raw.get("revision", "")
+    if not revision.isascii() or not revision.isdigit() or len(revision) > 10:
+        raise ValueError("Choose the original listing revision")
+    return shopping_views.private_json(
+        lot_hunt.evidence(who, session, str(run), result, int(revision)), request
+    )
+
+
+@endpoint
 @require_POST
 def stop(request, run):
     who, session = principal(request)

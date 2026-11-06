@@ -16,7 +16,9 @@ def test_automatic_evidence_remains_in_original_lease_and_no_read_acquires(env, 
     before_calls = list(env.calls)
     assert len(before_calls) == 5
     for row in result["results"]:
-        value = row["lot_value"]
+        value = lot_hunt.evidence(env.actor, "session", run.id, row["id"], row["content_revision"])[
+            "lot_value"
+        ]
         assert value["assessment_version"] == "dex-lot-value-v3"
         assert row["value_order"]["schema"] == "dex-lot-order-v1"
         assert value["source_fields"]
@@ -35,7 +37,12 @@ def test_automatic_evidence_remains_in_original_lease_and_no_read_acquires(env, 
     prices.clear()
     withdrawn = lot_hunt.status(env.actor, "session", run.id)
     assert all(r["lot_value"]["total"] is None for r in withdrawn["results"])
-    assert all(r["lot_value"]["source_fields"] for r in withdrawn["results"])
+    assert all(
+        lot_hunt.evidence(env.actor, "session", run.id, r["id"], r["content_revision"])["lot_value"][
+            "source_fields"
+        ]
+        for r in withdrawn["results"]
+    )
     assert all(r["value_order"]["combined"]["group"] == "unpriced" for r in withdrawn["results"])
     assert env.calls == before_calls
 

@@ -164,13 +164,13 @@ def status(actor, session, key):
 
 
 @shopping_index.indexed
-def _proposals(actor, value):
+def _proposals(actor, value, *, summary=None):
     clues = dict(value["clues"], text=value.pop("match_text"))
     indexed = shopping_index.current(actor)
     entries = (
         indexed.proposals(
             hunter_lot_parser.catalog_text(
-                value.get("_contents_source", {}),
+                summary or value.get("_contents_source", {}),
                 value.get("_contents_source") if value.get("_contents_kind") == "official_detail" else None,
             )
         )
@@ -196,7 +196,7 @@ def _proposals(actor, value):
         dict(shopping.identity(p), quantity=0, artwork=artwork.get(p["id"])) for p in matched
     ]
     value["unknown_contents"] = value["seller_lot_size"]
-    value["contents"] = shopping_contents.project(value, entries)
+    value["contents"] = shopping_contents.project(value, entries, summary=summary)
     return value
 
 
@@ -255,6 +255,7 @@ def candidate(actor, session, run_id, result_id):
     value = _proposals(
         actor,
         details(raw.get("itemId"), raw, source_kind="official_detail" if source.get("detail") else "summary"),
+        summary=source.get("summary"),
     )
     automatic = source.get("detail") is not None
     if automatic:

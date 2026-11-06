@@ -8,7 +8,7 @@ from .account_read_build import encode
 from .account_read_select import search_ranks
 
 
-def project(value, entries):
+def project(value, entries, *, summary=None):
     source = value.pop("_contents_source", {"title": value["title"]})
     kind = value.pop("_contents_kind", "summary")
     # Parser strips markup; official detail stays a separate provenance field.
@@ -20,7 +20,10 @@ def project(value, entries):
     raw.setdefault("title", value["title"])
     try:
         parsed = hunter_lot_parser.parse(
-            raw, entries, detail=source if kind == "official_detail" else None, complete_candidates=True
+            summary or raw,
+            entries,
+            detail=source if kind == "official_detail" else None,
+            complete_candidates=True,
         )
     except ValueError as exc:
         return [
