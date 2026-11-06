@@ -141,6 +141,24 @@ def prepare(cx, count, copies):
     return goal
 
 
+def open_controlled_seller(page, link):
+    # Intercept the new tab's first navigation only while the seller handoff
+    # is exercised. Keeping a context route installed intercepts even local
+    # requests at Chromium's protocol layer, despite the exact URL matcher.
+    def intercept(route):
+        route.fulfill(content_type="text/html", body="Intercepted seller")
+
+    page.context.route(SELLER, intercept)
+    try:
+        with page.context.expect_page() as opened:
+            link.press("Enter")
+        seller = opened.value
+        seller.get_by_text("Intercepted seller", exact=True).wait_for()
+        return seller
+    finally:
+        page.context.unroute(SELLER, intercept)
+
+
 def changed_evidence(page, root, frozen):
     """Explicitly compare an unsupported grade, a quantity conflict and expired sources."""
     from playwright.sync_api import expect
@@ -179,10 +197,7 @@ def changed_evidence(page, root, frozen):
     expect(out).to_contain_text("Binding limit: budget")
     link = out.locator("a")
     assert link.get_attribute("href") == SELLER
-    with page.context.expect_page() as opened:
-        link.press("Enter")
-    seller = opened.value
-    seller.get_by_text("Intercepted seller", exact=True).wait_for()
+    seller = open_controlled_seller(page, link)
     version = price_snapshots.state()["current"]
     descriptor = price_snapshots.read(price_snapshots.directory() / (version + ".json"))
     key = "fixturea" if frozen else "fixturec"
@@ -371,10 +386,7 @@ def journey(page, base, goal, cx, report, width, zoom, exercise_changes):
     link.focus()
     scroll = page.evaluate("scrollY")
     seller_start = time.perf_counter()
-    with page.context.expect_page() as opened:
-        link.press("Enter")
-    seller = opened.value
-    seller.get_by_text("Intercepted seller", exact=True).wait_for()
+    seller = open_controlled_seller(page, link)
     assert seller.url == SELLER and seller.evaluate("window.opener===null")
     samples.setdefault("seller tab", []).append((time.perf_counter() - seller_start) * 1000)
 
@@ -438,9 +450,6 @@ def test_integrated_journey(cx, count, copies):
                 with browser.new_context(viewport=dict(width=width, height=940)) as context:
                     context.add_cookies(
                         [dict(name=k, value=v.value, url=base) for k, v in cx["a"].cookies.items()]
-                    )
-                    context.route(
-                        SELLER, lambda r: r.fulfill(content_type="text/html", body="Intercepted seller")
                     )
                     context.add_init_script(
                         f"document.addEventListener('DOMContentLoaded',()=>document.documentElement.style.setProperty('font-size','{zoom}%','important'))"

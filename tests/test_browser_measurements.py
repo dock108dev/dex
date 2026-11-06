@@ -24,7 +24,7 @@ def test_browser_clock_retains_render_wait_and_ignores_late_driver_acknowledgeme
             self.send_response(200)
             self.send_header(
                 "Content-Security-Policy",
-                "default-src 'none'; script-src 'nonce-probe'; connect-src 'self' https://example.invalid; style-src 'unsafe-inline'",
+                "default-src 'none'; script-src 'nonce-probe'; connect-src 'self' http://localhost:* https://example.invalid; style-src 'unsafe-inline'",
             )
             self.send_header("Cache-Control", "public,max-age=31536000,immutable")
             self.send_header("Content-Length", str(len(body)))
@@ -61,6 +61,12 @@ def test_browser_clock_retains_render_wait_and_ignores_late_driver_acknowledgeme
             assert requests.count("/cache-proof") == 2
             assert page.evaluate("fetch('https://example.invalid/blocked').then(()=>false,()=>true)")
             assert blocked == ["https://example.invalid/blocked"]
+            # A reachable external origin on the same listener proves Chromium
+            # denied the transport, independently of DNS or a CORS rejection.
+            alternate = f"http://localhost:{server.server_port}/must-not-arrive"
+            assert page.evaluate("url=>fetch(url).then(()=>false,()=>true)", alternate)
+            assert blocked[-1] == alternate
+            assert "/must-not-arrive" not in requests
             browser.close()
     finally:
         server.shutdown()
