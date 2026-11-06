@@ -140,6 +140,11 @@ def scope(actor, raw):
         "SELECT id,summary AS payload,summary_sha AS sha FROM ar_goals WHERE user_id=%s AND id=%s",
         [actor.user_id, key],
     )
+    return checked_scope(raw, rows)
+
+
+def checked_scope(raw, rows):
+    """Validate an already read goal header without another database round trip."""
     if not rows:
         from django.http import Http404
 

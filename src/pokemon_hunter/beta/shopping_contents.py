@@ -14,13 +14,13 @@ def project(value, entries):
     # Parser strips markup; official detail stays a separate provenance field.
     raw = {
         k: source[k]
-        for k in ("title", "shortDescription", "condition", "itemId", "buyingOptions")
+        for k in ("title", "shortDescription", "condition", "itemId", "buyingOptions", "localizedAspects")
         if k in source
     }
     raw.setdefault("title", value["title"])
     try:
         parsed = hunter_lot_parser.parse(
-            raw, entries, detail=source if source.get("description") else None, complete_candidates=True
+            raw, entries, detail=source if kind == "official_detail" else None, complete_candidates=True
         )
     except ValueError as exc:
         return [
@@ -33,6 +33,7 @@ def project(value, entries):
                 evidence=[],
             )
         ]
+    value["seller_contents"] = parsed
     totals = set(parsed["seller_stated_totals"])
     # A null adapter total may itself mean conflicting structured claims. Do
     # not replace that conflict with the one number repeated in the title.
@@ -132,7 +133,7 @@ def project(value, entries):
                             else "Official summary · seller claim"
                         ),
                     )
-                    for m in row["mentions"]
+                    for m in row["mentions"] + row.get("scope_mentions", [])
                 ],
             )
         )
@@ -172,6 +173,17 @@ def project(value, entries):
                         ),
                     )
                 ],
+            )
+        )
+    for i, claim in enumerate(parsed.get("excluded_claims", [])):
+        result.append(
+            dict(
+                key=f"excluded-{i}",
+                name="Excluded seller claim",
+                candidates=[],
+                quantity=None,
+                reasons=[claim["reason"] + "; contents valuation unavailable for this claim"],
+                evidence=[dict(m, provenance="Seller claim") for m in claim["mentions"]],
             )
         )
     return result or [

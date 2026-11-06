@@ -294,7 +294,7 @@
     const p=preview;
     // Ambiguous identities remain excluded. Stock is deliberately never used here.
     const currency=p.price.currency || p.shipping.currency || p.buy_now?.currency || 'USD';
-    const value={budget:collectionContext?.choices?.budget ?? '',contents:p.contents || [],seller_card_count:p.seller_lot_size ?? null,lot_units:p.api_lot_size===null || p.api_lot_size===undefined?null:Number(p.api_lot_size),stock_quantity:p.stock_quantity ?? null,remainder_auto:p.seller_lot_size!==null && p.seller_lot_size!==undefined,detail_run:p.detail_run || null,discovery_origin:p.discovery_origin || null,price_kind:p.price_kind || 'current_asking_price',planned_bid:'',buy_now_price:p.price_kind==='current_bid' ? p.buy_now?.amount || '' : '',buy_now_currency:p.buy_now?.currency || '',title:p.title,listing_url:p.item_url,price:p.price.amount || '',currency,shipping:p.shipping.currency===currency ? p.shipping.amount || '' : '',tax:'',other_costs:'',unknown_contents:p.unknown_contents ?? p.seller_lot_size,cards:[]};
+    const value={budget:collectionContext?.choices?.budget ?? '',contents:p.contents || [],seller_card_count:p.seller_lot_size ?? null,lot_units:p.api_lot_size===null || p.api_lot_size===undefined?null:Number(p.api_lot_size),stock_quantity:p.stock_quantity ?? null,remainder_auto:p.seller_lot_size!==null && p.seller_lot_size!==undefined,detail_run:p.detail_run || null,discovery_origin:p.discovery_origin || null,price_kind:p.price_kind || 'current_asking_price',planned_bid:'',buy_now_price:p.price_kind==='current_bid' ? p.buy_now?.amount || '' : '',buy_now_currency:p.buy_now?.currency || '',title:p.title,listing_url:p.item_url,price:p.price.amount || '',currency,shipping:p.shipping.currency===currency ? p.shipping.amount || '' : '',tax:'',other_costs:'',unknown_contents:'unknown_contents' in p ? p.unknown_contents : p.seller_lot_size,cards:(p.proposals || []).filter(row=>row.quantity>0).map(row=>({printing_id:row.id,quantity:row.quantity,grade:row.grade || 'raw',grader:row.grader || '',condition:row.condition || '',language:row.language || '',edition:row.edition || '',finish:row.finish || ''}))};
     await applyReview(value,p.proposals);preview=null;$('listing-preview').hidden=true;$('review-editor').open=true;$('review-heading').focus({preventScroll:true});$('review-editor').scrollIntoView({block:'start'});
     try{reviewDirty=true;await persist();say('Details applied. Correct the cards and quantities, then compare.');}catch(e){say(e.message,true);}
   };
@@ -316,7 +316,7 @@
   function evidenceLabel(r) {
     return [r.name, r.grade==='raw'?r.condition:[r.grader,r.grade].join(' '), r.as_of].filter(Boolean).join(' · ');
   }
-  function addHandoff(out, assessment, generation) {
+  function addHandoff(out, assessment, generation, benchmark) {
     const url=offerLink(assessment.seller_url);
     if(!url)return;
     const section=node('section'), link=node('a','Open listing on eBay (new tab)');
@@ -327,7 +327,7 @@
       if(!active || Date.now()>=retentionDeadline || Date.parse(assessment.ends_at)<=Date.now()){
         event.preventDefault();invalidate();say('The auction or review expired. Reopen Shopping to check the listing.');return;
       }
-      sellerAway=true;handoff={assessment,link,generation};
+      sellerAway=true;handoff={assessment,benchmark,link,generation};
       out.dataset.pending='true';
     });
     section.append(link);out.append(section);
@@ -344,10 +344,10 @@
     }
     const headers={'X-Dex-Review-Lease':lease,'X-Dex-Review-Revision':reviewRevision,'X-Dex-Shopping-Generation':String(trip.generation)};
     try {
-      const {assessment}=await request('/api/shopping/listing/return/',undefined,false,null,headers);
+      const {assessment,benchmark}=await request('/api/shopping/listing/return/',undefined,false,null,headers);
       if(handoff!==trip)return;
       if(!trip.assessment){handoff=null;return;} // Reference cleanup already removed the decision.
-      if(JSON.stringify(assessment)!==JSON.stringify(trip.assessment)){
+      if(JSON.stringify(assessment)!==JSON.stringify(trip.assessment) || JSON.stringify(benchmark)!==JSON.stringify(trip.benchmark)){
         const missing=trip.assessment.evidence.filter(r=>!assessment.evidence.some(now=>JSON.stringify(now)===JSON.stringify(r)));
         invalidate();
         say(missing.length?'Reference expired, changed or withdrawn: '+missing.map(evidenceLabel).join('; ')+'. Compare again.':'The assessment changed. Compare again.');
@@ -392,10 +392,34 @@
       const data=read();await persist();const value=await request('/api/shopping/listing/compare/',{revision:reviewRevision,lease});
       if(expected!==version || !active)return;
       const a=value.assessment;
-      assessmentEnd=a.ends_at;references=a.evidence.flatMap(r=>[r,...r.conflicts.map(c=>({...c,name:r.name}))]);
+      assessmentEnd=a.ends_at;references=[...a.evidence.flatMap(r=>[r,...r.conflicts.map(c=>({...c,name:r.name}))]),...(value.benchmark?.references || []),...(value.benchmark?.native_guides || []).flatMap(g=>g.references || [])];
       const usd=v=>v==null?'Unavailable':`$${v}`;
       const charge=v=>v ? `${v} ${data.currency}` : 'unknown';
       const out=$('check-results');out.replaceChildren(node('h2','Reviewed comparison'));
+      const b=value.benchmark;
+      if(b){
+        const part=node('section');part.className='review-benchmark';
+        part.append(node('h3','Before-tax benchmark · corrected contents'));
+        if(b.unavailable)part.append(node('p',b.unavailable));
+        else {
+          part.append(node('p',`${b.basis_label || 'No normalized reference'} · ${b.priced_card_quantity} normalized-priced cards · ${b.unpriced_card_quantity} identified cards without normalized prices`));
+          part.append(node('p',b.result.full_lot_total!=null ? `${usd(b.result.full_lot_total)} ungraded lot value` : `${usd(b.result.known_selected_subtotal)} identified-card subtotal; remaining cards are unvalued`));
+          for(const [lane,c] of Object.entries(b.benchmark_costs || {})){
+            if(c.base==null && c.delivered_before_tax==null)continue;
+            part.append(node('p',`${lane==='auction'?'Observed current bid':'Observed Buy It Now'} ${usd(c.base)} · Shipping ${usd(c.shipping)} · Delivered before tax ${usd(c.delivered_before_tax)}`));
+            if(c.difference!=null)part.append(node('p',`Reference minus delivered cost: ${usd(c.difference)} before tax`));
+            if(c.subtotal_difference!=null)part.append(node('p',`Identified-card subtotal minus delivered cost: ${usd(c.subtotal_difference)} before tax. This is not a whole-lot bargain score.`));
+          }
+          for(const g of b.native_guides || [])part.append(node('p',`${usd(g.total ?? g.subtotal)} publisher guide ${g.complete?'total':'subtotal'} · ${g.provider} · ${g.reference_date} · shipping/tax basis unknown; condition unspecified. Separate source/date cohort; not savings or a bid ceiling.`));
+          for(const r of b.references || []){
+            const card=cards.find(c=>c.printing_id===r.printing_id);
+            part.append(node('p',`${card?.identity?.name || r.printing_id} · ${r.basis==='sold_estimate'?'Sold estimate':'Guide'} ${usd(r.amount)} · ${r.condition || 'condition unspecified'} · reference ${r.as_of} · source ${r.source_url || 'unavailable'} · valuation ${r.valuation_as_of || 'unknown'} · publisher build ${r.publisher_built_at || 'unknown'}${r.sample ? ' · '+r.sample.unique_sales+' sales · '+r.sample.sold_from+' through '+r.sample.sold_through+' · method '+r.method?.method : ''}`));
+          }
+          for(const gap of b.gaps || [])part.append(node('p',gap));
+        }
+        part.append(node('p','Seller assertions and your corrections are not authentication or a condition guarantee. Personal bids and stricter tax-aware ceilings remain separate below.'));
+        out.append(part);
+      }
       for(const [basis,label] of [['listing_observation',a.auction?'Observed bid':'Fixed asking price'],...(a.auction?[['planned_bid','My planned bid']]:[])]){
         const c=a.costs[basis], part=node('section');
         part.append(node('h3',label),node('p',`Base ${usd(c.base_price)} · With shipping ${usd(c.base_plus_shipping)} · Before tax ${usd(c.before_tax)} · All-in ${usd(c.full_delivered_cost)}`));
@@ -415,7 +439,7 @@
         if(a.maximum!==null)out.append(node('p',`${a.price_above===null?'Observed bid unknown':a.price_above?'Observed bid already exceeds ceiling':'Observed bid is within ceiling'}. Next required bid unknown. ${a.planned_bid_above===null?'':a.planned_bid_above?'Your planned bid exceeds the ceiling.':'Your planned bid fits the ceiling.'} Verify the reviewed contents and condition before bidding.`));
       }
       for(const reason of a.issues)out.append(node('p',reason));
-      addHandoff(out,a,value.authority.generation);out.hidden=false;out.querySelector('h2').tabIndex=-1;out.querySelector('h2').focus();say('Comparison updated from admitted local references. No prices were refreshed.');
+      addHandoff(out,a,value.authority.generation,value.benchmark);out.hidden=false;out.querySelector('h2').tabIndex=-1;out.querySelector('h2').focus();say('Comparison updated from admitted local references. No prices were refreshed.');
     }catch(e){say(e.message,true);}finally{$('check-compare').disabled=!active;}
   };
   $('clear-review').onclick=async()=>{authoredCards.clear();for(const key of Object.keys(authoredFields))delete authoredFields[key];clearOffer();preview=null;$('listing-preview').hidden=true;await applyReview({currency:'USD',cards:[],unknown_contents:null});changed();say('Review cleared. Collection and wanted targets remain unchanged.');};

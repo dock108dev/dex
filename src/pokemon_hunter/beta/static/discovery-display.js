@@ -22,7 +22,14 @@ window.DexDiscoveryDisplay = (() => {
           const before = existing.querySelector('.offer-image'), after = child.querySelector('.offer-image');
           const markup = child.outerHTML;
           if (before && after && before.dataset.source === after.dataset.source) after.replaceWith(before);
+          const disclosures=[...existing.querySelectorAll('details')].map(d=>d.open);
+          child.querySelectorAll('details').forEach((d,i)=>{d.open=Boolean(disclosures[i]);});
+          const controls='a,button,summary,input,select,[tabindex]';
+          const focus=existing.contains(document.activeElement) ? [...existing.querySelectorAll(controls)].indexOf(document.activeElement) : -1;
+          const selfFocused=document.activeElement===existing;
           existing.replaceWith(child);child.dataset.markup = markup;
+          if (selfFocused) child.focus({preventScroll:true});
+          else if (focus>=0) child.querySelectorAll(controls)[focus]?.focus({preventScroll:true});
         }
       } else child.dataset.markup = child.outerHTML;
       const position = container.children[index] || null;

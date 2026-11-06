@@ -286,6 +286,26 @@ def _reference(ref):
     return dict(
         amount=ref["amount"],
         currency=ref["currency"],
+        printing_id=ref.get("printing_id"),
+        evidence_id=ref.get("evidence_id", ref.get("reference_id")),
+        basis=ref.get("basis", "guide"),
+        method=ref.get("method", {"method": "publisher_guide"}),
+        sample=ref.get("sample"),
+        **(
+            {
+                k: ref[k]
+                for k in (
+                    "amount_basis",
+                    "native_money",
+                    "cohort",
+                    "provider",
+                    "field",
+                    "capabilities",
+                )
+            }
+            if ref.get("basis") == "publisher_native_guide"
+            else {}
+        ),
         as_of=ref["as_of"],
         valuation_as_of=ref.get("valuation_as_of", None if not ref.get("snapshot_version") else ref["as_of"]),
         captured_at=ref.get("captured_at"),

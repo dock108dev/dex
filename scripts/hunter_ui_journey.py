@@ -315,6 +315,16 @@ def exercise(base, root, output, report):
             before = protected_state(root)
             load(enabled=False)
             expect(page.locator("#hunter-start")).to_be_disabled()
+            if page.locator("#hunter-app").get_attribute("data-simple") == "true":
+                from scripts.hunter_ui_singles import exercise as exercise_singles
+
+                exercise_singles(page, root, output, report, capture, passed, protected_state)
+                assert not errors, errors
+                assert all(item["kind"] == "image" for item in external), external
+                report.update(
+                    browser_errors=errors, external_requests_sent=0, controlled_external_images=len(external)
+                )
+                return
             expect(page.locator("#hunter-usage-settings")).to_have_attribute("open", "")
             for key in ("enabled", "per-hunt", "daily", "timezone", "recurring", "expiry-mode"):
                 expect(page.locator("#hunter-usage-" + key)).to_have_value("")

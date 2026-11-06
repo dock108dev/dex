@@ -17,23 +17,34 @@ def _targets(actor, raw):
         raise ValueError("Choose a species region")
     if raw.get("goal") and not raw.get("version"):
         raise ValueError("Keep the frozen goal version")
-    goal = account_read_goals.scope(actor, raw)
+    goal_key = raw.get("goal")
+    goal = None if goal_key else account_read_goals.scope(actor, raw)
     where, args = ["s.user_id=%s"], [actor.user_id]
     if scope != "all":
         where.append("CAST(s.id AS INTEGER) " + ("<=151" if scope == "kanto" else ">151"))
-    if goal:
+    if goal_key:
         where.append(
             "EXISTS(SELECT 1 FROM ar_goal_items i WHERE i.user_id=s.user_id AND i.goal_id=%s AND i.species=CAST(s.id AS INTEGER) AND i.status!='owned')"
         )
-        args.append(goal["id"])
+        args.append(goal_key)
     else:
         where.append("json_extract(s.summary,'$.current_present')=0")
-    rows = store.rows(
+    query = (
         "SELECT s.summary AS payload,s.summary_sha AS sha FROM ar_species s WHERE "
         + " AND ".join(where)
-        + " ORDER BY CAST(s.id AS INTEGER)",
-        args,
+        + " ORDER BY CAST(s.id AS INTEGER)"
     )
+    if goal_key:
+        rows = store.rows(
+            "SELECT 'goal' AS kind,0 AS rank,summary AS payload,summary_sha AS sha FROM ar_goals WHERE user_id=%s AND id=%s UNION ALL SELECT 'target',CAST(s.id AS INTEGER),s.summary,s.summary_sha FROM ar_species s WHERE "
+            + " AND ".join(where)
+            + " ORDER BY rank",
+            [actor.user_id, goal_key, *args],
+        )
+        goal = account_read_goals.checked_scope(raw, [r for r in rows if r["kind"] == "goal"])
+        rows = [r for r in rows if r["kind"] == "target"]
+    else:
+        rows = store.rows(query, args)
     result = dict(
         targets=[
             dict(species=r["dex"], name=r["name"]) for row in rows for r in [account_read_build.decode(row)]

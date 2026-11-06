@@ -51,8 +51,6 @@ def received_rows(raws):
     Review admission remains in discovery.review_candidate. This projection cannot
     authorize review, imply supported contents, or publish a reference/derivative.
     """
-    from decimal import Decimal
-
     from pokemon_hunter.security import ebay_url
 
     from . import listing_prices
@@ -64,12 +62,12 @@ def received_rows(raws):
             continue
         seen.add(item_id)
         observed = listing_prices.prices(raw, currency="USD")
+        costs = listing_prices.benchmark_costs(raw)
         price = observed["price"]["amount"]
-        shipping = listing_prices.summary_shipping(raw)
-        subtotal = (
-            str(Decimal(price) + Decimal(shipping)) if price is not None and shipping is not None else None
-        )
         auction = observed["price_kind"] == "current_bid"
+        cost = costs["auction" if auction else "buy_it_now"]
+        shipping = cost["shipping"]
+        subtotal = cost["delivered_before_tax"]
         rows.append(
             dict(
                 item_id=item_id,
@@ -79,6 +77,7 @@ def received_rows(raws):
                 listing_price=price,
                 current_bid=price if auction else None,
                 buy_now_price=observed["buy_now"]["amount"],
+                buy_now_delivered_total=costs["buy_it_now"]["delivered_before_tax"],
                 shipping=shipping,
                 delivered_total=subtotal,
                 currency="USD",

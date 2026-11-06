@@ -34,6 +34,10 @@ def prepare(path, part, fingerprint):
         save=policy["rights"]["immutable_save"],
         policy_url=policy["policy_url"],
     )
+    if policy["schema"] == "dex-price-contract-v3":
+        from .valuation_evidence import native_context
+
+        index.update(format=2, native_context=native_context(policy))
     storage.atomic(path.with_suffix(".idx"), index)
     return rules.digest(index)
 
@@ -59,7 +63,7 @@ def verify(path, identity, expected):
 def offsets(path, identity, expected):
     verify(path, identity, expected)
     value = storage.read(path)
-    if not isinstance(value, dict) or value.get("format") != 1 or rules.digest(value) != expected:
+    if not isinstance(value, dict) or value.get("format") not in {1, 2} or rules.digest(value) != expected:
         raise ValueError("Invalid prepared source index")
     return value
 

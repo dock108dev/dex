@@ -191,6 +191,43 @@ def test_prepared_source_requires_independent_admission_before_activation(refere
     assert all(r["reference_as_of"] == "2026-10-09" for r in records)
 
 
+def test_native_adapter_to_managed_index_never_supplies_normalized_value(reference_case):
+    from pokemon_hunter.beta import lot_guides
+    from pokemon_hunter.beta import valuation_evidence as evidence
+
+    policy = reference_case["manifest"]["contract"]
+    policy.update(
+        schema="dex-price-contract-v3",
+        valuation=dict(
+            basis=evidence.NATIVE,
+            condition=None,
+            amount_basis=evidence.NATIVE_AMOUNT,
+            native_money=dict(evidence.NATIVE_MONEY),
+            ceiling_applicable=False,
+            qualification="reviewed",
+            qualification_review="Authored offline-to-managed integration only",
+            estimator=None,
+            sale_origins=[],
+        ),
+    )
+    value, report = prepare(reference_case)
+    assert report["eligible_printings"] == 3
+    admit(value)
+    prices.activate(stage(value), None, now=NOW)
+    records, status = prices.current(now=NOW)
+    assert status == "active_snapshot" and len(records) == 3
+    for row in records:
+        printing = reference_case["entries"][row["printing_id"]]
+        assert lot_guides.normalized_cell(printing, records, NOW.date()) is None
+        native = lot_guides.native_cell(printing, records, NOW.date())
+        assert native["amount"] == "2.5"
+        assert native["native_money"]["shipping"] == native["native_money"]["tax"] == "unknown"
+    indexes = list(prices.directory().rglob("*.idx"))
+    assert indexes and all(json.loads(path.read_text())["format"] == 2 for path in indexes)
+    prices.sources.remove_source(rules.digest(policy))
+    assert prices.current(now=NOW)[0] == []
+
+
 @pytest.mark.parametrize("failure", ["source_shard", "active_pointer"])
 def test_prepared_release_failure_preserves_previous_atomic_activation(reference_case, monkeypatch, failure):
     case = reference_case
@@ -293,6 +330,8 @@ def test_prepared_lot_values_only_included_applicable_units(reference_case, monk
             return NOW.astimezone(tz or timezone.utc)
 
     monkeypatch.setattr(hunter_lots, "datetime", FixedDatetime)
+    # The shared final-publication guard must observe the same authored clock.
+    monkeypatch.setattr(lot_calculator, "datetime", FixedDatetime)
     raw = listing(
         case["entries"]["trainer"],
         title="Pokemon lot of 4 cards",

@@ -9,7 +9,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--username")
-    parser.add_argument("action", choices=("migrate", "prepare", "status", "discard", "repair-schema"))
+    parser.add_argument(
+        "action", choices=("migrate", "prepare", "status", "discard", "repair-schema", "retire-schema")
+    )
     args = parser.parse_args()
     if not (args.root / "inventory.db").is_file():
         parser.error("An existing installation is required")
@@ -20,6 +22,10 @@ def main():
     from . import account_read_schema as schema
     from . import store
 
+    if args.action == "retire-schema":
+        schema.retire()
+        print("Derived account schema retired; compatible migration and preparation required before serving.")
+        return
     if args.action in {"migrate", "repair-schema"}:
         getattr(schema, "migrate" if args.action == "migrate" else "repair")()
         print("Account read schema ready; preparation remains explicit.")

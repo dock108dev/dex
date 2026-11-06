@@ -6,6 +6,8 @@ readers. Unknown or incomplete history cannot create new request capacity.
 
 import json
 import os
+import re
+import stat
 
 from scripts.tcgcsv_capture_contract import MIB, CaptureRefused, _aware, _nonfinite, _unique_object
 
@@ -13,10 +15,16 @@ from scripts.tcgcsv_capture_contract import MIB, CaptureRefused, _aware, _nonfin
 def _read_private_json(path, ceiling=8 * MIB):
     if path.is_symlink() or path.resolve(strict=True) != path:
         raise CaptureRefused("unsafe_accounting_file")
-    descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+    descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
     with os.fdopen(descriptor, "rb") as stream:
         info = os.fstat(stream.fileno())
-        if info.st_mode & 0o077 or info.st_nlink != 1 or info.st_size > ceiling:
+        if (
+            not stat.S_ISREG(info.st_mode)
+            or info.st_uid != os.getuid()
+            or info.st_mode & 0o077
+            or info.st_nlink != 1
+            or info.st_size > ceiling
+        ):
             raise CaptureRefused("unsafe_accounting_file")
         body = stream.read(ceiling + 1)
     if len(body) > ceiling:
@@ -33,6 +41,7 @@ def _history(accounting, metadata_ledger, *, group_history=None, resource_histor
     times, builds = [], []
     used_groups, unknown_groups, detailed_reservations = set(), False, set()
     group_times, group_builds = {}, {}
+    detailed_digests = {}
     files = sorted(accounting.glob("*.jsonl"))
     if len(files) > 1000:
         raise CaptureRefused("accounting_capacity_exhausted")
@@ -52,6 +61,7 @@ def _history(accounting, metadata_ledger, *, group_history=None, resource_histor
             received_builds = []
             declared_groups, observed_groups, unknown_scope = None, set(), False
             reserved_at, consumed_times, observed_times = None, [], {}
+            metadata_only = False
             for index, line in enumerate(lines):
                 row = json.loads(line, object_pairs_hook=_unique_object, parse_constant=_nonfinite)
                 if not isinstance(row, dict) or closed:
@@ -60,6 +70,10 @@ def _history(accounting, metadata_ledger, *, group_history=None, resource_histor
                 if index == 0:
                     maximum = row.get("maximum_attempts")
                     if stage != "selected" or type(maximum) is not int or not 1 <= maximum <= 139:
+                        raise ValueError
+                    metadata_only = row.get("purpose") == "metadata_bootstrap"
+                    selected_digest = row.get("plan_sha256")
+                    if metadata_only and (maximum != 2 or "group_ids" in row):
                         raise ValueError
                     if "group_ids" in row:
                         reserved_at = _aware(row.get("at"))
@@ -75,7 +89,7 @@ def _history(accounting, metadata_ledger, *, group_history=None, resource_histor
                             raise ValueError
                     if "purpose" in row and (
                         not isinstance(row["purpose"], str)
-                        or row["purpose"] not in {"refresh", "initial_fill"}
+                        or row["purpose"] not in {"refresh", "initial_fill", "metadata_bootstrap"}
                     ):
                         raise ValueError
                 elif stage == "consumed":
@@ -87,6 +101,11 @@ def _history(accounting, metadata_ledger, *, group_history=None, resource_histor
                     ):
                         raise ValueError
                     consumed_at = _aware(row["at"])
+                    if metadata_only and (
+                        row.get("endpoint") != ("text", "groups")[consumed - 1]
+                        or row.get("group_id") is not None
+                    ):
+                        raise ValueError
                     times.append(consumed_at)
                     consumed_times.append(consumed_at)
                     if path.name != "hunt11-five-request-v1.jsonl":
@@ -154,9 +173,12 @@ def _history(accounting, metadata_ledger, *, group_history=None, resource_histor
                         unknown_scope = unknown_scope or not observed_groups
                         for gid, at in observed_times.items():
                             group_times[gid] = max(group_times.get(gid, at), at)
-                    unknown_groups = unknown_groups or unknown_scope
-                if path.name.startswith("batch-"):
+                    if not metadata_only:
+                        unknown_groups = unknown_groups or unknown_scope
+                if consumed and path.name.startswith("batch-"):
                     detailed_reservations.add("tcgcsv-" + path.stem)
+                    if selected_digest is not None:
+                        detailed_digests["tcgcsv-" + path.stem] = selected_digest
             builds.extend(received_builds)
             # Build checks cover the full reserved scope, even when no product
             # request followed. Preserve the global result for legacy plans.
@@ -178,7 +200,7 @@ def _history(accounting, metadata_ledger, *, group_history=None, resource_histor
             or set(metadata) != {"schema", "attempts"}
             or metadata["schema"] != "dex-tcgcsv-metadata-attempts-v1"
             or not isinstance(metadata["attempts"], list)
-            or len(metadata["attempts"]) > 999
+            or not 1 <= len(metadata["attempts"]) <= 999
         ):
             raise CaptureRefused("invalid_accounting")
         for row in metadata["attempts"]:
@@ -186,6 +208,12 @@ def _history(accounting, metadata_ledger, *, group_history=None, resource_histor
                 not isinstance(row, dict)
                 or set(row) != {"plan", "manifest_sha256", "reserved_at", "status"}
                 or row["status"] not in {"consumed", "complete", "stopped", "timeout", "failed"}
+                or not isinstance(row["plan"], str)
+                or not row["plan"]
+                or not isinstance(row["manifest_sha256"], str)
+                or not re.fullmatch(r"[a-f0-9]{64}", row["manifest_sha256"])
+                or row["plan"] in detailed_digests
+                and detailed_digests[row["plan"]] != row["manifest_sha256"]
             ):
                 raise CaptureRefused("invalid_accounting")
             times.append(_aware(row["reserved_at"]))
@@ -193,6 +221,9 @@ def _history(accounting, metadata_ledger, *, group_history=None, resource_histor
                 # The documented historical metadata operator sends only the groups route.
                 # Other incomplete reservations need their detailed durable group selection.
                 unknown_groups = True
+        plans = [row["plan"] for row in metadata["attempts"]]
+        if len(set(plans)) != len(plans) or not detailed_reservations <= set(plans):
+            raise CaptureRefused("historical_metadata_reservations_missing")
     if group_history is not None:
         group_history.update(groups=used_groups, unknown=unknown_groups)
     if resource_history is not None:

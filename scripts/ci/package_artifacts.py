@@ -10,6 +10,16 @@ import zipfile
 from pathlib import Path, PurePosixPath
 
 REQUIRED_FILES = (
+    "pokemon_hunter/beta/lot_hunt.py",
+    "pokemon_hunter/beta/lot_hunt_contract.py",
+    "pokemon_hunter/beta/lot_hunt_journal.py",
+    "pokemon_hunter/beta/discovery_lot_values.py",
+    "pokemon_hunter/beta/hunter_lot_evidence.py",
+    "pokemon_hunter/beta/reference_preparation.py",
+    "pokemon_hunter/beta/valuation_evidence.py",
+    "pokemon_hunter/beta/sold_estimates.py",
+    "pokemon_hunter/beta/price_snapshot_index.py",
+    "pokemon_hunter/beta/static/discovery-values.js",
     "pokemon_hunter/beta/ollama_gateway.py",
     "pokemon_hunter/beta/listing_interpretation.py",
     "pokemon_hunter/beta/interpretation_views.py",

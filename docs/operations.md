@@ -146,7 +146,12 @@ screenshots or diagnostic reports. Permanent saved research requires independent
 surviving rights for every included source.
 
 Keep the independent `.dex-price-revocations/` directory and source registries
-outside app restore. Never replace them with older backups. Missing registries or
+outside app restore. The LV-02 offline preparation service also keeps its
+noncontent `*-preparation` reservations and persistent Stop marker under this
+independent parent. Preserve them across code rollback, cleanup and source removal;
+missing/corrupt reservations fail closed and explicit resume never restores capacity.
+This service has no provider transport or recurring activation. Never replace these
+registries with older backups. Missing registries or
 version manifests fail closed; restored revoked/expired packages cannot regain
 eligibility. The expiry worker, startup and access checks enforce lifecycle while
 the app runs. They cannot erase external copies or guarantee deletion while the
@@ -156,6 +161,17 @@ Preserve `.dex-shopping-discovery`, `.dex-tcgcsv-snapshots` and
 `.dex-tcgcsv-metadata` accounting independently. App restore, failure, Stop and
 renaming a selection do not renew consumed provider capacity. Raw capture cleanup
 must keep noncontent reservation history.
+
+Finite TCGCSV plans may bind `metadata_ledger_path` to the existing sibling or
+historical parent metadata file. The capture reader requires one unique existing
+private file; it never creates replacement history. Two stores, missing/empty history,
+unmatched detailed reservations or plan digests fail closed. Do not copy a ledger to
+make a path appear valid. Bootstrap journals accept only the two metadata endpoints;
+Stop and consumed attempts survive removal and restart. For the LV-02 proof, the
+operator prepares stage two only after reviewing the successful retained groups
+receipt/digest. Raw capture directories need explicit operator cleanup at the approved
+retention deadline; do not assume release-shard expiry owns unadmitted raw staging.
+See [the finite proposal](plans/lv-02a-capture-proposal.md).
 
 Photo-batch admissions, consumed attempts and deletion tombstones are also outside
 the root in `ROOT.parent/.dex-photo-batches/<root-path-sha256>/journal.jsonl`.
@@ -578,3 +594,39 @@ runtime/schema combinations are not interchangeable. Never restore older collect
 or independent journals as a shortcut to code rollback. Source qualification has not installed or migrated this successor.
 
 Current source adds the separate [schema 4 correction picker](account-reads.md#account-storage-schema-4). A future qualified successor must explicitly migrate and prepare it under the new account policy. Do not treat schema 3 readiness as schema 4 readiness or run this transition on the customer root as part of isolated testing. Historical performance holds remain open; current passing checks do not waive them.
+
+## LV-02 native-guide compatibility boundary
+
+The source checkout supports native-guide v3 contracts and format-2 prepared indexes.
+This does not install that capability or make a customer root compatible. Older
+readers reject those contracts/indexes; do not downgrade or relabel native values to
+make them readable. Keep the ordinary runtime and supported delivery/compatibility
+checks. No customer migration is required or authorized by the local LV-02 tests.
+
+All existing source admission, managed retention, no-price-backup/export, revocation,
+preparation Stop/CAS and independent accounting rules above still apply. Native
+subtotals are ephemeral; normalized comparison history refuses native observations.
+The completed proof inputs remain deleted and its ten-attempt allowance spent:
+581 consumed attempts and 22 closures are preserved. Engineering tests/fixtures do
+not reopen capture, create retention rights, admit a source or authorize activation.
+
+## LV-08 successor delivery
+
+LV-08 packages the complete working-tree successor separately from the installed
+compatible patch. The [delivery procedure](plans/lv-08-delivery.md) fixes the selected
+wheel/member identities, stopped-server backup exclusions, account-schema transition,
+catalog/account preparation, preserved configuration, append-only Hunter package
+binding and compatible rollback. Its new `account_read_operator ... retire-schema`
+action is deliberate maintenance for rollback: it drops only schema-4 derived account
+representations, preserving authority and revision counters. The older runtime then
+migrates and prepares its own supported policy; no old database or spent journal is
+restored. Do not use retirement during ordinary startup or to bypass unknown schema.
+
+Qualification, historical release holds, hosted checks, delivery permission, source
+admission/acquisition/activation, actual useful-price proof and owner acceptance remain
+separate. [LV-08 results](plans/lv-08-results.md) record their current status.
+The [finite source proposal](plans/lv-08-source-action.md) schedules new capture only
+when delivery and the verification window are ready. Completion of capture alone
+must not prematurely end newly approved staging/verification retention; the approved
+absolute deadline and source withdrawal still bound all managed data. This grants
+no retention extension or restoration of previously deleted inputs.

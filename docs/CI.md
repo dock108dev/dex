@@ -101,8 +101,12 @@ uv run --no-sync python scripts/ci/staging.py --help
 Browser checks create a fresh synthetic root, block acquisition and cover keyboard,
 narrow-screen, enlarged-text, named Search/More/Stop, seller-link and review behavior.
 Failures retain the failing stage, traceback and completed checks. The separate
-Hunter runner `scripts/qualify_hunter_ui.py` owns disposable process setup while
-`hunter_ui_journey.py` owns its ordered browser interactions.
+Hunter runner `scripts/qualify_hunter_ui.py` owns disposable process setup.
+When the shipped page declares singles-only mode, it checks the visible one-time
+enable button, keyboard search, exactly three controlled requests, cost edits and
+responsive results using `scripts/hunter_ui_singles.py`. Its older full-mode
+journey remains separate. The five-request LV lot Hunt is on Shopping and is
+qualified by its own installed-wheel integrated and browser tests.
 
 Distribution checks validate required files, reject private inputs, compare repeated
 wheels and the wheel rebuilt from the sdist, then install locked runtime dependencies
@@ -112,7 +116,9 @@ synthetic initialization, loopback HTTP behavior and cleanup must succeed.
 PostgreSQL checks require an empty disposable database and generated synthetic source.
 They verify copied migration, account isolation, sessions, CSRF, idempotent confirmation,
 undo and occupied-destination refusal. Never point these tools at a personal or
-production installation. Container checks do not publish, sign or deploy anything.
+production installation. The container installs the package noneditably: imports must resolve under the runtime,
+and packaged catalog inputs must exist there. Container checks do not publish, sign
+or deploy anything.
 
 ## Reports and failure policy
 
@@ -296,3 +302,20 @@ complete suite are outside this focused test-value review:
 These checks do not establish current market prices, live provider behavior or customer
 usability. Rendered review of changed source remains separate from source inspection;
 use the actual customer installation only after authorized delivery.
+
+## LV-08 artifact and transition qualification
+
+The selected rc8 wheel is tested in separate noneditable installed environments on
+Python 3.14.8 and 3.15.0. Required distribution members include the automatic Hunt,
+shared valuation/preparation modules and `discovery-values.js`. Use exact wheel,
+application-member, lockfile and asset hashes; an rc label alone is insufficient.
+Existing full-size/2× suites and fixed budgets remain unchanged. Preserve failed
+and interrupted runs separately; passing repairs do not rewrite historical samples.
+
+`scripts/qualify_lv08_compatibility.py --previous-python PREVIOUS --candidate-python CANDIDATE --report REPORT`
+creates only generated disposable state and blocks external networking. It rehearses
+previous-runtime preparation, successor transition, unsupported-reader rejection,
+append-only policy binding with spent capacity, derived-only rollback and re-upgrade.
+It has no customer-root option. See [the results](plans/lv-08-results.md) for exact
+outcomes; these checks do not perform customer installation or replace required hosted
+Ubuntu reports and existing historical hold dispositions.

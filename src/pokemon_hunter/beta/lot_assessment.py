@@ -38,6 +38,14 @@ def applicable(p, row, records, today):
     admitted = []
     legacy = json.loads(p["provenance"]).get("legacy_id")
     for record in records:
+        from .valuation_evidence import is_native
+
+        if is_native(record):
+            continue
+        if record.get("estimate_kind") == "dex_sold_estimate":
+            continue  # A median benchmark is not a strict bid ceiling.
+        if "evidence" in record and record.get("ceiling_applicable") is not True:
+            continue
         if str(record.get("grade")) != grade:
             continue
         snapshot = "_snapshot_version" in record

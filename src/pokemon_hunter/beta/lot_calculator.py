@@ -3,7 +3,7 @@
 import hashlib
 import json
 from copy import deepcopy
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from django.conf import settings
@@ -153,6 +153,54 @@ def retained_records():
     """Active private prices and intact historical guides; no fetching or relabeling."""
     current, status = price_snapshots.display_current()
     return SnapshotRecords(current + legacy_records(), status)
+
+
+def reference_guard(actor, records, refs):
+    """Operation-local contributing-evidence receipt, rechecked before publication.
+
+    Retain hashes only, never a second price cache. The existing lifecycle reload
+    validates source admission, leases, withdrawal and reproducible sold evidence.
+    """
+    from . import shopping_index
+
+    keys = {
+        (r.get("snapshot_version"), r.get("source_contract"), r.get("evidence_id"))
+        for r in refs
+        if r.get("snapshot_version")
+    }
+    raw_hashes = {shopping.digest(r["raw_record"]) for r in refs if r.get("raw_record")}
+    contributing = [
+        r
+        for r in records
+        if shopping.digest(r) in raw_hashes
+        or (r.get("_snapshot_version"), r.get("_contract_sha256"), r.get("observation_id")) in keys
+    ]
+    expected = {shopping.digest(r) for r in contributing}
+    printing_ids = {r["printing_id"] for r in contributing if r.get("printing_id")}
+    dates = [
+        (r["as_of"], r.get("date_basis") == "publisher_build" or r.get("basis") == "publisher_native_guide")
+        for r in refs
+        if r.get("as_of")
+    ]
+    deadlines = [snapshot_rules.timestamp(r["expires_at"]) for r in refs if r.get("expires_at")]
+
+    def check():
+        if expected:
+            with price_snapshots.selected(printing_ids):
+                current = {shopping.digest(r) for r in retained_records()}
+            if not expected <= current:
+                raise ValueError("Contributing reference changed; reload local values")
+        if any(deadline <= datetime.now(timezone.utc) for deadline in deadlines):
+            raise ValueError("Contributing reference expired; reload local values")
+        today = datetime.now(shopping.TZ).date().isoformat()
+        utc_today = datetime.now(timezone.utc).date().isoformat()
+        if any(math.fresh(day, utc_today if utc else today) != "eligible" for day, utc in dates):
+            raise ValueError("Contributing reference expired; reload local values")
+
+    indexed = shopping_index.current(actor)
+    if indexed:
+        indexed.publication_checks.append(check)
+    return check
 
 
 def selector(
@@ -351,7 +399,7 @@ def prepare(
                     if review_traits is not None:
                         continue
                     raise ValueError("Guide changed or unavailable; review this cell")
-                ref = dict(ref, reference_id=p["id"] + ":" + grade)
+                ref = dict(ref, printing_id=p["id"], reference_id=p["id"] + ":" + grade)
             elif value["mode"] == "manual":
                 math.amount(value.get("amount"))
                 if math.fresh(value.get("date"), today.isoformat()) != "eligible":

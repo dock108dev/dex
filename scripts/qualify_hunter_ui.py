@@ -41,6 +41,7 @@ SOURCE_FILES = (
     "src/pokemon_hunter/beta/hunter_views.py",
     "scripts/qualify_hunter_ui.py",
     "scripts/hunter_ui_journey.py",
+    "scripts/hunter_ui_singles.py",
 )
 INSTALLED = False
 

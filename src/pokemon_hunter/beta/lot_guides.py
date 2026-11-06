@@ -10,7 +10,7 @@ from copy import deepcopy
 from pokemon_hunter import reference_policy as references
 
 from . import price_snapshot_contract as snapshot_rules
-from . import shopping
+from . import shopping, valuation_evidence
 from . import shopping_math as math
 
 COLUMNS = snapshot_rules.COLUMNS
@@ -66,6 +66,14 @@ def legacy_cells(printing, records, today):
 
 
 def cell_details(printing, records, today):
+    source_status = getattr(records, "status", "active_snapshot")
+    records = [
+        r
+        for r in records
+        if not valuation_evidence.is_native(r)
+        and r.get("estimate_kind") != "dex_sold_estimate"
+        and r.get("valuation_qualification", "reviewed") == "reviewed"
+    ]
     old = legacy_cells(printing, [r for r in records if "_snapshot_version" not in r], today)
     result, reasons = dict(old), {}
     for grade in COLUMNS:
@@ -179,7 +187,7 @@ def cell_details(printing, records, today):
             age = math.fresh(historic[0].get("as_of"), today.isoformat())
             reasons[grade] = age if age != "eligible" else "Rejected identity or unsupported grade basis"
         else:
-            status = getattr(records, "status", "active_snapshot")
+            status = source_status
             reasons[grade] = {
                 "missing_snapshot": "No active private snapshot; no retained observation for this printing and grade",
                 "invalid_snapshot": "Private snapshot is invalid or unreviewed; no eligible retained observation",
@@ -189,3 +197,176 @@ def cell_details(printing, records, today):
 
 def cells(printing, records, today):
     return cell_details(printing, records, today)[0]
+
+
+def normalized_cell(printing, records, today, *, condition=None):
+    """Benchmark-only sold-first selector. Strict guide/ceiling callers stay separate."""
+    selected = valuation_evidence.select(
+        printing,
+        [r for r in records if "_snapshot_version" in r],
+        today=today,
+        condition=condition,
+    )
+    row = selected["reference"]
+    if row is None:
+        return None
+    estimate = row.get("evidence", {}).get("estimate")
+    return dict(
+        reference_id="snapshot-" + row["observation_id"],
+        evidence_id=row["observation_id"],
+        kind="guide",  # Existing calculator ingress; basis owns the displayed semantics.
+        basis=selected["basis"],
+        amount_basis="item_excluding_shipping_tax",
+        method=estimate["policy"] if estimate else dict(method="publisher_guide"),
+        sample={
+            k: estimate[k]
+            for k in (
+                "unique_sales",
+                "effective_sample_size",
+                "excluded",
+                "sold_from",
+                "sold_through",
+                "spread",
+                "condition_strata",
+                "calculated_at",
+            )
+        }
+        if estimate
+        else None,
+        amount=row["value"],
+        currency=row["currency"],
+        value_scope="per_card",
+        as_of=snapshot_rules.reference_date(row),
+        valuation_as_of=row["as_of"],
+        date_basis="publisher_build" if "reference_as_of" in row else "valuation",
+        publisher_built_at=row.get("publisher_built_at"),
+        captured_at=row["captured_at"],
+        source_url=row["source_url"],
+        source_version=row["source_version"],
+        grade="raw",
+        grader=row["grader"],
+        estimated=row["estimated"],
+        provider_identity=row["provider_identity"],
+        printing_id=printing["id"],
+        provenance="reviewed_private_snapshot",
+        raw_record=deepcopy(row),
+        record_sha256=shopping.digest(row),
+        snapshot_version=row["_snapshot_version"],
+        match_status="conditional" if row.get("match_scope") else "exact",
+        assumptions=["Mixed-condition guide benchmark; not a condition-specific appraisal"]
+        if row.get("match_scope")
+        else [],
+        admission="reviewed_snapshot_contract",
+        eligibility="eligible",
+        basis_eligibility="eligible",
+        save_allowed=False,
+        expires_at=row["_expires_at"],
+        source_contract=row["_contract_sha256"],
+        source_review=row["_review_id"],
+    )
+
+
+def native_cell(printing, records, today):
+    """Separate display-only basis over lifecycle-admitted rows, never legacy cells."""
+    rows = [r for r in records if "_snapshot_version" in r and r.get("_native_context")]
+    selected = valuation_evidence.select(printing, rows, today=today, purpose="native")
+    row = selected["reference"]
+    if row is None:
+        return None
+    return dict(
+        reference_id="snapshot-" + row["observation_id"],
+        printing_id=printing["id"],
+        evidence_id=row["observation_id"],
+        basis=valuation_evidence.NATIVE,
+        amount_basis=valuation_evidence.NATIVE_AMOUNT,
+        native_money=dict(row["evidence"]["native_money"]),
+        cohort=valuation_evidence.native_cohort(row),
+        provider=row["_native_context"]["provider"],
+        field=row["field"],
+        amount=row["value"],
+        currency=row["currency"],
+        grade="raw",
+        grader=row["grader"],
+        condition=None,
+        estimated=True,
+        match_status="exact",
+        value_scope="per_card",
+        as_of=snapshot_rules.reference_date(row),
+        valuation_as_of=row["as_of"],
+        date_basis="publisher_build" if "reference_as_of" in row else "valuation",
+        publisher_built_at=row.get("publisher_built_at"),
+        captured_at=row["captured_at"],
+        source_url=row["source_url"],
+        source_version=row["source_version"],
+        source_contract=row["_contract_sha256"],
+        source_review=row["_review_id"],
+        snapshot_version=row["_snapshot_version"],
+        expires_at=row["_expires_at"],
+        save_allowed=False,
+        provider_identity=dict(row["provider_identity"]),
+        capabilities=dict(
+            display=True,
+            native_arithmetic=True,
+            normalized=False,
+            delivered_comparison=False,
+            sold=False,
+            strict_ceiling=False,
+        ),
+    )
+
+
+def family_alternatives(proposal, entries, records, today):
+    """Ephemeral per-alternative display; no selection or family-total arithmetic."""
+    from . import catalog_variants, discovery_comparison, hunter_catalog
+
+    catalog = {p["id"]: p for p in entries}
+    index = hunter_catalog.ReferenceIndex(records)
+    result = []
+    for line in proposal["proposals"]:
+        binding = line.get("variant_selection")
+        if not binding or not binding.get("alternatives"):
+            continue
+        parent = catalog.get(binding["parent_id"])
+        if parent is None:
+            continue
+        expected = {
+            k: binding[k]
+            for k in ("parent_id", "parent_sha256", "catalog_version", "membership", "alternatives")
+        }
+        children = [catalog[a["child_id"]] for a in binding["alternatives"] if a["child_id"] in catalog]
+        family = catalog_variants.family_projection(parent, children, expected=expected)
+        alternatives = []
+        for relation in family["alternatives"]:
+            child = catalog[relation["child_id"]]
+            ref = (
+                native_cell(child, index.for_printing(child), today)
+                if relation["status"] == "supported"
+                else None
+            )
+            alternatives.append(
+                dict(
+                    child_id=child["id"],
+                    name=child["name"],
+                    edition=child.get("edition"),
+                    finish=child.get("finish"),
+                    language=child.get("language"),
+                    descriptor=relation["descriptor"],
+                    status=relation["status"],
+                    variant_label=child.get("attributes", {}).get("variant_label")
+                    or catalog_variants.label(relation["descriptor"])
+                    if relation["status"] == "supported"
+                    else "Physical descriptor requires review",
+                    reference=discovery_comparison._reference(ref) if ref else None,
+                )
+            )
+        result.append(
+            dict(
+                line_id=line["proposal_id"],
+                parent_id=parent["id"],
+                quantity=line["quantity"],
+                selected_child_id=binding.get("selected_child_id"),
+                membership=family["membership"],
+                alternatives=alternatives,
+            )
+        )
+    return result

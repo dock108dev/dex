@@ -2,7 +2,7 @@
 {% block title %}Shopping · Dex{% endblock %}
 {% block body_class %}discovery-page{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="/collection-assets/discovery.css?v=20261027-interface">
+<link rel="stylesheet" href="/collection-assets/discovery.css?v=20261104-lv06">
 <div class="discovery" id="discovery">
   <div class="discovery-heading">
     <h1>Find lots</h1>
@@ -17,6 +17,7 @@
   <form id="discovery-form" data-lot-search="true">
     {% csrf_token %}
     <div class="discovery-searchbox"><label for="discovery-query">Pokémon or card name<input id="discovery-query" name="query" type="search" maxlength="200" placeholder="e.g. Venusaur" autocomplete="off"></label><div class="discovery-setbar"><label for="discovery-set">Set <span class="optional">optional</span><select id="discovery-set" name="set_id"><option value="">All supported sets</option></select><span id="discovery-set-caption" class="selection-caption">All supported sets</span></label></div><div class="search-actions"><button id="discovery-search" type="submit" disabled>Find lots</button><button id="discovery-stop" type="button" class="secondary" disabled>Stop</button></div></div>
+    <p class="field-help">Find lots starts one bounded Hunt: up to 40 summaries across Buy It Now and auctions ending within 72 hours, then full seller details and local assessment for up to two offers (one per lane). At most five shared operations including authentication. <a href="/shopping/hunter/">Hunter usage settings</a> must have capacity. No automatic retries; prices and shipping may remain unknown.</p>
     <div id="discovery-suggestions" role="status" aria-live="polite" hidden></div>
     <div class="discovery-refinements">
 
@@ -26,7 +27,7 @@
     </div>
     </div>
     <div hidden id="discovery-quick-sets" class="discovery-quick-sets" aria-label="Quick set choices"></div>
-    <details open class="discovery-options"><summary>Search options</summary>
+    <details class="discovery-options"><summary>Search options</summary>
     <div class="discovery-intents" aria-label="Shopping task">
       <button type="button" id="find-deals" disabled aria-pressed="true">Find deals</button>
       <button type="button" id="find-missing" disabled aria-pressed="false">Find missing cards</button>
@@ -46,7 +47,7 @@
     </div>
     <label class="discovery-checkbox"><input id="discovery-prefer-vintage" type="checkbox"> Prefer vintage; any qualifying era can fill the gap</label>
     <label hidden class="discovery-checkbox"><input id="discovery-english-vintage" type="checkbox"> English · vintage · US listings</label><p class="field-help">US listing/delivery filters still apply. Vintage preference does not exclude other eras. Seller titles do not verify language or year.</p>
-    <p class="field-help">Only Search eBay and More results request listings. Typing, local browsing and filters make no eBay requests.</p>
+    <p class="field-help">Find lots acquires the bounded batch and details automatically. Typing, local browsing and filters make no eBay requests.</p>
     </details>
     <p id="discovery-status" role="status" aria-live="polite" tabindex="-1">Ready to search.</p>
     <button id="discovery-reload" type="button" class="secondary" hidden>Reload search status</button>
@@ -60,7 +61,15 @@
     <div class="discovery-results-heading"><div><h2 id="discovery-results-title" tabindex="-1">Lots</h2><p id="discovery-scope" class="muted"></p></div>
     <div class="discovery-filters"><div hidden><label for="discovery-filter">Show<select id="discovery-filter"><option value="all">All results</option><option value="below">Comparable · below reference</option><option value="conditional">Conditional comparisons</option><option value="unpriced">Unpriced or ambiguous</option></select></label></div><p id="discovery-shown" class="field-help" role="status"></p></div>
     </div>
-    <div class="results-notes"><p class="browse-note">US lots · ending soonest. Check seller photos for your card; bids can rise.</p><details class="results-guidance"><summary>About these results</summary><p id="discovery-limitation"></p></details></div>
+    <div class="results-notes"><p class="browse-note">US lots · current bids can rise. Shipping is shown separately; unknown shipping is never free.</p><details class="results-guidance"><summary>About these results</summary><p id="discovery-limitation"></p></details></div>
+    <div class="discovery-controls lot-result-controls">
+      <label for="lot-time-window">Auctions ending within<select id="lot-time-window"><option value="24">24 hours</option><option value="48">48 hours</option><option value="72" selected>3 days</option></select></label>
+      <label for="lot-buying-mode">Buying option<select id="lot-buying-mode"><option value="both">Auctions + Buy It Now</option><option value="auction">Auctions · up to 72 hours</option><option value="buy_now">Available Buy It Now offers</option></select></label>
+      <label for="lot-value-sort">Sort results<select id="lot-value-sort"><option value="value">Reference minus cost · separate assessment groups</option><option value="ending">Ending soonest</option><option value="native">Publisher guide contents · separate cohorts, not savings</option></select></label>
+      <label for="lot-value-basis">Evidence basis<select id="lot-value-basis"><option value="all">All evidence and unavailable results</option><option value="sold_estimate">Sold estimate</option><option value="guide">Guide</option><option value="mixed">Mixed</option><option value="native">Publisher-native guide</option></select></label>
+    </div>
+    <p class="field-help">Time window applies to auctions. Buy It Now shows available offers. Value sorting compares complete ungraded references with price + shipping, before tax; Partial subtotals, unknown costs and unpriced offers have separate groups. Combined view uses the BIN rank when available; select Auctions or Buy It Now for independent order. Only this received batch is ranked.</p>
+    <p id="lot-values-status" role="status"></p><button id="lot-values-reload" class="secondary" type="button" hidden>Reload local values</button>
     <div id="discovery-cards" class="discovery-cards"></div>
     <div class="discovery-actions"><button id="discovery-next" type="button" class="secondary" disabled>More results</button><span id="discovery-next-note" class="field-help"></span></div>
 
@@ -70,7 +79,8 @@
   <noscript><p class="discovery-note">Enable JavaScript to use visual search and discovery. The <a href="/shopping/calculator/">listing/lot calculator</a> remains available.</p></noscript>
 </div>
 <script src="/collection-assets/listing-interpretation.js?v=20261029" defer></script>
-<script src="/collection-assets/listing-time.js?v=20261020-shop04" defer></script>
-<script src="/collection-assets/discovery-display.js?v=20261020-shop04" defer></script>
-<script src="/collection-assets/discovery.js?v=20261102-shop13" defer></script>
+<script src="/collection-assets/listing-time.js?v=20261104-lv06" defer></script>
+<script src="/collection-assets/discovery-display.js?v=20261104-lv06" defer></script>
+<script src="/collection-assets/discovery-values.js?v=20261104-lv06" defer></script>
+<script src="/collection-assets/discovery.js?v=20261104-lv06" defer></script>
 {% endblock %}

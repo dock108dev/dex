@@ -20,7 +20,7 @@ collection task bar; collection tools remain in Menu. My Cards also offers a dir
 Add many cards shortcut.
 
 Shopping leads with Pokémon/card name, optional Set and Find lots, in that order.
-The ordinary lot finder uses US mixed lots and ending-soonest order; broader
+The ordinary lot finder uses US mixed lots, an independent available BIN lane and auctions ending within 72 hours; broader
 controls remain hidden under the ordinary flow. Stop stays beside
 Find lots while a search runs. Explicit eBay search supports loose mixed lots, singles and
 auctions. Check a listing/lot remains directly available, with secondary links
@@ -130,7 +130,7 @@ than warning surfaces.
 
 Received offers retain stable photo areas and complete titles. The listing amount
 has stronger emphasis than ancillary costs; unknown costs stay explicitly readable.
-Results filters and counts sit together. Inspection leads with the offer, price and
+Results filters and counts sit together. Automatic lot assessments use separate complete, partial, unknown-cost and unpriced groups; native guide contents have independent source/date groups. Each result shows both applicable observed costs and comparisons, with card/source/seller evidence one expansion away. Find lots assesses its finite selected detail batch automatically; optional review is for corrections. Inspection leads with the offer, price and
 seller action; review is secondary, and closed setup/research disclosures use simple
 rows instead of separate empty panels. Review inputs stack on narrow screens. The
 zero/unknown remainder distinction stays beside its field; extended help stays in
@@ -174,7 +174,7 @@ selected. Archived or unsupported targets remain unavailable. Entry opens the co
 remain explicit.
 Current possession and frozen goal policy remain distinct.
 
-In the source implementation, Search options exposes the missing-species picker, scope, all-in budget and vintage preference. Assess lot shows seller-text entries and unverified printing alternatives. Use offer in review opens the editor. Correct identity and quantity expands one entry, and optional card details holds the condition and literal grader. Compare groups the observed bid and planned costs above itemized reference evidence, the conditional ceiling or its blockers, and the seller link. Returning to Dex rechecks the original assessment before displaying it again. See [post-delivery owner review](operations.md#shopping-owner-review-after-delivery).
+In the source implementation, Search options starts collapsed for ordinary entry and opens for inherited missing-species intent. It exposes the missing-species picker, scope, all-in budget and vintage preference. Assess lot shows seller-text entries and unverified printing alternatives. Use offer in review opens the editor. Correct identity and quantity expands one entry, and optional card details holds the condition and literal grader. Compare shows any supported corrected before-tax benchmark separately from the strict observed bid and planned costs, itemized reference evidence, the conditional ceiling or its blockers, and the seller link. Returning to Dex rechecks the original assessment before displaying it again. See [post-delivery owner review](operations.md#shopping-owner-review-after-delivery).
 
 The compact assisted review leads with Ungraded and included quantities. Printing,
 condition, grading and cost corrections are optional disclosures. Current auction

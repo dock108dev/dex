@@ -13,6 +13,7 @@ from . import account_read_build as builds
 from . import account_read_context, discovery_matching, store
 
 _current = ContextVar("shopping_index", default=None)
+_COMMON_SQL = "SELECT 'game' AS kind,id,id AS value FROM games WHERE game_key='pokemon' UNION ALL SELECT 'alias',internal_id,external_id FROM external_mappings WHERE provider='legacy' AND entity_kind='set'"
 
 
 def words(text):
@@ -67,6 +68,8 @@ def indexed(fn):
         result = admitted(actor, args=args, kwargs=kwargs, holder=holder)
         for check in holder[0].publication_checks:
             check()
+        for check in holder[0].session_checks.values():
+            check()
         return result
 
     return wrapped
@@ -77,6 +80,7 @@ class Read:
         self.actor, self.build, self.state = actor, build, state
         self.active = True
         self.publication_checks = []
+        self.session_checks = {}
         self.metadata = {}
         self.named = {}
         self.order = {}
@@ -90,9 +94,17 @@ class Read:
         missing = ids - self.metadata.keys()
         if missing:
             rows = store.rows(
-                "SELECT a.id,a.payload,a.sha,(SELECT MIN(ordinal) FROM ar_shopping_names n WHERE n.build=a.build AND n.printing_id=a.id) AS ordinal FROM ar_catalog a WHERE a.build=%s AND a.id IN (SELECT value FROM json_each(%s))",
+                "SELECT 'printing' AS kind,a.id,a.payload,a.sha,(SELECT MIN(ordinal) FROM ar_shopping_names n WHERE n.build=a.build AND n.printing_id=a.id) AS ordinal,NULL AS value FROM ar_catalog a WHERE a.build=%s AND a.id IN (SELECT value FROM json_each(%s))"
+                + (
+                    " UNION ALL SELECT kind,id,NULL,NULL,NULL,value FROM (" + _COMMON_SQL + ")"
+                    if self._games is None
+                    else ""
+                ),
                 [self.build, builds.encode(sorted(missing))],
             )
+            if self._games is None:
+                self._common(rows)
+            rows = [r for r in rows if r["kind"] == "printing"]
             self.metadata.update({r["id"]: builds.decode(r) for r in rows})
             self.order.update({r["id"]: r["ordinal"] for r in rows})
         return [self.metadata[key] for key in sorted(ids) if key in self.metadata]
@@ -102,10 +114,17 @@ class Read:
         if text not in self.named:
             anchors = sorted(set(words(text)) | {""})
             names = store.rows(
-                "SELECT DISTINCT name FROM ar_shopping_names WHERE build=%s AND anchor IN (SELECT value FROM json_each(%s))",
+                "SELECT DISTINCT 'name' AS kind,name AS id,name AS value FROM ar_shopping_names WHERE build=%s AND anchor IN (SELECT value FROM json_each(%s))"
+                + (" UNION ALL " + _COMMON_SQL if self._games is None else ""),
                 [self.build, builds.encode(anchors)],
             )
-            matched = [r["name"] for r in names if discovery_matching.name_spans({"name": r["name"]}, text)]
+            if self._games is None:
+                self._common(names)
+            matched = [
+                r["value"]
+                for r in names
+                if r["kind"] == "name" and discovery_matching.name_spans({"name": r["value"]}, text)
+            ]
             found = (
                 store.rows(
                     "SELECT a.id,a.payload,a.sha,MIN(n.ordinal) AS ordinal FROM ar_shopping_names n INDEXED BY ar_shopping_name JOIN ar_catalog a ON a.build=n.build AND a.id=n.printing_id WHERE n.build=%s AND n.name IN (SELECT value FROM json_each(%s)) GROUP BY a.id ORDER BY ordinal",
@@ -199,9 +218,10 @@ class Read:
         return self._aliases
 
     def common(self):
-        rows = store.rows(
-            "SELECT 'game' AS kind,id,id AS value FROM games WHERE game_key='pokemon' UNION ALL SELECT 'alias',internal_id,external_id FROM external_mappings WHERE provider='legacy' AND entity_kind='set'"
-        )
+        rows = store.rows(_COMMON_SQL)
+        self._common(rows)
+
+    def _common(self, rows):
         self._games = {r["id"] for r in rows if r["kind"] == "game"}
         self._aliases = {r["id"]: r["value"] for r in rows if r["kind"] == "alias"}
 

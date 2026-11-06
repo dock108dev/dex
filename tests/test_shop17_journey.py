@@ -33,7 +33,7 @@ SELLER = "https://www.ebay.com/itm/123456789012"
 def prepare(cx, count, copies):
     from django.conf import settings
 
-    from pokemon_hunter.beta import collection, price_snapshots, shopping
+    from pokemon_hunter.beta import collection, hunter_policy, price_snapshots, shopping
 
     root = cx["root"]
     for marker in ("SYNTHETIC_ONLY", "B2_ISOLATED", "B3_ISOLATED", "B4_ISOLATED"):
@@ -112,6 +112,18 @@ def prepare(cx, count, copies):
         else None
     )
     prepare_reads(cx)
+    hunter_policy.select(
+        cx["actor"],
+        dict(
+            enabled=True,
+            per_hunt_limit=5,
+            daily_limit=100,
+            timezone="America/New_York",
+            recurring=False,
+            expires_at=(datetime.now(UTC) + timedelta(days=1)).isoformat(),
+            revision=0,
+        ),
+    )
     (root / "engineering-offer.json").write_text(
         json.dumps(
             dict(
@@ -120,7 +132,9 @@ def prepare(cx, count, copies):
                 shortDescription="1x Venusaur Base Set 2 #18; 2x Ivysaur Base Set 2 #44",
                 buyingOptions=["AUCTION"],
                 currentBidPrice=dict(value="8", currency="USD"),
-                itemEndDate="2031-01-10T18:40:00Z",
+                itemEndDate=(datetime.now(UTC) + timedelta(hours=6)).isoformat(),
+                itemWebUrl=SELLER,
+                categoryId="183455",
             )
         )
     )
@@ -242,6 +256,9 @@ def journey(page, base, goal, cx, report, width, zoom, exercise_changes):
 
     def enter():
         page.goto(base + "/shopping/", wait_until="commit")
+        # LV-06 puts the established scoped search behind an explicit disclosure.
+        # Include its keyboard opening in the same Shopping timing and budget.
+        page.get_by_text("Search options", exact=True).press("Enter")
 
     measure("Shopping", enter, lambda: loc("#find-missing:enabled").wait_for())
     measure(
@@ -263,10 +280,16 @@ def journey(page, base, goal, cx, report, width, zoom, exercise_changes):
     edit("budget", budget, lambda: budget.fill("20"), "20")
     vintage = loc("#discovery-prefer-vintage")
     measure("vintage preference", vintage.check, lambda: expect(vintage).to_be_checked())
+
+    def hunt_ready():
+        loc(".review-offer").first.wait_for()
+        expect(loc("#discovery-stop")).to_be_hidden()
+        expect(loc("#discovery-status")).to_contain_text("1/2 enriched · 1 assessed")
+
     measure(
         "controlled search",
         lambda: loc("#discovery-search").press("Enter"),
-        lambda: loc(".review-offer").first.wait_for(),
+        hunt_ready,
     )
     result = loc("#discovery-cards").inner_text()
     measure(
@@ -296,13 +319,15 @@ def journey(page, base, goal, cx, report, width, zoom, exercise_changes):
             lambda: group.get_by_label("Printing to review").wait_for(),
         )
 
+        # Selecting an alternative adds a second heading inside this group.
+        # Address the actual selected printing, including after a DOM redraw.
+        checkbox = loc(f'#review-cards .review-include input[data-printing="{pid}"]')
+
         def include():
             group.get_by_label("Printing to review").select_option(pid)
-            group.locator(".review-include input").press("Space")
+            checkbox.press("Space")
 
-        measure(
-            "include " + name, include, lambda: expect(group.locator(".review-include input")).to_be_checked()
-        )
+        measure("include " + name, include, lambda: expect(checkbox).to_be_checked())
         group.locator("summary").filter(has_text="optional card details").press("Enter")
         grade = group.get_by_label("Value basis")
         grader = group.get_by_label("Literal grader")
@@ -448,6 +473,12 @@ def test_integrated_journey(cx, count, copies):
         report["requests"] = [
             json.loads(line) for line in (root / "journey-requests.jsonl").read_text().splitlines()
         ]
+        diagnostics = root / "guard-failures.jsonl"
+        report["guard_failures"] = (
+            [json.loads(line) for line in diagnostics.read_text().splitlines()]
+            if diagnostics.exists()
+            else []
+        )
         admissions = root / "assessment-admissions.jsonl"
         report["assessment_admissions"] = (
             [json.loads(line) for line in admissions.read_text().splitlines()] if admissions.exists() else []
@@ -473,7 +504,7 @@ def test_integrated_journey(cx, count, copies):
         for label, rows in report["browser"]["samples"].items():
             for field, limit in (("scheduling_transfer_ms", 50), ("parse_dom_paint_ms", 70)):
                 metric = summarize([r[field] for r in rows])
-                report["metrics"][label][field] = metric
+                report.setdefault("metrics", {}).setdefault(label, {})[field] = metric
                 if label != "controlled search" and metric["p95"] > limit:
                     report["failures"].append(f"{label}: {field} > {limit}")
         routes = {}
@@ -510,5 +541,7 @@ def test_integrated_journey(cx, count, copies):
         if trace.exists():
             (path.parent / f"statements-{count}.json").write_bytes(trace.read_bytes())
         path.write_text(json.dumps(report, indent=2))
-    assert report["controlled_calls"].count("browse") == 20
+    assert report["controlled_calls"].count("browse") == 40
+    assert report["controlled_calls"].count("detail") == 20
+    assert len(report["controlled_calls"]) <= 100
     assert not report["failures"], report["failures"]

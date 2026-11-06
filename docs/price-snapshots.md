@@ -130,3 +130,136 @@ Explicit multi-source activation validates the full release, writes each indepen
 A reviewed lot looks up the included printing IDs. Each decision checks the active version, source approvals, independent revocations, expiry, shard and index integrity, current printing identity, and the reviewed condition or literal grade. A new process verifies file digests before using an index. While file identity, size and modification/change times remain identical it can reuse that verification. It does not cache prices or a computed ceiling. A missing or stale index withholds the recommendation. An explicit purge continues to own physical reclamation.
 
 For an existing split release, the operator can prepare the surviving authorized sources again using `price-activate` with its installed version descriptor as `--file` and the same active version as `--expected-current`. Use the ordinary installation procedure only under separately approved delivery or maintenance scope. Independent source withdrawals remain in force. See [qualification boundaries](CI.md#integrated-shopping-decision-qualification).
+
+## Read-only lot-value readiness
+
+The source operator `scripts/lot_value_readiness.py --root "$DEX_APP_ROOT"` exposes
+bounded metadata coverage without application setup, acquisition, pruning or
+activation. Run it with the checkout's provisioned engineering interpreter. It
+separates dated raw guides from condition-applicable lot values, source lifecycle
+from approvals, and catalog inventory from checkout/runtime compatibility. A completed
+inspection may still report blocked readiness; its exit code alone is not a price gate.
+See the [LV-01 contract](plans/lv-01-contract.md) for fields, bounds and limitations.
+This operator is not installed application behavior or a replacement price store.
+
+## LV-02 evidence and offline refresh (source implementation)
+
+`dex-price-contract-v2` extends the existing v1/v2 snapshot containers; it does not
+create a second price store. Its `valuation` policy separates `guide` from
+`sold_estimate`, nullable raw condition, item-only USD basis, optional
+`ceiling_applicable`, qualification/review, estimator parameters and admitted original
+sale origins. Each v2 row carries the checked `dex-valuation-evidence-v2` envelope.
+V1 contracts remain readable. Derived sold rows have `original_money: null`; original
+transaction amounts remain in their sale evidence, never relabelled as a provider
+quote. No real v2 source contract is admitted by this change.
+
+`sold_estimates.py` is a bounded experiment: at most 2,000 supplied sale records and
+16 MiB per estimate, exact printing/raw matching, unique original-marketplace sale
+IDs, explicit amount/offer semantics and single-unit item-only USD. It excludes
+unknown accepted offers, asking prices, incompatible currencies/shipping bases,
+conflicting duplicates, unsupported quantities, future dates and out-of-window sales.
+It preserves condition strata, unique/effective counts, exclusions and descriptive
+spread. Unknown condition stays unknown. No per-card shipping is added to card value.
+
+`valuation_evidence.py` reproduces a supplied estimate at validation, preserves sale,
+capture and calculation dates, and requires source expiry within one day of calculation
+and the oldest contributing sale's lookback boundary. The 30-day guide-date rule is
+unchanged; 90-day sale lookback is a distinct age-labelled candidate, not fresh-price
+proof. Independent review must qualify coefficients and source rights. Engineering-only
+contracts are rejected on ordinary roots. Sold medians never supply strict ceilings.
+The new selector chooses one qualified sold estimate, otherwise an eligible guide;
+it does not pool guides with their underlying sales. Old guide consumers omit sold
+estimates rather than relabelling them. Lot totals/ranking/UI remain LV-05/06 work.
+
+`reference_preparation.prepare` validates and stages an already acquired package,
+using existing catalog, source admission, managed storage and revocation services.
+It has no transport, provider allowance, scheduler or recurring activation. Explicit
+`activate` uses the existing atomic expected-current check and source indexes, with
+Stop rechecked inside the activation lock. Failed preparation leaves the active
+release untouched; ordinary expiry/withdrawal still withholds invalid old values.
+
+Preparation has a nonblocking execution lock, a cooperative 30-second deadline,
+existing package/row/byte ceilings and 1,000 finite noncontent reservations. Reservations
+live under the existing independent `.dex-price-revocations/` parent in a per-root
+`*-preparation` directory. A semantic package fingerprint excludes renamed release
+and observation IDs and recapture timestamps. Interrupted/failed work remains consumed;
+there is no reset/refund or automatic replay. `stop` persists until explicit `resume`,
+which does not restore capacity. Keep this accounting outside restore and price removal.
+Provider accounting stays separate: these offline reservations spend zero provider
+operations and cannot replenish historical capture allowances.
+
+The read-only `scripts/lot_value_readiness.py` now defaults to `--version 2`; explicit
+`--version 1` and the v1 Python default preserve older consumers. V2 separates eligible
+broad sold/guide coverage, condition-scoped references, condition-specific ceiling
+applicability, exact catalog metadata, variant/set denominators and runtime compatibility.
+Its top-level `ready` requires complete broad catalog benchmark coverage with actual
+evidence; `partial` can still contain useful per-printing references. It is not a
+whole-lot, account, delivery or provider-entitlement claim. Synthetic evidence is
+labelled and never reports actual readiness. No acquisition or cleanup occurs on read.
+
+See [pricing proof](plans/lv-02a-pricing-proof.md) and [LV-02 results](plans/lv-02-results.md)
+for current source gaps, isolated evidence and the unexecuted next action. This
+implementation is not installed; there is no active sold or guide release established.
+
+## LV-02 publisher-native guides (source implementation; no active source)
+
+`dex-price-contract-v3` and `dex-valuation-evidence-v3` add the explicit
+`publisher_native_guide` branch inside the existing snapshot containers and source
+store. The branch preserves unknown shipping and tax, raw mixed condition, exact
+USD per-card publisher amounts, original source/build dates and independent rights.
+It does not relax v2's item-only rule. Exact independent contract admission is still
+required; the completed LV-02 capture's v2 draft remains inadmissible and unchanged.
+
+Native observations require known applicable physical attributes and exact provider
+mapping; conditional population semantics cannot fill unknown edition, finish or
+language. Complete ordinary identities need no invented extra variant label. Missing
+catalog/source representation remains unavailable. No source metadata or price is
+acquired by validation, selection, calculation or display.
+
+`valuation_evidence.select` takes an explicit normalized/native purpose; normalized
+selection retains qualified sold-first/guide fallback and excludes native evidence.
+`lot_guides.native_cell` is separate from existing normalized guide cells. The shared
+`shopping_math.native_subtotals` uses the existing Decimal, quantity and money caps,
+with no mixed-cohort or native/normalized totals. Cohorts pin provider, field policy,
+semantic policy version, currency/unit, condition/money basis and reference/build date.
+Native arithmetic uses UTC reference dates consistently at local-day boundaries.
+
+The listing assessment and discovery result projection carry native totals/subtotals
+in a distinct field. They require scoped seller identity evidence and reconciled
+quantities for a complete native total. Native results never fill normalized totals,
+delivered differences, savings, sold inputs or strict ceilings. The minimal Publisher
+guide sort groups compatible source/date cohorts and complete/partial results; it
+orders complete same-cohort guide contents, not bargains. Offer costs remain separate.
+
+New native prepared indexes use format 2 with admitted non-price source context;
+older format-1-only runtimes reject them. Existing v1/v2 normalized indexes and
+contracts retain their formats/semantics. No index can approve its source. The
+ordinary source shards, seals, expiry, independent revocations, Stop/CAS preparation
+and lifecycle reads remain authoritative. Native page references participate in the
+existing local source checks, and invalidation removes dependent amounts while
+preserving catalog alternatives and unrelated valid normalized references.
+
+Native references and subtotals are ephemeral in this implementation. Existing
+normalized saved-comparison admission explicitly rejects their underlying native
+observation, even if a caller strips the displayed basis. Source permission for
+immutable saving is not sufficient to bypass the missing native-history contract.
+No native amounts enter metadata reports, catalog relations or new accounting stores.
+
+Readiness version 3 reports native exact-printing coverage and parents with eligible
+exact child alternatives separately from normalized/sold readiness and the original
+catalog denominator. It cannot infer provider-wide source absence from inactive
+references. Fixture references remain isolated engineering evidence, never actual
+customer coverage. See [implementation results](plans/lv-02-contract-implementation-results.md).
+
+## Native offline input preparation
+
+The TCGCSV offline adapter now emits `dex-valuation-evidence-v3` when supplied an
+independently reviewed v3 native contract. It preserves the literal publisher amount,
+unknown shipping/tax, null condition, publisher build and original capture dates.
+Exact physical applicability still gates each row; absent edition is not inferred.
+This adapter rejects a v2 normalized `marketPrice` contract because that field's
+shipping/tax normalization is not established. Existing v1 compatibility is retained.
+Preparation is local and nonactivating; source admission, finite acquisition, staging
+and CAS activation retain separate authorities. The [LV-08 source action](plans/lv-08-source-action.md)
+records the exact proposed input/retention scope and the currently unavailable final
+admission digest. No active source or current coverage is created by this code.

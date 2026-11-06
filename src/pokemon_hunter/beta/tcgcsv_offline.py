@@ -373,6 +373,8 @@ def prepare(
     if expiry <= now or expiry <= captured:
         raise ValueError("A future removable source expiry is required")
     policy = rules.contract(manifest["contract"])
+    if policy["schema"] == "dex-price-contract-v2":
+        raise ValueError("TCGCSV marketPrice has no established normalized shipping/tax basis")
     if policy["provider"] != "TCGCSV" or set(policy["fields"]) != {"marketPrice"}:
         raise ValueError("This adapter accepts only a supplied TCGCSV raw marketPrice contract")
     field = policy["fields"]["marketPrice"]
@@ -429,6 +431,24 @@ def prepare(
                 estimate_kind="provider_guide",
                 match_scope="conditional_market",
             )
+            if policy["schema"] == "dex-price-contract-v3":
+                from . import valuation_evidence as evidence
+
+                spec = policy["valuation"]
+                row.update(
+                    condition=spec["condition"],
+                    ceiling_applicable=spec["ceiling_applicable"],
+                    valuation_qualification=spec["qualification"],
+                    evidence=dict(
+                        schema=evidence.NATIVE_SCHEMA,
+                        basis=spec["basis"],
+                        condition=spec["condition"],
+                        amount_basis=spec["amount_basis"],
+                        native_money=dict(spec["native_money"]),
+                        sales=[],
+                        estimate=None,
+                    ),
+                )
             decision = rules.reason(row, printing, now.date())
             if decision in {"eligible", "stale"}:
                 rows.append(row)

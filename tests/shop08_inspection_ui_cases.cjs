@@ -58,6 +58,17 @@ const passed=[];async function test(name,fn){await fn();passed.push(name);}
   assert.equal(t.get('offer-overview').hidden,false);
   assert.equal(t.calls.filter(c=>c.url.includes('/candidate/')).length,1);
  });
+ await test('automatic seller-selected cards enter optional review without per-card confirmation',async()=>{
+  const selected={...identity,quantity:2,language:'en',edition:'unlimited',finish:'normal',grade:'raw'};
+  const t=setup({proposals:[selected],unknown_contents:0,seller_lot_size:2});await flush();
+  await t.get('use-listing').onclick();await flush();
+  const posts=t.calls.filter(c=>c.method==='POST');assert.equal(posts.length,1);
+  const value=JSON.parse(posts[0].body).review;
+  assert.equal(value.cards.length,1);assert.equal(value.cards[0].quantity,2);
+  assert.equal(value.cards[0].printing_id,identity.id);assert.equal(value.unknown_contents,0);
+  assert.equal(value.cards[0].authored_fields.length,0);
+  assert.ok(!t.calls.some(c=>c.url==='/api/shopping/listing/'));
+ });
  await test('a retained card absent from candidate identities keeps the checked catalog restore',async()=>{
   const t=setup({}, {restoreCards:[{...identity,id:'another-printing',name:'Other card'}],request:async(url,options,payload)=>restore(url,payload)});await flush();
   assert.equal(t.calls.filter(c=>c.url.includes('/catalog/')).length,1);

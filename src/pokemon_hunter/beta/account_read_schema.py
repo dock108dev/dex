@@ -236,3 +236,29 @@ def repair():
         ):
             cursor.execute(f"DROP TABLE IF EXISTS {table}")
         migrate()
+
+
+def retire():
+    """Retire schema 4 derived account rows for a stopped-server code rollback.
+
+    The selected older runtime must explicitly migrate and prepare its own read
+    representation. Never relabel current rows as an older schema or restore
+    authoritative data. Both monotonic revision backstops remain in place.
+    """
+    if connection.vendor != "sqlite":
+        raise ValueError("Account reads are qualified only on SQLite")
+    with transaction.atomic(), connection.cursor() as cursor:
+        if store.rows("SELECT version FROM account_read_schema") != [{"version": VERSION}]:
+            raise ValueError("Retirement requires the exact current account schema")
+        for table in (
+            *TABLES,
+            "ar_catalog",
+            "ar_shopping_names",
+            "ar_shopping_picker",
+            "ar_scope_catalog",
+            "ar_scope_date_counts",
+            "ar_scope_options",
+            "account_read_state",
+            "account_read_schema",
+        ):
+            cursor.execute(f"DROP TABLE IF EXISTS {table}")

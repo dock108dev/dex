@@ -296,15 +296,153 @@ def seller_candidates(candidates, clues):
     )
     for family in families.values():
         exact = []
+        parent = next(
+            (
+                p
+                for p in family
+                if not (p.get("parent_printing_id") or p.get("attributes", {}).get("parent_printing_id"))
+            ),
+            None,
+        )
+        relation = family_projection(parent, family) if parent else None
+        supported = (
+            {a["child_id"] for a in relation["alternatives"] if a["status"] == "supported"}
+            if relation
+            else set()
+        )
         for p in family:
             value = p.get("attributes", {}).get("physical_variant")
             if not value or set(value) - {"type", "stamp", "languages"} or special:
                 continue
             if (
-                p.get("edition")
+                p["id"] in supported
+                and clues.get("language") == p.get("language")
+                and p.get("edition")
                 and clues.get("edition") == p["edition"]
                 and clues.get("finish") == p.get("finish")
             ):
                 exact.append(p)
         result.extend(exact if len(exact) == 1 else family)
     return result
+
+
+def identity_binding(row):
+    """Pin identity and provenance, excluding account ownership/presentation state."""
+    from .price_snapshot_contract import IDENTITY, digest
+
+    attrs = row.get("attributes", {})
+    attrs = json.loads(attrs) if isinstance(attrs, str) else attrs
+    provenance = row.get("provenance", {})
+    provenance = json.loads(provenance) if isinstance(provenance, str) else provenance
+    return digest(
+        dict(
+            id=row["id"],
+            identity={k: row.get(k) for k in IDENTITY},
+            publication_state=row.get("publication_state", "published"),
+            name=row.get("name"),
+            parent_id=attrs.get("parent_printing_id"),
+            descriptor=attrs.get("physical_variant"),
+            provenance=provenance,
+        )
+    )
+
+
+def family_projection(parent, children, *, expected=None):
+    """Read published relations, without creating identities or inheriting prices.
+
+    The current binding is carried by the leased assessment; an expected binding
+    must match on revalidation. Published import evidence remains the authority.
+    """
+    from .price_snapshot_contract import IDENTITY
+
+    result = dict(
+        parent_id=parent["id"],
+        parent_sha256=identity_binding(parent),
+        catalog_version=parent.get("catalog_version"),
+        membership="non_exhaustive",
+        alternatives=[],
+    )
+    for child in children:
+        attrs = child.get("attributes", {})
+        attrs = json.loads(attrs) if isinstance(attrs, str) else attrs
+        if attrs.get("parent_printing_id") != parent["id"]:
+            continue
+        evidence = child.get("provenance", {})
+        evidence = json.loads(evidence) if isinstance(evidence, str) else evidence
+        evidence = evidence.get("variant_evidence")
+        status = "supported"
+        try:
+            value = descriptor(attrs.get("physical_variant"))
+            fields = physical(value)
+            if (
+                not evidence
+                or evidence.get("parent_id") != parent["id"]
+                or evidence.get("descriptor") != value
+                or {k: v for k, v in evidence.get("source_descriptor", {}).items() if k != "thirdParty"}
+                != value
+                or parent.get("name") != child.get("name")
+                or any(
+                    parent.get(k) != child.get(k)
+                    for k in ("set_id", "collector_number", "language", "catalog_version")
+                )
+                or fields != tuple(child.get(k) for k in ("edition", "finish", "variant"))
+                or child.get("publication_state", "published") != "published"
+                or parent.get("publication_state", "published") != "published"
+            ):
+                raise ValueError("Conflicting relation")
+            Evidence.model_validate(
+                {k: v for k, v in evidence.items() if k not in {"descriptor", "parent_id"}}
+            )
+        except (ValueError, TypeError):
+            status = "catalog_relation_requires_review"
+        result["alternatives"].append(
+            dict(
+                child_id=child["id"],
+                child_sha256=identity_binding(child),
+                child_identity={k: child.get(k) for k in IDENTITY},
+                descriptor=attrs.get("physical_variant"),
+                catalog_evidence=evidence,
+                status=status,
+            )
+        )
+    result["alternatives"].sort(key=lambda a: a["child_id"])
+    if expected is not None and expected != result:
+        raise ValueError("Catalog family changed; reassess seller selection")
+    return result
+
+
+def selection_projection(candidates, chosen, clues, *, quantity, mentions):
+    """Attach a relation/evidence binding to one physical quantity, never prices."""
+    parents = {
+        p.get("parent_printing_id") or p.get("attributes", {}).get("parent_printing_id") for p in candidates
+    }
+    parents.discard(None)
+    if len(parents) != 1:
+        return None
+    if len(candidates) > 40:
+        raise ValueError("Physical alternatives exceed the bounded response; refine the identity")
+    pid = next(iter(parents))
+    parent = next((p for p in candidates if p["id"] == pid), None)
+    if parent is None:
+        return dict(
+            parent_id=pid,
+            selected_child_id=None,
+            quantity=quantity,
+            alternatives=[],
+            reason="parent_not_available",
+        )
+    family = family_projection(parent, candidates)
+    allowed = {a["child_id"] for a in family["alternatives"] if a["status"] == "supported"}
+    selected = chosen["id"] if chosen and chosen["id"] in allowed else None
+    return dict(
+        **family,
+        quantity=quantity,
+        selected_child_id=selected,
+        allocations=[dict(child_id=selected, quantity=quantity)] if selected and quantity else [],
+        seller_evidence=dict(
+            mentions=mentions,
+            scope="this content line only",
+            fields={k: clues.get(k) for k in ("language", "edition", "finish")},
+        ),
+        reason=None if selected else "physical_variant_not_selected",
+    )

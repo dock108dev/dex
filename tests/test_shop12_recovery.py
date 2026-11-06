@@ -195,3 +195,36 @@ def test_small_artwork_binding_never_reads_the_whole_catalog(b4, monkeypatch):
     expected = image_bindings.catalog_images(b4["actor"], entries[:1])
     monkeypatch.setattr(collection, "catalog", lambda *a, **k: pytest.fail("broad artwork read"))
     assert image_bindings.catalog_images(b4["actor"], entries[:1]) == expected
+
+
+def test_automatic_values_preserve_session_and_stop_boundaries(discovery, monkeypatch):
+    from django.http import Http404
+    from test_discovery import run_for
+
+    from pokemon_hunter.beta import discovery_lot_values
+
+    run = run_for(discovery, choices=d.Choices(query="Lapras", product_type="mixed_lots"))
+    run.state = "complete"
+    run.raws = [dict(itemId="engineering-item")]
+    d._runs[run.id] = run
+    calls = []
+
+    def value(actor, raws, rows, **kwargs):
+        calls.append(True)
+        rows[0]["lot_value"] = dict(total="25.00")
+
+    monkeypatch.setattr(discovery_lot_values, "project", value)
+    with pytest.raises(Http404):
+        d.status(discovery.actor, "other-session", run.id, values=True)
+    assert not calls
+    assert (
+        d.status(discovery.actor, "session", run.id, values=True)["results"][0]["lot_value"]["total"]
+        == "25.00"
+    )
+
+    def stopped(actor, raws, rows, **kwargs):
+        value(actor, raws, rows)
+        d.stop(discovery.actor, "session", run.id)
+
+    monkeypatch.setattr(discovery_lot_values, "project", stopped)
+    assert d.status(discovery.actor, "session", run.id, values=True)["results"] == []

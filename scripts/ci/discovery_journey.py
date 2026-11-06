@@ -2,6 +2,7 @@
 
 import json
 import time
+from datetime import UTC, datetime, timedelta
 
 GOAL_NAME = "Engineering frozen goal with a deliberately long title covering exact edition and finish choices"
 RUN_ID = "11111111-1111-4111-8111-111111111111"
@@ -34,6 +35,7 @@ def exercise(page, base, output):
             },
             "revealed": True,
             "listing_price": "19.50",
+            "buy_now_price": "19.50",
             "shipping": None,
             "delivered_total": None,
             "price_kind": "fixed_price",
@@ -66,6 +68,7 @@ def exercise(page, base, output):
             "shipping": "0.00",
             "delivered_total": "8.00",
             "price_kind": "current_bid",
+            "ends_at": (datetime.now(UTC) + timedelta(hours=6)).isoformat(),
             "classification": "unpriced",
             "reference": None,
             "reason": "Engineering conflicting edition evidence; no applicable reference.",
@@ -118,13 +121,15 @@ def exercise(page, base, output):
                 page.goto(base + "/shopping/")
                 expect(page.locator("#discovery-search")).to_be_enabled()
                 expect(page.get_by_text("Search options", exact=True)).to_be_visible()
+                expect(page.locator("#find-missing")).to_be_hidden()
+                page.get_by_text("Search options", exact=True).click()
                 expect(page.locator("#find-missing")).to_be_visible()
                 page.locator("#discovery-query").fill("Engineering Pokémon with a long card name")
                 page.locator("#discovery-set").select_option("Engineering supported set")
                 page.locator("#discovery-search").click()
                 expect(page.locator(".discovery-card")).to_have_count(2)
-                expect(page.locator(".discovery-card").first).to_contain_text("Unknown")
-                expect(page.locator(".discovery-card").nth(1)).to_contain_text("Current bid")
+                expect(page.locator("#offer-engineering-conditional")).to_contain_text("Unknown")
+                expect(page.locator("#offer-engineering-ambiguous")).to_contain_text("Current bid")
                 # Lots never present a per-card reference as a lot valuation.
                 expect(page.locator(".discovery-card .reference").first).to_be_hidden()
                 if enlarged:
@@ -138,7 +143,7 @@ def exercise(page, base, output):
                     horizontal_overflow: document.documentElement.scrollWidth > innerWidth,
                     card_overflow: [...document.querySelectorAll('.discovery-card')].some(e=>e.scrollWidth>e.clientWidth+1),
                     font_size: getComputedStyle(document.body).fontSize,
-                    unknown_shipping: document.querySelector('.discovery-amounts').innerText.includes('Unknown')
+                    unknown_shipping: document.querySelector('#offer-engineering-conditional .discovery-amounts').innerText.includes('Unknown')
                 })""")
                 if (
                     metrics["horizontal_overflow"]

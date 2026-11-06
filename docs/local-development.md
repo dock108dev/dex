@@ -227,3 +227,17 @@ storage are separate modules. Keep transaction bodies together when refactoring.
 Photo lifecycle, provider-neutral photo contracts and confirmation/report tests live in
 `test_photo_batches.py`, `test_photo_contracts.py` and `test_photo_confirmation.py`.
 Their synthetic fixtures are in non-collected `tests/photo_batch_helpers.py`.
+
+## Complete successor qualification
+
+Use a separately built wheel and fresh noneditable environments for complete release
+qualification. Do not replace `.local/runtime` merely to test checkout changes.
+The [LV-08 procedure](plans/lv-08-delivery.md) separates qualification environments
+from the proposed immutable customer runtime and retains the existing root, credentials
+and independent accounting. Explicit migration/read preparation and compatible rollback
+are required; ordinary launch remains free of those mutations.
+
+Hunter package verification enumerates installed application members on each check.
+Unchanged file identities may reuse their content hashes; changed identities must be
+rehashable regular files, with before/after verification and symlink rejection. This
+optimization grants no new acquisition authority and does not cache seller or price data.

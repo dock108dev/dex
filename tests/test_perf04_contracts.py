@@ -251,9 +251,14 @@ def test_primary_shells_discover_complete_styles_without_import_waterfall(prepar
         assert response.status_code == 200
         styles = Styles()
         styles.feed(response.content.decode())
-        assert styles.hrefs[:3] == [
-            "/collection-assets/glass.css",
-            "/collection-assets/collection-base.css",
-            "/collection-assets/collection-browse.css",
-        ]
+        common = ["glass.css", "collection-base.css", "collection-browse.css"]
+        if route == "/card-library/":
+            assert styles.hrefs == ["/collection-assets/public-browse-shell.css"]
+            bundle = client.get(styles.hrefs[0])
+            assert bundle.status_code == 200 and bundle["Content-Type"].startswith("text/css")
+            members = [client.get("/collection-assets/" + name) for name in [*common, "public.css"]]
+            assert all(member.status_code == 200 for member in members)
+            assert bundle.content == b"\n".join(member.content for member in members)
+        else:
+            assert styles.hrefs[:3] == ["/collection-assets/" + name for name in common]
         assert "/collection-assets/collection.css" not in styles.hrefs

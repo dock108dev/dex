@@ -58,11 +58,27 @@ def names(printing):
     )
 
 
+@lru_cache(maxsize=4096)
+def _catalog_set_label(value):
+    return canonical_query(literal(value))
+
+
+def _canonical_set_text(text):
+    cache = _local.get()
+    key = ("canonical_set_text", text)
+    if cache is not None and key in cache:
+        return cache[key]
+    value = canonical_query(literal(text))
+    if cache is not None and len(cache) < 4096:
+        cache[key] = value
+    return value
+
+
 def set_names(printing):
     aliases = printing.get("set_aliases", [])
     return tuple(
         dict.fromkeys(
-            canonical_query(literal(value))
+            _catalog_set_label(value)
             for value in [printing["set_name"], *(aliases if isinstance(aliases, list) else [])]
             if isinstance(value, str) and value.strip()
         )
@@ -71,6 +87,26 @@ def set_names(printing):
 
 def _phrase(value):
     return re.escape(literal(value)).replace(r"\ ", r"\s+")
+
+
+@lru_cache(maxsize=4096)
+def _set_pattern(name):
+    # Only canonical catalog aliases are keys; the seller text is the haystack.
+    pattern = r"(?<!\w)" + _phrase(name) + r"(?!\w)"
+    if name.casefold() == "base set":
+        pattern += r"(?!\s*2\b(?!\s*/))"
+    return re.compile(pattern, re.I)
+
+
+@lru_cache(maxsize=4096)
+def _collector_patterns(number):
+    # Explicitly retain compiled literal catalog identifiers across requests.
+    # Broad same-name families otherwise churn Python's shared regex cache.
+    token = _phrase(number)
+    return (
+        re.compile(r"\s*(#\s*|no\.?\s*)?(" + token + r")(?![\w/])", re.I),
+        re.compile(r"(?<![\w/])#\s*(" + token + r")(?![\w/])", re.I),
+    )
 
 
 def set_spans(printing, text):
@@ -83,13 +119,10 @@ def set_spans(printing, text):
     )
     if cache is not None and key in cache:
         return list(cache[key])
-    text = canonical_query(literal(text))
+    text = _canonical_set_text(text)
     spans = []
     for name in set_names(printing):
-        pattern = r"(?<!\w)" + _phrase(name) + r"(?!\w)"
-        if name.casefold() == "base set":
-            pattern += r"(?!\s*2\b(?!\s*/))"
-        spans.extend(match.span() for match in re.finditer(pattern, text, re.I))
+        spans.extend(match.span() for match in _set_pattern(name).finditer(text))
     return _remember(cache, key, sorted(set(spans)))
 
 
@@ -104,7 +137,7 @@ def without_sets(printings, text):
     because its set contains the word 'Collection'. Seller product claims outside
     those exact aliases, including a separate 'lot' or 'sealed', remain visible.
     """
-    text = canonical_query(literal(text))
+    text = _canonical_set_text(text)
     spans = {span for printing in printings for span in set_spans(printing, text)}
     for start, end in sorted(spans, reverse=True):
         text = text[:start] + " " * (end - start) + text[end:]
@@ -205,26 +238,21 @@ def number_claims(printing, text):
         return list(cache[key])
     text = literal(text)
     adjacent, explicit = [], []
+    adjacent_literal, explicit_literal = _collector_patterns(str(printing["collector_number"]))
     for _, end in name_spans(printing, text):
         match = re.match(r"\s*(#\s*|no\.?\s*)?(" + _NUMBER + r")(?![\w/])", text[end:], re.I)
         if match:
             (explicit if match[1] else adjacent).append(match[2])
         # Catalogs can retain literal identifiers outside numeric grammars. They
         # need their exact spelling, not an invented numeric alias.
-        retained = re.match(
-            r"\s*(#\s*|no\.?\s*)?(" + _phrase(printing["collector_number"]) + r")(?![\w/])",
-            text[end:],
-            re.I,
-        )
+        retained = adjacent_literal.match(text[end:])
         if retained:
             (explicit if retained[1] else adjacent).append(retained[2])
     for match in re.finditer(r"(?<![\w/])#\s*(" + _NUMBER + r")(?![\w/])", text, re.I):
         explicit.append(match[1])
     for match in re.finditer(r"(?<![\w/])#\s*([a-z0-9]+(?:[-/][a-z0-9]+)+)(?![\w/])", text, re.I):
         explicit.append(match[1])
-    for match in re.finditer(
-        r"(?<![\w/])#\s*(" + _phrase(printing["collector_number"]) + r")(?![\w/])", text, re.I
-    ):
+    for match in explicit_literal.finditer(text):
         explicit.append(match[1])
     for match in re.finditer(r"(?<![\w/])(" + _NUMBER + r")(?![\w/])", text, re.I):
         if "/" in match[1]:

@@ -181,3 +181,22 @@
 .discovery-refinements { grid-template-columns:minmax(0,360px); }
 .discovery .offer-image-label { display:none; }
 .discovery-results-heading { margin-top:24px; }
+
+.lot-result-controls { margin:16px 0; }
+.lot-value { margin-top:14px; padding:14px; background:#f3f5f4; border-radius:8px; }
+.lot-value strong { display:block; font-size:1.125rem; }
+.lot-value ul { padding-left:20px; }
+
+.discovery-card .difference.is-over-reference { color:#8f1d2c; }
+
+/* Automatic assessment groups and their single evidence disclosure. */
+.lot-group-heading { grid-column:1/-1; padding-top:12px; border-top:1px solid var(--border); }
+.lot-group-heading h3 { margin:0; font-size:1.125rem; }
+.lot-group-heading p { margin:6px 0; }
+.lot-value, .lot-evidence, .native-guide { min-width:0; overflow-wrap:anywhere; }
+.native-guide { margin-top:12px; padding-top:12px; border-top:1px solid #b6bbc0; }
+.lot-evidence blockquote { margin:8px 0; padding-left:12px; border-left:2px solid #b6bbc0; white-space:pre-wrap; }
+.lot-evidence cite { display:block; font-style:normal; }
+.lot-evidence li { margin-bottom:10px; }
+.lot-evidence a { display:inline-flex; align-items:center; min-height:44px; }
+@media(max-width:600px) { .lot-result-controls, .discovery-amounts { grid-template-columns:minmax(0,1fr); } }
