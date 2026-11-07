@@ -170,7 +170,7 @@ def exercise(page, base, output):
         assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), name
         page.locator("#discovery-query").focus()
         page.keyboard.press("Tab")
-        assert page.evaluate("document.activeElement.id") == "discovery-set"
+        assert page.evaluate("document.activeElement.id") == "discovery-budget"
         page.keyboard.press("Tab")
         assert page.evaluate("document.activeElement.id") == "discovery-search"
         page.evaluate("""() => {
