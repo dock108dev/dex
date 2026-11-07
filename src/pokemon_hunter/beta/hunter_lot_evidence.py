@@ -98,7 +98,7 @@ def quantity_text(text):
         flags=re.I,
     )
     text = re.sub(r"\b(" + "|".join(WORDS) + r")\b", lambda m: WORDS[m[0].casefold()], text, flags=re.I)
-    return re.sub(r"^\s*(?:includes?|contains?|contents\s*:)\s*", "", text, flags=re.I)
+    return re.sub(r"^\s*(?:includes?|contains?|featuring|contents\s*:)\s*", "", text, flags=re.I)
 
 
 def segments(fields, aspects, index):
@@ -189,7 +189,58 @@ def segments(fields, aspects, index):
             result.extend(nested)
             scopes.extend(nested_scopes)
             claims.extend(nested_claims)
-    return result, scopes, claims
+    return _sections(result, fields, index), scopes, claims
+
+
+def _sections(segments, fields, index):
+    """Join indented numbered-card attributes only to their literal heading."""
+    sections = []
+    covered = []
+    for field, value in fields:
+        if field not in {"summary", "detail_summary", "official_description"}:
+            continue
+        lines = list(re.finditer(r"[^\n]+", value))
+        for i, line in enumerate(lines):
+            heading = line[0].strip()
+            if not re.match(r"^[-*•]\s+.+:\s*$", heading) or not index.candidates(dict(text=heading)):
+                continue
+            indent = len(line[0]) - len(line[0].lstrip())
+            parts = [mention(field, value, *line.span())]
+            for following in lines[i + 1 :]:
+                text = following[0]
+                if not text.strip():
+                    continue
+                if len(text) - len(text.lstrip()) <= indent:
+                    break
+                if re.match(
+                    r"\s*[-*•]\s*(?:Set|Card Number|Collector Number|Language|Edition|Finish)\s*:", text, re.I
+                ):
+                    parts.append(mention(field, value, *following.span()))
+            if not any(re.search(r"(?:Card|Collector) Number\s*:", p["text"], re.I) for p in parts[1:]):
+                continue
+            sections.append((field, " ".join(p["text"] for p in parts), dict(mentions=parts, section=True)))
+            covered.extend((field, p["start"], p["end"]) for p in parts)
+    return sections + [
+        row
+        for row in segments
+        if not any(row[0] == field and lo <= row[2].get("start", -1) < hi for field, lo, hi in covered)
+    ]
+
+
+def scoped_claims(text, scopes, aspects):
+    """A literal list of finishes is a choice set, not a global single finish."""
+    finish = dc._clues(dict(title=text))["finish"]
+    result = []
+    for claim, source in scopes:
+        if aspects.get(source["source_field"]) in {"finish", "card finish"} and finish:
+            parts = re.split(r"\s*[,/]\s*", claim)
+            finishes = {
+                dc._clues(dict(title="normal" if p.casefold() == "regular" else p))["finish"] for p in parts
+            }
+            if len(parts) > 1 and None not in finishes and finish in finishes:
+                continue
+        result.append(claim)
+    return result
 
 
 def noncontents(text, candidates=()):
@@ -253,10 +304,41 @@ def reconcile(rows):
             if j in removed:
                 continue
             if {m["source_field"] for m in row["mentions"]} & {m["source_field"] for m in other["mentions"]}:
-                continue
+                if not row.get("section") or other.get("section") or other.get("parent_identity"):
+                    continue
+                targets = [
+                    candidate
+                    for candidate in rows
+                    if candidate.get("section")
+                    and candidate["printing_id"]
+                    and candidate["printing_id"] in {p["id"] for p in other["candidates"]}
+                    and other["quantity"] in (None, candidate["quantity"])
+                    and all(
+                        not other["clues"].get(k) or other["clues"][k] == candidate["clues"].get(k)
+                        for k in ("language", "edition", "finish", "grader", "grade")
+                    )
+                ]
+                if targets != [row]:
+                    continue
             shared = {p["id"] for p in row["candidates"]} & {p["id"] for p in other["candidates"]}
             parent = row.get("parent_identity") and row.get("parent_identity") == other.get("parent_identity")
             if not shared and not parent:
+                continue
+            # A broader mention of the other explicitly enumerated finish is
+            # not a contradiction of this numbered section. Its own matching
+            # section still checks quantity and identity below.
+            if (
+                row.get("section")
+                and not other.get("parent_identity")
+                and other["clues"].get("finish")
+                and other["clues"]["finish"] != row["clues"].get("finish")
+                and any(
+                    candidate.get("section")
+                    and candidate["clues"].get("finish") == other["clues"]["finish"]
+                    and candidate["printing_id"] in {p["id"] for p in other["candidates"]}
+                    for candidate in rows
+                )
+            ):
                 continue
             conflicts = [
                 k

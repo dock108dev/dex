@@ -67,6 +67,7 @@ def _quantity(text, *, title=False):
     if re.search(r"\b[0-9]+\s*[x×]{2,}", text, re.I):
         return None, "Explicit per-card multiplicity is malformed"
     explicit_patterns = (
+        r"^\s*([+-]?[0-9]+(?:\.[0-9]+)?)\s+(?:19|20)[0-9]{2}\s+[A-Za-z]",
         r"(?<![\w/#.])([+-]?[0-9]+(?:\.[0-9]+)?)\s*[x×](?!\w)",
         r"^\s*(?:[-*•]\s+)?([+-]?[0-9]+(?:\.[0-9]+)?)\s+(?!cards?\b|total\b|lots?\b)[A-Za-z]",
         r"\(\s*([+-]?[0-9]+(?:\.[0-9]+)?)\s*\)\s*$",
@@ -80,6 +81,7 @@ def _quantity(text, *, title=False):
             if not re.fullmatch(r"[1-9][0-9]{0,5}", match[1]) or int(match[1]) > MAX_QUANTITY:
                 return None, "Explicit per-card multiplicity is invalid or exceeds the review limit"
     patterns = (
+        r"^\s*([1-9][0-9]{0,5})\s+(?:19|20)[0-9]{2}\s+[A-Za-z]",
         r"(?<![\w/#.])([1-9][0-9]{0,5})\s*[x×](?!\w)",
         r"\(\s*([1-9][0-9]{0,5})\s*\)\s*$",
         r"^\s*(?:[-*•]\s+)?([1-9][0-9]{0,5})\s+(?!cards?\b|total\b|lots?\b|[x×]\b)[A-Za-z]",
@@ -155,6 +157,7 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
         raise ValueError("Seller text exceeds 8192 tokens; explicit manual review required")
     index = _index or hunter_catalog.IdentityIndex(printings)
     segments, scopes, set_claims = evidence.segments(fields, aspects, index)
+    sections_present = any(m.get("section") for _, _, m in segments)
     if any(len(text) > MAX_SEGMENT_CHARS for _, text, _ in segments):
         raise ValueError("Seller text segment exceeds 2048 characters; manual review required")
     if len(segments) > MAX_SEGMENTS:
@@ -196,7 +199,7 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
         identity_text = re.sub(r"\b(?:qty|quantity)\s*[:=]?\s*[1-9][0-9]{0,5}\b", " ", text, flags=re.I)
         identity_text = re.sub(r"\b[x×]\s*[1-9][0-9]{0,5}\b", " ", identity_text, flags=re.I)
         identity_text = re.sub(r"(?<![\w/#.])[1-9][0-9]{0,5}\s*[x×](?!\w)", " ", identity_text, flags=re.I)
-        scoped_text = " ".join([identity_text, *(claim for claim, _ in scopes)])
+        scoped_text = " ".join([identity_text, *evidence.scoped_claims(identity_text, scopes, aspects)])
         clues = dc._clues(dict(title=scoped_text, condition=raw.get("condition", "")))
         local_ids = {p["id"] for p in index.candidates(dict(text=identity_text))}
         candidates = [p for p in candidates_for(clues) if p["id"] in local_ids]
@@ -267,8 +270,14 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
                 numbered = set_named
                 fitting = [p for p in set_named if not dc._identity_conflicts(p, clues)]
                 exact = catalog_variants.seller_candidates(fitting or set_named, clues)
+        quantity_text = text
+        if literal_evidence.get("section"):
+            quantity_text = re.sub(r"^\s*[-*•]\s+(?:19|20)[0-9]{2}\s+", "", text)
         quantity, quantity_reason = _quantity(
-            text, title=field.endswith("title") or field == "structured_identity"
+            quantity_text,
+            title=field.endswith("title")
+            or field == "structured_identity"
+            or (sections_present and not literal_evidence.get("section")),
         )
         if field == "structured_identity" and totals == {1}:
             quantity, quantity_reason = 1, None
@@ -346,7 +355,12 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
         # Same identity+quantity repeated in title/description never adds units.
         # Conflicting repeated quantities stay as separate unresolved claims.
         identity_key = tuple(sorted(p["id"] for p in candidate_rows))
-        key = (identity_key, quantity, chosen["id"] if chosen else None)
+        key = (
+            identity_key,
+            quantity,
+            chosen["id"] if chosen else None,
+            clues.get("finish") if sections_present else None,
+        )
         item_mentions = literal_evidence.get("mentions", [literal_evidence])
         if key in seen:
             previous = seen[key]
@@ -407,8 +421,14 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
             continue
         other = [
             p
-            for (ids, _, selected), p in seen.items()
+            for (ids, _, selected, _), p in seen.items()
             if ids == identity_key
+            and not (
+                sections_present
+                and p["clues"].get("finish")
+                and clues.get("finish")
+                and p["clues"]["finish"] != clues["finish"]
+            )
             and (
                 selected == (chosen["id"] if chosen else None)
                 or selected is None
@@ -454,6 +474,7 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
                     item_id=raw.get("itemId"),
                 )
         row = dict(
+            section=bool(literal_evidence.get("section")),
             parent_identity=(
                 tuple(
                     next(
