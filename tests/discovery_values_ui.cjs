@@ -102,3 +102,18 @@ assert.equal(display.groups([bestA,bestB],{sort:'best'}),null);
 display.invalidate(bestA,()=>true);
 assert.equal(bestA.buying_order,null);
 console.log('Recommendation order, single list and expired-rank removal passed.');
+// Simple local filters never turn a partial/unknown estimate into a discount.
+const quick = (id, amount, complete, ratio, pre2000=false) => ({id,buy_now_price:'87',buying_order:{combined:{estimate_amount:amount,estimate_complete:complete,price_to_estimate:ratio,all_pre_2000:pre2000}}});
+const options = [quick('good','100',true,'.87',true),quick('high','100',true,'1.44'),quick('partial','20',false,null),quick('unknown',null,false,null)];
+assert.equal(display.glance(options[0]).tone,'good');
+assert.equal(display.glance(options[0]).label,'87% of value');
+assert.equal(display.glance(options[1]).tone,'high');
+assert.equal(display.glance(options[1]).label,'144% of value');
+assert.equal(display.glance(options[2]).label,'Partial estimate');
+assert.deepEqual(Array.from(display.select(options,{estimate:'estimated'}),r=>r.id),['good','high','partial']);
+assert.deepEqual(Array.from(display.select(options,{estimate:'below'}),r=>r.id),['good']);
+assert.deepEqual(Array.from(display.select(options,{era:'pre2000'}),r=>r.id),['good']);
+assert.deepEqual(Array.from(display.select(options,{estimate:'below',era:'pre2000'}),r=>r.id),['good']);
+options[0].buying_order=null;
+assert.deepEqual(Array.from(display.select(options,{estimate:'below'}),r=>r.id),[]);
+assert.equal(display.glance(quick('zero','0',true,null)).tone,'unknown');

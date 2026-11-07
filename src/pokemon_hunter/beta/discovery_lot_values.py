@@ -16,7 +16,9 @@ from . import (
     lot_calculator,
     lot_guides,
     lot_hunt_contract,
+    lot_recommendations,
     shopping_index,
+    species_scope,
 )
 
 
@@ -46,6 +48,7 @@ def project(actor, raws, rows, *, details=None, summaries=None, _checks=None):
     with lot_calculator.price_snapshots.selected(p["id"] for p in entries):
         records = lot_calculator.retained_records()
     sources = {raw.get("itemId"): raw for raw in raws}
+    release_dates = species_scope.release_dates()
     for row in rows:
         raw = sources[row["item_id"]]
         entries = catalogs[raw["itemId"]] if indexed else fallback
@@ -167,6 +170,9 @@ def project(actor, raws, rows, *, details=None, summaries=None, _checks=None):
         )
         for lane, key in (("auction", "bid_difference"), ("buy_it_now", "buy_now_difference")):
             row["lot_value"][key] = assessment["benchmark_costs"][lane]["difference"]
+        row["lot_value"]["all_pre_2000"] = lot_recommendations.pre_2000_contents(
+            row["lot_value"], names, release_dates
+        )
     rank(rows, raws)
     refs = [
         ref
@@ -348,7 +354,7 @@ def compact(value):
 def bound_list(result):
     """Fit the authenticated envelope, including worst-case quoted titles and repeated native cohorts."""
     limit = 120 * 1024
-    if len(json.dumps(result).encode()) <= limit:
+    if len(json.dumps(result, separators=(",", ":")).encode()) <= limit:
         return
     # Keep all offers and all financial fields. Factor repeated cohort and source
     # metadata out of unusually dense lists. The full labels stay in local evidence.
@@ -367,8 +373,6 @@ def bound_list(result):
             "revealed",
         ):
             row.pop(key, None)
-        row["title"] = row["title"][:60]
-        row["seller_image"] = None
         value = row.get("lot_value")
         if not value:
             continue
@@ -399,5 +403,12 @@ def bound_list(result):
         value["cohort_rows"] = groups
     result["cohort_sources"] = [dict(ref) for ref in dependencies]
     result["cohort_labels"] = list(labels)
+    # Preserve seller thumbnails. Only unusually long titles are shortened if
+    # metadata factoring still exceeds the actual compact JSON envelope.
+    for maximum in (160, 60):
+        if len(json.dumps(result, separators=(",", ":")).encode()) <= limit:
+            return
+        for row in result["results"]:
+            row["title"] = row["title"][:maximum]
     if len(json.dumps(result, separators=(",", ":")).encode()) > limit:
         raise ValueError("Hunt summary exceeded the supported response limit")

@@ -53,7 +53,7 @@ def test_forty_offers_preserve_assessments_and_expand_locally(env, prices):
         assert {c["name"]: c["quantity"] for c in full["cards"]} == {"Charizard": 2, "Blastoise": 1}
     assert {r["value_order"]["combined"]["group"] for r in detailed} == {"partial", "unknown_cost"}
     assert len(env.calls) == 5
-    assert len(json.dumps(result).encode()) < 120 * 1024
+    assert len(json.dumps(result, separators=(",", ":")).encode()) < 120 * 1024
     row = detailed[0]
 
     def expand():
@@ -136,7 +136,7 @@ def test_dense_native_list_preserves_cohorts_and_ranks_under_serialization_cap()
 
     rows = []
     for i in range(40):
-        row = dict(title="🌊" * 500, seller_image=None, id=str(i))
+        row = dict(title="🌊" * 500, seller_image="https://i.ebayimg.com/" + "a" * 491, id=str(i))
         rows.append(row)
         if i >= 2:
             continue
@@ -162,6 +162,9 @@ def test_dense_native_list_preserves_cohorts_and_ranks_under_serialization_cap()
     response = dict(results=rows, authority=dict(binding="authored"))
     discovery_lot_values.bound_list(response)
     assert len(json.dumps(response, ensure_ascii=False, separators=(",", ":")).encode()) <= 120 * 1024
+    assert len(rows) == 40
+    assert all(row["seller_image"] == "https://i.ebayimg.com/" + "a" * 491 for row in rows)
+    assert len(json.dumps(response, separators=(",", ":")).encode()) <= 120 * 1024
     for row in rows[:2]:
         packed = row["lot_value"]["cohort_rows"]
         assert len(packed) == 200 and all(r[-2:] == [i + 1, i + 1] for i, r in enumerate(packed))
@@ -225,3 +228,18 @@ def test_explicit_all_cards_set_edition_header_is_scoped(env, entries):
     assert full["physically_selected_quantity"] == 1
     assert full["contents"][0]["clues"]["edition"] == "unlimited"
     assert any("SET / EDITION" in m["text"] for m in full["contents"][0]["scope_mentions"])
+
+
+def test_metadata_compaction_preserves_listing_photos_and_normal_titles():
+    title = "Original seller title with card names, set and printing details preserved in full"
+    photo = "https://i.ebayimg.com/images/g/authored/s-l225.jpg"
+    rows = [
+        dict(id=str(i), title=title, seller_image=photo, identity_candidates=["unused" * 1000])
+        for i in range(40)
+    ]
+    response = dict(results=rows)
+    assert len(json.dumps(response).encode()) > 120 * 1024
+    discovery_lot_values.bound_list(response)
+    assert len(response["results"]) == 40
+    assert all(row["seller_image"] == photo and row["title"] == title for row in rows)
+    assert len(json.dumps(response, separators=(",", ":")).encode()) < 120 * 1024

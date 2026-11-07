@@ -38,6 +38,8 @@ PAGE_FIELDS = shopping_context.FIELDS | {
     "value_sort",
     "buying_mode",
     "value_basis",
+    "estimate_filter",
+    "era_filter",
     "scroll",
     "focus",
 }
@@ -71,6 +73,8 @@ def validate_page(raw):
         ("value_sort", {"best", "value", "ending", "total", "native"}),
         ("buying_mode", {"both", "auction", "buy_now"}),
         ("value_basis", {"all", "sold_estimate", "guide", "mixed", "native"}),
+        ("estimate_filter", {"all", "estimated", "below"}),
+        ("era_filter", {"all", "pre2000"}),
     ):
         if field in raw and raw[field] not in options:
             raise ValueError("Choose a supported Shopping option")

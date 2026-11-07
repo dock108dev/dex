@@ -92,3 +92,49 @@ def test_partial_native_and_unknown_shipping_never_get_whole_lot_ratio():
         ]
         ordered([row])
         assert row["buying_order"]["combined"]["price_to_guide"] is None
+
+
+def test_glance_estimate_ratios_and_short_contents():
+    row = offer("value", "87")
+    row["lot_value"].update(
+        total="100", all_pre_2000=True, cards=[dict(name=n) for n in ("Lapras", "Ditto", "Zapdos", "Moltres")]
+    )
+    ordered([row])
+    glance = row["buying_order"]["combined"]
+    assert glance["price_to_estimate"] == "0.87"
+    assert glance["estimate_complete"] and glance["all_pre_2000"]
+    assert glance["contents"] == "Lapras, Ditto, Zapdos +1 more"
+    row["lot_value"].update(total=None, subtotal="100")
+    ordered([row])
+    assert row["buying_order"]["combined"]["estimate_amount"] == "100"
+    assert row["buying_order"]["combined"]["price_to_estimate"] is None
+
+
+def test_pre2000_requires_complete_contents_and_release_evidence():
+    value = dict(
+        cards=[dict(printing_id="one", quantity=2)],
+        stated_quantity=2,
+        contents_state="resolved",
+        unidentified_quantity=0,
+        quantity_issues=[],
+    )
+    entries = {"one": dict(set_id="fossil", language="en", edition="unlimited", finish="normal")}
+    dates = {"fossil": dict(end="1999-12-31")}
+
+    def check():
+        return lot_recommendations.pre_2000_contents(value, entries, dates)
+
+    assert check()
+    value["stated_quantity"] = 3
+    assert not check()
+    value["stated_quantity"] = 2
+    value["quantity_issues"] = ["conflicting quantity"]
+    assert not check()
+    value["quantity_issues"] = []
+    entries["one"]["variant"] = '{"type":"normal","other":["anniversary-reprint"]}'
+    assert not check()
+    entries["one"]["variant"] = None
+    dates["fossil"]["end"] = "2000-01-01"
+    assert not check()
+    dates.clear()
+    assert not check()

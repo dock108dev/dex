@@ -160,10 +160,12 @@ def test_missing_unindexed_species_and_image_failure_remain_visible(visual, monk
 def test_safe_return_and_authority_filters_are_bounded(visual):
     from pokemon_hunter.beta import navigation
 
-    target = "/shopping/?q=Alakazam&set_id=Base+Set+2&intent=deals&scope=all&result_filter=unpriced&focus=offer-abc123&scroll=340"
+    target = "/shopping/?q=Alakazam&set_id=Base+Set+2&intent=deals&scope=all&result_filter=unpriced&estimate_filter=estimated&era_filter=pre2000&focus=offer-abc123&scroll=340"
     assert navigation.authorize_destination(visual["actor"], target) == target
     for bad in (
         "/shopping/?item_title=Restricted",
+        "/shopping/?estimate_filter=guessed",
+        "/shopping/?era_filter=vintage",
         "/shopping/?focus=javascript:bad",
         "/shopping/?scroll=-1",
         "/shopping/?run_id=wrong",

@@ -2,7 +2,7 @@
 {% block title %}Shopping · Dex{% endblock %}
 {% block body_class %}discovery-page{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="/collection-assets/discovery.css?v=20261104-lv06">
+<link rel="stylesheet" href="/collection-assets/discovery.css?v=20261107-clean-lots">
 <div class="discovery" id="discovery">
   <div class="discovery-heading">
     <h1>Find lots</h1>
@@ -64,7 +64,12 @@
     <div class="discovery-filters"><div hidden><label for="discovery-filter">Show<select id="discovery-filter"><option value="all">All results</option><option value="below">Comparable · below reference</option><option value="conditional">Conditional comparisons</option><option value="unpriced">Unpriced or ambiguous</option></select></label></div><p id="discovery-shown" class="field-help" role="status"></p></div>
     </div>
     <div class="results-notes"><p class="browse-note">Ranked within this search. Prices exclude tax; auction bids can rise.</p><details class="results-guidance"><summary>About these results</summary><p id="discovery-limitation"></p></details></div>
-    <details class="result-settings"><summary>Filter and sort</summary><div class="discovery-controls lot-result-controls">
+    <div class="lot-quick-filters" aria-label="Filter buying options">
+      <label for="lot-estimate-filter">Value<select id="lot-estimate-filter"><option value="all">All lots</option><option value="estimated">With estimates</option><option value="below">Below estimated value</option></select></label>
+      <label class="lot-era-toggle" for="lot-era-filter"><input type="checkbox" id="lot-era-filter" aria-describedby="lot-era-help">Pre-2000 only</label>
+      <span id="lot-era-help" class="field-help">Known contents from sets released before 2000.</span>
+    </div>
+    <details class="result-settings"><summary>More filters</summary><div class="discovery-controls lot-result-controls">
       <label for="lot-time-window">Auctions ending within<select id="lot-time-window"><option value="24">24 hours</option><option value="48">48 hours</option><option value="72" selected>3 days</option></select></label>
       <label for="lot-buying-mode">Buying option<select id="lot-buying-mode"><option value="both">Auctions + Buy It Now</option><option value="auction">Auctions · up to 72 hours</option><option value="buy_now">Available Buy It Now offers</option></select></label>
       <label for="lot-value-sort">Sort results<select id="lot-value-sort"><option value="best">Best matches</option><option value="value">Reference compared with cost</option><option value="ending">Ending soonest</option><option value="native">Publisher guide contents · separate cohorts, not savings</option></select></label>
@@ -82,8 +87,8 @@
   <noscript><p class="discovery-note">Enable JavaScript to use visual search and discovery. The <a href="/shopping/calculator/">listing/lot calculator</a> remains available.</p></noscript>
 </div>
 <script src="/collection-assets/listing-interpretation.js?v=20261029" defer></script>
-<script src="/collection-assets/listing-time.js?v=20261104-lv06" defer></script>
-<script src="/collection-assets/discovery-display.js?v=20261104-lv06" defer></script>
-<script src="/collection-assets/discovery-values.js?v=20261104-lv06" defer></script>
-<script src="/collection-assets/discovery.js?v=20261104-lv06" defer></script>
+<script src="/collection-assets/listing-time.js?v=20261107-clean-lots" defer></script>
+<script src="/collection-assets/discovery-display.js?v=20261107-clean-lots" defer></script>
+<script src="/collection-assets/discovery-values.js?v=20261107-clean-lots" defer></script>
+<script src="/collection-assets/discovery.js?v=20261107-clean-lots" defer></script>
 {% endblock %}

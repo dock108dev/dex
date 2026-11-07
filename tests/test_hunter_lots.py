@@ -12,6 +12,7 @@ from pokemon_hunter.beta import (
     collection,
     discovery,
     hunter,
+    species_scope,
     store,
 )
 from pokemon_hunter.beta import (
@@ -71,6 +72,7 @@ def local(monkeypatch, entries):
     state = dict(raw=raw(), active=True, references=True, created=time.monotonic() - 60)
     monkeypatch.setattr(store, "verified", lambda a: a)
     monkeypatch.setattr(store, "rows", lambda *a, **kw: [dict(id="pokemon")])
+    monkeypatch.setattr(species_scope, "release_dates", lambda: {})
     monkeypatch.setattr(collection, "catalog", lambda *a, **kw: deepcopy(entries))
     monkeypatch.setattr(collection, "generation", lambda *a: 1)
     monkeypatch.setattr(lot, "retained_records", lambda: [])

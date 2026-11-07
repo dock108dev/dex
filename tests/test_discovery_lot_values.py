@@ -99,3 +99,14 @@ def test_local_value_display_contract():
         capture_output=True,
         text=True,
     )
+
+
+def test_complete_pre2000_contents_survive_in_recommendation(local, monkeypatch):
+    from pokemon_hunter.beta import lot_recommendations, species_scope
+
+    monkeypatch.setattr(species_scope, "release_dates", lambda: {"base": {"end": "1999-12-31"}})
+    row = project(local)
+    assert row["lot_value"]["all_pre_2000"]
+    lot_recommendations.rank([row])
+    assert row["buying_order"]["combined"]["all_pre_2000"]
+    assert not project(local, title="Pokemon lot of 37 cards")["lot_value"]["all_pre_2000"]

@@ -15,7 +15,7 @@
   let catalogSequence = 0, catalogTimer = null, localSets = [], catalogOffset = 0, catalogHasMore = false;
   const generation = context.generation;
   let goalVersion = initial.version || null;
-  let focusResults = false, windowMinute = -1, validatingRun = false, lastRunCheck = 0;
+  let focusResults = false, windowMinute = -1, validatingRun = false, loadingValues = false, lastRunCheck = 0;
   let timer = null, acquiring = false, stopWanted = false, ready = Boolean(initial.provider?.enabled && initial.provider?.configured), revoked = false;
   let actionId = initial.request_id || null, uncertain = Boolean(actionId), admissionPending = false;
   let deadline = Infinity, deadlineRun = null, sourceState = null, sourceUnavailable = false, checkingSources = false, lifecycleTimer = null;
@@ -52,9 +52,9 @@
     $('discovery-status').textContent = message;
     $('discovery-status').dataset.error = error ? 'true' : 'false';
   }
-  async function request(url, body, action = null) {
+  async function request(url, body, action = null, timeoutMs = 12000) {
     const controller=window.AbortController ? new window.AbortController() : null;
-    const timeout=controller ? setTimeout(()=>controller.abort(),12000) : null;
+    const timeout=controller ? setTimeout(()=>controller.abort(),timeoutMs) : null;
     let response;
     try { response = await fetch(url, {...(controller ? {signal:controller.signal} : {}),method:body === undefined ? 'GET' : 'POST',credentials:'same-origin',redirect:'error',cache:'no-store',headers:{'X-Dex-Shopping-Binding':binding,...(action ? {'X-Dex-Shopping-Action':action} : {}),...(generation == null ? {} : {'X-Dex-Shopping-Generation':String(generation)}),...(body === undefined ? {} : {'Content-Type':'application/json','X-CSRFToken':csrf()})},...(body === undefined ? {} : {body:JSON.stringify(body)})});
     if (response.status === 403 || response.status === 401) {
@@ -143,7 +143,7 @@
   }
   function rememberChoices(extra = {}, replace = true) {
     const selected = choices(), url = new URL(location.href);url.searchParams.delete('missing');
-    const fields = {prefer_vintage:selected.prefer_vintage ? '1' : '0',q:selected.query,set_id:selected.set_id,intent,missing_basis:selected.missing_basis,scope:selected.focus,budget:selected.budget,budget_mode:selected.budget_mode,budget_rule:selected.budget_rule,budget_value_basis:selected.budget_value_basis,product_type:selected.product_type,sort:selected.sort,english_vintage:selected.english_vintage ? '1' : '0',result_filter:$('discovery-filter').value,...(window.DexLotValues ? {time_window:$('lot-time-window').value,value_sort:$('lot-value-sort').value,buying_mode:$('lot-buying-mode').value,value_basis:$('lot-value-basis')?.value || 'all'} : {}),species:target.species,group:target.group_id,child:target.printing_id,goal:selected.goal_id,version:selected.goal_version,generation,...extra};
+    const fields = {prefer_vintage:selected.prefer_vintage ? '1' : '0',q:selected.query,set_id:selected.set_id,intent,missing_basis:selected.missing_basis,scope:selected.focus,budget:selected.budget,budget_mode:selected.budget_mode,budget_rule:selected.budget_rule,budget_value_basis:selected.budget_value_basis,product_type:selected.product_type,sort:selected.sort,english_vintage:selected.english_vintage ? '1' : '0',result_filter:$('discovery-filter').value,...(window.DexLotValues ? {time_window:$('lot-time-window').value,value_sort:$('lot-value-sort').value,buying_mode:$('lot-buying-mode').value,value_basis:$('lot-value-basis')?.value || 'all',estimate_filter:$('lot-estimate-filter').value,era_filter:$('lot-era-filter').checked?'pre2000':'all'} : {}),species:target.species,group:target.group_id,child:target.printing_id,goal:selected.goal_id,version:selected.goal_version,generation,...extra};
     for (const [key,value] of Object.entries(fields)) {if (value == null || value === '') url.searchParams.delete(key);else url.searchParams.set(key,String(value));}
     if (replace) history.replaceState(null,'',url.pathname + url.search);
     return url.pathname + url.search;
@@ -269,10 +269,10 @@
     return removed;
   }
   async function checkSources() {
-    if (checkingSources || revoked || !run || !sourceUnavailable && !run.results?.some(result => managed(result.reference) || window.DexLotValues?.references(result).some(managed))) return;
-    const active = run, token = sequence;let timeout, recovered = false;checkingSources = true;
+    if (checkingSources || validatingRun || loadingValues || acquiring || revoked || !run || !sourceUnavailable && !run.results?.some(result => managed(result.reference) || window.DexLotValues?.references(result).some(managed))) return;
+    const active = run, token = sequence;let recovered = false;checkingSources = true;
     try {
-      const state = await Promise.race([request('/api/shopping/price-source-status/'),new Promise((resolve,reject) => {timeout = setTimeout(() => reject(new Error('Reference lifecycle unavailable')),2000);})]);
+      const state = await request('/api/shopping/price-source-status/',undefined,null,2000);
       if (run !== active || sequence !== token || revoked) return;
       if (!Array.isArray(state.versions) || !Array.isArray(state.sources)) throw new Error('Reference lifecycle unavailable');
       recovered = sourceUnavailable;sourceState = state;sourceUnavailable = false;
@@ -280,7 +280,7 @@
       if (run !== active || sequence !== token || revoked) return;
       sourceUnavailable = true;
     } finally {
-      clearTimeout(timeout);checkingSources = false;
+      checkingSources = false;
       if (run === active && sequence === token && !revoked) {
         if (pruneLocal()) renderCards();
         // A successful lifecycle check can recover values withheld during local
@@ -290,7 +290,7 @@
     }
   }
   async function revalidateRun(withhold = false) {
-    if (validatingRun || acquiring || uncertain || revoked || stopWanted || !run?.results?.length) return;
+    if (validatingRun || checkingSources || loadingValues || acquiring || uncertain || revoked || stopWanted || !run?.results?.length) return;
     const active=run, token=sequence;validatingRun=true;lastRunCheck=Date.now();
     if (withhold) {for (const row of active.results) {delete row.lot_value;delete row.value_order;delete row.buying_order;}renderCards();}
     try {
@@ -339,8 +339,11 @@
     const identified=value?.physically_selected_quantity ?? value?.identified_quantity ?? 0;
     const contents=recommendation?.contents && recommendation.contents!=='Contents not confirmed'?recommendation.contents:identified?`${identified} identified cards`:'Contents need checking';
     const reason=recommendation?.reason || 'Value not established; check the contents before buying.';
+    const glance=window.DexLotValues.glance(result,mode);
+    const badge=`<div class="lot-value-badge tone-${glance.tone}"><strong>${esc(glance.label)}</strong>${glance.verdict?`<span>${esc(glance.verdict)}</span>`:''}</div>`;
+    const estimate=glance.amount!=null?`<div class="lot-estimate"><span>${glance.complete?'Estimated value':'Known cards only'}</span><strong>${esc(money(glance.amount))}</strong><small>Ungraded guide</small></div>`:'';
     const detail=window.DexLotValues?.html(result,{esc,money,link}) || '';
-    return `<article class="discovery-card compact-lot" id="offer-${esc(result.id)}" tabindex="-1" data-result="${esc(result.id)}" data-offer="${esc(result.id)}"><div class="offer-image" data-source="${esc(art)}">${art?`<img src="${esc(art)}" alt="Seller photo" loading="lazy" decoding="async" referrerpolicy="no-referrer">`:''}<span class="offer-image-fallback"${art?' hidden':''}>No photo</span></div><div class="lot-summary"><h3>${esc(result.title)}</h3><p class="lot-contents">${esc(contents)}</p><p class="lot-reason">${esc(reason)}</p>${lane==='auction'?`<p data-auction-end="${esc(result.ends_at || '')}">${esc(window.DexDiscoveryDisplay?.auctionTime(result.ends_at) || 'End time unknown')}</p>`:''}</div><div class="lot-buy"><strong>${esc(price)}</strong><span>${lane==='auction'?'Current bid · ':''}${esc(priceNote)}</span>${url?`<a class="button-link" href="${esc(url)}" target="_blank" rel="noopener noreferrer" aria-label="Open seller listing on eBay">View on eBay</a>`:''}</div><details class="lot-more"><summary>Details</summary>${detail}<p>Observed ${esc(result.observed_at?new Date(result.observed_at).toLocaleString():'time unknown')}.</p><a class="review-offer" aria-label="Assess lot" data-review-id="${esc(result.id)}" href="/shopping/check/?discovery_run=${encodeURIComponent(run.run_id)}&amp;item_id=${encodeURIComponent(result.id)}">Check or correct contents</a></details></article>`;
+    return `<article class="discovery-card compact-lot" id="offer-${esc(result.id)}" tabindex="-1" data-result="${esc(result.id)}" data-offer="${esc(result.id)}"><div class="offer-image" data-source="${esc(art)}">${art?`<img src="${esc(art)}" alt="Seller photo" loading="lazy" decoding="async" referrerpolicy="no-referrer">`:''}<span class="offer-image-fallback"${art?' hidden':''}>No photo</span></div><div class="lot-summary"><h3>${esc(result.title)}</h3><p class="lot-contents">${identified?`${identified} cards · `:''}${esc(contents)}</p>${badge}${lane==='auction'?`<p data-auction-end="${esc(result.ends_at || '')}">${esc(window.DexDiscoveryDisplay?.auctionTime(result.ends_at) || 'End time unknown')}</p>`:''}</div><div class="lot-buy"><div class="lot-price-pair"><div class="lot-offer"><span>${lane==='auction'?'Current bid':'Price + shipping'}</span><strong>${esc(price)}</strong></div>${estimate}</div><span>${lane==='auction'?'Current bid · ':''}${esc(priceNote)}</span>${url?`<a class="button-link" href="${esc(url)}" target="_blank" rel="noopener noreferrer" aria-label="Open seller listing on eBay">View on eBay</a>`:''}</div><details class="lot-more"><summary>Details</summary><p>${esc(reason)}</p>${detail}<p>Observed ${esc(result.observed_at?new Date(result.observed_at).toLocaleString():'time unknown')}.</p><a class="review-offer" aria-label="Assess lot" data-review-id="${esc(result.id)}" href="/shopping/check/?discovery_run=${encodeURIComponent(run.run_id)}&amp;item_id=${encodeURIComponent(result.id)}">Check or correct contents</a></details></article>`;
   }
 
   async function expandEvidence(panel) {
@@ -396,8 +399,8 @@
     const results = Array.isArray(run?.results) ? run.results : [];
     const filter = $('discovery-form').dataset.lotSearch === 'true' ? 'all' : $('discovery-filter').value;
     let rows = results.filter(result => filter === 'all' || filter === 'below' && below(result) || filter === result.classification);
-    if (window.DexLotValues) rows = window.DexLotValues.select(rows,{hours:$('lot-time-window').value,mode:$('lot-buying-mode').value,sort:$('lot-value-sort').value,basis:$('lot-value-basis')?.value || 'all'});
-    $('discovery-shown').textContent = `${rows.length} options`;
+    if (window.DexLotValues) rows = window.DexLotValues.select(rows,{hours:$('lot-time-window').value,mode:$('lot-buying-mode').value,sort:$('lot-value-sort').value,basis:$('lot-value-basis')?.value || 'all',estimate:$('lot-estimate-filter').value,era:$('lot-era-filter').checked?'pre2000':'all'});
+    $('discovery-shown').textContent = `${rows.length} ${rows.length===1?'option':'options'}`;
     const groups = window.DexLotValues?.groups(rows,{mode:$('lot-buying-mode').value,sort:$('lot-value-sort').value});
     const seen = new Set();
     const grouped = groups?.map(group => {
@@ -408,7 +411,7 @@
         return card(row).replace(`data-result="${esc(row.id)}"`,`data-result="${esc(key)}"`).replace(`id="offer-${esc(row.id)}"`,`id="offer-${esc(duplicate ? key : row.id)}"`);
       }).join('');
     }).join('');
-    const markup = (grouped ?? rows.map(card).join('')) || `<div class="discovery-empty"><h3>${results.length ? 'No results match this filter' : acquiring ? 'Searching this small batch…' : 'No listings to show'}</h3><p>${results.length ? 'Change the time window or buying option to see other received listings.' : acquiring ? 'You can stop acquisition at any time.' : 'Try different keywords or filters, or choose More results when available. No new search starts automatically.'}</p></div>`;
+    const markup = (grouped ?? rows.map(card).join('')) || `<div class="discovery-empty"><h3>${results.length ? validatingRun || loadingValues ? 'Checking current estimates…' : 'No results match this filter' : acquiring ? 'Searching this small batch…' : 'No listings to show'}</h3><p>${results.length ? 'Broaden Value or turn off Pre-2000 only to see more of this search. Unknown contents are excluded by Pre-2000 only.' : acquiring ? 'You can stop acquisition at any time.' : 'Try different keywords or filters, or choose More results when available. No new search starts automatically.'}</p></div>`;
     if (window.DexDiscoveryDisplay) window.DexDiscoveryDisplay.patch($('discovery-cards'),markup);else $('discovery-cards').innerHTML = markup;
     if ($('discovery-form').dataset.lotSearch !== 'true') $('discovery-cards').querySelectorAll('article[data-result]').forEach(card => { const id = run?.run_id; window.DexInterpretation?.mount(card, {kind:'discovery',run_id:id,result_id:card.dataset.result}, () => currentAuthority() && run?.run_id === id && !['stopped','expired'].includes(run?.state) && !changed()); });
     $('discovery-cards').querySelectorAll('[data-review-id]').forEach(anchor => {if (anchor.dataset.reviewBound) return;anchor.dataset.reviewBound = '1';anchor.addEventListener('click',() => {anchor.href = '/shopping/check/?' + new URLSearchParams({discovery_run:run.run_id,item_id:anchor.dataset.reviewId,return:reviewReturn(anchor.dataset.reviewId)});});});
@@ -446,8 +449,8 @@
     }
   }
   async function loadValues() {
-    if (!run || acquiring || revoked || stopWanted || run.values_checked) return;
-    const active = run, token = sequence;active.values_checked = true;
+    if (!run || loadingValues || acquiring || revoked || stopWanted || run.values_checked) return;
+    const active = run, token = sequence;active.values_checked = true;loadingValues = true;
     $('lot-values-status').textContent = 'Checking ungraded values from identified seller text…';
     $('lot-values-reload').hidden = true;
     try {
@@ -462,7 +465,7 @@
       for (const result of run.results || []) result.lot_value = {reason:'Local value check unavailable. Reload local values.',references:[],cards:[]};
       $('lot-values-status').textContent = error.message;
       $('lot-values-reload').hidden = false;renderCards();
-    }
+    } finally {loadingValues = false;}
   }
   function rememberRun(id) {
     if (typeof id !== 'string' || !/^[0-9a-f-]{36}$/i.test(id)) return;
@@ -564,10 +567,12 @@
   $('discovery-stop').addEventListener('click',stop);
   $('discovery-next').addEventListener('click',() => start(true));
   if (window.DexLotValues) {
-    for (const [id,field] of [['lot-time-window','time_window'],['lot-value-sort','value_sort'],['lot-buying-mode','buying_mode'],['lot-value-basis','value_basis']]) {
+    for (const [id,field] of [['lot-time-window','time_window'],['lot-value-sort','value_sort'],['lot-buying-mode','buying_mode'],['lot-value-basis','value_basis'],['lot-estimate-filter','estimate_filter']]) {
       if (initial[field]) { const value = field === 'time_window' && ['all','168'].includes(initial[field]) ? '72' : field === 'value_sort' && initial[field] === 'total' ? 'value' : initial[field]; $(id).value = value; }
       $(id).addEventListener('change',() => {renderCards();rememberChoices();});
     }
+    $('lot-era-filter').checked = initial.era_filter === 'pre2000';
+    $('lot-era-filter').addEventListener('change',() => {renderCards();rememberChoices();});
     $('lot-values-reload').addEventListener('click',() => {if(run) {run.values_checked = false;loadValues();}});
   }
   $('discovery-filter').addEventListener('change',() => {renderCards();rememberChoices();});
@@ -589,7 +594,7 @@
   window.addEventListener('focus',()=>revalidateRun(true));
   window.addEventListener('popstate',() => location.reload());
   document.addEventListener('visibilitychange',() => {if (pruneLocal()) renderCards();if (!document.hidden) {checkSources();revalidateRun(true);}});
-  lifecycleTimer = setInterval(() => {const minute = Math.floor(Date.now() / 60000);if (pruneLocal() || window.DexLotValues && run && minute !== windowMinute) {windowMinute = minute;renderCards();}window.DexDiscoveryDisplay?.tick($('discovery-cards'));checkSources();if (!document.hidden && Date.now()-lastRunCheck>=5000) revalidateRun();},1000);
+  lifecycleTimer = setInterval(() => {const minute = Math.floor(Date.now() / 60000);if (pruneLocal() || window.DexLotValues && run && minute !== windowMinute) {windowMinute = minute;renderCards();}window.DexDiscoveryDisplay?.tick($('discovery-cards'));if (!document.hidden && Date.now()-lastRunCheck>=5000) revalidateRun();else checkSources();},1000);
   for (const [field,id] of Object.entries({q:'discovery-query',scope:'discovery-focus',missing_basis:'discovery-missing-basis',budget:'discovery-budget',budget_mode:'discovery-budget-mode',budget_rule:'discovery-budget-rule',budget_value_basis:'discovery-budget-value-basis',product_type:'discovery-product-type',sort:'discovery-sort'})) if (initial[field] !== undefined) $(id).value = initial[field];
   if (intent === 'missing' && !initial.scope && !initial.goal) $('discovery-focus').value = 'kanto';
   if (initial.prefer_vintage !== undefined) $('discovery-prefer-vintage').checked = initial.prefer_vintage === '1';

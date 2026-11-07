@@ -1145,3 +1145,22 @@ Standalone official-detail loads under ordinary usage settings capture their own
 Indented numbered-card attribute lists attach to their own explicit card heading. Dated headings do not become quantities; explicit copy counts retain priority. Literal multi-finish aspect lists remain choice sets and cannot override per-card finish evidence. Separate numbered sections retain their allocations; broader matching repetitions do not add copies. Conflicts and unsupported sections remain unresolved. Native guide evidence is shown beside the selected card even when no normalized reference exists.
 
 Standalone official details now use the same seller-selected contents projection as automatic Hunt details. Reviewed comparisons and local Back/return carry the separately labelled native benchmark as well as the strict assessment; neither route exposes save payloads or refreshes prices.
+
+### Quick lot filters and value badges
+
+The results toolbar offers All lots, With estimates, and Below estimated value.
+With estimates retains partial estimates, explicitly labeled as known cards only.
+Below estimated value requires a whole-lot estimate and known price plus shipping;
+unknown shipping and partial contents never produce a discount badge. Green means
+at most 90% of the estimate, amber is above 90% but below 100%, and muted red is
+100% or more. These are ungraded reference comparisons, before tax, not profits.
+
+Pre-2000 only requires all seller-stated physical contents to be identified with
+reconciled quantities and retained catalog evidence for set releases before 2000.
+Unknown dates, mixed eras, unresolved contents, special reprints and rolling promo
+series without individual release evidence are excluded. Set release evidence is
+not authentication or a guarantee of a particular printing's manufacture date.
+Both quick filters operate on received results without acquiring more listings,
+and survive navigation through temporary review. Details retain the full evidence;
+rows show three card names, a count of remaining names, seller photo, price,
+estimated value and a badge. Response compaction preserves seller image URLs.

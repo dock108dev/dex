@@ -4,6 +4,38 @@ import re
 import unicodedata
 from decimal import Decimal
 
+from . import market_identity
+
+
+def pre_2000_contents(value, entries, dates):
+    """Require complete contents and retained release evidence, never a title keyword.
+
+    Dates describe original set releases. Special/reprint variants and rolling
+    promo series cannot inherit that date without their own release evidence.
+    """
+    cards = value.get("cards") or []
+    if (
+        not cards
+        or value.get("contents_state") != "resolved"
+        or value.get("unidentified_quantity") != 0
+        or value.get("quantity_issues")
+        or sum(c["quantity"] for c in cards) != value.get("stated_quantity")
+    ):
+        return False
+    for card in cards:
+        printing = entries[card["printing_id"]]
+        released = dates.get(printing["set_id"])
+        if not released or released["end"] >= "2000-01-01":
+            return False
+        if not any(
+            market_identity.compatible(printing, edition, finish, shadowless=shadowless)
+            for edition in ("unlimited", "first_edition")
+            for finish in ("normal", "holo")
+            for shadowless in (False, True)
+        ):
+            return False
+    return True
+
 
 def rank(rows, choices=None):
     def words(text):
@@ -19,7 +51,11 @@ def rank(rows, choices=None):
     buckets = {"auction": [], "buy_it_now": [], "combined": []}
     for row in rows:
         value = row.get("lot_value") or {}
-        names = ", ".join(dict.fromkeys(c.get("name", "") for c in value.get("cards", [])))
+        unique_names = list(dict.fromkeys(c.get("name", "") for c in value.get("cards", []) if c.get("name")))
+        names = ", ".join(unique_names)
+        contents = ", ".join(unique_names[:3])
+        if len(unique_names) > 3:
+            contents += f" +{len(unique_names) - 3} more"
         named = words(names)
         title = words(row.get("title", ""))
         random_contents = bool(title & {"mystery", "random", "custom", "proxy", "replica", "repack"})
@@ -47,6 +83,21 @@ def rank(rows, choices=None):
             if score is None and guide_ratio is not None:
                 tier = Decimal("0.5") if guide_ratio < 1 else Decimal("2.5")
             over = baseline is not None and cost is not None and cost > baseline
+            estimate = value.get("total") or value.get("subtotal")
+            estimate_complete = value.get("total") is not None
+            if guide_value is not None and (
+                estimate is None or not estimate_complete and guide.get("complete")
+            ):
+                estimate = str(guide_value)
+                estimate_complete = bool(guide.get("complete"))
+            estimate_ratio = (
+                cost / Decimal(str(estimate))
+                if estimate is not None
+                and Decimal(str(estimate)) > 0
+                and estimate_complete
+                and cost is not None
+                else None
+            )
             reason = (
                 "Complete card reference exceeds price + shipping; tax still to check."
                 if tier == 0
@@ -69,7 +120,11 @@ def rank(rows, choices=None):
             recommendation = dict(
                 rank=None,
                 reason=reason,
-                contents=names[:160] or "Contents not confirmed",
+                contents=contents or "Contents not confirmed",
+                all_pre_2000=bool(value.get("all_pre_2000")),
+                estimate_amount=str(estimate) if estimate is not None else None,
+                estimate_complete=estimate_complete,
+                price_to_estimate=str(estimate_ratio) if estimate_ratio is not None else None,
                 lane=lane,
                 guide_amount=str(guide_value) if guide_value is not None else None,
                 guide_complete=bool(guide and guide.get("complete")),

@@ -49,16 +49,31 @@ window.DexLotValues = (() => {
     }
   }
   const laneFor = mode => mode === 'auction' ? 'auction' : mode === 'buy_now' ? 'buy_it_now' : null;
+  function glance(row, mode = 'both') {
+    const rec = row.buying_order?.[laneFor(mode) || 'combined'];
+    const amount = number(rec?.estimate_amount);
+    const ratio = number(rec?.price_to_estimate);
+    const complete = Boolean(rec?.estimate_complete);
+    const comparable = amount !== null && amount > 0 && complete && ratio !== null && ratio >= 0;
+    const tone = !comparable ? 'unknown' : ratio <= .9 ? 'good' : ratio < 1 ? 'fair' : 'high';
+    return {amount,complete,ratio:comparable ? ratio : null,tone,
+      label:comparable ? `${Math.round(ratio * 100)}% of value` : amount !== null ? complete ? 'Shipping unknown' : 'Partial estimate' : 'No estimate',
+      verdict:comparable ? tone === 'good' ? 'Below estimate' : tone === 'fair' ? 'Near estimate' : 'At or above estimate' : '',
+      pre2000:rec?.all_pre_2000 === true};
+  }
   const orderFor = (row, mode) => laneFor(mode) ? row.value_order?.lanes?.[laneFor(mode)] : row.value_order?.combined;
   const labels = {complete:'Complete assessments',partial:'Partially assessed',unknown_cost:'Unknown delivered cost',unpriced:'Assessed without a normalized value',unprocessed:'Unprocessed'};
-  function select(rows, {hours = '72', mode = 'both', sort = 'value', basis = 'all', now = Date.now()} = {}) {
+  function select(rows, {hours = '72', mode = 'both', sort = 'value', basis = 'all', estimate = 'all', era = 'all', now = Date.now()} = {}) {
     const cutoff = now + Math.min(Number(hours) || 72,72) * 3600000;
     const selected = rows.filter(row => {
       const end = Date.parse(row.ends_at);
       const lanes = row.value_order?.lanes;
       const bid = (lanes ? Boolean(lanes.auction) : auction(row)) && Number.isFinite(end) && end > now && end <= cutoff;
       const bin = (lanes ? Boolean(lanes.buy_it_now) : number(row.buy_now_price) !== null) && (!Number.isFinite(end) || end > now);
+      const summary = glance(row, mode);
       return (mode === 'auction' ? bid : mode === 'buy_now' ? bin : bid || bin) &&
+        (estimate === 'all' || estimate === 'estimated' && summary.amount !== null || estimate === 'below' && summary.ratio !== null && summary.ratio < 1) &&
+        (era === 'all' || summary.pre2000) &&
         (basis === 'all' || row.lot_value?.basis === basis || basis === 'native' && row.lot_value?.native_guides?.length);
     });
     // Money and tie-breaking are server-owned. No fallback financial ranking.
@@ -127,5 +142,5 @@ window.DexLotValues = (() => {
     if (costs) return Object.entries(costs).filter(([lane,c])=>c.base!=null || row.value_order?.lanes?.[lane]).map(([lane,c])=>`<div><dt>${lane==='auction'?'Current bid':'Buy It Now'}</dt><dd>${esc(money(c.base))}</dd></div><div><dt>Shipping</dt><dd>${esc(money(c.shipping))}</dd></div><div><dt>${lane==='auction'?'Bid':'Buy It Now'} + shipping · before tax</dt><dd>${esc(money(c.delivered_before_tax))}</dd></div>`).join('');
     return `<div><dt>${auction(row)?'Current bid':'Buy It Now'}</dt><dd>${esc(money(row.listing_price))}</dd></div><div><dt>Shipping</dt><dd>${esc(money(row.shipping))}</dd></div><div><dt>Delivered · before tax</dt><dd>${esc(money(row.delivered_total))}</dd></div>${auction(row)&&row.buy_now_price!=null?`<div><dt>Buy It Now</dt><dd>${esc(money(row.buy_now_price))}</dd></div><div><dt>Buy It Now + shipping · before tax</dt><dd>${esc(money(row.buy_now_delivered_total))}</dd></div>`:''}`;
   }
-  return {select, groups, progress, html, costs, references, invalidate, unpack};
+  return {select, glance, groups, progress, html, costs, references, invalidate, unpack};
 })();

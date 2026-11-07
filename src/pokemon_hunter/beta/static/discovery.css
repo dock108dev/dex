@@ -191,24 +191,42 @@
 
 /* Buying options lead; configuration and evidence stay on request. */
 .discovery-cards { grid-template-columns:minmax(0,1fr); gap:12px; }
-.discovery .compact-lot { display:grid; grid-template-columns:100px minmax(0,1fr) 190px; gap:12px 20px; align-items:start; }
+.discovery .compact-lot { display:grid; grid-template-columns:120px minmax(0,1fr) 260px; gap:12px 20px; align-items:start; border-radius:14px; }
 .compact-lot .offer-image { aspect-ratio:1; }
 .compact-lot .lot-summary h3 { font-size:1.05rem; margin:0 0 6px; }
 .compact-lot .lot-contents { color:var(--muted); }
 .compact-lot .lot-reason { margin-top:8px; }
 .compact-lot .lot-buy { display:flex; flex-direction:column; gap:6px; text-align:right; }
-.compact-lot .lot-buy strong { font-size:1.5rem; }
+.compact-lot .lot-buy strong { font-size:1.4rem; }
 .compact-lot .lot-buy span { font-size:.8rem; color:var(--muted); }
-.compact-lot .lot-buy a { background:#9d2032; color:white; border-radius:8px; padding:10px 12px; text-align:center; text-decoration:none; margin-top:4px; }
+.compact-lot .lot-buy a { background:#f5f6f8; color:#253444; border:1px solid #ced5dc; border-radius:8px; padding:10px 12px; text-align:center; text-decoration:none; margin-top:4px; }
 .compact-lot .lot-more { grid-column:2/-1; margin:0; }
 .compact-lot .lot-more>summary { padding:0; min-height:28px; }
 .result-settings,.search-settings { margin:8px 0; }
 .discovery .search-settings { margin-top:24px; border-top:1px solid var(--border); }
 .discovery-results-heading #discovery-scope { max-width:70ch; font-size:.85rem; }
 .discovery .advanced-preferences { margin-bottom:10px; }
-@media(max-width:600px) {
+.lot-quick-filters { display:flex; align-items:center; flex-wrap:wrap; gap:12px 20px; padding:14px 0; }
+.lot-quick-filters>label:first-child { display:flex; align-items:center; gap:10px; }
+.lot-quick-filters select { width:auto; margin:0; }
+.lot-quick-filters .lot-era-toggle { display:flex; align-items:center; gap:8px; min-height:44px; }
+.lot-era-toggle input { width:18px; height:18px; margin:0; accent-color:#294e44; }
+.lot-quick-filters .field-help { flex-basis:100%; margin:0; font-size:.8rem; }
+.compact-lot .lot-contents { margin:6px 0 12px; font-size:.86rem; line-height:1.5; }
+.lot-value-badge { display:inline-flex; flex-wrap:wrap; align-items:center; gap:4px 10px; padding:8px 12px; border:1px solid transparent; border-radius:8px; font-size:.84rem; }
+.lot-value-badge span { font-size:.75rem; }
+.lot-value-badge.tone-good { background:#e6f4ed; color:#195b3b; border-color:#bbdfcb; }
+.lot-value-badge.tone-fair { background:#fff5df; color:#705019; border-color:#e8d6ac; }
+.lot-value-badge.tone-high { background:#f8ebeb; color:#873c40; border-color:#ead1d3; }
+.lot-value-badge.tone-unknown { background:#f1f3f5; color:#59636e; }
+.lot-price-pair { display:flex; justify-content:flex-end; gap:20px; }
+.lot-price-pair>div { display:flex; flex-direction:column; gap:3px; }
+.lot-price-pair .lot-estimate { padding-left:18px; border-left:1px solid #dce1e6; }
+.lot-estimate small { color:var(--muted); font-size:.7rem; }
+@media(max-width:800px) {
   .discovery .compact-lot { grid-template-columns:72px minmax(0,1fr); gap:12px; }
   .compact-lot .lot-buy { grid-column:2; text-align:left; }
+  .lot-price-pair { justify-content:flex-start; }
   .compact-lot .lot-more { grid-column:1/-1; }
   .compact-lot .offer-image { aspect-ratio:1; }
 }

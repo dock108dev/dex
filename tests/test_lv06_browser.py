@@ -741,14 +741,59 @@ def test_local_source_busy_recovers_values_without_repeating_hunt(ui):
     page, base, model, calls, control, pending, errors = ui
     row = model["results"][0]
     row["buying_order"] = {
-        "combined": dict(rank=1, reason="Current authored guide estimate", contents="Lapras")
+        "combined": dict(
+            rank=1,
+            reason="Current authored guide estimate",
+            contents="Lapras",
+            estimate_amount="100",
+            estimate_complete=True,
+            price_to_estimate=".87",
+            all_pre_2000=True,
+        )
     }
     control["source_busy"] = True
     open_results(ui)
     expect(page.locator("#lot-values-reload")).to_be_visible()
-    expect(page.locator(".lot-reason")).not_to_contain_text("Current authored guide estimate")
+    expect(page.locator(".lot-value-badge")).not_to_contain_text("87% of value")
     control["source_busy"] = False
-    expect(page.locator(".lot-reason")).to_contain_text("Current authored guide estimate", timeout=10000)
+    expect(page.locator(".lot-value-badge")).to_contain_text("87% of value", timeout=10000)
     assert any("view=values" in url for method, url, _ in calls if method == "GET")
+    assert not any(method == "POST" for method, _, _ in calls)
+    assert not errors
+
+
+def test_quick_filters_and_background_checks_do_not_overlap(ui):
+    from playwright.sync_api import expect
+
+    page, base, model, calls, control, pending, errors = ui
+    model["results"][0]["buying_order"] = {
+        "combined": dict(
+            rank=1,
+            contents="Lapras",
+            estimate_amount="100",
+            estimate_complete=True,
+            price_to_estimate=".87",
+            all_pre_2000=True,
+        )
+    }
+    unknown = offer("unknown")
+    unknown["buying_order"] = {"combined": dict(rank=2, contents="Unknown")}
+    model["results"].append(unknown)
+    open_results(ui)
+    page.get_by_role("combobox", name="Value", exact=True).select_option("below")
+    page.get_by_role("checkbox", name="Pre-2000 only").check()
+    expect(page.locator("#discovery-shown")).to_have_text("1 option")
+    expect(page.locator(".lot-value-badge")).to_have_class("lot-value-badge tone-good")
+    control["hold"] = True
+    page.wait_for_timeout(7500)
+    assert len(pending) == 1, calls
+    before = len([url for _, url, _ in calls if "/price-source-status/" in url])
+    page.wait_for_timeout(1200)
+    assert len(pending) == 1
+    assert len([url for _, url, _ in calls if "/price-source-status/" in url]) == before
+    control["hold"] = False
+    handler, value = pending.pop()
+    handler.fulfill(json=value)
+    expect(page.locator("#discovery-shown")).to_have_text("1 option")
     assert not any(method == "POST" for method, _, _ in calls)
     assert not errors
