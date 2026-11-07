@@ -209,7 +209,8 @@ def changed_evidence(page, root, frozen):
     expect(out).to_be_hidden()
     withdrawn = compare()
     assert ("1 of 3" if frozen else "2 of 3") in withdrawn
-    assert ("Priced subtotal $10.00" if frozen else "Priced subtotal $14.00") in withdrawn
+    subtotal = "Condition-specific subtotal $10.00" if frozen else "Condition-specific subtotal $14.00"
+    assert subtotal in withdrawn
     assert "matching this printing and PSA 8" in withdrawn
     return dict(partial=partial, conflicting=conflict, expired=expired, withdrawn=withdrawn)
 
