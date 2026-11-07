@@ -1079,3 +1079,5 @@ Status publication serializes with worker content changes; session authorization
 preserves an active database read transaction and rechecks the session before return.
 
 Each assessed listing uses its own catalog candidates in catalog order, so list summaries and local evidence expansion have the same evidence identity regardless of the other selected lot. A changed evidence reply closes its disclosure before refreshing local status; it cannot reopen itself in a request loop. Explicit `SET / EDITION: All ...` seller headers apply to the supplied contents while literal card variants remain required.
+
+Per-card multiplicity accepts an explicit number followed by `x` or `×` after the card name, as well as a leading count. Multiplicity does not become a collector-number claim; invalid counts remain unresolved and explicit conflicting collector numbers remain conflicts.

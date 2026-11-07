@@ -67,6 +67,7 @@ def _quantity(text, *, title=False):
     if re.search(r"\b[0-9]+\s*[x×]{2,}", text, re.I):
         return None, "Explicit per-card multiplicity is malformed"
     explicit_patterns = (
+        r"(?<![\w/#.])([+-]?[0-9]+(?:\.[0-9]+)?)\s*[x×](?!\w)",
         r"^\s*(?:[-*•]\s+)?([+-]?[0-9]+(?:\.[0-9]+)?)\s+(?!cards?\b|total\b|lots?\b)[A-Za-z]",
         r"\(\s*([+-]?[0-9]+(?:\.[0-9]+)?)\s*\)\s*$",
         r"^\s*(?:[-*•]\s+)?([+-]?[0-9]+(?:\.[0-9]+)?)\s*[x×]+\b",
@@ -79,6 +80,7 @@ def _quantity(text, *, title=False):
             if not re.fullmatch(r"[1-9][0-9]{0,5}", match[1]) or int(match[1]) > MAX_QUANTITY:
                 return None, "Explicit per-card multiplicity is invalid or exceeds the review limit"
     patterns = (
+        r"(?<![\w/#.])([1-9][0-9]{0,5})\s*[x×](?!\w)",
         r"\(\s*([1-9][0-9]{0,5})\s*\)\s*$",
         r"^\s*(?:[-*•]\s+)?([1-9][0-9]{0,5})\s+(?!cards?\b|total\b|lots?\b|[x×]\b)[A-Za-z]",
         r"\b([1-9][0-9]{0,5})\s+copies?\b",
@@ -193,6 +195,7 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
         # collector-number claim in the shared literal matcher.
         identity_text = re.sub(r"\b(?:qty|quantity)\s*[:=]?\s*[1-9][0-9]{0,5}\b", " ", text, flags=re.I)
         identity_text = re.sub(r"\b[x×]\s*[1-9][0-9]{0,5}\b", " ", identity_text, flags=re.I)
+        identity_text = re.sub(r"(?<![\w/#.])[1-9][0-9]{0,5}\s*[x×](?!\w)", " ", identity_text, flags=re.I)
         scoped_text = " ".join([identity_text, *(claim for claim, _ in scopes)])
         clues = dc._clues(dict(title=scoped_text, condition=raw.get("condition", "")))
         local_ids = {p["id"] for p in index.candidates(dict(text=identity_text))}
