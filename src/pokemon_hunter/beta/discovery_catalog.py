@@ -68,7 +68,7 @@ def validate_page(raw):
         ("prefer_vintage", {"0", "1"}),
         ("result_filter", {"all", "below", "conditional", "unpriced"}),
         ("time_window", {"all", "24", "48", "72", "168"}),
-        ("value_sort", {"value", "ending", "total", "native"}),
+        ("value_sort", {"best", "value", "ending", "total", "native"}),
         ("buying_mode", {"both", "auction", "buy_now"}),
         ("value_basis", {"all", "sold_estimate", "guide", "mixed", "native"}),
     ):
