@@ -158,8 +158,10 @@ def segments(fields, aspects, index):
                     and not index.candidates(dict(text=line))
                     and any(traits[k] for k in ("language", "edition", "finish"))
                 )
-                if continuation or re.match(
-                    r"(?:all|both|each)\s+(?:of\s+the\s+)?(?:cards?|copies)\b", line, re.I
+                if (
+                    continuation
+                    or re.match(r"set\s*/\s*edition\s*:\s*all\b", line, re.I)
+                    or re.match(r"(?:all|both|each)\s+(?:of\s+the\s+)?(?:cards?|copies)\b", line, re.I)
                 ):
                     scope_continuation = value[b : b + 1] not in {".", "!", "?", ";", "\n"}
                     scopes.append((line, mention(field, value, a, b)))

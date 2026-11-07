@@ -192,3 +192,43 @@ def test_selection_reserves_dual_offer_and_uses_explicit_set_on_stable_ties(env)
     run.raws.reverse()
     assert hunt._select(run) == [selected["itemId"], dual["itemId"]]
     assert not env.calls
+
+
+def test_indexed_assessment_identity_is_independent_of_other_lots(env, entries, monkeypatch):
+    """A broad seller aspect overlaps a second lot's narrower catalog selection."""
+    from pokemon_hunter.beta import discovery_listing, shopping_index
+
+    second = printing("venusaur", "Venusaur", number="15/102")
+    entries.append(second)
+    indexed = SimpleNamespace(
+        proposals=lambda text: entries if "Charizard" in text else [second],
+        publication_checks=[],
+    )
+    monkeypatch.setattr(shopping_index, "current", lambda actor: indexed)
+    narrow = dict(offer(0, title="Venusaur lot"), shortDescription="1x Venusaur Base Set 15/102")
+    broad = offer(1, lane="auction", title="Charizard Venusaur lot")
+
+    def project(raws):
+        rows = discovery_listing.received_rows(raws)
+        discovery_lot_values.project(env.actor, raws, rows)
+        return {row["item_id"]: row["lot_value"] for row in rows}
+
+    alone = project([broad])[broad["itemId"]]
+    together = project([narrow, broad])[broad["itemId"]]
+    assert hunt._evidence_version(alone) == hunt._evidence_version(together)
+    assert alone == together
+
+
+def test_explicit_all_cards_set_edition_header_is_scoped(env, entries):
+    source = env.bin[0]
+    source.update(title="Itemized lot")
+    env.details[source["itemId"]] = dict(
+        source,
+        description="1x Charizard Base Set 4/102 Non Holo\nSET / EDITION: All English Base Set Unlimited.",
+    )
+    run, result = env.execute()
+    row = result["results"][0]
+    full = hunt.evidence(env.actor, "session", run.id, row["id"], row["content_revision"])["lot_value"]
+    assert full["physically_selected_quantity"] == 1
+    assert full["contents"][0]["clues"]["edition"] == "unlimited"
+    assert any("SET / EDITION" in m["text"] for m in full["contents"][0]["scope_mentions"])

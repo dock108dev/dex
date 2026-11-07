@@ -338,8 +338,11 @@
       if (!current()) return;
       if (data.run_id !== run.run_id || data.id !== offer || data.content_revision !== revision ||
           data.evidence_version !== version) {
+        // A stale disclosure must not reopen on every refreshed list.
+        panel.open = false;
+        $('lot-values-status').textContent = 'The assessment changed. Reopen evidence after the local status refresh.';
         revalidateRun(true);
-        throw new Error('The assessment changed. Reload local values.');
+        return;
       }
       const target = find();
       target.summaryValue = target.lot_value;

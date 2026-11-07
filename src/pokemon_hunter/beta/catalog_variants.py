@@ -89,7 +89,7 @@ def descriptor(value):
         value.get("stamp") == ["25th-celebration"]
         and value.get("size") != "jumbo"
         or "foil" in value
-        and (value["foil"] != "galaxy" or value["type"] != "normal")
+        and (value["foil"] != "galaxy" or value["type"] not in {"normal", "holo"})
         or "subtype" in value
         and (value["subtype"] != "1999-2000-copyright" or value["type"] != "normal" or "stamp" in value)
     ):

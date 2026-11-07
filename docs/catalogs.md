@@ -225,3 +225,5 @@ published and contain a published printing. The index changes no catalog rows,
 variants, ownership or access rules. No GET or startup creates it. Follow the
 stopped-server transition (operator-local `docs/plans/lv-08-delivery.md`) for a separately authorized
 installation; the presence of this procedure is not an installation receipt.
+
+Literal variant publication also accepts `type: holo` with `foil: galaxy`, with or without an explicit first-edition stamp. It retains the full structured descriptor and leaves the ordinary finish field unresolved. An absent stamp assertion does not establish Unlimited, and a publisher Holofoil subtype alone does not establish galaxy-foil compatibility.

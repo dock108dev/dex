@@ -24,22 +24,23 @@ def project(actor, raws, rows, *, details=None, summaries=None, _checks=None):
     checks = _checks if _checks is not None else []
     details, summaries = details or {}, summaries or {}
     indexed = shopping_index.current(actor)
-    entries = (
-        list(
-            {
-                p["id"]: p
-                for raw in raws
-                for p in indexed.proposals(
-                    hunter_lot_parser.catalog_text(
-                        summaries.get(raw.get("itemId"), raw), details.get(raw.get("itemId"))
-                    )
-                )
-            }.values()
-        )
+    # Each seller keeps its own narrowed family inventory and catalog order.
+    # Unioning inventories before parsing makes evidence depend on the other lot
+    # in the batch, so an expanded single-offer read can have a different hash.
+    catalogs = (
+        {
+            raw["itemId"]: indexed.proposals(
+                hunter_lot_parser.catalog_text(summaries.get(raw["itemId"], raw), details.get(raw["itemId"]))
+            )
+            for raw in raws
+        }
         if indexed
-        else hunter_lots._catalog(actor)
+        else {}
     )
-    index = hunter_catalog.IdentityIndex(entries)
+    fallback = None if indexed else hunter_lots._catalog(actor)
+    entries = (
+        list({p["id"]: p for group in catalogs.values() for p in group}.values()) if indexed else fallback
+    )
     # The literal catalog match includes every candidate in each proposed family.
     # Unrelated source ranges cannot contribute to these seller contents.
     with lot_calculator.price_snapshots.selected(p["id"] for p in entries):
@@ -47,6 +48,8 @@ def project(actor, raws, rows, *, details=None, summaries=None, _checks=None):
     sources = {raw.get("itemId"): raw for raw in raws}
     for row in rows:
         raw = sources[row["item_id"]]
+        entries = catalogs[raw["itemId"]] if indexed else fallback
+        index = hunter_catalog.IdentityIndex(entries)
         unavailable = dict(
             native_guides=[],
             assessment_version="dex-lot-value-v3",

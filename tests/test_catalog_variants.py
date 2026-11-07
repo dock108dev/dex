@@ -148,7 +148,7 @@ def test_literal_specials_unknowns_and_no_market_inheritance(value, edition, fin
     "value",
     [
         {"type": "normal", "foil": "galaxy", "stamp": ["no-stamp"]},
-        {"type": "holo", "foil": "galaxy"},
+        {"type": "reverse", "foil": "galaxy"},
         {"type": "unknown"},
         {"type": "normal", "languages": ["ja"]},
         {"type": "normal", "stamp": ["25th-celebration"]},
@@ -360,3 +360,20 @@ def test_frozen_review_membership_survives_additive_heads_and_later_growth(b4):
     item["printing_ids"].append(new_id)
     with pytest.raises(ValueError, match="Forged"):
         collection_goals.validate(forged, source)
+
+
+def test_literal_galaxy_holo_publication_preserves_unspecified_parent(b4):
+    actor = b4["actor"]
+    p = package(
+        actor, [dict(type="holo", foil="galaxy", stamp=["1st-edition"]), dict(type="holo", foil="galaxy")]
+    )
+    before = cat.snapshot(p["set_id"])
+    publish(actor, p)
+    after = cat.snapshot(p["set_id"])
+    old = {r["id"]: r for r in before["cards"]}
+    assert all(old[r["id"]] == r for r in after["cards"] if r["id"] in old)
+    added = [r for r in after["cards"] if r["id"] not in old]
+    assert len(added) == 2 and {r["edition"] for r in added} == {"first_edition", None}
+    assert all(r["finish"] is None and json.loads(r["variant"])["foil"] == "galaxy" for r in added)
+    with pytest.raises(ValueError, match="unreviewed"):
+        variants.descriptor(dict(type="reverse", foil="galaxy"))

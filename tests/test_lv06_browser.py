@@ -594,7 +594,10 @@ def test_find_lots_forty_rows_worker_and_local_evidence(browser_app, monkeypatch
         data = (native_package if guide == "native" else v2_package)(data)
         now = datetime.now(UTC)
         data.update(expires_at=(now + timedelta(days=1)).isoformat(), release_month=now.strftime("%Y-%m"))
-        data["records"][0].update(as_of=now.date().isoformat(), captured_at=now.isoformat())
+        from pokemon_hunter.beta import shopping
+
+        day = now.date() if guide == "native" else now.astimezone(shopping.TZ).date()
+        data["records"][0].update(as_of=day.isoformat(), captured_at=now.isoformat())
         price_snapshots.activate(stage(data), None, now=now)
         return data["version"]
 
@@ -693,3 +696,37 @@ def test_find_lots_forty_rows_worker_and_local_evidence(browser_app, monkeypatch
         expect(page.locator(".lot-value").filter(has_text="$5.10")).to_have_count(0, timeout=10000)
         expect(heads).to_have_text(["Assessed without a normalized value · 2", "Unprocessed · 38"])
         assert len(calls) == 5
+
+
+def test_changed_evidence_closes_disclosure_without_refresh_loop(ui):
+    from playwright.sync_api import expect
+
+    page, base, model, calls, control, pending, errors = ui
+    model["results"][0].update(evidence_version="original", content_revision=4)
+    evidence_calls = []
+
+    def mismatch(route):
+        evidence_calls.append(route.request.url)
+        binding = route.request.header_value("X-Dex-Shopping-Binding")
+        # Reuse the account binding from the ordinary intercepted status reply.
+        account = page.locator("body").get_attribute("data-navigation-account")
+        route.fulfill(
+            json=dict(
+                run_id=model["run_id"],
+                id="complete",
+                content_revision=4,
+                evidence_version="changed",
+                lot_value={},
+                authority=dict(account_id=account, binding=binding),
+            )
+        )
+
+    page.route("**/api/shopping/discovery/*/evidence/**", mismatch)
+    open_results(ui)
+    panel = page.locator("#offer-complete .lot-evidence")
+    panel.locator("summary").click()
+    expect(panel).not_to_have_attribute("open", "")
+    expect(page.locator("#offer-complete .lot-value")).to_contain_text("$40.00")
+    # Exercise the next ordinary local status check; no second disclosure request.
+    page.wait_for_timeout(5500)
+    assert len(evidence_calls) == 1 and not errors
