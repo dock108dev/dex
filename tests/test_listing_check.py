@@ -16,6 +16,7 @@ from price_snapshot_helpers import snapshot as snapshot
 from test_discovery import discovery as discovery
 from test_discovery import ledger
 from test_discovery_comparison import active
+from test_hunter_policy import everyday as everyday
 from test_lot_calculator import post
 from test_lot_calculator import workspace as workspace
 
@@ -198,6 +199,52 @@ def test_token_reuse_and_no_browse_fallback(discovery, monkeypatch):
     body = ledger(discovery).read_text()
     assert "fixture-token" not in body and "Engineering Base Set" not in body
     assert body.count('"state":"admitted"') == 3
+
+
+@pytest.mark.parametrize("identifier,stage", [(REST, "detail"), (ITEM, "resolution")])
+def test_standalone_details_debit_ordinary_policy_without_hunter_parent(
+    everyday, monkeypatch, identifier, stage
+):
+    from pokemon_hunter.beta import hunter_policy as policy
+
+    e = everyday
+    e.choose(per_hunt_limit=3)
+    monkeypatch.setattr(d, "_tokens", {})
+    monkeypatch.setattr(c, "Transport", Fake)
+    Fake.calls = []
+    r = run(e, identifier)
+    c._bind_policy(r, e.actor)
+    asyncio.run(c._acquire(r, ("fixture", "secret")))
+    assert r.state == "complete" and Fake.calls == ["oauth", stage]
+    assert r.counts["total"] == policy.status(e.actor)["used"] == 2
+    state = policy._load(e.root)
+    assert [x["data"]["stage"] for x in state["operations"]] == ["oauth", "detail"]
+    assert all(x["data"]["run_id"] == r.id for x in state["operations"])
+    r.cancel.set()
+    with pytest.raises(d._Stopped):
+        asyncio.run(d._dispatch(r, Fake(), "detail", r.deadline))
+    assert policy.status(e.actor)["used"] == 2
+
+
+def test_standalone_detail_policy_pause_and_expiry_prevent_dispatch(everyday):
+    from datetime import timedelta
+
+    from pokemon_hunter.beta import hunter_policy as policy
+
+    e = everyday
+    e.choose()
+    r = run(e, REST)
+    c._bind_policy(r, e.actor)
+    e.choose(enabled=False)
+    with pytest.raises(ValueError):
+        d._check_acquisition(r)
+    with pytest.raises(ValueError, match="current Hunter usage"):
+        c._bind_policy(run(e, REST), e.actor)
+    e.choose()
+    e.clock.now += timedelta(minutes=31)
+    with pytest.raises(ValueError, match="lease expired"):
+        d._check_acquisition(r)
+    assert policy.status(e.actor)["used"] == 0
 
 
 def test_explicit_operation_ceilings_and_stop(discovery):

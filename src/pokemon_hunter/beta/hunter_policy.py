@@ -569,7 +569,7 @@ def _parent(state, allowance, now):
 
 def _check(run):
     allowance = getattr(run, "allowance", None)
-    if run.operation == "detail":
+    if run.operation == "detail" and type(allowance) is not OrdinaryAllowance:
         from . import hunter
 
         parent = hunter._runs.get(getattr(run, "parent_run_id", None))

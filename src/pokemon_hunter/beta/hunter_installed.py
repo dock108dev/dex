@@ -224,7 +224,7 @@ def check_dispatch(run):
     from . import hunter_policy
 
     allowance = getattr(run, "allowance", None)
-    if run.operation == "detail":
+    if run.operation == "detail" and type(allowance) is not hunter_policy.OrdinaryAllowance:
         from . import hunter
 
         parent = hunter._runs.get(getattr(run, "parent_run_id", None))

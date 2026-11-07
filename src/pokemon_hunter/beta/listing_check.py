@@ -60,6 +60,7 @@ def start(actor, session, identifier, *, auth_session=None):
         auth_session=auth_session,
     )
     run.counts = {"oauth": 0, "detail": 0, "resolution": 0, "total": 0}
+    _bind_policy(run, actor)
     with d._lock:
         for old in d._runs.values():
             if old.owner == owner and old.operation == "detail" and old.state in {"queued", "running"}:
@@ -76,6 +77,34 @@ def start(actor, session, identifier, *, auth_session=None):
         target=_worker, args=(run, actor, credentials), daemon=True, name="dex-listing-check"
     ).start()
     return _summary(run)
+
+
+def _bind_policy(run, actor):
+    """Bind explicit standalone details to the same durable ordinary accounting."""
+    from . import hunter_policy
+
+    if not hunter_policy.present(run.owner[0]):
+        return
+    run.allowance = hunter_policy.current(actor)
+    if run.allowance is None:
+        raise ValueError("Official details need current Hunter usage settings; no request was sent.")
+    hunter_policy.bind(run, actor)
+
+    def admit(stage):
+        if stage not in {"oauth", "detail", "resolution"}:
+            raise ProviderFailure(stage)
+        hunter_policy.check(run)
+        hunter_policy.consume(
+            run.owner[0],
+            run.id,
+            "detail" if stage == "resolution" else stage,
+            None,
+            dispatch_id=f"{stage}:{run.counts['total'] + 1}",
+            allowance=run.allowance,
+            scope="lots",
+        )
+
+    run.admit = admit
 
 
 async def _acquire(run, credentials, actor=None):
