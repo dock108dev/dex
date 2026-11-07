@@ -21,6 +21,7 @@ def discovery(tmp_path, monkeypatch):
     monkeypatch.setattr(d, "settings", SimpleNamespace(ROOT=tmp_path, STAGING=False))
     monkeypatch.setattr(d.store, "verified", lambda who: who)
     monkeypatch.setattr(d, "close_old_connections", lambda: None)
+    monkeypatch.setattr(d, "connection", SimpleNamespace(in_atomic_block=False))
     monkeypatch.setattr(
         d.ebay_hunts,
         "configuration",
@@ -283,7 +284,9 @@ def test_failure_ends_action_without_retry(discovery, failure):
 
 @pytest.mark.parametrize("request_seconds,overall_seconds", [(30, 75), (30, 10)])
 def test_request_and_overall_deadlines(discovery, request_seconds, overall_seconds):
-    clock = SimpleNamespace(now=time.monotonic())
+    # Integer-valued fake time keeps exact deadline arithmetic independent of
+    # the host monotonic clock's fractional representation.
+    clock = SimpleNamespace(now=float(int(time.monotonic())))
     cancelled = []
 
     class Slow(FakeTransport):
