@@ -133,7 +133,7 @@ def test_official_detail_quantities_use_the_existing_selected_contents_projectio
     value = dict(seller_contents=parser.parse(raw, catalog(), detail=raw, complete_candidates=True))
     listing_check._selected_contents(value)
     assert {p["id"]: p["quantity"] for p in value["proposals"]} == {"child-10": 2, "child-25": 1}
-    assert value["unknown_contents"] == 0
+    assert value["unknown_remainder"] == 0
 
 
 def descriptive_sample():
@@ -221,3 +221,30 @@ def test_unknown_review_condition_is_unavailable_not_a_claimed_contradiction():
     assert disputed == {"child-10", "child-25"}
     assert any("condition claim has not been matched" in issue for issue in issues)
     assert not any("conflicts with" in issue or "literal grader" in issue for issue in issues)
+
+
+def test_structured_regular_finish_selects_one_supported_card_without_inventing_lot_quantity():
+    entries = [p for p in catalog() if p["collector_number"] == "25"]
+    raw = dict(
+        itemId="v1|123456789012|0",
+        title="Authored Lapras card group",
+        shortDescription="Includes Lapras 25/62.",
+        localizedAspects=[
+            dict(name=k, value=v)
+            for k, v in [
+                ("Set", "Fossil"),
+                ("Language", "English"),
+                ("Edition", "Unlimited"),
+                ("Finish", "Regular"),
+                ("Number of Cards", "3"),
+            ]
+        ],
+    )
+    value = parser.parse(raw, entries)
+    assert value["included_quantity"] == 1
+    assert value["unknown_remainder"] == 2
+    chosen = next(p for p in value["proposals"] if p["included_quantity"])
+    assert chosen["printing_id"] == "child-25" and chosen["clues"]["finish"] == "normal"
+    raw["localizedAspects"] = [a for a in raw["localizedAspects"] if a["name"] != "Finish"]
+    raw["shortDescription"] += " Regular customer service."
+    assert parser.parse(raw, entries)["included_quantity"] == 0

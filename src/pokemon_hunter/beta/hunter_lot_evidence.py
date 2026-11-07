@@ -111,6 +111,10 @@ def segments(fields, aspects, index):
         if name in TRAIT_ASPECTS:
             # 'Graded: No' is a negative assertion, not the word 'graded'.
             text = "graded" if name == "graded" and value.casefold() in {"yes", "true"} else value
+            # eBay's literal single Finish: Regular means the normal/nonfoil
+            # finish. Do not treat ordinary prose containing "regular" as a claim.
+            if name in {"finish", "card finish"} and value.casefold().strip() == "regular":
+                text = "normal"
             scopes.append((text, mention(field, value)))
             continue
         if name in CONTENT_ASPECTS:
