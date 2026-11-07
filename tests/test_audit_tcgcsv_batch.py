@@ -60,6 +60,22 @@ def test_supported_variant_does_not_infer_special_distribution():
     assert not audit.compatible(target, "Normal")
 
 
+def test_explicit_unlimited_keeps_edition_finish_and_specials_separate():
+    target = dict(
+        language="en", edition="unlimited", finish="holo", variant='{"type":"holo","edition":"unlimited"}'
+    )
+    assert audit.compatible(target, "Unlimited Holofoil")
+    assert not audit.compatible(target, "1st Edition Holofoil")
+    assert not audit.compatible(target, "Unlimited")
+    for literal in (
+        '{"type":"holo","edition":"unlimited","stamp":["1st-edition"]}',
+        '{"type":"holo","edition":"unlimited","foil":"galaxy"}',
+        '{"type":"holo","edition":"unknown"}',
+    ):
+        target["variant"] = literal
+        assert not audit.compatible(target, "Unlimited Holofoil")
+
+
 @pytest.mark.parametrize(
     "url,expected",
     [

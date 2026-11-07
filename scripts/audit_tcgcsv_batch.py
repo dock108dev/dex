@@ -166,8 +166,12 @@ def compatible(target, subtype):
             return False
         if (
             not isinstance(variant, dict)
-            or set(variant) - {"type", "stamp"}
+            or set(variant) - {"type", "edition", "stamp"}
             or FINISHES.get(variant.get("type")) != finish
+        ):
+            return False
+        if "edition" in variant and (
+            variant["edition"] != "unlimited" or edition != "unlimited" or "stamp" in variant
         ):
             return False
         if "stamp" in variant and (variant["stamp"] != ["1st-edition"] or edition != "first_edition"):
