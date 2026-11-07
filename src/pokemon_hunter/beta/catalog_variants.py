@@ -65,11 +65,18 @@ def descriptor(value):
     if (
         not isinstance(value, dict)
         or not value
-        or set(value) - {"type", "stamp", "foil", "copyright", "subtype", "size", "other", "languages"}
+        or set(value)
+        - {"type", "edition", "stamp", "foil", "copyright", "subtype", "size", "other", "languages"}
     ):
         raise ValueError("Unsupported literal variant descriptor")
     if value.get("type") not in {"normal", "holo", "reverse"}:
         raise ValueError("Literal finish type required")
+    # Unlimited requires affirmative source metadata; absence of a stamp never
+    # supplies it. First edition retains the established explicit stamp grammar.
+    if "edition" in value and (
+        value["edition"] != "unlimited" or "stamp" in value or set(value) - {"type", "edition", "languages"}
+    ):
+        raise ValueError("Unsupported or contradictory explicit edition")
     for key in ("stamp", "other", "languages"):
         if key in value and (
             not isinstance(value[key], list)
@@ -99,7 +106,7 @@ def descriptor(value):
 
 def physical(value):
     descriptor(value)
-    edition = "first_edition" if value.get("stamp") == ["1st-edition"] else None
+    edition = "first_edition" if value.get("stamp") == ["1st-edition"] else value.get("edition")
     finish = {"normal": "normal", "holo": "holo", "reverse": "reverse-holo"}[value["type"]]
     # A special foil cannot become an ordinary nonfoil merely from type: normal.
     if "foil" in value:
@@ -111,6 +118,8 @@ def label(value):
     parts = []
     if value.get("stamp") == ["1st-edition"]:
         parts.append("1st Edition")
+    elif value.get("edition") == "unlimited":
+        parts.append("Unlimited")
     parts.append({"normal": "Normal", "holo": "Holo", "reverse": "Reverse Holo"}[value["type"]])
     parts.extend(
         f"{key.title()}: {value[key]}" for key in ("foil", "copyright", "subtype", "size") if key in value
@@ -118,7 +127,7 @@ def label(value):
     if value.get("stamp") == ["25th-celebration"]:
         parts.append("25th celebration stamp")
     parts.extend(value.get("other", []))
-    if value.get("stamp") != ["1st-edition"]:
+    if value.get("stamp") != ["1st-edition"] and value.get("edition") != "unlimited":
         parts.append("edition not established")
     return " · ".join(parts)
 
@@ -312,7 +321,7 @@ def seller_candidates(candidates, clues):
         )
         for p in family:
             value = p.get("attributes", {}).get("physical_variant")
-            if not value or set(value) - {"type", "stamp", "languages"} or special:
+            if not value or set(value) - {"type", "edition", "stamp", "languages"} or special:
                 continue
             if (
                 p["id"] in supported

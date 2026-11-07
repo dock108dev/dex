@@ -227,3 +227,12 @@ stopped-server transition (operator-local `docs/plans/lv-08-delivery.md`) for a 
 installation; the presence of this procedure is not an installation receipt.
 
 Literal variant publication also accepts `type: holo` with `foil: galaxy`, with or without an explicit first-edition stamp. It retains the full structured descriptor and leaves the ordinary finish field unresolved. An absent stamp assertion does not establish Unlimited, and a publisher Holofoil subtype alone does not establish galaxy-foil compatibility.
+
+Ordinary variants may carry an affirmative `edition: unlimited` alongside their
+literal finish type. This requires independently reviewed product metadata that
+explicitly names Unlimited; an absent stamp, price availability or numbered parent
+is insufficient. The descriptor cannot combine Unlimited with a stamp or special
+foil/copyright claims. First edition retains its explicit stamp descriptor. Existing
+parents and contradictory special descriptors remain unchanged. Seller matching
+still requires explicit language, edition and finish before choosing one child,
+and native price admission still binds the exact current catalog and source mapping.
