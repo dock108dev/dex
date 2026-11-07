@@ -12,8 +12,21 @@ class Element {
   get lastChild(){return this.children.at(-1);}
   addEventListener(event,fn){this.listeners[event]=fn;}
   setAttribute(key,value){this[key]=value;}
-  querySelector(){return {value:'engineering-csrf'};}
-  querySelectorAll(){return [];}
+  querySelector(selector){return this.querySelectorAll(selector)[0] || {value:'engineering-csrf'};}
+  querySelectorAll(selector){
+    const all=[];const visit=n=>{for(const child of n.children){all.push(child);visit(child);}};visit(this);
+    if(selector==='input')return all.filter(n=>n.tagName==='input');
+    if(selector==='.contents-entry')return all.filter(n=>n.className==='contents-entry');
+    if(selector==='details[data-correction]')return all.filter(n=>n.tagName==='details' && n.dataset.correction);
+    if(selector==='[data-included]')return all.filter(n=>n.dataset.included);
+    if(selector==='[data-allocation]')return all.filter(n=>n.dataset.allocation);
+    if(selector==='.review-include input')return all.filter(n=>n.tagName==='input' && n.parentElement?.className==='review-include');
+    if(selector==='[data-shared-entry]:checked')return all.filter(n=>n.dataset.sharedEntry && n.checked);
+    if(selector==='summary')return all.filter(n=>n.tagName==='summary');
+    return [];
+  }
+  closest(selector){let n=this;while(n){if(selector==='.review-card' && n.className==='review-card')return n;n=n.parentElement;}return null;}
+  get childElementCount(){return this.children.length;}
   focus(){this.focused=true;}
   scrollIntoView(){this.scrolled=true;}
 }
@@ -221,6 +234,39 @@ const passed=[];async function test(name,fn){await fn();passed.push(name);}
   assert.match(text,/25.00 publisher guide total · 3 guide-priced cards/);
   assert.match(text,/0 of 3 included cards have condition-specific references/);
   assert.doesNotMatch(text,/remaining cards are unvalued|0 of 3 included cards priced/);
+ });
+ await test('four-card family can allocate two distinct printings without assuming four copies',async()=>{
+  const a={...identity,id:'a',language:'en',edition:'unlimited',finish:'holo'},b={...identity,id:'b',collector_number:'2',language:'en',edition:'unlimited',finish:'normal'};
+  const t=setup({contents:[{key:'family',name:'Checked card',quantity:4,candidates:[a,b],reasons:[],evidence:[]}],proposals:[],seller_lot_size:4,unknown_contents:4});await flush();await t.get('use-listing').onclick();await flush();
+  const descendants=n=>n.children.flatMap(c=>[c,...descendants(c)]);
+  function choose(id){const entry=t.get('review-cards').children[0];const details=entry.children.find(n=>n.dataset.correction);details.open=true;details.listeners.toggle();const picker=descendants(details).find(n=>n.tagName==='select');picker.value=id;picker.onchange();const include=descendants(details).find(n=>n.dataset.printing===id && n.tagName==='input');include.checked=true;include.onchange();}
+  choose('a');await flush();choose('b');await flush();
+  assert.match(t.get('review-count').textContent,/2 individually identified cards · unrecognized contents: 2/);
+  assert.match(t.get('review-cards').textContent,/User-confirmed allocation/);
+  const quantity=descendants(t.get('review-cards')).find(n=>n.dataset.quantity==='b');quantity.value='2';quantity.listeners.input();
+  await t.timeouts.at(-1)();await flush();
+  const review=JSON.parse(t.calls.filter(c=>c.method==='POST').at(-1).body).review;
+  assert.equal(review.cards.find(r=>r.printing_id==='a').quantity,1);
+  assert.equal(review.cards.find(r=>r.printing_id==='b').quantity,2);
+  assert.equal(review.unknown_contents,1);
+  assert.match(t.get('review-cards').textContent,/2 × Checked card/);
+  assert.match(t.get('review-save-status').textContent,/Review saved/);
+  assert.match(t.get('review-cards').textContent,/Find a different printing/);
+ });
+ await test('shared-trait confirmation previews quantities and leaves ambiguous entries unresolved',async()=>{
+  const a={...identity,id:'a',language:'en',edition:'unlimited',finish:'holo'},b={...a,id:'b',collector_number:'2',finish:'normal'},c={...b,id:'c',collector_number:'3'};
+  const entries=[{key:'specific',name:'First entry',quantity:2,candidates:[a],reasons:[],evidence:[]},{key:'ambiguous',name:'Second entry',quantity:1,candidates:[b,c],reasons:[],evidence:[]}];
+  const t=setup({contents:entries,proposals:[],seller_lot_size:3,unknown_contents:3});await flush();await t.get('use-listing').onclick();await flush();
+  const descendants=n=>n.children.flatMap(c=>[c,...descendants(c)]);
+  descendants(t.get('review-cards')).filter(n=>n.dataset.sharedEntry).forEach(n=>n.checked=true);
+  t.get('batch-language').value='en';t.get('batch-edition').value='unlimited';
+  t.get('batch-plan').onclick();assert.match(t.get('batch-preview').textContent,/Confirm 2 ×/);assert.match(t.get('batch-preview').textContent,/still needs individual/);
+  assert.match(t.get('review-count').textContent,/0 individually identified cards/);
+  t.get('batch-confirm').onclick();await t.timeouts.at(-1)();await flush();
+  const review=JSON.parse(t.calls.filter(c=>c.method==='POST').at(-1).body).review;
+  assert.equal(review.cards.find(r=>r.printing_id==='a').quantity,2);
+  assert.equal(review.unknown_contents,1);
+  assert.ok(review.cards.find(r=>r.printing_id==='a').authored_fields.includes('language'));
  });
  process.stdout.write(JSON.stringify({passed:passed.length,cases:passed,provider_calls:0,customer_data:false})+'\n');
 })().catch(e=>{console.error(e);process.exitCode=1;});

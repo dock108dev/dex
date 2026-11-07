@@ -595,3 +595,16 @@ def test_status_snapshot_serializes_worker_content_without_cancelling_hunt(env, 
     assert not env.calls
     _, complete = env.execute(run)
     assert complete["state"] == "partial" and len(env.calls) == 5
+
+
+@pytest.mark.parametrize("mode,shown", [("limit", 0), ("flexible", 1)])
+def test_actual_lot_hunt_preserves_opportunity_baseline_without_automatic_value(env, mode, shown):
+    env.bin = [offer(price=dict(value="300", currency="USD"))]
+    env.auction = []
+    run, result = env.execute(env.start(budget="120", budget_mode=mode, budget_rule="Supported upside"))
+    assert len(result["results"]) == shown
+    assert result["coverage"]["received"] == 1
+    assert result["progress"]["enriched"] == 1
+    if shown:
+        assert result["results"][0]["listing_price"] == "300.00"
+        assert result["results"][0]["lot_value"]["total"] is None

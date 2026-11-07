@@ -695,6 +695,7 @@ def _status(actor, session, run):
             return _summary(run)
         except (ValueError, RuntimeError):
             result["error"] = "Local assessment is unavailable; supported listing facts remain visible"
+    rows = [row for row in rows if d.within_budget(row, run.choices)]
     discovery_lot_values.rank(rows, raws)
     for row in rows:
         item = row.pop("item_id")

@@ -89,7 +89,7 @@ def seller_constraints(offers, entries, included, units):
                     issues.append(f"{group['name']}: {reason}.")
                     disputed.update(ids)
             selected = [p for p in group["candidates"] if p["id"] in included]
-            if len(selected) > 1 or (
+            if (
                 group["quantity"] is not None
                 and selected
                 and sum(included[p["id"]]["quantity"] for p in selected) != group["quantity"]

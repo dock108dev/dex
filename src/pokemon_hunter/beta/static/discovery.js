@@ -78,12 +78,12 @@
     } finally {clearTimeout(timeout);}
   }
   function choices() {
-    const selected = {intent,goal_id:intent === 'missing' ? $('discovery-goal').value || null : null,missing_basis:intent === 'missing' ? $('discovery-missing-basis').value : 'species',focus:$('discovery-focus').value,budget:$('discovery-budget').value.trim() || null,query:$('discovery-query').value.trim(),set_id:$('discovery-set').value || null,product_type:$('discovery-product-type').value,sort:$('discovery-sort').value,english_vintage:$('discovery-english-vintage').checked,...target,goal_version:intent === 'missing' ? (goalVersion || ($('discovery-form').dataset.lotSearch !== 'true' ? goals.find(row => row.id === $('discovery-goal').value)?.version : null)) : null,generation,browse_requests:1};
+    const selected = {intent,goal_id:intent === 'missing' ? $('discovery-goal').value || null : null,missing_basis:intent === 'missing' ? $('discovery-missing-basis').value : 'species',focus:$('discovery-focus').value,budget:$('discovery-budget').value.trim() || null,budget_mode:$('discovery-budget-mode').value || 'limit',budget_rule:$('discovery-budget-rule').value.trim(),budget_value_basis:$('discovery-budget-value-basis').value || 'collectible',query:$('discovery-query').value.trim(),set_id:$('discovery-set').value || null,product_type:$('discovery-product-type').value,sort:$('discovery-sort').value,english_vintage:$('discovery-english-vintage').checked,...target,goal_version:intent === 'missing' ? (goalVersion || ($('discovery-form').dataset.lotSearch !== 'true' ? goals.find(row => row.id === $('discovery-goal').value)?.version : null)) : null,generation,browse_requests:1};
     if ($('discovery-form').dataset.lotSearch === 'true') Object.assign(selected, {collection_intent:intent === 'missing',prefer_vintage:Boolean($('discovery-prefer-vintage').checked),currency:'USD',missing_basis:'species',product_type:'mixed_lots',sort:'ending_soonest',english_vintage:false});
     return selected;
   }
   function signature(value) {
-    return JSON.stringify({prefer_vintage:Boolean(value.prefer_vintage),collection_intent:Boolean(value.collection_intent),intent:value.intent || 'deals',goal_id:value.goal_id || '',missing_basis:value.missing_basis || 'species',focus:value.focus || 'all',budget:value.budget == null ? '' : String(value.budget),query:value.query || '',set_id:value.set_id || '',product_type:value.product_type || 'both',sort:value.sort || 'ending_soonest',english_vintage:value.english_vintage !== false,species:value.species || null,group_id:value.group_id || null,printing_id:value.printing_id || null,goal_version:value.goal_version || null,generation:value.generation ?? generation,browse_requests:1});
+    return JSON.stringify({prefer_vintage:Boolean(value.prefer_vintage),collection_intent:Boolean(value.collection_intent),intent:value.intent || 'deals',goal_id:value.goal_id || '',missing_basis:value.missing_basis || 'species',focus:value.focus || 'all',budget:value.budget == null ? '' : String(value.budget),budget_mode:value.budget_mode || 'limit',budget_rule:value.budget_rule || '',budget_value_basis:value.budget_value_basis || 'collectible',query:value.query || '',set_id:value.set_id || '',product_type:value.product_type || 'both',sort:value.sort || 'ending_soonest',english_vintage:value.english_vintage !== false,species:value.species || null,group_id:value.group_id || null,printing_id:value.printing_id || null,goal_version:value.goal_version || null,generation:value.generation ?? generation,browse_requests:1});
   }
   function changed() { return captured !== null && signature(choices()) !== captured; }
   function updateButtons() {
@@ -132,7 +132,7 @@
   function restoreChoices(value) {
     intent = value?.intent === 'missing' ? 'missing' : 'deals';
     goalVersion = value?.goal_version || null;
-    for (const [field,id] of Object.entries({goal_id:'discovery-goal',missing_basis:'discovery-missing-basis',focus:'discovery-focus',budget:'discovery-budget',query:'discovery-query',set_id:'discovery-set',product_type:'discovery-product-type',sort:'discovery-sort'})) {
+    for (const [field,id] of Object.entries({goal_id:'discovery-goal',missing_basis:'discovery-missing-basis',focus:'discovery-focus',budget:'discovery-budget',budget_mode:'discovery-budget-mode',budget_rule:'discovery-budget-rule',budget_value_basis:'discovery-budget-value-basis',query:'discovery-query',set_id:'discovery-set',product_type:'discovery-product-type',sort:'discovery-sort'})) {
       if (value?.[field] !== undefined && value[field] !== null) $(id).value = String(value[field]);
     }
     target = {species:value?.species || null,group_id:value?.group_id || null,printing_id:value?.printing_id || null};
@@ -143,7 +143,7 @@
   }
   function rememberChoices(extra = {}, replace = true) {
     const selected = choices(), url = new URL(location.href);url.searchParams.delete('missing');
-    const fields = {prefer_vintage:selected.prefer_vintage ? '1' : '0',q:selected.query,set_id:selected.set_id,intent,missing_basis:selected.missing_basis,scope:selected.focus,budget:selected.budget,product_type:selected.product_type,sort:selected.sort,english_vintage:selected.english_vintage ? '1' : '0',result_filter:$('discovery-filter').value,...(window.DexLotValues ? {time_window:$('lot-time-window').value,value_sort:$('lot-value-sort').value,buying_mode:$('lot-buying-mode').value,value_basis:$('lot-value-basis')?.value || 'all'} : {}),species:target.species,group:target.group_id,child:target.printing_id,goal:selected.goal_id,version:selected.goal_version,generation,...extra};
+    const fields = {prefer_vintage:selected.prefer_vintage ? '1' : '0',q:selected.query,set_id:selected.set_id,intent,missing_basis:selected.missing_basis,scope:selected.focus,budget:selected.budget,budget_mode:selected.budget_mode,budget_rule:selected.budget_rule,budget_value_basis:selected.budget_value_basis,product_type:selected.product_type,sort:selected.sort,english_vintage:selected.english_vintage ? '1' : '0',result_filter:$('discovery-filter').value,...(window.DexLotValues ? {time_window:$('lot-time-window').value,value_sort:$('lot-value-sort').value,buying_mode:$('lot-buying-mode').value,value_basis:$('lot-value-basis')?.value || 'all'} : {}),species:target.species,group:target.group_id,child:target.printing_id,goal:selected.goal_id,version:selected.goal_version,generation,...extra};
     for (const [key,value] of Object.entries(fields)) {if (value == null || value === '') url.searchParams.delete(key);else url.searchParams.set(key,String(value));}
     if (replace) history.replaceState(null,'',url.pathname + url.search);
     return url.pathname + url.search;
@@ -564,7 +564,7 @@
   window.addEventListener('popstate',() => location.reload());
   document.addEventListener('visibilitychange',() => {if (pruneLocal()) renderCards();if (!document.hidden) {checkSources();revalidateRun(true);}});
   lifecycleTimer = setInterval(() => {const minute = Math.floor(Date.now() / 60000);if (pruneLocal() || window.DexLotValues && run && minute !== windowMinute) {windowMinute = minute;renderCards();}window.DexDiscoveryDisplay?.tick($('discovery-cards'));checkSources();if (!document.hidden && Date.now()-lastRunCheck>=5000) revalidateRun();},1000);
-  for (const [field,id] of Object.entries({q:'discovery-query',scope:'discovery-focus',missing_basis:'discovery-missing-basis',budget:'discovery-budget',product_type:'discovery-product-type',sort:'discovery-sort'})) if (initial[field] !== undefined) $(id).value = initial[field];
+  for (const [field,id] of Object.entries({q:'discovery-query',scope:'discovery-focus',missing_basis:'discovery-missing-basis',budget:'discovery-budget',budget_mode:'discovery-budget-mode',budget_rule:'discovery-budget-rule',budget_value_basis:'discovery-budget-value-basis',product_type:'discovery-product-type',sort:'discovery-sort'})) if (initial[field] !== undefined) $(id).value = initial[field];
   if (intent === 'missing' && !initial.scope && !initial.goal) $('discovery-focus').value = 'kanto';
   if (initial.prefer_vintage !== undefined) $('discovery-prefer-vintage').checked = initial.prefer_vintage === '1';
   if (initial.english_vintage !== undefined) $('discovery-english-vintage').checked = initial.english_vintage === '1';
@@ -620,7 +620,7 @@
       if (restore) restoreChoices(value.choices);
       render(value);schedule(token);
       if (restore) {
-      for (const [field,id] of Object.entries({q:'discovery-query',scope:'discovery-focus',missing_basis:'discovery-missing-basis',budget:'discovery-budget',product_type:'discovery-product-type',sort:'discovery-sort'})) if (initial[field] !== undefined) $(id).value = initial[field];
+      for (const [field,id] of Object.entries({q:'discovery-query',scope:'discovery-focus',missing_basis:'discovery-missing-basis',budget:'discovery-budget',budget_mode:'discovery-budget-mode',budget_rule:'discovery-budget-rule',budget_value_basis:'discovery-budget-value-basis',product_type:'discovery-product-type',sort:'discovery-sort'})) if (initial[field] !== undefined) $(id).value = initial[field];
       if (initial.intent) intent = initial.intent;
       if (initial.goal) {$('discovery-goal').value = initial.goal;goalVersion = initial.version || null;}
       if (initial.prefer_vintage !== undefined) $('discovery-prefer-vintage').checked = initial.prefer_vintage === '1';

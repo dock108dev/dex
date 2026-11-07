@@ -26,6 +26,9 @@ class Choices(BaseModel):
     goal_id: str | None = Field(default=None, min_length=1, max_length=64)
     focus: Literal["all", "kanto", "johto", "rares", "bulk"] = "all"
     budget: Decimal | None = Field(default=None, ge=0, le=10000)
+    budget_mode: Literal["limit", "flexible"] = "limit"
+    budget_rule: str = Field(default="", max_length=200)
+    budget_value_basis: Literal["collectible", "resale"] = "collectible"
     query: str = Field(default="", max_length=200)
     set_id: str | None = Field(default=None, min_length=1, max_length=100)
     species: StrictInt | None = Field(default=None, ge=1, le=251)

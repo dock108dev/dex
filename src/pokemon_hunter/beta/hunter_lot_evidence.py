@@ -60,6 +60,7 @@ def fields(raw, detail, plain):
         values += [
             ("detail_title", detail.get("title", "")),
             ("official_description", detail.get("description", "")),
+            ("official_condition", detail.get("conditionDescription", "")),
         ]
         if detail.get("shortDescription") and detail["shortDescription"] != raw.get("shortDescription"):
             values.append(("detail_summary", detail["shortDescription"]))
@@ -217,7 +218,9 @@ def _sections(segments, fields, index):
                 if len(text) - len(text.lstrip()) <= indent:
                     break
                 if re.match(
-                    r"\s*[-*•]\s*(?:Set|Card Number|Collector Number|Language|Edition|Finish)\s*:", text, re.I
+                    r"\s*[-*•]\s*(?:Set|Card Number|Collector Number|Language|Edition|Finish|Condition)\s*:",
+                    text,
+                    re.I,
                 ):
                     parts.append(mention(field, value, *following.span()))
             if not any(re.search(r"(?:Card|Collector) Number\s*:", p["text"], re.I) for p in parts[1:]):

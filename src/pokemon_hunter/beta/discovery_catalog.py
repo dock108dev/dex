@@ -26,6 +26,9 @@ PAGE_FIELDS = shopping_context.FIELDS | {
     "missing_basis",
     "scope",
     "budget",
+    "budget_mode",
+    "budget_rule",
+    "budget_value_basis",
     "prefer_vintage",
     "product_type",
     "sort",
@@ -54,6 +57,8 @@ def validate_page(raw):
         if raw.get(field):
             uuid.UUID(raw[field])
     for field, options in (
+        ("budget_mode", {"limit", "flexible"}),
+        ("budget_value_basis", {"collectible", "resale"}),
         ("intent", {"deals", "missing"}),
         ("missing_basis", {"species", "printing"}),
         ("scope", {"all", "kanto", "johto", "rares", "bulk"}),

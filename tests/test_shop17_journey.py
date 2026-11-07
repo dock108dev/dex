@@ -344,6 +344,11 @@ def journey(page, base, goal, cx, report, width, zoom, exercise_changes):
             checkbox.press("Space")
 
         measure("include " + name, include, lambda: expect(checkbox).to_be_checked())
+        # Inclusion starts with one physical card; group multiplicity is an
+        # explicit allocation after checking the itemized seller evidence.
+        quantity = group.get_by_label("Cards inside this one lot")
+        expect(quantity).to_have_value("1")
+        quantity.fill("2" if name == "Ivysaur" else "1")
         group.locator("summary").filter(has_text="optional card details").press("Enter")
         grade = group.get_by_label("Value basis")
         grader = group.get_by_label("Literal grader")

@@ -11,6 +11,7 @@ from . import (
     price_snapshots,
     shopping,
     shopping_views,
+    store,
 )
 from . import listing_check as checks
 from .card_group_views import query
@@ -35,6 +36,7 @@ def home(request):
         dict(
             shopping_binding=navigation.binding(request)["navigation_binding"],
             account_id=who.user_id,
+            lot_usage_owner=store.verified(who).role == "owner",
             listing_entry={key: raw[key] for key in ("discovery_run", "item_id", "request_id") if key in raw},
             listing_return=back,
         ),
@@ -151,3 +153,11 @@ def _assessment(request, revision, lease):
     return shopping_views.private_json(
         {key: result[key] for key in ("assessment", "benchmark") if key in result}, request
     )
+
+
+@endpoint
+@require_GET
+def journal(request):
+    who, session = discovery_views.principal(request)
+    query(request, set())
+    return shopping_views.private_json(checks.journal(who, session), request)

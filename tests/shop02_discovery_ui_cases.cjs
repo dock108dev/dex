@@ -6,7 +6,7 @@ const vm = require('node:vm');
 const source = fs.readFileSync(process.argv[2], 'utf8');
 const runId = '11111111-1111-4111-8111-111111111111';
 const nextId = '22222222-2222-4222-8222-222222222222';
-const baseChoices = {intent:'deals',goal_id:null,missing_basis:'species',focus:'all',budget:null,query:'',set_id:null,product_type:'both',sort:'ending_soonest',english_vintage:true,species:null,group_id:null,printing_id:null,goal_version:null,generation:7,browse_requests:1};
+const baseChoices = {intent:'deals',goal_id:null,missing_basis:'species',focus:'all',budget:null,budget_mode:'limit',budget_rule:'',budget_value_basis:'collectible',query:'',set_id:null,product_type:'both',sort:'ending_soonest',english_vintage:true,species:null,group_id:null,printing_id:null,goal_version:null,generation:7,browse_requests:1};
 const row = {id:'one',proposed_identity:{name:'Engineering card',set_name:'Engineering set',collector_number:'1',artwork_url:null},listing_price:'10',shipping:null,delivered_total:null,classification:'conditional',reason:'Shipping is unknown.',basis:'Raw condition scenario.',reference:{amount:'20',as_of:'2020-01-01',valuation_as_of:null,captured_at:'2021-01-01',grade:'raw'},comparison:{reference_minus_listing_price:'10',reference_minus_delivered_total:null},revealed:false,save_allowed:false,save_reason:'Temporary comparison; saving unavailable.'};
 const complete = (id=runId, rows=[row]) => ({run_id:id,state:'complete',running:false,choices:baseChoices,scope_label:'Deals include owned cards',expires_in_seconds:1800,results:structuredClone(rows),counts:{summary_count:1},has_next:true,note:'Temporary results.'});
 class Element {

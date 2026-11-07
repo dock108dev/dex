@@ -121,6 +121,25 @@ def test_budget_excludes_known_price_floor_but_keeps_unknown_shipping(discovery)
     assert result["results"][0]["shipping"] is None
 
 
+def test_flexible_baseline_retains_higher_costs_without_qualifying_them(discovery):
+    from pokemon_hunter.beta import discovery_comparison
+
+    run = run_for(
+        discovery,
+        choices=d.Choices(
+            budget="120", budget_mode="flexible", budget_rule="Supported upside", product_type="both"
+        ),
+    )
+    run.state = "complete"
+    d._runs[run.id] = run
+    rows = [dict(item_id="higher", listing_price="300", delivered_total=None, shipping=None)]
+    discovery.monkeypatch.setattr(discovery_comparison, "compare", lambda *args: rows)
+    result = d.status(discovery.actor, "session", run.id)
+    assert result["results"][0]["listing_price"] == "300"
+    assert result["results"][0]["delivered_total"] is None
+    assert result["choices"]["budget_mode"] == "flexible"
+
+
 def test_status_rechecks_comparison_and_reveal_without_provider(discovery):
     from pokemon_hunter.beta import discovery_comparison
 

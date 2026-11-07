@@ -8,7 +8,7 @@
 .listing-check #check-status { font-size:.9375rem; color:var(--muted); margin:8px 0 12px; overflow-wrap:anywhere; }
 .listing-check #check-status:empty { display:none; }
 .listing-check #check-status[role=alert] { color:#8f1d2c; padding:12px; background:#fff1f3; border:1px solid #b96875; border-radius:8px; }
-.listing-check input,.listing-check select { width:100%; max-width:100%; min-width:0; }
+.listing-check input,.listing-check select,.listing-check textarea { width:100%; max-width:100%; min-width:0; }
 .listing-check label { display:block; min-width:0; }
 .listing-check h2 { font-size:1.25rem; margin:0 0 12px; }
 .offer-overview { background:#fff; border:1px solid var(--border); border-radius:14px; overflow:hidden; margin:0 0 12px; }

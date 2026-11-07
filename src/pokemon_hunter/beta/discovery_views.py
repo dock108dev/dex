@@ -73,6 +73,7 @@ def home(request):
             request,
             "beta/discovery.html",
             {
+                "lot_usage_owner": store.verified(who).role == "owner",
                 "discovery_goals": goals(who),
                 "shopping_context": context,
                 "discovery_initial": initial,
