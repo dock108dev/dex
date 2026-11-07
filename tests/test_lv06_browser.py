@@ -190,6 +190,9 @@ def ui(browser_app):
             account_id=state["actor"].user_id, binding=req.header_value("X-Dex-Shopping-Binding")
         )
         if "/price-source-status/" in req.url:
+            if control.get("source_busy"):
+                handler.fulfill(status=503, json=dict(error="runtime_busy"))
+                return
             handler.fulfill(json=dict(versions=[], sources=control["sources"], authority=authority))
         elif req.method == "POST" and "/stop/" in req.url:
             model.update(state="stopped", running=False, results=[])
@@ -730,3 +733,22 @@ def test_changed_evidence_closes_disclosure_without_refresh_loop(ui):
     # Exercise the next ordinary local status check; no second disclosure request.
     page.wait_for_timeout(5500)
     assert len(evidence_calls) == 1 and not errors
+
+
+def test_local_source_busy_recovers_values_without_repeating_hunt(ui):
+    from playwright.sync_api import expect
+
+    page, base, model, calls, control, pending, errors = ui
+    row = model["results"][0]
+    row["buying_order"] = {
+        "combined": dict(rank=1, reason="Current authored guide estimate", contents="Lapras")
+    }
+    control["source_busy"] = True
+    open_results(ui)
+    expect(page.locator("#lot-values-reload")).to_be_visible()
+    expect(page.locator(".lot-reason")).not_to_contain_text("Current authored guide estimate")
+    control["source_busy"] = False
+    expect(page.locator(".lot-reason")).to_contain_text("Current authored guide estimate", timeout=10000)
+    assert any("view=values" in url for method, url, _ in calls if method == "GET")
+    assert not any(method == "POST" for method, _, _ in calls)
+    assert not errors

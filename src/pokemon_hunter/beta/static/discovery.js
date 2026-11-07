@@ -269,32 +269,37 @@
     return removed;
   }
   async function checkSources() {
-    if (checkingSources || revoked || !run || !run.results?.some(result => managed(result.reference) || window.DexLotValues?.references(result).some(managed))) return;
-    const active = run, token = sequence;let timeout;checkingSources = true;
+    if (checkingSources || revoked || !run || !sourceUnavailable && !run.results?.some(result => managed(result.reference) || window.DexLotValues?.references(result).some(managed))) return;
+    const active = run, token = sequence;let timeout, recovered = false;checkingSources = true;
     try {
       const state = await Promise.race([request('/api/shopping/price-source-status/'),new Promise((resolve,reject) => {timeout = setTimeout(() => reject(new Error('Reference lifecycle unavailable')),2000);})]);
       if (run !== active || sequence !== token || revoked) return;
       if (!Array.isArray(state.versions) || !Array.isArray(state.sources)) throw new Error('Reference lifecycle unavailable');
-      sourceState = state;sourceUnavailable = false;
+      recovered = sourceUnavailable;sourceState = state;sourceUnavailable = false;
     } catch {
       if (run !== active || sequence !== token || revoked) return;
       sourceUnavailable = true;
     } finally {
       clearTimeout(timeout);checkingSources = false;
-      if (run === active && sequence === token && !revoked && pruneLocal()) renderCards();
+      if (run === active && sequence === token && !revoked) {
+        if (pruneLocal()) renderCards();
+        // A successful lifecycle check can recover values withheld during local
+        // contention. This reads retained contents only; it never repeats a Hunt.
+        if (recovered && !acquiring) {active.values_checked = false;loadValues();}
+      }
     }
   }
   async function revalidateRun(withhold = false) {
     if (validatingRun || acquiring || uncertain || revoked || stopWanted || !run?.results?.length) return;
     const active=run, token=sequence;validatingRun=true;lastRunCheck=Date.now();
-    if (withhold) {for (const row of active.results) {delete row.lot_value;delete row.value_order;}renderCards();}
+    if (withhold) {for (const row of active.results) {delete row.lot_value;delete row.value_order;delete row.buying_order;}renderCards();}
     try {
       const value=await request(api+'?run_id='+encodeURIComponent(active.run_id)+receiptView());
       if (run!==active || sequence!==token || revoked || stopWanted) return;
       render(value);
     } catch (error) {
       if (run!==active || sequence!==token || revoked || stopWanted) return;
-      for (const row of active.results) {delete row.lot_value;delete row.value_order;row.reason='Current authority could not be checked. Reload search status.';}
+      for (const row of active.results) {delete row.lot_value;delete row.value_order;delete row.buying_order;row.reason='Current authority could not be checked. Reload search status.';}
       status(error.message,true);$('discovery-reload').hidden=false;renderCards();
     } finally {validatingRun=false;}
   }
@@ -421,6 +426,9 @@
       }
       clearResults();
     }
+    // This authenticated response just revalidated every reference. An earlier
+    // failed lifecycle read must not erase it before a fresh check can run.
+    sourceState = null;sourceUnavailable = false;
     run = value;captureDeadline(value);
     acquiring = Boolean(value.running);
     $('discovery-results').hidden = false;

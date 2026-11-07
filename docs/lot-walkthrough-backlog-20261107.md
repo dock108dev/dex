@@ -100,3 +100,26 @@ Personal screenshots, listing IDs, prices and collection details stay outside Gi
 | M-03 | Broad printing search exposed raw variant attributes and required a more specific set query. | Readable trait labels and clearer set refinement. |
 | M-04 | No applicable normalized or condition-specific value supported the chosen lot. | Obtain qualified condition-matched evidence within source rights; preserve unknown values meanwhile. |
 | M-05 | Screenshots and the durable how-to were assembled outside Dex. | A walkthrough export with retention-aware screenshots and authored decision records. |
+
+
+## Free vintage pricing follow-up — 2026-11-07
+
+The owner requested actual best-buy estimates and selected free data. A fresh
+TCGCSV snapshot now supplies 552 exact ungraded references for the main 1999
+English sets/printings. The private dated CSV retains 565 source rows with explicit
+missing values. Source rows and customer screenshots remain outside Git.
+
+Shopping parses every received summary locally, keeps the existing two-detail
+acquisition bound, and screens complete same-source/date guides against price plus
+shipping. The row states the guide amount, coverage and ratio, with the flexible
+$120 baseline preserved. Partial contents, unknown shipping and condition-mixed
+prices do not produce a resale-profit claim. Closed original-set numbering can
+supply finish when seller language/edition/identity are established; its provenance
+is separate from seller statements.
+
+Remaining source/data gaps: MP/LP/NM and graded 8/9/10 values are unavailable in
+the selected free feed; some promo/error identities remain CSV-only. Sellers that
+omit card identities, quantities, language or edition still cannot support a full
+lot estimate. These are specific coverage gaps, not a reason to suppress supported
+prices for every listing. The private rerun log includes screenshots and concrete
+observations from the existing customer installation.

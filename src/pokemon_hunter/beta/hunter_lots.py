@@ -84,6 +84,10 @@ def _initial_cards(proposal):
                 k: row["clues"].get(k) or ""
                 for k in ("language", "edition", "finish", "condition", "grade", "grader")
             }
+            selection = row.get("variant_selection") or {}
+            inferred = (selection.get("seller_evidence") or {}).get("catalog_finish_inference")
+            if not traits["finish"] and inferred and selection.get("selected_child_id") == pid:
+                traits["finish"] = inferred["finish"]
             cards.setdefault(pid, dict(printing_id=pid, quantity=0, **traits))["quantity"] += row[
                 "included_quantity"
             ]

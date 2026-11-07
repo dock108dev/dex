@@ -18,10 +18,48 @@ Unknown shipping is never zero. Higher-priced opportunities remain available und
 the flexible budget policy, without automatically qualifying a purchase.
 
 When no applicable values exist, the list says so and orders the available evidence;
-it does not claim a proven bargain. Only the received batch is ranked and the normal
-Hunt still fetches details for at most two offers. **Details** reveals sources or
+it does not claim a proven bargain. Every received seller summary is parsed locally;
+the normal Hunt still fetches fuller details for at most two offers. **Details** reveals sources or
 optional contents correction. The review leads with a short cost/value summary and
 keeps the full breakdown in a disclosure.
+
+**Best matches** also uses a complete single-cohort publisher guide for estimated
+value screening. Within an identical source/date cohort, a lower price-plus-shipping
+to guide ratio ranks first. The row shows the actual guide amount, coverage and
+mixed-condition basis. A partial guide is labelled as identified-card value and has
+no whole-lot ratio. Unknown shipping has no ratio. Native guides do not become
+normalized totals, profit, condition-specific prices or bid ceilings. Source expiry
+and withdrawal clear these screening ranks together with the underlying evidence.
+A fresh authenticated value response clears an earlier failed lifecycle-check state
+before requesting a new lifecycle check; a transient failure cannot permanently
+hide freshly revalidated prices.
+
+### Free vintage reference import
+
+A one-time TCGCSV capture can provide ungraded, mixed-condition market guides in
+USD. Retain the publisher build and capture dates, exact product/subtype identity,
+missing prices and reviewed source permission. MP/LP/NM and graded prices are not
+present in this feed and must not be manufactured from a multiplier. See
+[TCGCSV documentation](https://tcgcsv.com/docs) and [FAQ](https://tcgcsv.com/faq).
+
+The vintage matcher binds exact English set/name/number pairs, rejecting duplicate
+or conflicting identities. Source group 604 represents Base Set Unlimited; 1663
+retains a separate Shadowless attribute. Jungle/Fossil use their explicit edition
+subtypes. These group semantics are retained in the admitted provider identity and
+checked against the actual offline shard. Physical alternatives are additive;
+existing numbered parents and owned copies are unchanged.
+
+For the original English Base Set, Jungle and Fossil, the known collector-number
+lists establish holo versus normal finish. This narrow catalog inference is recorded
+separately from seller assertions. It never supplies missing language, edition,
+condition, quantity or a special printing. Other sets retain their existing rules.
+
+The 2026-11-07 import captured five groups in 13 operations and produced 565 dated
+CSV rows, 562 populated and three without prices. Of these, 552 exact current
+references were admitted to the existing customer installation after independent
+mapping/contract review. Promo and special-error rows remain in the dated CSV when
+no exact installed identity exists. The current app references expire after 30 days;
+this is a one-time snapshot, not an automatic refresh subscription.
 
 ## Provider integration
 

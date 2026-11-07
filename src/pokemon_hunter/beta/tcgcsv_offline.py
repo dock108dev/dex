@@ -259,7 +259,7 @@ def _decision(printing, binding, policy, products, prices, by_source, built, con
     }:
         return "missing_reviewed_mapping", None
     provider = mapping["provider_identity"]
-    if not isinstance(provider, dict) or set(provider) != {
+    if not isinstance(provider, dict) or set(provider) - {"source_group"} != {
         "product_id",
         "set",
         "number",
@@ -275,7 +275,8 @@ def _decision(printing, binding, policy, products, prices, by_source, built, con
     if mapping["identity"] != {k: printing.get(k) for k in rules.IDENTITY}:
         return "catalog_identity_conflict", None
     if (
-        provider["product_id"] != str(product_id)
+        provider.get("source_group", str(gid)) != str(gid)
+        or provider["product_id"] != str(product_id)
         or provider["set"] != printing["set_name"]
         or provider["number"] != printing["collector_number"]
         or provider["variant"] != subtype

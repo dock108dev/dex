@@ -34,6 +34,18 @@ def rank(rows, choices=None):
             complete = order["group"] == "complete"
             score = Decimal(str(order["score"])) if complete and order["score"] is not None else None
             tier = 0 if score is not None and score > 0 else 2 if score is not None else 1
+            # A publisher guide is useful for screening, but never becomes a
+            # normalized value, resale profit, condition claim or bid ceiling.
+            guides = value.get("native_guides") or []
+            guide = guides[0] if len(guides) == 1 else None
+            guide_value = Decimal(str(guide["subtotal"])) if guide and guide.get("subtotal") else None
+            guide_ratio = (
+                cost / guide_value
+                if guide_value and guide_value > 0 and guide.get("complete") and cost is not None
+                else None
+            )
+            if score is None and guide_ratio is not None:
+                tier = Decimal("0.5") if guide_ratio < 1 else Decimal("2.5")
             over = baseline is not None and cost is not None and cost > baseline
             reason = (
                 "Complete card reference exceeds price + shipping; tax still to check."
@@ -42,6 +54,14 @@ def rank(rows, choices=None):
                 if tier == 2
                 else "Value not verified."
             )
+            if score is None and guide_value is not None:
+                coverage = (
+                    "whole lot" if guide.get("complete") else f"{guide['priced_quantity']} identified cards"
+                )
+                reason = f"${guide_value:,.2f} market guide for {coverage}."
+                if guide_ratio is not None:
+                    reason += f" Price + shipping is {guide_ratio:.0%} of guide."
+                reason += " Mixed-condition estimate."
             if random_contents:
                 reason = "Random or custom contents; lower confidence in collection fit."
             if over:
@@ -51,14 +71,20 @@ def rank(rows, choices=None):
                 reason=reason,
                 contents=names[:160] or "Contents not confirmed",
                 lane=lane,
+                guide_amount=str(guide_value) if guide_value is not None else None,
+                guide_complete=bool(guide and guide.get("complete")),
+                price_to_guide=str(guide_ratio) if guide_ratio is not None else None,
             )
             row["buying_order"][lane] = recommendation
             key = (
                 random_contents,
                 match,
                 tier,
-                bool(over) if tier != 0 else False,
+                bool(over) if tier not in (0, Decimal("0.5")) else False,
                 -score if tier == 0 else Decimal(0),
+                # Compare ratios only within one exact source/date cohort.
+                guide["cohort"] if guide_ratio is not None else "",
+                guide_ratio if guide_ratio is not None else Decimal(0),
                 -int(value.get("physically_selected_quantity") or value.get("identified_quantity") or 0),
                 cost is None,
                 cost

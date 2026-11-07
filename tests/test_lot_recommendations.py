@@ -68,3 +68,27 @@ def test_accented_names_match_and_random_contents_do_not_lead():
         offer("ordinary", "30"),
     ]
     assert ordered(rows) == ["accent", "ordinary", "mystery"]
+
+
+def test_native_guide_screens_complete_lots_without_claiming_profit():
+    rows = [offer("unknown", "20"), offer("better", "300"), offer("worse", "350")]
+    for row in rows[1:]:
+        row["lot_value"]["native_guides"] = [
+            dict(cohort="same-source-date", subtotal="450", total="450", complete=True, priced_quantity=1)
+        ]
+    assert ordered(rows) == ["better", "worse", "unknown"]
+    evidence = rows[1]["buying_order"]["combined"]
+    assert evidence["guide_amount"] == "450"
+    assert "Mixed-condition estimate" in evidence["reason"]
+    assert "Above your baseline" in evidence["reason"]
+    assert rows[1]["value_order"]["lanes"]["buy_it_now"]["score"] is None
+
+
+def test_partial_native_and_unknown_shipping_never_get_whole_lot_ratio():
+    for complete, cost in ((False, "20"), (True, None)):
+        row = offer("partial", cost)
+        row["lot_value"]["native_guides"] = [
+            dict(cohort="source", subtotal="100", complete=complete, priced_quantity=1)
+        ]
+        ordered([row])
+        assert row["buying_order"]["combined"]["price_to_guide"] is None

@@ -263,8 +263,16 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
                     r"^\s*\d+\s+(?:of\s+(?:these|them|the\s+cards)|are\b|have\b|show\b)", quantity_line, re.I
                 )
             )
+            template_header = bool(
+                re.fullmatch(
+                    r"\s*(?:includes|contents|cards)\s*\(\s*(?:qty|quantity)\s*[x×]\s*name(?:\s+#[^)]*)?\s*\)\s*:?\s*",
+                    text,
+                    re.I,
+                )
+            )
             if (
                 quantity is not None
+                and not template_header
                 and not metadata_only
                 and not subgroup
                 and not _totals(text)
@@ -373,14 +381,21 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
         if family_selection and not family_selection.get("selected_child_id"):
             chosen = None
             reasons.append("Physical variant requires scoped seller evidence")
+        from .tcgcsv_vintage import numbered_finish
+
+        catalog_finish = numbered_finish(chosen) if chosen and family_selection else None
+
+        def established(k):
+            return clues.get(k) or (k == "finish" and catalog_finish == chosen.get("finish"))
+
         if chosen and any(
-            not chosen.get(k) or (not clues.get(k) and chosen.get(k) != "not_applicable")
+            not chosen.get(k) or (not established(k) and chosen.get(k) != "not_applicable")
             for k in ("language", "edition", "finish")
         ):
             missing = [
                 k
                 for k in ("language", "edition", "finish")
-                if not chosen.get(k) or (not clues.get(k) and chosen.get(k) != "not_applicable")
+                if not chosen.get(k) or (not established(k) and chosen.get(k) != "not_applicable")
             ]
             reasons.append("Physical identity is not established: confirm " + ", ".join(missing))
             chosen = None

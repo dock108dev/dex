@@ -138,6 +138,11 @@ def test_bin_not_starved_by_twenty_auctions_and_unique_cap(env):
     assert result["progress"]["unprocessed"] == 19
     assert set(run.details) == {env.bin[0]["itemId"], env.auction[0]["itemId"]}
     assert result["reasons"]["candidate_limit"] == 1
+    assert all("lot_value" in row for row in result["results"])
+    # Every summary receives local contents analysis without spending more calls.
+    summary = next(row for row in result["results"] if row["evidence_kind"] == "seller_summary")
+    assert summary["lot_value"]["total"] is None
+    assert len(env.calls) == 5
 
 
 def test_duplicate_dual_option_reuses_one_detail_and_keeps_both_prices(env):

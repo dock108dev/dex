@@ -681,7 +681,13 @@ def _status(actor, session, run):
         assessed = set(run.assessed)
     # Read current references every time. No amounts/derivatives are persisted.
     rows = discovery_listing.received_rows(raws)
-    selected = [r for r in raws if r["itemId"] in assessed]
+    # Parse every received seller summary locally. Full details still improve
+    # two candidates within the unchanged five-operation acquisition contract.
+    selected = (
+        raws
+        if run.state in RUNNING | {"success", "partial"}
+        else [r for r in raws if r["itemId"] in assessed]
+    )
     checks = []
     if selected:
         try:
@@ -712,7 +718,7 @@ def _status(actor, session, run):
             assessment_state="ready"
             if _complete(row.get("lot_value", {}))
             else "partial"
-            if item in assessed
+            if item in assessed or row.get("lot_value", {}).get("identified_quantity")
             else "unprocessed",
         )
     try:
@@ -770,15 +776,18 @@ def _evidence(actor, run, handle, revision):
     try:
         _guard(run, actor, acquiring=False)
         _check_content(run, revision)
-        item = next((k for k in run.assessed if discovery_listing.result_handle(run.id, k) == handle), None)
-        if item is None or not contract.lanes(run.details[item]):
+        raw = next(
+            (r for r in run.raws if discovery_listing.result_handle(run.id, r["itemId"]) == handle), None
+        )
+        if raw is None or not contract.lanes(raw):
             raise Http404
-        assessment = _assess(actor, run, [run.details[item]])
+        item = raw["itemId"]
+        assessment = _assess(actor, run, [raw])
         value = assessment["results"][0]["lot_value"]
         version = _evidence_version(value)
         for check in assessment["reference_checks"]:
             check()
-        if not contract.lanes(run.details.get(item, {})):
+        if not contract.lanes(next((r for r in run.raws if r["itemId"] == item), {})):
             raise Http404
         _guard(run, actor, acquiring=False)
         _check_content(run, revision)

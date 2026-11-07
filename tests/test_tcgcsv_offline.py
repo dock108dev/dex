@@ -544,3 +544,13 @@ def test_aggregate_bytes_include_every_later_shard_and_exact_boundary_passes(cas
     assert report["input"]["input_bytes"] == total
     with pytest.raises(ValueError, match="byte ceiling"):
         prepare(case, limits=adapter.Limits(total_bytes=total - 1))
+
+
+def test_reviewed_source_group_must_match_retained_shard(case):
+    provider = case["manifest"]["contract"]["mappings"]["printing-1"]["provider_identity"]
+    provider["source_group"] = "604"
+    package, report = prepare(case)
+    assert decision(report) == "reviewed_source_identity_conflict"
+    provider["source_group"] = "700"
+    package, report = prepare(case)
+    assert decision(report) == "eligible"

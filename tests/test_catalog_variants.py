@@ -432,3 +432,36 @@ def test_literal_galaxy_holo_publication_preserves_unspecified_parent(b4):
     assert all(r["finish"] is None and json.loads(r["variant"])["foil"] == "galaxy" for r in added)
     with pytest.raises(ValueError, match="unreviewed"):
         variants.descriptor(dict(type="reverse", foil="galaxy"))
+
+
+def test_original_numbered_set_can_supply_finish_but_not_edition_or_language(b4):
+    from pokemon_hunter.beta import hunter_lot_parser
+
+    actor = b4["actor"]
+    p = package(actor, descriptors=[dict(type="normal", edition="unlimited")])
+    publish(actor, p)
+    parent_id = p["cards"][0]["parent_id"]
+    family = [
+        dict(r, set_name="Fossil", collector_number="25")
+        for r in inv.catalog(actor)
+        if r["id"] == parent_id or r.get("parent_printing_id") == parent_id
+    ]
+    parent = next(r for r in family if r["id"] == parent_id)
+    line = f"1x {parent['name']} 25/62 Fossil English Unlimited"
+    parsed = hunter_lot_parser.parse(dict(title=line, shortDescription="INCLUDES (qty × name #/62):"), family)
+    assert not parsed["unresolved_contents"]
+    assert "Unresolved identity or quantity claims require correction" not in parsed["quantity_issues"]
+    assert parsed["physically_selected_quantity"] == 1
+    evidence = parsed["proposals"][0]["variant_selection"]["seller_evidence"]
+    assert evidence["fields"]["finish"] is None
+    assert evidence["catalog_finish_inference"]["finish"] == "normal"
+    from pokemon_hunter.beta import hunter_lots
+
+    assert hunter_lots._initial_cards(parsed)[0]["finish"] == "normal"
+    for missing in (" English", " Unlimited"):
+        assert (
+            hunter_lot_parser.parse(dict(title=line.replace(missing, "")), family)[
+                "physically_selected_quantity"
+            ]
+            == 0
+        )

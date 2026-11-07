@@ -217,7 +217,7 @@ def validate(package, entries, *, now=None):
         if not isinstance(row["identity"], dict) or set(row["identity"]) != set(IDENTITY):
             raise ValueError("Exact installed identity required")
         provider = row["provider_identity"]
-        if not isinstance(provider, dict) or set(provider) != {
+        if not isinstance(provider, dict) or set(provider) - {"source_group"} != {
             "product_id",
             "set",
             "number",
@@ -228,6 +228,14 @@ def validate(package, entries, *, now=None):
             "mapping_review",
         }:
             raise ValueError("Independent provider identity and mapping review required")
+        if "source_group" in provider and (
+            policy["provider"] != "TCGCSV"
+            or not isinstance(provider["source_group"], str)
+            or not provider["source_group"].isascii()
+            or not provider["source_group"].isdigit()
+            or row.get("match_scope") != "conditional_market"
+        ):
+            raise ValueError("Source group requires an explicit TCGCSV conditional mapping")
         for value in provider.values():
             text(value)
         derived_sale = (

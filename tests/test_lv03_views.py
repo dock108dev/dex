@@ -42,7 +42,8 @@ def test_ordinary_action_captures_auth_session_and_poll_stop_never_send(workspac
     monkeypatch.setattr(lot_hunt, "_launch", lambda *args: launched.append(args))
     client = workspace["a"]
     page = client.get("/shopping/")
-    assert b"up to two offers (one per lane)" in page.content
+    assert b'id="discovery-search"' in page.content and b"Find lots" in page.content
+    assert b'data-lot-search="true"' in page.content
     url = "/api/shopping/discovery/"
     request_id = str(uuid.uuid4())
     data = json.dumps(dict(query="Lapras", acquisition_contract="dex-lot-hunt-v2"))

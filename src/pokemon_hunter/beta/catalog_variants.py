@@ -74,7 +74,10 @@ def descriptor(value):
     # Unlimited requires affirmative source metadata; absence of a stamp never
     # supplies it. First edition retains the established explicit stamp grammar.
     if "edition" in value and (
-        value["edition"] != "unlimited" or "stamp" in value or set(value) - {"type", "edition", "languages"}
+        value["edition"] != "unlimited"
+        or "stamp" in value
+        or set(value) - {"type", "edition", "languages", "other"}
+        or ("other" in value and value["other"] != ["shadowless"])
     ):
         raise ValueError("Unsupported or contradictory explicit edition")
     for key in ("stamp", "other", "languages"):
@@ -303,6 +306,7 @@ def seller_candidates(candidates, clues):
     special = bool(
         re.search(r"\b(?:jumbo|galaxy|celebration|copyright|1999[ -]+2000)\b", clues["text"], re.I)
     )
+    shadowless = bool(re.search(r"\bshadowless\b", clues["text"], re.I))
     for family in families.values():
         exact = []
         parent = next(
@@ -319,16 +323,24 @@ def seller_candidates(candidates, clues):
             if relation
             else set()
         )
+        from .tcgcsv_vintage import numbered_finish
+
+        finish = clues.get("finish") or (numbered_finish(parent) if parent else None)
         for p in family:
             value = p.get("attributes", {}).get("physical_variant")
-            if not value or set(value) - {"type", "edition", "stamp", "languages"} or special:
+            if (
+                not value
+                or set(value) - {"type", "edition", "stamp", "languages", "other"}
+                or value.get("other") != (["shadowless"] if shadowless else None)
+                or special
+            ):
                 continue
             if (
                 p["id"] in supported
                 and clues.get("language") == p.get("language")
                 and p.get("edition")
                 and clues.get("edition") == p["edition"]
-                and clues.get("finish") == p.get("finish")
+                and finish == p.get("finish")
             ):
                 exact.append(p)
         result.extend(exact if len(exact) == 1 else family)
@@ -443,6 +455,9 @@ def selection_projection(candidates, chosen, clues, *, quantity, mentions):
     family = family_projection(parent, candidates)
     allowed = {a["child_id"] for a in family["alternatives"] if a["status"] == "supported"}
     selected = chosen["id"] if chosen and chosen["id"] in allowed else None
+    from .tcgcsv_vintage import numbered_finish
+
+    inferred = numbered_finish(chosen) if selected and not clues.get("finish") else None
     return dict(
         **family,
         quantity=quantity,
@@ -452,6 +467,9 @@ def selection_projection(candidates, chosen, clues, *, quantity, mentions):
             mentions=mentions,
             scope="this content line only",
             fields={k: clues.get(k) for k in ("language", "edition", "finish")},
+            catalog_finish_inference=dict(finish=inferred, basis="Original English set and collector number")
+            if inferred
+            else None,
         ),
         reason=None if selected else "physical_variant_not_selected",
     )
