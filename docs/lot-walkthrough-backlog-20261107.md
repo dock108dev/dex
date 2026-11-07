@@ -1,5 +1,7 @@
 # Lot-buying walkthrough: observed feature backlog
 
+Subsequent owner feedback rejected the dense options and decision-log workflow. The current default is the [ranked buying list](hunts.md#buying-options), with detailed controls collapsed and the decision journal removed from the ordinary flow. The entries below retain their historical evidence.
+
 Observed in the actual installed customer app on 2026-11-07. Implemented on `release/lot-walkthrough-20261107`; customer-runtime verification
 and the Moltres walkthrough are tracked separately below. Personal listing/collection evidence remains in the private
 walkthrough log. These priorities express purchase-journey impact, not release gates.

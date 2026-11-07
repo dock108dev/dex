@@ -16,8 +16,8 @@
   {{ discovery_goals|json_script:"discovery-goals" }}
   <form id="discovery-form" data-lot-search="true">
     {% csrf_token %}
-    <div class="discovery-searchbox"><label for="discovery-query">Pokémon or card name<input id="discovery-query" name="query" type="search" maxlength="200" placeholder="e.g. Venusaur" autocomplete="off"></label><div class="discovery-setbar"><label for="discovery-set">Set <span class="optional">optional</span><select id="discovery-set" name="set_id"><option value="">All supported sets</option></select><span id="discovery-set-caption" class="selection-caption">All supported sets</span></label></div><div class="search-actions"><button id="discovery-search" type="submit" disabled>Find lots</button><button id="discovery-stop" type="button" class="secondary" disabled>Stop</button></div></div>
-    <p class="field-help">Find lots starts one bounded Hunt: up to 40 summaries across Buy It Now and auctions ending within 72 hours, then full seller details and local assessment for up to two offers (one per lane). At most five shared operations including authentication. <a href="#hunter-usage">Lot search allowance</a> must have capacity. No automatic retries; prices and shipping may remain unknown.</p>
+    <div class="discovery-searchbox"><label for="discovery-query">Pokémon or card name<input id="discovery-query" name="query" type="search" maxlength="200" placeholder="e.g. Venusaur" autocomplete="off"></label><label for="discovery-budget">Budget, USD <span class="optional">optional</span><input id="discovery-budget" name="budget" type="number" min="0" max="10000" step="0.01" placeholder="Any budget"></label><div class="search-actions"><button id="discovery-search" type="submit" disabled>Find lots</button><button id="discovery-stop" type="button" class="secondary" disabled>Stop</button></div></div>
+    <p class="field-help">Find the strongest matches for your collection and budget.</p>
     <div id="discovery-suggestions" role="status" aria-live="polite" hidden></div>
     <div class="discovery-refinements">
 
@@ -33,12 +33,12 @@
       <button type="button" id="find-missing" disabled aria-pressed="false">Find missing cards</button>
 
     </div>
-    <p id="intent-description" class="intent-description">Search supported cards automatically, including cards you already own. No goal needed.</p>
+    <div class="discovery-setbar"><label for="discovery-set">Set <span class="optional">optional</span><select id="discovery-set" name="set_id"><option value="">All supported sets</option></select><span id="discovery-set-caption" class="selection-caption">All supported sets</span></label></div><p id="intent-description" class="intent-description">Search supported cards automatically, including cards you already own. No goal needed.</p>
     <div class="discovery-controls">
       <label for="discovery-focus">Card scope<select id="discovery-focus" name="focus"><option value="all">All supported Pokémon cards</option><option value="kanto">Kanto · 1–151</option><option value="johto">Johto · 152–251</option><option value="rares">Rare cards</option><option value="bulk">Common and uncommon cards</option></select><span id="discovery-focus-caption" class="selection-caption">All supported Pokémon cards</span></label>
-      <label for="discovery-budget">All-in budget / baseline, USD <span class="optional">optional</span><input id="discovery-budget" name="budget" type="number" min="0" max="10000" step="0.01" placeholder="Any budget"><span class="field-help">Includes shipping and tax. Unknown costs stay unknown; this is not a value estimate.</span></label>
+
     </div>
-<div class="discovery-controls"><label>Budget policy<select id="discovery-budget-mode"><option value="limit">Budget limit</option><option value="flexible">Baseline with opportunity exceptions</option></select></label><label>Exception value basis<select id="discovery-budget-value-basis"><option value="collectible">Estimated collectible value</option><option value="resale">Net resale proceeds after selling costs</option></select></label><label>My exception rule<input id="discovery-budget-rule" maxlength="200" placeholder="e.g. Consider higher costs only with supported upside"></label></div><p class="field-help">A flexible baseline retains higher-priced options for your review. Partial contents, generic guides and unknown costs do not qualify an exception. Your rule does not authorize a purchase; resale proceeds require selling costs.</p>
+<details class="advanced-preferences"><summary>Budget flexibility</summary><div class="discovery-controls"><label>Budget policy<select id="discovery-budget-mode"><option value="limit">Budget limit</option><option value="flexible">Baseline with opportunity exceptions</option></select></label><label>Exception value basis<select id="discovery-budget-value-basis"><option value="collectible">Estimated collectible value</option><option value="resale">Net resale proceeds after selling costs</option></select></label><label>My exception rule<input id="discovery-budget-rule" maxlength="200" placeholder="e.g. Consider higher costs only with supported upside"></label></div><p class="field-help">A flexible baseline retains higher-priced options for your review. Partial contents, generic guides and unknown costs do not qualify an exception. Your rule does not authorize a purchase; resale proceeds require selling costs.</p></details>
     <div id="missing-controls" class="discovery-controls" hidden>
       <label for="discovery-goal">Missing from<select id="discovery-goal" name="goal_id"><option value="">My current collection</option></select><span id="discovery-goal-caption" class="selection-caption">My current collection</span></label>
       <label for="discovery-target">Missing Pokémon<select id="discovery-target"><option value="">Choose one Pokémon</option></select></label>
@@ -47,8 +47,8 @@
       <p id="missing-policy" class="field-help full"></p>
     </div>
     <label class="discovery-checkbox"><input id="discovery-prefer-vintage" type="checkbox"> Prefer vintage; any qualifying era can fill the gap</label>
-    <label hidden class="discovery-checkbox"><input id="discovery-english-vintage" type="checkbox"> English · vintage · US listings</label><p class="field-help">US listing/delivery filters still apply. Vintage preference does not exclude other eras. Seller titles do not verify language or year.</p>
-    <p class="field-help">Find lots acquires the bounded batch and details automatically. Typing, local browsing and filters make no eBay requests.</p>
+    <label hidden class="discovery-checkbox"><input id="discovery-english-vintage" type="checkbox"> English · vintage · US listings</label>
+
     </details>
     <p id="discovery-status" role="status" aria-live="polite" tabindex="-1">Ready to search.</p>
     <button id="discovery-reload" type="button" class="secondary" hidden>Reload search status</button>
@@ -58,25 +58,25 @@
     <section id="catalog-results" class="catalog-results" aria-labelledby="catalog-results-title"><div class="catalog-heading"><h2 id="catalog-results-title" tabindex="-1">Pokémon and cards</h2><button id="catalog-clear-target" type="button" class="secondary" hidden>Show all matching cards</button></div><p id="catalog-status" role="status" aria-live="polite">Loading your local catalog…</p><div id="catalog-cards" class="catalog-cards"></div><button id="catalog-next" type="button" class="secondary" hidden>More local cards</button><p class="field-help">Catalog images do not show the seller’s cards.</p></section>
     </details>
   </form>
-  {% include 'beta/lot_usage.html' %}
-  {% include 'beta/lot_journal.html' %}
+
   <section id="discovery-results" aria-labelledby="discovery-results-title" hidden>
-    <div class="discovery-results-heading"><div><h2 id="discovery-results-title" tabindex="-1">Lots</h2><p id="discovery-scope" class="muted"></p></div>
+    <div class="discovery-results-heading"><div><h2 id="discovery-results-title" tabindex="-1">Best options</h2><p id="discovery-scope" class="muted"></p></div>
     <div class="discovery-filters"><div hidden><label for="discovery-filter">Show<select id="discovery-filter"><option value="all">All results</option><option value="below">Comparable · below reference</option><option value="conditional">Conditional comparisons</option><option value="unpriced">Unpriced or ambiguous</option></select></label></div><p id="discovery-shown" class="field-help" role="status"></p></div>
     </div>
-    <div class="results-notes"><p class="browse-note">US lots · current bids can rise. Shipping is shown separately; unknown shipping is never free.</p><details class="results-guidance"><summary>About these results</summary><p id="discovery-limitation"></p></details></div>
-    <div class="discovery-controls lot-result-controls">
+    <div class="results-notes"><p class="browse-note">Ranked within this search. Prices exclude tax; auction bids can rise.</p><details class="results-guidance"><summary>About these results</summary><p id="discovery-limitation"></p></details></div>
+    <details class="result-settings"><summary>Filter and sort</summary><div class="discovery-controls lot-result-controls">
       <label for="lot-time-window">Auctions ending within<select id="lot-time-window"><option value="24">24 hours</option><option value="48">48 hours</option><option value="72" selected>3 days</option></select></label>
       <label for="lot-buying-mode">Buying option<select id="lot-buying-mode"><option value="both">Auctions + Buy It Now</option><option value="auction">Auctions · up to 72 hours</option><option value="buy_now">Available Buy It Now offers</option></select></label>
-      <label for="lot-value-sort">Sort results<select id="lot-value-sort"><option value="value">Reference minus cost · separate assessment groups</option><option value="ending">Ending soonest</option><option value="native">Publisher guide contents · separate cohorts, not savings</option></select></label>
+      <label for="lot-value-sort">Sort results<select id="lot-value-sort"><option value="best">Best matches</option><option value="value">Reference compared with cost</option><option value="ending">Ending soonest</option><option value="native">Publisher guide contents · separate cohorts, not savings</option></select></label>
       <label for="lot-value-basis">Evidence basis<select id="lot-value-basis"><option value="all">All evidence and unavailable results</option><option value="sold_estimate">Sold estimate</option><option value="guide">Guide</option><option value="mixed">Mixed</option><option value="native">Publisher-native guide</option></select></label>
     </div>
-    <p class="field-help">Time window applies to auctions. Buy It Now shows available offers. Value sorting compares complete ungraded references with price + shipping, before tax; Partial subtotals, unknown costs and unpriced offers have separate groups. Combined view uses the BIN rank when available; select Auctions or Buy It Now for independent order. Only this received batch is ranked.</p>
-    <p id="lot-values-status" role="status"></p><button id="lot-values-reload" class="secondary" type="button" hidden>Reload local values</button>
+    </details>
+    <p id="lot-values-status" role="status" class="field-help"></p><button id="lot-values-reload" class="secondary" type="button" hidden>Reload local values</button>
     <div id="discovery-cards" class="discovery-cards"></div>
     <div class="discovery-actions"><button id="discovery-next" type="button" class="secondary" disabled>More results</button><span id="discovery-next-note" class="field-help"></span></div>
 
   </section>
+  <details class="search-settings"><summary>Search allowance and settings</summary>{% include 'beta/lot_usage.html' %}</details>
   <details hidden class="discovery-help"><summary>About these comparisons</summary><p>Search uses a small batch of singles, loose mixed lots and supported auctions. Auction current bids can rise and are not final purchase prices. References keep their original dates; Dex does not refresh guide prices here. A reference may depend on an unconfirmed condition or edition. A generic grade scenario does not verify a slab.</p><p>Shipping is separate from the listing price. A delivered total is shown only when shipping is known. Results may be temporary when source permissions do not allow saving. Reopening and filtering do not search eBay.</p></details>
   <details hidden class="discovery-help"><summary>More Shopping tools</summary><nav class="discovery-links" aria-label="More Shopping tools"><a href="/shopping/hunter/">Price Hunter</a><a href="/shopping/calculator/">Manual calculator</a><a href="/shopping/legacy/">Saved research</a><a href="/packs/">Packs</a><a href="/finds/">Saved eBay finds</a><a href="/lookup/">Pack lookup</a><a href="/packs/saved/">Saved pack research</a></nav></details>
   <noscript><p class="discovery-note">Enable JavaScript to use visual search and discovery. The <a href="/shopping/calculator/">listing/lot calculator</a> remains available.</p></noscript>

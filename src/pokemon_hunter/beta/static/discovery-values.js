@@ -8,6 +8,7 @@ window.DexLotValues = (() => {
     ...(row.lot_value?.alternatives || []).flatMap(line => line.alternatives.map(choice => choice.reference).filter(Boolean))];
   function invalidate(row, unavailable) {
     const value = row.lot_value;
+    row.buying_order = null;
     if (!value) return;
     if ((value.references || []).some(unavailable)) {
       Object.assign(value, {subtotal:null,total:null,basis:null,basis_label:null,bid_difference:null,buy_now_difference:null});
@@ -62,12 +63,14 @@ window.DexLotValues = (() => {
     });
     // Money and tie-breaking are server-owned. No fallback financial ranking.
     return selected.sort((a,b) => {
+      if (sort === 'best') return ((a.buying_order?.[laneFor(mode) || 'combined']?.rank ?? Infinity) - (b.buying_order?.[laneFor(mode) || 'combined']?.rank ?? Infinity)) || String(a.id || '').localeCompare(String(b.id || ''));
       if (sort === 'ending') return (Date.parse(a.ends_at) || Infinity) - (Date.parse(b.ends_at) || Infinity);
       const x=orderFor(a,mode),y=orderFor(b,mode), key=laneFor(mode) ? 'rank' : 'combined_rank';
       return ((x?.[key] ?? Infinity) - (y?.[key] ?? Infinity)) || String(a.id || '').localeCompare(String(b.id || ''));
     });
   }
   function groups(rows, {mode = 'both', sort = 'value'} = {}) {
+    if (sort === 'best' || sort === 'ending') return null;
     if (sort === 'native') {
       const cohorts = new Map(), remaining = [];
       for (const row of rows) {
@@ -90,7 +93,8 @@ window.DexLotValues = (() => {
     const reasons = {candidate_limit:'Only one detail slot per lane is available; other summaries were not assessed',summary_request_failed:'A search page failed',detail_request_failed:'Selected seller details could not be fetched',assessment_unavailable:'Supplied contents could not be assessed',contents_or_references_unavailable:'Some supplied contents or admitted references are unavailable',current_assessment_unavailable:'Some current references are unavailable'};
     const p=run.progress || {}, n=k=>p[k] ?? 0;
     const recovery=run.running ? 'Stop prevents later requests.' : ['stopped','expired','conflict','restart_uncertain','busy','exhausted','failed'].includes(run.state) ? 'A new Find lots action requires remaining permitted capacity. Reads do not retry or restore work.' : 'No automatic retries or further detail requests.';
-    return `${states[run.state] || 'Hunt status unavailable'}. ${n('searched')}/2 pages searched · ${n('received')} summaries received · ${n('enriched')}/2 enriched · ${n('assessed')} assessed · ${n('unprocessed')} unprocessed. ${Object.keys(run.reasons || {}).map(k=>reasons[k]).filter(Boolean).join('. ')}${run.error ? '. '+run.error : ''}. ${recovery}`;
+    if (run.error || ['failed','busy','exhausted','conflict','unauthorized','restart_uncertain'].includes(run.state)) return `${states[run.state] || 'Search unavailable'}. ${run.error || 'Check search allowance and try again.'}`;
+    return run.running ? `${states[run.state] || 'Searching'}…` : `${states[run.state] || 'Search complete'} · ${n('received')} listings found · ${n('assessed')} checked in detail.`;
   }
   function html(row, {esc, money, link, correction = ''}) {
     const value = row.lot_value;

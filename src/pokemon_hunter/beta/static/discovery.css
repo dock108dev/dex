@@ -189,6 +189,30 @@
 
 .discovery-card .difference.is-over-reference { color:#8f1d2c; }
 
+/* Buying options lead; configuration and evidence stay on request. */
+.discovery-cards { grid-template-columns:minmax(0,1fr); gap:12px; }
+.discovery .compact-lot { display:grid; grid-template-columns:100px minmax(0,1fr) 190px; gap:12px 20px; align-items:start; }
+.compact-lot .offer-image { aspect-ratio:1; }
+.compact-lot .lot-summary h3 { font-size:1.05rem; margin:0 0 6px; }
+.compact-lot .lot-contents { color:var(--muted); }
+.compact-lot .lot-reason { margin-top:8px; }
+.compact-lot .lot-buy { display:flex; flex-direction:column; gap:6px; text-align:right; }
+.compact-lot .lot-buy strong { font-size:1.5rem; }
+.compact-lot .lot-buy span { font-size:.8rem; color:var(--muted); }
+.compact-lot .lot-buy a { background:#9d2032; color:white; border-radius:8px; padding:10px 12px; text-align:center; text-decoration:none; margin-top:4px; }
+.compact-lot .lot-more { grid-column:2/-1; margin:0; }
+.compact-lot .lot-more>summary { padding:0; min-height:28px; }
+.result-settings,.search-settings { margin:8px 0; }
+.discovery .search-settings { margin-top:24px; border-top:1px solid var(--border); }
+.discovery-results-heading #discovery-scope { max-width:70ch; font-size:.85rem; }
+.discovery .advanced-preferences { margin-bottom:10px; }
+@media(max-width:600px) {
+  .discovery .compact-lot { grid-template-columns:72px minmax(0,1fr); gap:12px; }
+  .compact-lot .lot-buy { grid-column:2; text-align:left; }
+  .compact-lot .lot-more { grid-column:1/-1; }
+  .compact-lot .offer-image { aspect-ratio:1; }
+}
+
 /* Automatic assessment groups and their single evidence disclosure. */
 .lot-group-heading { grid-column:1/-1; padding-top:12px; border-top:1px solid var(--border); }
 .lot-group-heading h3 { margin:0; font-size:1.125rem; }

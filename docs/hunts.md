@@ -4,6 +4,25 @@ Shopping combines local catalog browsing, explicit eBay searches and dated-refer
 comparisons. Catalog and reference coverage are partial. Missing identities, costs
 and reference values stay unknown. The app never buys, bids or guarantees a bargain.
 
+## Buying options
+
+Shopping starts with a card request and optional budget. **Best matches** returns one
+ordered list with the offer cost, a short contents summary, the reason for its order
+and a seller link. Search options, allowance, filters and evidence are collapsed.
+The decision journal is no longer part of the ordinary buying flow.
+
+Ordering uses request relevance, complete comparable value when available, supported
+physical contents and known delivered cost. Random/custom lots come later. A cheap
+current bid is labelled as a bid; combined offers use the Buy It Now observation.
+Unknown shipping is never zero. Higher-priced opportunities remain available under
+the flexible budget policy, without automatically qualifying a purchase.
+
+When no applicable values exist, the list says so and orders the available evidence;
+it does not claim a proven bargain. Only the received batch is ranked and the normal
+Hunt still fetches details for at most two offers. **Details** reveals sources or
+optional contents correction. The review leads with a short cost/value summary and
+keeps the full breakdown in a disclosure.
+
 ## Provider integration
 
 The implementation uses these eBay REST operations:

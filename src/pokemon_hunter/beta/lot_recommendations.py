@@ -1,20 +1,28 @@
 """Explainable ordering of the received offers, never an authority to buy."""
 
 import re
+import unicodedata
 from decimal import Decimal
 
 
 def rank(rows, choices=None):
+    def words(text):
+        text = "".join(
+            c for c in unicodedata.normalize("NFKD", text.casefold()) if not unicodedata.combining(c)
+        )
+        return set(re.findall(r"\w+", text))
+
     query = getattr(choices, "query", "") or ""
-    terms = set(re.findall(r"\w+", query.casefold()))
+    terms = words(query) - {"pokemon", "vintage", "card", "cards", "lot", "lots"}
     budget = getattr(choices, "budget", None)
     baseline = Decimal(str(budget)) if budget not in (None, "") else None
     buckets = {"auction": [], "buy_it_now": [], "combined": []}
     for row in rows:
         value = row.get("lot_value") or {}
         names = ", ".join(dict.fromkeys(c.get("name", "") for c in value.get("cards", [])))
-        named = set(re.findall(r"\w+", names.casefold()))
-        title = set(re.findall(r"\w+", row.get("title", "").casefold()))
+        named = words(names)
+        title = words(row.get("title", ""))
+        random_contents = bool(title & {"mystery", "random", "custom", "proxy", "replica", "repack"})
         match = 0 if terms and terms <= named else 1 if not terms or terms <= title else 2
         row["buying_order"] = {}
         for lane, order in row["value_order"]["lanes"].items():
@@ -32,8 +40,10 @@ def rank(rows, choices=None):
                 if tier == 0
                 else "Price + shipping meets or exceeds the complete card reference."
                 if tier == 2
-                else "Value not established; ordered by request match, contents and known cost."
+                else "Value not verified."
             )
+            if random_contents:
+                reason = "Random or custom contents; lower confidence in collection fit."
             if over:
                 reason += " Above your baseline."
             recommendation = dict(
@@ -44,13 +54,22 @@ def rank(rows, choices=None):
             )
             row["buying_order"][lane] = recommendation
             key = (
+                random_contents,
                 match,
                 tier,
                 bool(over) if tier != 0 else False,
                 -score if tier == 0 else Decimal(0),
                 -int(value.get("physically_selected_quantity") or value.get("identified_quantity") or 0),
                 cost is None,
-                cost if cost is not None else Decimal(0),
+                cost
+                if cost is not None
+                else Decimal(
+                    str(
+                        costs.get("base")
+                        or row.get("buy_now_price" if lane == "buy_it_now" else "listing_price")
+                        or "Infinity"
+                    )
+                ),
                 lane == "auction",
                 row["item_id"],
             )

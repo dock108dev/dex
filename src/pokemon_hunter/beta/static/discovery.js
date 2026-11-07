@@ -120,7 +120,7 @@
     if (missing) document.querySelector('.discovery-options').open = true;
     $('find-deals').setAttribute('aria-pressed',String(!missing));
     $('find-missing').setAttribute('aria-pressed',String(missing));
-    $('intent-description').textContent = missing ? 'Choose one missing Pokémon per search. A title mention is possible relevance, not confirmed contents or collection gain.' : 'Search by name or broad words, including cards you own. Mixed lots may contain the card; contents are unverified.';
+    $('intent-description').textContent = missing ? 'Choose a Pokémon missing from your collection.' : 'Find the best matches for your request.';
     const goal = goals.find(item => String(item.id) === $('discovery-goal').value);
     $('missing-basis-label').hidden = true;
     $('discovery-query').readOnly = missing;
@@ -302,6 +302,7 @@
     return result.classification === 'comparable' && result.comparison?.below_reference !== false && result.delivered_total !== null && result.delivered_total !== undefined && Number(result.comparison?.reference_minus_delivered_total) > 0;
   }
   function card(result) {
+    if ($('discovery-form').dataset.lotSearch === 'true') return compactLot(result);
     const identity = $('discovery-form').dataset.lotSearch === 'true' ? {} : result.proposed_identity || (result.identity_candidates?.length === 1 ? result.identity_candidates[0] : {}) || {}, reference = result.reference;
     const comparable = result.classification === 'comparable', conditional = result.classification === 'conditional';
     const auction = result.price_kind === 'current_bid' || result.type === 'auction';
@@ -318,6 +319,23 @@
     const seller = `${sellerUrl ? `<a href="${esc(sellerUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Open seller listing on eBay">View on eBay</a>` : '<p>Seller link unavailable.</p>'}`;
     const time = auction ? `<p data-auction-end="${esc(result.ends_at || '')}">${esc(window.DexDiscoveryDisplay?.auctionTime(result.ends_at) || 'Auction · end time unknown')}</p>` : '';
     return `<article class="discovery-card" id="offer-${esc(result.id)}" tabindex="-1" data-result="${esc(result.id)}" data-offer="${esc(result.id)}"><div class="discovery-card-heading">${image}<div><h3>${esc(result.title || identity.name || candidateLabel)}</h3>${identity.name ? `<p>Proposed: ${esc(identity.name)}</p>` : ''}${metadata ? `<p class="identity-meta">${esc(metadata)}</p>` : ''}${comparable || conditional ? `<span class="discovery-classification"${$('discovery-form').dataset.lotSearch === 'true' ? ' hidden' : ''}>${esc(classification)}</span>` : ''}</div></div><dl class="discovery-amounts">${window.DexLotValues?.costs(result,{esc,money}) || `<div><dt>Offer price</dt><dd>${esc(money(result.listing_price))}</dd></div><div><dt>Shipping</dt><dd>${esc(money(result.shipping))}</dd></div><div><dt>Delivered · before tax</dt><dd>${esc(money(result.delivered_total))}</dd></div>`}</dl>${time}<p>Offer observed: ${esc(result.observed_at ? new Date(result.observed_at).toLocaleString() : 'Unknown')}. Current bids are provisional; Buy It Now is not reserved.</p>${window.DexLotValues?.html(result,{esc,money,link,correction:`<a data-review-id="${esc(result.id)}" href="/shopping/check/?discovery_run=${encodeURIComponent(run.run_id)}&amp;item_id=${encodeURIComponent(result.id)}">Correct contents in temporary review</a>`}) || ''}<p>${result.evidence_kind === 'seller_details' ? 'Based on full seller details; seller-stated contents are not independently verified.' : 'Seller summary only; full details have not been assessed.'}</p><div class="seller">${seller}<a class="review-offer" aria-label="Assess lot" data-review-id="${esc(result.id)}" href="/shopping/check/?discovery_run=${encodeURIComponent(run.run_id)}&amp;item_id=${encodeURIComponent(result.id)}">Assess lot · optional correction</a></div><details hidden><summary>Comparison & listing details</summary>${result.reason ? `<p>${esc(result.reason)}</p>` : ''}${referenceHtml}${result.save_reason ? `<p>${esc(result.save_reason)}</p>` : ''}</details></article>`;
+  }
+
+  function compactLot(result) {
+    const mode=$('lot-buying-mode').value, lane=mode==='auction'?'auction':mode==='buy_now'?'buy_it_now':result.value_order?.lanes?.buy_it_now?'buy_it_now':'auction';
+    const recommendation=result.buying_order?.[mode==='both'?'combined':lane];
+    const value=result.lot_value, costs=value?.benchmark_costs?.[lane];
+    const base=costs?.base ?? (lane==='buy_it_now'?result.buy_now_price:result.listing_price);
+    const delivered=costs?.delivered_before_tax ?? (lane==='buy_it_now'?result.buy_now_delivered_total:result.delivered_total);
+    const art=window.DexDiscoveryDisplay?.sellerImage(result.seller_image) || '';
+    const url=link(result.item_url,true);
+    const price=delivered!=null?money(delivered):base!=null?money(base):'Price unknown';
+    const priceNote=delivered!=null?'incl. shipping · before tax':'shipping unknown';
+    const identified=value?.physically_selected_quantity ?? value?.identified_quantity ?? 0;
+    const contents=recommendation?.contents && recommendation.contents!=='Contents not confirmed'?recommendation.contents:identified?`${identified} identified cards`:'Contents need checking';
+    const reason=recommendation?.reason || 'Value not established; check the contents before buying.';
+    const detail=window.DexLotValues?.html(result,{esc,money,link}) || '';
+    return `<article class="discovery-card compact-lot" id="offer-${esc(result.id)}" tabindex="-1" data-result="${esc(result.id)}" data-offer="${esc(result.id)}"><div class="offer-image" data-source="${esc(art)}">${art?`<img src="${esc(art)}" alt="Seller photo" loading="lazy" decoding="async" referrerpolicy="no-referrer">`:''}<span class="offer-image-fallback"${art?' hidden':''}>No photo</span></div><div class="lot-summary"><h3>${esc(result.title)}</h3><p class="lot-contents">${esc(contents)}</p><p class="lot-reason">${esc(reason)}</p>${lane==='auction'?`<p data-auction-end="${esc(result.ends_at || '')}">${esc(window.DexDiscoveryDisplay?.auctionTime(result.ends_at) || 'End time unknown')}</p>`:''}</div><div class="lot-buy"><strong>${esc(price)}</strong><span>${lane==='auction'?'Current bid · ':''}${esc(priceNote)}</span>${url?`<a class="button-link" href="${esc(url)}" target="_blank" rel="noopener noreferrer" aria-label="Open seller listing on eBay">View on eBay</a>`:''}</div><details class="lot-more"><summary>Details</summary>${detail}<p>Observed ${esc(result.observed_at?new Date(result.observed_at).toLocaleString():'time unknown')}.</p><a class="review-offer" aria-label="Assess lot" data-review-id="${esc(result.id)}" href="/shopping/check/?discovery_run=${encodeURIComponent(run.run_id)}&amp;item_id=${encodeURIComponent(result.id)}">Check or correct contents</a></details></article>`;
   }
 
   async function expandEvidence(panel) {
@@ -374,7 +392,7 @@
     const filter = $('discovery-form').dataset.lotSearch === 'true' ? 'all' : $('discovery-filter').value;
     let rows = results.filter(result => filter === 'all' || filter === 'below' && below(result) || filter === result.classification);
     if (window.DexLotValues) rows = window.DexLotValues.select(rows,{hours:$('lot-time-window').value,mode:$('lot-buying-mode').value,sort:$('lot-value-sort').value,basis:$('lot-value-basis')?.value || 'all'});
-    $('discovery-shown').textContent = run?.coverage ? `${rows.length} shown · ${run.coverage.received} summaries received · ${run.coverage.received - rows.length} outside the selected view. Limited provider coverage; unknown costs are not zero.` : `${rows.length} of ${results.length} results${filter === 'all' ? '' : ' · ' + ({below:'Comparable · below reference',conditional:'Conditional comparisons',unpriced:'Unpriced or ambiguous'}[filter] || '')}`;
+    $('discovery-shown').textContent = `${rows.length} options`;
     const groups = window.DexLotValues?.groups(rows,{mode:$('lot-buying-mode').value,sort:$('lot-value-sort').value});
     const seen = new Set();
     const grouped = groups?.map(group => {
@@ -412,7 +430,7 @@
     status((value.contract === 'dex-lot-hunt-v2' ? (window.DexLotValues?.progress(value) || `Hunt ${value.state.replaceAll('_',' ')} · ${value.progress?.enriched || 0}/2 detailed · ${value.progress?.assessed || 0} assessed · ${value.progress?.unprocessed || 0} unprocessed`) : value.error || (value.state === 'expired' ? 'This temporary search has expired. Select Search to start a new search.' : value.state === 'stopped' ? 'Search stopped. No further requests will be sent.' : acquiring ? 'Searching a small batch… Stop prevents later requests and results.' : value.state === 'failed' ? 'Search ended after a request failed. No automatic retry.' : `Search complete${Number.isFinite(count) ? ' · ' + count + ' listing summaries checked' : ''}.`)),Boolean(value.error) || value.state === 'failed');
     lastRunCheck = Date.now();
     $('discovery-next').hidden = value.contract === 'dex-lot-hunt-v2';
-    if (value.contract === 'dex-lot-hunt-v2') $('lot-values-status').textContent = value.running ? 'Available assessments appear automatically as details arrive.' : value.results?.some(r=>r.lot_value?.subtotal!=null || r.lot_value?.native_guides?.length) ? 'Dated local benchmarks; no price refresh. Only enriched offers are assessed.' : 'No usable prices in this batch. Details not fetched and unresolved supplied contents are labelled separately; admitted references may be unavailable. Local reload does not fetch listings or prices.';
+    if (value.contract === 'dex-lot-hunt-v2') $('lot-values-status').textContent = value.running ? 'Checking contents and value…' : value.results?.some(r=>r.lot_value?.subtotal!=null || r.lot_value?.native_guides?.length) ? 'Value comparisons use dated references. Open Details to see the evidence.' : 'No supported value comparisons yet. Order reflects request match, contents and known cost.';
     renderCards();updateButtons();checkSources();
     if (window.DexLotValues && !acquiring && value.results?.length && !value.values_checked) loadValues();
     if (focusResults && !acquiring && value.results?.length) {

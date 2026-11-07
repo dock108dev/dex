@@ -1,6 +1,6 @@
 # Find a lot that fills an original-151 gap
 
-Updated for the lot-walkthrough fixes on 2026-11-07; installed verification is recorded separately. This guide covers finding,
+Historical detailed walkthrough. The later owner feedback replaced this default flow with the simpler ranked buying list in [Shopping](hunts.md#buying-options); the decision journal is no longer shown. Updated for the lot-walkthrough fixes on 2026-11-07; installed verification is recorded separately. This guide covers finding,
 reviewing and opening a seller listing. It does not describe a completed purchase.
 Listings, prices, availability and temporary reviews change. Use your current collection.
 

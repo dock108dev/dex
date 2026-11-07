@@ -92,3 +92,13 @@ assert.equal(packed.lot_value.priced_quantity,2);
 assert.equal(packed.lot_value.identified_unpriced_quantity,3);
 assert.equal(packed.lot_value.native_priced_quantity,0);
 assert.equal(packed.lot_value.subtotal,null);
+// The default recommendation view is one ordered list, not assessment groups.
+const bestA=ranked('best-a',2,1),bestB=ranked('best-b',1,2);
+bestA.buying_order={combined:{rank:1},auction:{rank:2}};
+bestB.buying_order={combined:{rank:2},auction:{rank:1}};
+assert.deepEqual(Array.from(display.select([bestB,bestA],{now,sort:'best'}),r=>r.id),['best-a','best-b']);
+assert.deepEqual(Array.from(display.select([bestA,bestB],{now,sort:'best',mode:'auction'}),r=>r.id),['best-b','best-a']);
+assert.equal(display.groups([bestA,bestB],{sort:'best'}),null);
+display.invalidate(bestA,()=>true);
+assert.equal(bestA.buying_order,null);
+console.log('Recommendation order, single list and expired-rank removal passed.');

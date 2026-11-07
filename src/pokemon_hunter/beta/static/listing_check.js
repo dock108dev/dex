@@ -46,7 +46,13 @@
     if(value.authority?.binding !== binding || value.authority?.account_id !== account) {revoke(); throw Error('Your session changed.');}
     return value;
   }
-  function showContext(context) {collectionContext=context;const target=context?.selected_target;const selected=target?` · Selected exact printing: ${target.name} · ${target.set_name} #${target.collector_number} · ${[target.language,target.edition,target.finish,target.variant].filter(Boolean).join(' / ')}. The search target is not confirmed lot contents.`:'';const fit=context?.collection_fit;const benefit=fit ? ` · ${fit.mentioned_species.length} unique missing species mentioned (unconfirmed)${fit.mentioned_names?.length ? ": " + fit.mentioned_names.join(", ") : ""}. ${fit.included_species === null ? 'No included contents assessed.' : fit.included_species.length + ' potentially new species from included review identities' + (fit.included_names?.length ? ': '+fit.included_names.join(', ') : '') + '; contents remain unverified.'} ${fit.outside_scope_ids?.length ? fit.outside_scope_ids.length + ' included identities are outside retained goal coverage; their fit is unconfirmed. ' : ''}${fit.note}` : ''; $('check-context').textContent=(context?.scope_label || '')+selected+benefit; $('check-context').hidden=!context?.scope_label && !target;}
+  function showContext(context) {
+    collectionContext=context;
+    const fit=context?.collection_fit, names=fit?.included_names || [];
+    $('check-context').textContent=names.length ? `Potential collection additions: ${names.join(', ')}. Verify the seller’s cards.` : context?.selected_target ? `Looking for ${context.selected_target.name}` : '';
+    $('check-context').hidden=!$('check-context').textContent;
+  }
+
   function read() {
     return {...Object.fromEntries(fields.map(f => [f === 'url' ? 'listing_url' : f, $('review-'+f).value])), detail_run: detailRun, discovery_origin: discoveryOrigin, price_kind:$('review-price-kind').value, buy_now_price:buyNowPrice, buy_now_currency:buyNowCurrency, seller_card_count:sellerCardCount, lot_units:lotUnits, stock_quantity:stockQuantity, remainder_auto:remainderAuto, unknown_contents: $('review-unknown').value === '' ? null : Number($('review-unknown').value), contents, authored_fields:Object.keys(authoredFields), cards:cards.filter(r=>r.quantity!==0 || authoredCards.has(r.printing_id)).map(({identity,...r}) => ({...r,authored_fields:Object.keys(authoredCards.get(r.printing_id) || {}).filter(k=>k!=='printing_id')}))};
   }
@@ -443,7 +449,11 @@
       assessmentEnd=a.ends_at;references=[...a.evidence.flatMap(r=>[r,...r.conflicts.map(c=>({...c,name:r.name}))]),...(value.benchmark?.references || []),...(value.benchmark?.native_guides || []).flatMap(g=>g.references || [])];
       const usd=v=>v==null?'Unavailable':`$${v}`;
       const charge=v=>v ? `${v} ${data.currency}` : 'unknown';
-      const out=$('check-results');out.replaceChildren(node('h2','Reviewed comparison'));
+      const shell=$('check-results');shell.replaceChildren(node('h2','Lot summary'));
+      const cost=a.costs.listing_observation;
+      shell.append(node('p',`${a.units} identified cards · ${data.unknown_contents ?? "unknown"} unconfirmed · ${cost.full_delivered_cost!=null ? usd(cost.full_delivered_cost)+' all-in' : cost.base_plus_shipping!=null ? usd(cost.base_plus_shipping)+' with shipping; tax or other costs unknown' : 'Total cost unknown'}`));
+      shell.append(node('p',a.value!=null ? `${usd(a.value)} condition-specific reference. Verify the seller’s cards before buying.` : 'Not enough condition-matched value evidence to recommend buying.'));
+      const out=node('details');out.append(node('summary','Cost breakdown and evidence'));shell.append(out);
       if(data.budget_mode==='flexible')out.append(node('p',`Baseline ${usd(data.budget || null)} all-in. ${data.budget_rule ? 'Your exception rule: '+data.budget_rule+'. ' : 'No exception rule specified. '}Higher-price exception is not established by this comparison; review complete contents, all costs and applicable value evidence. ${data.budget_value_basis==='resale'?'Subtract selling fees, postage and other resale costs; guide value is not net proceeds.':'Collectible value is not guaranteed resale proceeds.'}`));
       const b=value.benchmark;
       if(b){
@@ -488,7 +498,7 @@
         if(a.maximum!==null)out.append(node('p',`${a.price_above===null?'Observed bid unknown':a.price_above?'Observed bid already exceeds ceiling':'Observed bid is within ceiling'}. Next required bid unknown. ${a.planned_bid_above===null?'':a.planned_bid_above?'Your planned bid exceeds the ceiling.':'Your planned bid fits the ceiling.'} Verify the reviewed contents and condition before bidding.`));
       }
       for(const reason of a.issues)out.append(node('p',reason));
-      addHandoff(out,a,value.authority.generation,value.benchmark);out.hidden=false;out.querySelector('h2').tabIndex=-1;out.querySelector('h2').focus();say('Comparison updated from admitted local references. No prices were refreshed.');
+      addHandoff(shell,a,value.authority.generation,value.benchmark);shell.hidden=false;shell.querySelector('h2').tabIndex=-1;shell.querySelector('h2').focus();say('Lot summary updated.');
     }catch(e){say(e.message,true);}finally{$('check-compare').disabled=!active;}
   };
   $('clear-review').onclick=async()=>{authoredCards.clear();for(const key of Object.keys(authoredFields))delete authoredFields[key];clearOffer();preview=null;$('listing-preview').hidden=true;await applyReview({currency:'USD',cards:[],unknown_contents:null});changed();say('Review cleared. Collection and wanted targets remain unchanged.');};
