@@ -199,6 +199,7 @@ def test_indexed_assessment_identity_is_independent_of_other_lots(env, entries, 
     indexed = SimpleNamespace(
         proposals=lambda text: entries if "Charizard" in text else [second],
         publication_checks=[],
+        release_dates=discovery_lot_values.species_scope.release_dates,
     )
     monkeypatch.setattr(shopping_index, "current", lambda actor: indexed)
     narrow = dict(offer(0, title="Venusaur lot"), shortDescription="1x Venusaur Base Set 15/102")
