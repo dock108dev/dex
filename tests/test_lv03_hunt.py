@@ -337,6 +337,22 @@ def test_action_requires_new_contract_and_never_uses_spent_legacy_allowance(env)
     assert env.calls == []
 
 
+def test_policy_change_after_preflight_blocks_binding(env, monkeypatch):
+    admission = policy.admission
+
+    def changed(*args, **kwargs):
+        result = admission(*args, **kwargs)
+        env.choose(enabled=False)
+        return result
+
+    monkeypatch.setattr(policy, "admission", changed)
+    with pytest.raises(ValueError, match="policy is unavailable"):
+        env.start()
+    assert env.calls == []
+    assert policy.status(env.actor)["used"] == 0
+    assert list(hunt._runs.values())[0].state == "failed"
+
+
 def test_shared_budget_exhaustion_after_admission_has_truthful_terminal(env):
     run = env.start()
 

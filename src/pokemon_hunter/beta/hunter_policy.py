@@ -491,6 +491,22 @@ class OrdinaryAllowance:
         return CONTRACT + ":" + self.policy_id
 
 
+def _current(state, actor, now, existing=None):
+    if state["marker"]["account_id"] != actor.user_id or _reason(state, now):
+        return None
+    candidate = OrdinaryAllowance(state["marker"]["root"], actor.user_id, state["marker"]["id"])
+    if existing is not None:
+        if (
+            type(existing) is not OrdinaryAllowance
+            or replace(existing, parent_id=None) != candidate
+            or existing.parent_id not in state["parents"]
+        ):
+            return None
+        _parent(state, existing, now)
+        return existing
+    return candidate if _public(state, now, checked=True)["remaining"] > 0 else None
+
+
 def current(actor, *, root=None, existing=None):
     """Return only currently valid owner authority; never infer initial limits."""
     root = _root(root)
@@ -499,23 +515,31 @@ def current(actor, *, root=None, existing=None):
     try:
         _owner(actor)
         with _locked(root):
-            state = _load(root)
-            now = _now()
-            if state["marker"]["account_id"] != actor.user_id or _reason(state, now):
-                return None
-            candidate = OrdinaryAllowance(str(root), actor.user_id, state["marker"]["id"])
-            if existing is not None:
-                if (
-                    type(existing) is not OrdinaryAllowance
-                    or replace(existing, parent_id=None) != candidate
-                    or existing.parent_id not in state["parents"]
-                ):
-                    return None
-                _parent(state, existing, now)
-                return existing
-            return candidate if _public(state, now, checked=True)["remaining"] > 0 else None
+            return _current(_load(root), actor, _now(), existing)
     except (OSError, ValueError, TypeError, KeyError, PermissionDenied):
         return None
+
+
+def admission(actor, *, root=None):
+    """Read authority and headroom from one locked preflight snapshot.
+
+    This does not reserve usage. Binding and every dispatch still revalidate
+    the current package, policy and durable accounting independently.
+    """
+    root = _root(root)
+    empty = (None, dict.fromkeys(LIMITS, 0))
+    if not present(root):
+        return empty
+    try:
+        _owner(actor)
+        with _locked(root):
+            state, now = _load(root), _now()
+            allowance = _current(state, actor, now)
+            if allowance is None:
+                return empty
+            return allowance, _capacity(state, allowance, now, checked=True)
+    except (OSError, ValueError, TypeError, KeyError, PermissionDenied):
+        return empty
 
 
 def bind(run, actor):
@@ -599,8 +623,8 @@ def check(run):
         raise ValueError("Hunter policy or accounting is unavailable") from None
 
 
-def _capacity(state, allowance, now):
-    if _reason(state, now):
+def _capacity(state, allowance, now, *, checked=False):
+    if not checked and _reason(state, now):
         return dict.fromkeys(LIMITS, 0)
     daily = _public(state, now, checked=True)["remaining"]
     counts = dict.fromkeys(LIMITS, 0)

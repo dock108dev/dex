@@ -90,7 +90,43 @@ def test_absence_is_disabled_and_reads_create_nothing(everyday):
     assert state["configured"] is False and state["remaining"] == 0
     assert state["daily_limit"] is None and state["per_hunt_limit"] is None
     assert installed.current_allowance(e.actor) is None
+    assert policy.admission(e.actor) == (None, dict.fromkeys(policy.LIMITS, 0))
     assert list(e.root.parent.rglob("*")) == before
+
+
+def test_admission_counts_consumed_usage_without_reserving_more(everyday):
+    e = everyday
+    e.choose(daily_limit=7, per_hunt_limit=5)
+    parent = e.parent()
+    for index in range(3):
+        e.consume(parent, index)
+    journal = policy._storage(e.root) / policy.JOURNAL_NAME
+    before = journal.read_bytes()
+    allowance, capacity = policy.admission(e.actor)
+    assert allowance == policy.current(e.actor)
+    assert capacity == policy.remaining(e.root, allowance)
+    assert capacity["total"] == 4
+    assert journal.read_bytes() == before
+
+
+@pytest.mark.parametrize("invalid", ["paused", "expired", "package", "account", "journal"])
+def test_admission_fails_closed(everyday, invalid):
+    e = everyday
+    e.choose()
+    actor = e.actor
+    if invalid == "paused":
+        e.choose(enabled=False)
+    elif invalid == "expired":
+        e.choose(expires_at=(e.clock.now + timedelta(minutes=1)).isoformat())
+        e.clock.now += timedelta(minutes=1)
+    elif invalid == "package":
+        e.monkeypatch.setattr(installed, "package_digest", lambda: "b" * 64)
+    elif invalid == "account":
+        actor = SimpleNamespace(user_id="another-owner", role="owner", subject=2)
+    else:
+        journal = policy._storage(e.root) / policy.JOURNAL_NAME
+        journal.write_bytes(journal.read_bytes()[:-1])
+    assert policy.admission(actor) == (None, dict.fromkeys(policy.LIMITS, 0))
 
 
 @pytest.mark.parametrize(

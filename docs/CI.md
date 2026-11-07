@@ -272,6 +272,13 @@ loading happen before those spans; valuation includes its immediate evidence
 validation, while final publication checks remain outside. The unchanged total
 response budget still includes every phase.
 
+Search-start records also include `hunt_context_ms`, `hunt_policy_ms`,
+`hunt_journal_ms`, `hunt_bind_ms` and `hunt_launch_ms`. These nested spans locate
+pauses in scope validation, policy preflight, durable progress, policy capture
+and worker launch. They are not deducted from `other_ms` or total response time.
+Policy preflight reads authority and remaining headroom together under one lock;
+it reserves no usage, and binding and dispatch retain their independent checks.
+
 ```sh
 uv run --no-sync pytest -q tests/test_shop17_journey.py tests/test_shop17_snapshot_volume.py --disable-socket --allow-unix-socket
 ```

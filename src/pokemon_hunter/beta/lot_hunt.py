@@ -27,6 +27,7 @@ from . import (
     hunter_policy,
     listing_details,
     listing_prices,
+    read_diagnostics,
     shopping_index,
 )
 from . import lot_hunt_contract as contract
@@ -258,7 +259,8 @@ def start(actor, session, raw, request_id, *, auth_session=None):
         raise ValueError("Automatic Hunt has two fixed lanes; no client request limits or continuation")
     if choices.intent == "deals" and choices.goal_id:
         raise ValueError("Use missing-card scope for a frozen goal")
-    prepared = _admission_context(actor, choices)
+    with read_diagnostics.phase("hunt_context_ms"):
+        prepared = _admission_context(actor, choices)
     scope = prepared["scope"]
     if choices.collection_intent:
         from .canonical_species import registry
@@ -266,10 +268,10 @@ def start(actor, session, raw, request_id, *, auth_session=None):
         choices.query = registry()[choices.species]["name"]
     if not choices.query:
         raise ValueError("Enter a Pokémon or card name")
-    allowance = hunter_policy.current(actor)
+    with read_diagnostics.phase("hunt_policy_ms"):
+        allowance, capacity = hunter_policy.admission(actor, root=owner[0])
     if allowance is None:
         raise AdmissionUnavailable("lot_hunt_policy")
-    capacity = hunter_policy.remaining(owner[0], allowance)
     # Reserve headroom for both lanes and both detail slots even with a warm token.
     if any(capacity[k] < v for k, v in dict(total=5, browse=2, detail=2, lots=4).items()):
         raise AdmissionUnavailable("lot_hunt_capacity")
@@ -319,11 +321,13 @@ def start(actor, session, raw, request_id, *, auth_session=None):
     run.lane, run.dispatch_id = None, "oauth"
     run.admit = lambda stage: _admit(run, stage)
     run.acquisition_check = lambda: _acquisition_check(run)
-    journal.record(run, initial=True)
+    with read_diagnostics.phase("hunt_journal_ms"):
+        journal.record(run, initial=True)
     with _lock:
         _runs[run.id] = run
     try:
-        hunter_policy.bind(run, actor)
+        with read_diagnostics.phase("hunt_bind_ms"):
+            hunter_policy.bind(run, actor)
     except Exception:
         _finish(run, "failed", "Policy capture failed; no requests sent")
         raise
@@ -331,7 +335,8 @@ def start(actor, session, raw, request_id, *, auth_session=None):
     with d._lock:
         d._runs[run.id] = run
     result = _summary(run)
-    _launch(run, actor, credentials)
+    with read_diagnostics.phase("hunt_launch_ms"):
+        _launch(run, actor, credentials)
     return result
 
 
