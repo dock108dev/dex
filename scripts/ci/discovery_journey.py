@@ -143,7 +143,7 @@ def exercise(page, base, output):
                     horizontal_overflow: document.documentElement.scrollWidth > innerWidth,
                     card_overflow: [...document.querySelectorAll('.discovery-card')].some(e=>e.scrollWidth>e.clientWidth+1),
                     font_size: getComputedStyle(document.body).fontSize,
-                    unknown_shipping: document.querySelector('#offer-engineering-conditional .discovery-amounts').innerText.includes('Unknown')
+                    unknown_shipping: document.querySelector('#offer-engineering-conditional .lot-buy').innerText.includes('shipping unknown')
                 })""")
                 if (
                     metrics["horizontal_overflow"]
