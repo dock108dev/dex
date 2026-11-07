@@ -11,7 +11,8 @@
   const authoredFields={}, authoredCards=new Map();
   function rememberCard(row, key, value){authoredCards.set(row.printing_id,{...(authoredCards.get(row.printing_id) || {printing_id:row.printing_id,quantity:0}),[key]:value});}
   async function expireEvidence(){
-    invalidate();
+    invalidate();clearTimeout(saveTimer);reviewDirty=false;
+    lease=null;reviewRevision=null;retentionDeadline=null;
     const manual={currency:'USD',unknown_contents:null,...authoredFields,authored_fields:Object.keys(authoredFields),cards:[...authoredCards.values()].map(r=>({...r,authored_fields:Object.keys(r).filter(k=>k!=='printing_id')}))};
     clearOffer();$('listing-identifier').value='';showContext(null);
     await applyReview(manual);preview=null;sourceOrigin=null;sourceItem=null;$('listing-preview').hidden=true;$('listing-details').replaceChildren();
@@ -69,7 +70,15 @@
     const drain = async () => {
       while(active && reviewDirty) {
         const data = read(), revision = version;
-        const value = await request('/api/shopping/listing/review/',{review:data,lease}, keepalive);
+        if(!lease){
+          const fresh=await request('/api/shopping/listing/review/');
+          if(version!==revision || !active)continue;
+          lease=fresh.lease;reviewRevision=fresh.revision;
+          retentionDeadline=Date.now()+fresh.expires_in_seconds*1000;
+        }
+        const savedLease=lease;
+        const value = await request('/api/shopping/listing/review/',{review:data,lease:savedLease}, keepalive);
+        if(lease!==savedLease || !active)continue;
         reviewRevision=value.revision;
         if(version===revision){reviewDirty=false;showContext(value.context);}
         const expires=Date.now()+value.expires_in_seconds*1000;
@@ -245,6 +254,10 @@
   }
   async function receiveDetails(result,expected) {
     if(expected!==loadVersion || !active)return;
+    if(result.not_dispatched){
+      detailUnknown=false;rememberAction(null);setLoading(false);run=null;
+      say(result.error || 'Listing request did not start. No provider request was sent.',true);return;
+    }
     if(result.outcome_unknown){unknownDetails();return;}
     run=result.run_id;
     if(stopped){await confirmStop();return;}
@@ -403,14 +416,14 @@
         if(b.unavailable)part.append(node('p',b.unavailable));
         else {
           part.append(node('p',`${b.basis_label || 'No normalized reference'} · ${b.priced_card_quantity} normalized-priced cards · ${b.unpriced_card_quantity} identified cards without normalized prices`));
-          part.append(node('p',b.result.full_lot_total!=null ? `${usd(b.result.full_lot_total)} ungraded lot value` : `${usd(b.result.known_selected_subtotal)} identified-card subtotal; remaining cards are unvalued`));
+          part.append(node('p',b.result.full_lot_total!=null ? `${usd(b.result.full_lot_total)} comparable lot reference` : b.result.known_selected_subtotal!=null ? `${usd(b.result.known_selected_subtotal)} comparable subtotal; other cards lack comparable references` : 'Comparable value unavailable. Publisher guide values, when available, are shown separately below.'));
           for(const [lane,c] of Object.entries(b.benchmark_costs || {})){
             if(c.base==null && c.delivered_before_tax==null)continue;
             part.append(node('p',`${lane==='auction'?'Observed current bid':'Observed Buy It Now'} ${usd(c.base)} · Shipping ${usd(c.shipping)} · Delivered before tax ${usd(c.delivered_before_tax)}`));
             if(c.difference!=null)part.append(node('p',`Reference minus delivered cost: ${usd(c.difference)} before tax`));
             if(c.subtotal_difference!=null)part.append(node('p',`Identified-card subtotal minus delivered cost: ${usd(c.subtotal_difference)} before tax. This is not a whole-lot bargain score.`));
           }
-          for(const g of b.native_guides || [])part.append(node('p',`${usd(g.total ?? g.subtotal)} publisher guide ${g.complete?'total':'subtotal'} · ${g.provider} · ${g.reference_date} · shipping/tax basis unknown; condition unspecified. Separate source/date cohort; not savings or a bid ceiling.`));
+          for(const g of b.native_guides || [])part.append(node('p',`${usd(g.total ?? g.subtotal)} publisher guide ${g.complete?'total':'subtotal'} · ${g.priced_quantity ?? b.native_priced_quantity} guide-priced cards · ${g.provider} · ${g.reference_date} · shipping/tax basis unknown; condition unspecified. Separate source/date cohort; not savings or a bid ceiling.`));
           for(const r of b.references || []){
             const card=cards.find(c=>c.printing_id===r.printing_id);
             part.append(node('p',`${card?.identity?.name || r.printing_id} · ${r.basis==='sold_estimate'?'Sold estimate':'Guide'} ${usd(r.amount)} · ${r.condition || 'condition unspecified'} · reference ${r.as_of} · source ${r.source_url || 'unavailable'} · valuation ${r.valuation_as_of || 'unknown'} · publisher build ${r.publisher_built_at || 'unknown'}${r.sample ? ' · '+r.sample.unique_sales+' sales · '+r.sample.sold_from+' through '+r.sample.sold_through+' · method '+r.method?.method : ''}`));
@@ -428,7 +441,7 @@
         out.append(part);
       }
       out.append(node('p',`Shipping ${charge(data.shipping)} · ${data.tax_rate ? data.tax_rate+'% tax on bid plus shipping, rounded up to cents' : 'Fixed tax '+charge(data.tax)} · Other mandatory charges ${charge(data.other_costs)}. Verify these cost assumptions at checkout.`));
-      out.append(node('h3','Reference evidence'),node('p',`${a.priced} of ${a.units} included cards priced · Priced subtotal ${usd(a.subtotal)} · Whole-lot reference ${usd(a.value)}`));
+      out.append(node('h3','Condition-specific reference evidence'),node('p',`${a.priced} of ${a.units} included cards have condition-specific references · Condition-specific subtotal ${usd(a.subtotal)} · Whole-lot reference ${usd(a.value)}. This coverage is separate from publisher guide values above.`));
       for(const r of a.evidence){
         out.append(node('p',`${r.name} · ${r.quantity} × ${usd(r.amount)} = ${usd(r.extended)}. Assumed ${r.grade==='raw'?r.condition:r.grader+' '+r.grade}. Source ${r.source_url} · ${r.date_basis} ${r.as_of} · Valuation date ${r.valuation_as_of ?? 'unknown'} · Captured ${r.captured_at ?? 'unknown'}.`));
       }

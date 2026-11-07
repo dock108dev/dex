@@ -822,3 +822,16 @@ def test_http_comparison_and_return_deliver_native_benchmark_without_save_payloa
         assert response.json()["benchmark"] == benchmark
         assert "scenarios" not in response.json()
         assert "no-store" in response["Cache-Control"]
+
+
+def test_policy_refusal_is_proven_before_worker_registration(everyday, monkeypatch):
+    e = everyday
+    e.choose(enabled=False)
+    monkeypatch.setattr(c.d.threading, "Thread", lambda *a, **k: pytest.fail("worker must not start"))
+    before = set(d._runs)
+    with pytest.raises(c.AdmissionRefused):
+        c.start(e.actor, "session", ITEM)
+    assert set(d._runs) == before
+    from pokemon_hunter.beta import hunter_policy
+
+    assert hunter_policy.status(e.actor)["used"] == 0

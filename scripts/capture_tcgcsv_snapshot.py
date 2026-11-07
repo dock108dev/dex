@@ -502,7 +502,7 @@ def _capture_batch_locked(root, plan, digest, accounting, metadata_ledger, open_
                     raise CaptureRefused("timing_override_already_reserved")
     elif latest and (selected_at - latest).total_seconds() < limits["publication_spacing_seconds"]:
         raise CaptureRefused("publisher_24h_reservation")
-    if not bootstrap:
+    if not bootstrap and not plan["include_groups"]:
         retained = root / plan.get(
             "retained_groups_path", "price-snapshots/staging/hunt11/capture-v1/groups.json"
         )

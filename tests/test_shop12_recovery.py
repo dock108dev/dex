@@ -228,3 +228,28 @@ def test_automatic_values_preserve_session_and_stop_boundaries(discovery, monkey
 
     monkeypatch.setattr(discovery_lot_values, "project", stopped)
     assert d.status(discovery.actor, "session", run.id, values=True)["results"] == []
+
+
+def test_detail_policy_refusal_reconciles_as_unsent_without_replay(discovery, monkeypatch):
+    request_id = str(uuid.uuid4())
+    calls = []
+
+    def refused(*args, **kwargs):
+        calls.append(True)
+        raise listing_check.AdmissionRefused("Acquisition window expired")
+
+    monkeypatch.setattr(listing_check, "start", refused)
+    result = d.start_action(
+        discovery.actor, "session", {"identifier": "123456789012"}, request_id, operation="detail"
+    )
+    assert result["not_dispatched"] and not result["running"]
+    assert result["counts"]["total"] == 0
+    assert d.action_status(discovery.actor, "session", request_id, operation="detail") == result
+    result["counts"]["total"] = 99
+    assert d.action_status(discovery.actor, "session", request_id, operation="detail")["counts"]["total"] == 0
+    assert d.action_status(discovery.actor, "other", request_id, operation="detail")["outcome_unknown"]
+    with pytest.raises(ValueError, match="already submitted"):
+        d.start_action(
+            discovery.actor, "session", {"identifier": "123456789012"}, request_id, operation="detail"
+        )
+    assert calls == [True]

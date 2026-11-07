@@ -243,7 +243,8 @@ def test_selected_group_refresh_policy_is_strict_and_digest_bound(batch, mutatio
         batch["plan"]["include_groups"] = True
     else:
         batch["plan"]["refresh_cadence"] = None if mutation == "null" else "unlimited"
-    with pytest.raises(capture.CaptureRefused, match="invalid_refresh_cadence"):
+    reason = "batch_step_mismatch" if mutation == "metadata" else "invalid_refresh_cadence"
+    with pytest.raises(capture.CaptureRefused, match=reason):
         batch["run"]()
     assert not batch["calls"]
 

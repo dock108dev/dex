@@ -643,6 +643,8 @@ def action_status(actor, session_key, request_id, *, operation="browse", receive
         run_id = _actions.get(key)
     if not run_id:
         return {"outcome_unknown": True, "request_id": request_id}
+    if isinstance(run_id, dict):
+        return deepcopy(run_id)
     if operation == "detail":
         from . import listing_check
 
@@ -667,7 +669,20 @@ def start_action(actor, session_key, raw, request_id, *, auth_session=None, oper
     if operation == "detail":
         from . import listing_check
 
-        result = listing_check.start(actor, session_key, raw["identifier"], auth_session=auth_session)
+        try:
+            result = listing_check.start(actor, session_key, raw["identifier"], auth_session=auth_session)
+        except listing_check.AdmissionRefused as error:
+            result = dict(
+                request_id=request_id,
+                state="rejected",
+                running=False,
+                not_dispatched=True,
+                error="Listing request did not start. " + str(error),
+                counts=dict(oauth=0, detail=0, resolution=0, total=0),
+            )
+            with _lock:
+                _actions[key] = result
+            return deepcopy(result)
     else:
         result = start(actor, session_key, raw, auth_session=auth_session)
     with _lock:

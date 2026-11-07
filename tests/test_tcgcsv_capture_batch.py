@@ -461,3 +461,22 @@ def test_watchdog_after_body_write_before_bookkeeping_cleans_that_body(batch, mo
     assert report["reason"] == "total_deadline_exhausted" and report["provider_operations"] == 6
     assert not list((batch["root"] / "price-snapshots/staging/hunt11-batches").rglob("*.txt"))
     assert not list((batch["root"] / "price-snapshots/staging/hunt11-batches").rglob("*.json"))
+
+
+@pytest.mark.parametrize("conflicting", [False, True])
+def test_fresh_group_metadata_replaces_retired_input_before_any_product_send(batch, conflicting):
+    from scripts.tcgcsv_capture_contract import batch_steps
+
+    body = json.loads(batch["retained"].read_bytes())
+    batch["retained"].unlink()
+    if conflicting:
+        body["results"][0]["name"] = "Different set"
+    batch["plan"].update(
+        include_groups=True, steps=batch_steps(batch["plan"]["groups"], True), request_count=7
+    )
+    batch["bodies"].insert(1, json.dumps(body).encode())
+    result = batch["run"]()
+    assert result["provider_operations"] == (2 if conflicting else 7)
+    assert result["status"] == ("stopped" if conflicting else "captured")
+    if conflicting:
+        assert all("/products" not in url for url, _ in batch["calls"])

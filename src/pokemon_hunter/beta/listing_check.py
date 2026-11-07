@@ -42,6 +42,10 @@ from .listing_details import validate_response as validate_response
 _reviews = {}
 
 
+class AdmissionRefused(ValueError):
+    """A local detail rejection before any acquisition worker can dispatch."""
+
+
 def start(actor, session, identifier, *, auth_session=None):
     parse_identifier(identifier)  # Before configuration, admission or any I/O.
     owner = d._owner(actor, session)
@@ -60,7 +64,10 @@ def start(actor, session, identifier, *, auth_session=None):
         auth_session=auth_session,
     )
     run.counts = {"oauth": 0, "detail": 0, "resolution": 0, "total": 0}
-    _bind_policy(run, actor)
+    try:
+        _bind_policy(run, actor)
+    except ValueError as error:
+        raise AdmissionRefused(str(error)) from error
     with d._lock:
         for old in d._runs.values():
             if old.owner == owner and old.operation == "detail" and old.state in {"queued", "running"}:
