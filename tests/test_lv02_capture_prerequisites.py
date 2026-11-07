@@ -117,6 +117,28 @@ def test_no_dependent_plan_without_completed_metadata_review(batch):
         proposal.prepare(batch["root"], reviewed_groups_sha256="0" * 64)
 
 
+@pytest.mark.parametrize("newer", [True, False])
+def test_explicit_new_publication_metadata_preserves_history_and_refuses_replay(batch, newer):
+    first, body, receipt = first_stage(batch)
+    history_before = {p.name: p.read_bytes() for p in batch["accounting"].glob("*.jsonl")}
+    plan = dict(
+        first,
+        plan_id="new-publication-metadata",
+        refresh_cadence="metadata_new_build",
+        timing_override="owner-new-publication-once",
+    )
+    build = b"2026-11-06T02:00:00Z" if newer else b"2026-11-06T01:00:00Z"
+    result, calls = run(batch, plan, [build, body])
+    assert all((batch["accounting"] / name).read_bytes() == raw for name, raw in history_before.items())
+    assert len(calls) == (2 if newer else 1)
+    assert result["status"] == ("captured" if newer else "stopped")
+    if not newer:
+        assert result["reason"] == "publisher_build_spacing" and result["retained_bodies"] == 0
+    plan["plan_id"] = "display-name-cannot-renew"
+    with pytest.raises(capture.CaptureRefused, match="timing_override_already_reserved"):
+        run(batch, plan, [build, body])
+
+
 def test_wrong_review_digest_and_replaced_retained_bytes_refused(batch):
     first, body, result = first_stage(batch)
     with pytest.raises(ValueError, match="review digest"):

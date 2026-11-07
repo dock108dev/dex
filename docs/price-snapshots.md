@@ -216,6 +216,13 @@ language. Complete ordinary identities need no invented extra variant label. Mis
 catalog/source representation remains unavailable. No source metadata or price is
 acquired by validation, selection, calculation or display.
 
+An explicitly selected `metadata_new_build` capture may check for a newer publisher
+build without the operator's default rolling 24-hour wait. It requires a unique
+recorded timing selection and existing history. An unchanged or older build stops
+after the marker, before group metadata; consumed selections cannot replay. Product
+refresh remains separately reviewed and newer-build gated. Stop, request spacing,
+input bounds, private retention and source admission are unchanged.
+
 `valuation_evidence.select` takes an explicit normalized/native purpose; normalized
 selection retains qualified sold-first/guide fallback and excludes native evidence.
 `lot_guides.native_cell` is separate from existing normalized guide cells. The shared

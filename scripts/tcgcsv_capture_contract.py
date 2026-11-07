@@ -254,13 +254,20 @@ def validate_batch_plan(plan, root):
     if "refresh_cadence" in plan and (
         not isinstance(plan["refresh_cadence"], str)
         or plan["refresh_cadence"]
-        not in {"selected_groups", "selected_groups_new_build", "owner_r3_acquire1_same_build_once"}
-        or plan.get("purpose", "refresh") != "refresh"
+        not in {
+            "selected_groups",
+            "selected_groups_new_build",
+            "metadata_new_build",
+            "owner_r3_acquire1_same_build_once",
+        }
+        or plan.get("purpose", "refresh")
+        != ("metadata_bootstrap" if plan["refresh_cadence"] == "metadata_new_build" else "refresh")
         or plan["include_groups"] is not False
     ):
         raise CaptureRefused("invalid_refresh_cadence")
     newer_build_override = plan.get("refresh_cadence") in {
         "selected_groups_new_build",
+        "metadata_new_build",
         "owner_r3_acquire1_same_build_once",
     }
     if (

@@ -455,6 +455,16 @@ def _capture_batch_locked(root, plan, digest, accounting, metadata_ledger, open_
             raise CaptureRefused("historical_group_scope_unknown")
         if {row["group_id"] for row in plan["groups"]} & group_history["groups"]:
             raise CaptureRefused("initial_fill_group_already_consumed")
+    elif bootstrap and plan.get("refresh_cadence") == "metadata_new_build":
+        # An explicitly selected newer-publication check need not wait for a
+        # rolling 24-hour timer. It can fetch groups only after a strictly newer
+        # marker, and never erases or renews an existing consumed selection.
+        if previous_build is None:
+            raise CaptureRefused("override_prior_resource_build_required")
+        for path in accounting.glob("*.jsonl"):
+            first = json.loads(path.read_bytes().splitlines()[0])
+            if first.get("timing_override") == plan["timing_override"]:
+                raise CaptureRefused("timing_override_already_reserved")
     elif plan.get("refresh_cadence") in {
         "selected_groups",
         "selected_groups_new_build",
@@ -653,7 +663,10 @@ def _capture_batch_locked(root, plan, digest, accounting, metadata_ledger, open_
                             first_built_at = details["publisher_built_at"]
                             if previous_build and (
                                 built < previous_build
-                                or purpose == "refresh"
+                                or (
+                                    purpose == "refresh"
+                                    or plan.get("refresh_cadence") == "metadata_new_build"
+                                )
                                 and built <= previous_build
                                 and plan.get("refresh_cadence") != "owner_r3_acquire1_same_build_once"
                             ):
