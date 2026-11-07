@@ -496,7 +496,7 @@ def test_corrected_benchmark_is_visible_when_strict_ceiling_is_unavailable(brows
     page.goto(base + "/shopping/check/")
     page.locator("#manual-entry").click()
     page.locator("#check-compare").click()
-    expect(page.locator(".review-benchmark")).to_contain_text("$40.00 ungraded lot value")
+    expect(page.locator(".review-benchmark")).to_contain_text("$40.00 comparable lot reference")
     expect(page.locator(".review-benchmark")).to_contain_text("$-15.00 before tax")
     expect(page.locator("#check-results")).to_contain_text("Recommendation unavailable")
     page.locator("#review-price").fill("7")
