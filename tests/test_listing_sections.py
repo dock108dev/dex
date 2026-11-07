@@ -201,3 +201,23 @@ def test_review_comparison_keeps_parent_context_for_selected_physical_children(m
     )
     assert not disputed
     assert not any("conflict" in issue.casefold() for issue in issues)
+
+
+def test_unknown_review_condition_is_unavailable_not_a_claimed_contradiction():
+    from pokemon_hunter.beta import listing_details, lot_assessment
+
+    raw = descriptive_sample()
+    raw["localizedAspects"].extend(
+        [dict(name="Graded", value="No"), dict(name="Card Condition", value="Lightly Played")]
+    )
+    offer = listing_details.details(raw["itemId"], raw)
+    cards = [
+        dict(printing_id="child-10", quantity=2, grade="raw", condition="Used"),
+        dict(printing_id="child-25", quantity=1, grade="raw", condition="Used"),
+    ]
+    issues, disputed = lot_assessment.seller_constraints(
+        [offer], {p["id"]: p for p in catalog()}, {p["printing_id"]: p for p in cards}, 3
+    )
+    assert disputed == {"child-10", "child-25"}
+    assert any("condition claim has not been matched" in issue for issue in issues)
+    assert not any("conflicts with" in issue or "literal grader" in issue for issue in issues)

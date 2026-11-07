@@ -774,7 +774,7 @@ wheels = [
 
 [[package]]
 name = "pokemon-hunter"
-version = "0.1.1rc18"
+version = "0.1.1rc19"
 source = { editable = "." }
 dependencies = [
     { name = "django" },

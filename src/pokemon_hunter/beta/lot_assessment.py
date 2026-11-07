@@ -114,9 +114,12 @@ def seller_constraints(offers, entries, included, units):
             ):
                 p = entries[row["printing_id"]]
                 disputed.add(p["id"])
-                issues.append(
-                    f"{p['name']} #{p['collector_number']}: the reviewed condition, grade or printing conflicts with the seller evidence."
+                reason = (
+                    "the seller's condition claim has not been matched to an assessed raw condition; condition-specific value is unavailable."
+                    if clues.get("condition_claims") and dc._condition(row.get("condition")) is None
+                    else "the reviewed condition, grade or printing conflicts with the seller evidence."
                 )
+                issues.append(f"{p['name']} #{p['collector_number']}: {reason}")
     return issues, disputed
 
 

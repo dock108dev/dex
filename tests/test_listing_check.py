@@ -835,3 +835,14 @@ def test_policy_refusal_is_proven_before_worker_registration(everyday, monkeypat
     from pokemon_hunter.beta import hunter_policy
 
     assert hunter_policy.status(e.actor)["used"] == 0
+
+
+@pytest.mark.parametrize("claim", ["Not graded", "Not professionally graded", "Graded: No", "Graded: False"])
+def test_explicit_negative_grading_claim_does_not_make_raw_cards_graded(claim):
+    from pokemon_hunter.beta import discovery_comparison as dc
+
+    clues = dc._clues(dict(title="Authored English Unlimited card", shortDescription=claim))
+    assert not clues["graded"] and clues["grade"] == "raw"
+    assert "No supported literal grader and grade combination" not in clues["conflicts"]
+    positive = dc._clues(dict(title="Authored PSA 10 card", shortDescription=claim))
+    assert positive["graded"] and positive["grade"] == "10" and positive["grader"] == "PSA"

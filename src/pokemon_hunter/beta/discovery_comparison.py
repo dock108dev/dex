@@ -90,7 +90,15 @@ def _clues(raw, *, claim_text=None):
             r"\b(" + _GRADERS + r")\s*[-:]?\s*(10|[1-9](?:\.5)?)(?![\d.])", text, re.I
         )
     }
-    graded = bool(grades or re.search(r"\b(?:graded|slab|gem[ -]*mint|grade\s*\d)\b", claim_text, re.I))
+    # Explicit negative grading statements are not positive slab evidence.
+    # Keep any separate literal grader/grade claim so contradictions stay held.
+    grading_text = re.sub(
+        r"\b(?:no|not|non)[ -]+(?:professionally[ -]+)?graded\b|\bgraded\s*:\s*(?:no|false)\b",
+        "",
+        claim_text,
+        flags=re.I,
+    )
+    graded = bool(grades or re.search(r"\b(?:graded|slab|gem[ -]*mint|grade\s*\d)\b", grading_text, re.I))
     condition = str(raw.get("condition") or "").strip() or None
     condition_text = re.sub(r"\b(?:[0-9]{1,4}\s*HP|HP\s*[:=-]?\s*[0-9]{1,4})\b", "", claim_text, flags=re.I)
     condition_claims = {
