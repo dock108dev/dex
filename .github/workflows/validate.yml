@@ -189,7 +189,8 @@ jobs:
         rebuilt=("$RUNNER_TEMP/dex-from-sdist"/*.whl)
         [[ ${#rebuilt[@]} -eq 1 ]]
         cmp "${wheel[0]}" "${rebuilt[0]}"
-        # Every PR must install/start on the actual declared minimum runtime.
+        # Smoke the fresh distribution on the primary CI runtime. Behavior runs
+        # on both supported minors; installed 3.14 release qualification is separate.
         uv venv --python 3.15 "$RUNNER_TEMP/dex-wheel"
         uv export --locked --no-dev --no-emit-project --format requirements-txt --output-file "$RUNNER_TEMP/runtime-requirements.txt" > /dev/null
         uv pip sync --python "$RUNNER_TEMP/dex-wheel/bin/python" --require-hashes "$RUNNER_TEMP/runtime-requirements.txt"

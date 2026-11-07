@@ -78,7 +78,7 @@ jobs:
       id: build
       run: |
         docker build --pull --progress plain --file deploy/Dockerfile --tag dex-ci-candidate .
-        docker run --rm --network none --entrypoint /app/.venv/bin/python dex-ci-candidate -c "import os, django, psycopg; from pokemon_hunter.beta.canonical_species import registry; assert os.geteuid() == 10001; assert len(registry()) == 1025"
+        docker run --rm --network none --entrypoint /app/.venv/bin/python dex-ci-candidate -I -B -c "import os, sys, django, psycopg, pokemon_hunter; from pathlib import Path; from pokemon_hunter.beta.canonical_species import registry; package = Path(pokemon_hunter.__file__).resolve().parent; assert package.is_relative_to(Path(sys.prefix)); assert (package / 'data/config/catalog-pipeline/inputs.json').is_file(); assert os.geteuid() == 10001; assert len(registry()) == 1025"
         mkdir -p reports/ci/container
         docker image inspect dex-ci-candidate --format '{"status":"PASS","image_bytes":{{.Size}},"image_id":"{{.Id}}","platform":"{{.Os}}/{{.Architecture}}"}' > reports/ci/container/report.json
     - name: Container result summary

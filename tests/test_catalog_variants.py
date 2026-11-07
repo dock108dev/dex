@@ -148,16 +148,71 @@ def test_literal_specials_unknowns_and_no_market_inheritance(value, edition, fin
     "value",
     [
         {"type": "normal", "foil": "galaxy", "stamp": ["no-stamp"]},
-        {"type": "holo", "foil": "galaxy"},
+        {"type": "reverse", "foil": "galaxy"},
         {"type": "unknown"},
         {"type": "normal", "languages": ["ja"]},
         {"type": "normal", "stamp": ["25th-celebration"]},
         {"type": "normal", "subtype": "1999-2000-copyright", "stamp": ["1st-edition"]},
+        {"type": "normal", "edition": "first_edition"},
+        {"type": "normal", "edition": "unlimited", "stamp": ["1st-edition"]},
+        {"type": "normal", "edition": "unlimited", "foil": "galaxy"},
+        {"type": "normal", "edition": None},
     ],
 )
 def test_unknown_or_contradictory_physical_claim_refused(value):
     with pytest.raises(ValueError):
         variants.descriptor(value)
+
+
+def test_affirmative_unlimited_metadata_prices_only_the_selected_child(b4):
+    actor = b4["actor"]
+    p = package(
+        actor,
+        [
+            {"type": "normal", "edition": "unlimited"},
+            {"type": "holo", "edition": "unlimited"},
+            {"type": "normal", "stamp": ["1st-edition"]},
+            {"type": "normal", "foil": "galaxy"},
+        ],
+    )
+    parent_id = p["cards"][0]["parent_id"]
+    before = next(r for r in inv.catalog(actor) if r["id"] == parent_id)
+    publish(actor, p)
+    family = [
+        r for r in inv.catalog(actor) if r["id"] == parent_id or r.get("parent_printing_id") == parent_id
+    ]
+    assert next(r for r in family if r["id"] == parent_id) == before
+    selected = variants.seller_candidates(
+        family, dict(text="English Unlimited Non Holo", language="en", edition="unlimited", finish="normal")
+    )
+    assert len(selected) == 1 and selected[0]["id"] != parent_id
+    child = selected[0]
+    assert child["edition"] == "unlimited" and child["finish"] == "normal"
+    assert "Unlimited" in child["variant_label"] and "not established" not in child["variant_label"]
+    assert market_identity.compatible(child, "unlimited", "normal")
+    assert not market_identity.compatible(child, "first_edition", "normal")
+    assert not market_identity.compatible(child, "unlimited", "holo")
+    row = dict(
+        match_scope="conditional_market",
+        provider_identity=dict(
+            language="en",
+            edition="unlimited",
+            finish="normal",
+            variant="Unlimited",
+            number=child["collector_number"],
+            set=child["set_name"],
+        ),
+    )
+    assert rules.exact_native_identity(row, child)
+    assert not rules.exact_native_identity(row, before)
+    assert len(
+        variants.seller_candidates(
+            family, dict(text="English Non Holo", language="en", edition=None, finish="normal")
+        )
+    ) == len(family)
+    # An unresolved foil claim cannot inherit an ordinary printing's price.
+    special = next(r for r in family if r.get("attributes", {}).get("physical_variant", {}).get("foil"))
+    assert not rules.exact_native_identity(row, special)
 
 
 def test_stale_review_external_conflict_and_transactional_failure(b4):
@@ -360,3 +415,20 @@ def test_frozen_review_membership_survives_additive_heads_and_later_growth(b4):
     item["printing_ids"].append(new_id)
     with pytest.raises(ValueError, match="Forged"):
         collection_goals.validate(forged, source)
+
+
+def test_literal_galaxy_holo_publication_preserves_unspecified_parent(b4):
+    actor = b4["actor"]
+    p = package(
+        actor, [dict(type="holo", foil="galaxy", stamp=["1st-edition"]), dict(type="holo", foil="galaxy")]
+    )
+    before = cat.snapshot(p["set_id"])
+    publish(actor, p)
+    after = cat.snapshot(p["set_id"])
+    old = {r["id"]: r for r in before["cards"]}
+    assert all(old[r["id"]] == r for r in after["cards"] if r["id"] in old)
+    added = [r for r in after["cards"] if r["id"] not in old]
+    assert len(added) == 2 and {r["edition"] for r in added} == {"first_edition", None}
+    assert all(r["finish"] is None and json.loads(r["variant"])["foil"] == "galaxy" for r in added)
+    with pytest.raises(ValueError, match="unreviewed"):
+        variants.descriptor(dict(type="reverse", foil="galaxy"))

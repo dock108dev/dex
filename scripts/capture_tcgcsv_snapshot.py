@@ -409,12 +409,26 @@ def capture_batch(
     if digest != expected_plan_sha256:
         raise CaptureRefused("reviewed_plan_digest_mismatch")
     accounting = _accounting(root)
-    metadata_ledger = root.parents[1] / ".dex-tcgcsv-metadata" / "attempts.json"
-    _private_directory(metadata_ledger.parent)
+    metadata_ledger = _metadata_path(root, plan)
     with _exclusive(accounting / "execution.lock"), _exclusive(metadata_ledger.with_suffix(".lock")):
         return _capture_batch_locked(
             root, plan, digest, accounting, metadata_ledger, open_response, clock, sleep, now
         )
+
+
+def _metadata_path(root, plan):
+    """Select existing independent history; never create or substitute a store."""
+    candidates = [p / ".dex-tcgcsv-metadata/attempts.json" for p in (root.parent, root.parents[1])]
+    present = [p for p in candidates if p.exists() or p.is_symlink()]
+    if not present:
+        raise CaptureRefused("historical_accounting_required")
+    if len(present) != 1:
+        raise CaptureRefused("unique_existing_metadata_ledger_required")
+    selected = present[0]
+    if "metadata_ledger_path" in plan and str(selected) != plan["metadata_ledger_path"]:
+        raise CaptureRefused("configured_metadata_ledger_missing")
+    _read_private_json(selected, MIB)
+    return selected
 
 
 def _capture_batch_locked(root, plan, digest, accounting, metadata_ledger, open_response, clock, sleep, now):
@@ -425,7 +439,10 @@ def _capture_batch_locked(root, plan, digest, accounting, metadata_ledger, open_
     latest, previous_build, metadata_history = _history(
         accounting, metadata_ledger, group_history=group_history, resource_history=resource_history
     )
+    if "metadata_ledger_path" in plan and resource_history["unknown"]:
+        raise CaptureRefused("historical_group_scope_unknown")
     purpose = plan.get("purpose", "refresh")
+    bootstrap = purpose == "metadata_bootstrap"
     if selected_at < _aware(plan["not_before"]):
         raise CaptureRefused("capture_not_before")
     if latest and selected_at < latest:
@@ -438,6 +455,16 @@ def _capture_batch_locked(root, plan, digest, accounting, metadata_ledger, open_
             raise CaptureRefused("historical_group_scope_unknown")
         if {row["group_id"] for row in plan["groups"]} & group_history["groups"]:
             raise CaptureRefused("initial_fill_group_already_consumed")
+    elif bootstrap and plan.get("refresh_cadence") == "metadata_new_build":
+        # An explicitly selected newer-publication check need not wait for a
+        # rolling 24-hour timer. It can fetch groups only after a strictly newer
+        # marker, and never erases or renews an existing consumed selection.
+        if previous_build is None:
+            raise CaptureRefused("override_prior_resource_build_required")
+        for path in accounting.glob("*.jsonl"):
+            first = json.loads(path.read_bytes().splitlines()[0])
+            if first.get("timing_override") == plan["timing_override"]:
+                raise CaptureRefused("timing_override_already_reserved")
     elif plan.get("refresh_cadence") in {
         "selected_groups",
         "selected_groups_new_build",
@@ -475,15 +502,22 @@ def _capture_batch_locked(root, plan, digest, accounting, metadata_ledger, open_
                     raise CaptureRefused("timing_override_already_reserved")
     elif latest and (selected_at - latest).total_seconds() < limits["publication_spacing_seconds"]:
         raise CaptureRefused("publisher_24h_reservation")
-    retained = root / "price-snapshots/staging/hunt11/capture-v1/groups.json"
-    if retained.is_symlink() or not retained.is_file() or retained.resolve(strict=True) != retained:
-        raise CaptureRefused("retained_group_metadata_required")
-    if retained.stat().st_mode & 0o077 or retained.stat().st_nlink != 1 or retained.stat().st_size > 16 * MIB:
-        raise CaptureRefused("unsafe_retained_group_metadata")
-    group_body = retained.read_bytes()
-    if hashlib.sha256(group_body).hexdigest() != plan["retained_groups_sha256"]:
-        raise CaptureRefused("retained_group_metadata_changed")
-    _validate(group_body, "groups", groups=plan["groups"])
+    if not bootstrap and not plan["include_groups"]:
+        retained = root / plan.get(
+            "retained_groups_path", "price-snapshots/staging/hunt11/capture-v1/groups.json"
+        )
+        if retained.is_symlink() or not retained.is_file() or retained.resolve(strict=True) != retained:
+            raise CaptureRefused("retained_group_metadata_required")
+        if (
+            retained.stat().st_mode & 0o077
+            or retained.stat().st_nlink != 1
+            or retained.stat().st_size > 16 * MIB
+        ):
+            raise CaptureRefused("unsafe_retained_group_metadata")
+        group_body = retained.read_bytes()
+        if hashlib.sha256(group_body).hexdigest() != plan["retained_groups_sha256"]:
+            raise CaptureRefused("retained_group_metadata_changed")
+        _validate(group_body, "groups", groups=plan["groups"])
     # Semantic replay identity excludes the display identifier, preventing renaming
     # a failed/stopped/closed selection to replay its same scope and window.
     scope = dict(plan)
@@ -508,7 +542,7 @@ def _capture_batch_locked(root, plan, digest, accounting, metadata_ledger, open_
     started, previous_start, total, input_bytes = clock(), None, 0, 0
     created, product_ids, price_ids, group_products = [], set(), set(), {}
     row_totals = {"products": 0, "prices": 0}
-    first_build = None
+    first_build = first_built_at = None
     report = dict(
         schema="dex-tcgcsv-batch-capture-v1",
         plan_sha256=digest,
@@ -540,7 +574,7 @@ def _capture_batch_locked(root, plan, digest, accounting, metadata_ledger, open_
                 selection_sha256=scope_digest,
                 maximum_attempts=plan["request_count"],
                 purpose=purpose,
-                group_ids=[row["group_id"] for row in plan["groups"]],
+                **({} if bootstrap else {"group_ids": [row["group_id"] for row in plan["groups"]]}),
                 **({"timing_override": plan["timing_override"]} if "timing_override" in plan else {}),
             ),
         )
@@ -626,9 +660,13 @@ def _capture_batch_locked(root, plan, digest, accounting, metadata_ledger, open_
                             raise CaptureRefused("publisher_build_in_future")
                         if first_build is None:
                             first_build = details["publisher_build_text"]
+                            first_built_at = details["publisher_built_at"]
                             if previous_build and (
                                 built < previous_build
-                                or purpose == "refresh"
+                                or (
+                                    purpose == "refresh"
+                                    or plan.get("refresh_cadence") == "metadata_new_build"
+                                )
                                 and built <= previous_build
                                 and plan.get("refresh_cadence") != "owner_r3_acquire1_same_build_once"
                             ):
@@ -671,6 +709,11 @@ def _capture_batch_locked(root, plan, digest, accounting, metadata_ledger, open_
                         attempt=index,
                         filename=step["filename"],
                         bytes=len(body),
+                        **(
+                            {"groups_sha256": hashlib.sha256(body).hexdigest()}
+                            if bootstrap and kind == "groups"
+                            else {}
+                        ),
                         captured_at=timestamp(),
                         group_id=group_id,
                         **details,
@@ -684,7 +727,7 @@ def _capture_batch_locked(root, plan, digest, accounting, metadata_ledger, open_
                     input_bytes=input_bytes,
                     product_rows=row_totals["products"],
                     price_rows=row_totals["prices"],
-                    publisher_built_at=details["publisher_built_at"],
+                    publisher_built_at=first_built_at,
                     provider_valuation_at=None,
                     capture_directory=str(destination.relative_to(root)),
                 )

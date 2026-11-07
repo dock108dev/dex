@@ -14,6 +14,7 @@ import stat
 import threading
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from functools import lru_cache
 from pathlib import Path
 
 from . import hunter_budget
@@ -38,19 +39,47 @@ class InstalledAuthority:
     allowance: hunter_budget.TraversalAllowance
 
 
+def _file_identity(info):
+    return (info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns, info.st_ctime_ns, info.st_mode)
+
+
+@lru_cache(maxsize=8192)
+def _member_digest(path, identity):
+    descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+    with os.fdopen(descriptor, "rb") as source:
+        if _file_identity(os.fstat(source.fileno())) != identity:
+            raise ValueError("Installed Hunter package changed during verification")
+        digest = hashlib.file_digest(source, "sha256").hexdigest()
+        if _file_identity(os.fstat(source.fileno())) != identity:
+            raise ValueError("Installed Hunter package changed during verification")
+    return digest
+
+
 def package_digest():
     """Digest every installed application member, excluding interpreter caches."""
     package = Path(__file__).resolve().parents[1]
     members = {}
-    for path in sorted(package.rglob("*")):
-        relative = path.relative_to(package)
-        if "__pycache__" in relative.parts or path.suffix in {".pyc", ".pyo"}:
-            continue
-        if path.is_symlink():
-            raise ValueError("Installed Hunter package identity is unavailable")
-        if path.is_file():
-            with path.open("rb") as source:
-                members[relative.as_posix()] = hashlib.file_digest(source, "sha256").hexdigest()
+    pending = [(str(package), "")]
+    while pending:
+        directory, prefix = pending.pop()
+        with os.scandir(directory) as entries:
+            for entry in entries:
+                if entry.name == "__pycache__":
+                    continue
+                relative = prefix + entry.name
+                info = entry.stat(follow_symlinks=False)
+                if stat.S_ISDIR(info.st_mode):
+                    pending.append((entry.path, relative + "/"))
+                    continue
+                if entry.name.endswith((".pyc", ".pyo")):
+                    continue
+                if stat.S_ISLNK(info.st_mode):
+                    raise ValueError("Installed Hunter package identity is unavailable")
+                if stat.S_ISREG(info.st_mode):
+                    identity = _file_identity(info)
+                    members[relative] = _member_digest(entry.path, identity)
+                    if _file_identity(os.stat(entry.path, follow_symlinks=False)) != identity:
+                        raise ValueError("Installed Hunter package changed during verification")
     return hashlib.sha256(json.dumps(members, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
@@ -195,7 +224,7 @@ def check_dispatch(run):
     from . import hunter_policy
 
     allowance = getattr(run, "allowance", None)
-    if run.operation == "detail":
+    if run.operation == "detail" and type(allowance) is not hunter_policy.OrdinaryAllowance:
         from . import hunter
 
         parent = hunter._runs.get(getattr(run, "parent_run_id", None))

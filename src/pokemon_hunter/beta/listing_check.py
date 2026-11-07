@@ -20,7 +20,15 @@ from pokemon_hunter.parser import extract_count
 
 from . import discovery as d
 from . import discovery_comparison as dc
-from . import ebay_hunts, image_bindings, lot_assessment, shopping, shopping_contents, shopping_index
+from . import (
+    ebay_hunts,
+    hunter_lot_parser,
+    image_bindings,
+    lot_assessment,
+    shopping,
+    shopping_contents,
+    shopping_index,
+)
 from . import lot_calculator as lot
 from .diagnostics import async_closing, failure
 from .discovery_search import product_kind
@@ -32,6 +40,10 @@ from .listing_details import parse_identifier as parse_identifier
 from .listing_details import validate_response as validate_response
 
 _reviews = {}
+
+
+class AdmissionRefused(ValueError):
+    """A local detail rejection before any acquisition worker can dispatch."""
 
 
 def start(actor, session, identifier, *, auth_session=None):
@@ -52,6 +64,10 @@ def start(actor, session, identifier, *, auth_session=None):
         auth_session=auth_session,
     )
     run.counts = {"oauth": 0, "detail": 0, "resolution": 0, "total": 0}
+    try:
+        _bind_policy(run, actor)
+    except ValueError as error:
+        raise AdmissionRefused(str(error)) from error
     with d._lock:
         for old in d._runs.values():
             if old.owner == owner and old.operation == "detail" and old.state in {"queued", "running"}:
@@ -68,6 +84,34 @@ def start(actor, session, identifier, *, auth_session=None):
         target=_worker, args=(run, actor, credentials), daemon=True, name="dex-listing-check"
     ).start()
     return _summary(run)
+
+
+def _bind_policy(run, actor):
+    """Bind explicit standalone details to the same durable ordinary accounting."""
+    from . import hunter_policy
+
+    if not hunter_policy.present(run.owner[0]):
+        return
+    run.allowance = hunter_policy.current(actor)
+    if run.allowance is None:
+        raise ValueError("Official details need current Hunter usage settings; no request was sent.")
+    hunter_policy.bind(run, actor)
+
+    def admit(stage):
+        if stage not in {"oauth", "detail", "resolution"}:
+            raise ProviderFailure(stage)
+        hunter_policy.check(run)
+        hunter_policy.consume(
+            run.owner[0],
+            run.id,
+            "detail" if stage == "resolution" else stage,
+            None,
+            dispatch_id=f"{stage}:{run.counts['total'] + 1}",
+            allowance=run.allowance,
+            scope="lots",
+        )
+
+    run.admit = admit
 
 
 async def _acquire(run, credentials, actor=None):
@@ -142,6 +186,9 @@ def status(actor, session, key):
         )
     if value:
         value = _proposals(actor, value)
+        # Complete alternatives already live in contents; parser candidates are
+        # operation-local working data, not a second browser payload.
+        value.get("seller_contents", {}).pop("proposals", None)
         # The projection cannot extend the original detail lease. Reauthorize
         # before publishing even if the expiry timer has not fired yet.
         if d._lookup(actor, session, key) is not run:
@@ -153,16 +200,15 @@ def status(actor, session, key):
 
 
 @shopping_index.indexed
-def _proposals(actor, value):
+def _proposals(actor, value, *, summary=None):
+    official = value.get("_contents_kind") == "official_detail"
     clues = dict(value["clues"], text=value.pop("match_text"))
     indexed = shopping_index.current(actor)
     entries = (
         indexed.proposals(
-            dc._clues(value.get("_contents_source", {}))["text"]
-            + (
-                " " + value["_contents_source"]["description"]
-                if value.get("_contents_source", {}).get("description")
-                else ""
+            hunter_lot_parser.catalog_text(
+                summary or value.get("_contents_source", {}),
+                value.get("_contents_source") if value.get("_contents_kind") == "official_detail" else None,
             )
         )
         if indexed
@@ -187,8 +233,27 @@ def _proposals(actor, value):
         dict(shopping.identity(p), quantity=0, artwork=artwork.get(p["id"])) for p in matched
     ]
     value["unknown_contents"] = value["seller_lot_size"]
-    value["contents"] = shopping_contents.project(value, entries)
+    value["contents"] = shopping_contents.project(value, entries, summary=summary)
+    if official:
+        _selected_contents(value)
     return value
+
+
+def _selected_contents(value):
+    """Apply the same evidence-selected quantities to either official-detail path."""
+    parsed = value["seller_contents"]
+    selected = {p["printing_id"]: p for p in parsed["proposals"] if p["included_quantity"]}
+    entries = {p["id"]: p for group in parsed["proposals"] for p in group["candidates"]}
+    unresolved = [dict(p, quantity=0) for p in value.get("proposals", []) if p["id"] not in selected]
+    value["proposals"] = [
+        dict(
+            entries[pid],
+            quantity=p["included_quantity"],
+            **{k: p["clues"].get(k) for k in ("condition", "grade", "grader")},
+        )
+        for pid, p in selected.items()
+    ] + unresolved
+    value["unknown_contents"] = parsed["unknown_remainder"]
 
 
 @shopping_index.indexed
@@ -242,12 +307,17 @@ def _context(source, actor=None, review=None):
 def candidate(actor, session, run_id, result_id):
     """Project an eligible selected summary; entering review never loads details."""
     source = d.review_candidate(actor, session, run_id, result_id)
-    raw = source["raw"]
-    value = _proposals(actor, details(raw.get("itemId"), raw, source_kind="summary"))
+    raw = source.get("detail") or source["raw"]
+    value = _proposals(
+        actor,
+        details(raw.get("itemId"), raw, source_kind="official_detail" if source.get("detail") else "summary"),
+        summary=source.get("summary"),
+    )
+    automatic = source.get("detail") is not None
     suggestions = source.get("result", {}).get("identity_candidates") or []
     ids = list(dict.fromkeys(row.get("printing_id") for row in suggestions if row.get("printing_id")))
     strict_ids = {row["id"] for row in value["proposals"]}
-    if ids:
+    if ids and not automatic:
         checked = catalog(actor, restore=ids)["cards"]
         strict = {row["id"]: row for row in value["proposals"]}
         value["proposals"] = [
@@ -257,10 +327,15 @@ def candidate(actor, session, run_id, result_id):
     selected_child = source["choices"].get("printing_id")
     scope_differs = bool(ids) and set(ids) != strict_ids
     selected_differs = selected_child and any(row["id"] != selected_child for row in value["proposals"])
-    if source.get("result", {}).get("discovery_kind") == "mixed_lot" or scope_differs or selected_differs:
+    if not automatic and (
+        source.get("result", {}).get("discovery_kind") == "mixed_lot" or scope_differs or selected_differs
+    ):
         for proposal in value["proposals"]:
             proposal["quantity"] = 0
         value["unknown_contents"] = value["seller_lot_size"]
+    # Automatic selection above consumes the parsed proposals before this
+    # duplicate candidate graph is removed. Keep every public contents choice.
+    value.get("seller_contents", {}).pop("proposals", None)
     value["discovery_origin"] = dict(run_id=run_id, result_id=result_id)
     restore_ids = list(
         dict.fromkeys(
@@ -274,7 +349,9 @@ def candidate(actor, session, run_id, result_id):
     restore_cards = catalog(actor, restore=restore_ids)["cards"] if 0 < len(restore_ids) <= 40 else []
     # Recheck the source after image/catalog projection so Stop cannot publish
     # a summary whose original lease ended while local work was running.
-    d.review_candidate(actor, session, run_id, result_id)
+    current_source = d.review_candidate(actor, session, run_id, result_id)
+    if any(current_source.get(k) != source.get(k) for k in ("raw", "detail", "content_revision", "created")):
+        raise ValueError("Listing evidence changed during review; reopen the current assessment")
     return dict(
         listing=value,
         restore_cards=restore_cards,
@@ -537,8 +614,18 @@ def saved_comparison(actor, session, revision, lease):
             if origin:
                 run = d._lookup_owned(owner, origin["run_id"])
                 with run.lock:
-                    raw = d._summary_lease(run, origin["result_id"])["raw"]
-                offers.append(details(raw.get("itemId"), raw, source_kind="summary"))
+                    source = d._summary_lease(run, origin["result_id"])
+                    raw = source.get("detail") or source["raw"]
+                offers.append(
+                    dict(
+                        details(
+                            raw.get("itemId"),
+                            raw,
+                            source_kind="official_detail" if source.get("detail") else "summary",
+                        ),
+                        _content_revision=source.get("content_revision"),
+                    )
+                )
             if value.get("detail_run"):
                 run = d._lookup_owned(owner, value["detail_run"])
                 with run.lock:
@@ -565,11 +652,14 @@ def saved_comparison(actor, session, revision, lease):
     if value.get("discovery_origin"):
         run = d._lookup_owned(owner, value["discovery_origin"]["run_id"])
         d._context_current(actor, run.choices)
-    result = compare(actor, value, offers=offers)
+    reference_checks = []
+    result = compare(actor, value, offers=offers, _checks=reference_checks)
     result["assessment"]["seller_url"] = offers[-1]["item_url"] if offers else None
     result["assessment"]["ends_at"] = min((o["ends_at"] for o in offers if o.get("ends_at")), default=None)
 
     def publish():
+        for check in reference_checks:
+            check()
         references = result["assessment"]["evidence"]
         if result["assessment"]["maximum"] is not None or any(r["snapshot_version"] for r in references):
             with lot.price_snapshots.selected(
@@ -606,7 +696,7 @@ def saved_comparison(actor, session, revision, lease):
     return result
 
 
-def compare(actor, value, *, offers=()):
+def compare(actor, value, *, offers=(), _checks=None):
     selected = validate_review(actor, value)
     now = datetime.now(shopping.TZ)
     currency = value["currency"]
@@ -656,11 +746,50 @@ def compare(actor, value, *, offers=()):
         records = lot.retained_records()
     from .read_diagnostics import phase
 
+    # Seller evidence needs numbered parents and sibling variants as well as
+    # the selected children. The selected cost/reference rows remain unchanged.
+    evidence_entries = selected
+    if offers and offers[-1].get("_contents_source"):
+        source = offers[-1]["_contents_source"]
+        indexed = shopping_index.current(actor)
+        evidence_entries = (
+            indexed.proposals(hunter_lot_parser.catalog_text(source, source))
+            if indexed
+            else lot.catalog(actor, include_goals=True, include_current=True)
+        )
     with phase("composition_ms"):
-        return _assessed(actor, value, selected, raw, records, now, offers)
+        result = _assessed(
+            actor, value, selected, raw, records, now, offers, evidence_entries=evidence_entries
+        )
+    # Keep the strict tax-aware assessment/ceiling intact. The same automatic
+    # benchmark engine also consumes explicitly corrected physical selections.
+    if offers and offers[-1].get("_contents_source"):
+        from . import hunter_lots
+
+        source = offers[-1]["_contents_source"]
+        proposal = hunter_lot_parser.parse(source, evidence_entries, detail=source)
+        corrections = dict(
+            cards=[
+                {
+                    k: v
+                    for k, v in card.items()
+                    if k in {"printing_id", "quantity", *card.get("authored_fields", [])}
+                }
+                for card in value["cards"]
+                if card["quantity"]
+            ],
+            unknown_contents=value["unknown_contents"],
+        )
+        try:
+            _, result["benchmark"] = hunter_lots._compare(
+                actor, source, proposal, corrections, selected, records, _checks=_checks
+            )
+        except ValueError as error:
+            result["benchmark"] = dict(assessment_version="dex-lot-value-v3", unavailable=str(error))
+    return result
 
 
-def _assessed(actor, value, selected, raw, records, now, offers):
+def _assessed(actor, value, selected, raw, records, now, offers, *, evidence_entries=None):
     payload = lot.prepare(
         actor,
         raw,
@@ -679,7 +808,7 @@ def _assessed(actor, value, selected, raw, records, now, offers):
     return dict(
         assessment=lot_assessment.assess(
             value,
-            {p["id"]: p for p in selected},
+            {p["id"]: p for p in (evidence_entries if evidence_entries is not None else selected)},
             records,
             now.date(),
             scenarios["raw"]["result"]["comparisons"],

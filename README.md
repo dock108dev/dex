@@ -14,7 +14,8 @@ storage. See [local development](docs/local-development.md) for startup and
 
 ## Requirements
 
-- Python 3.15 and [uv](https://docs.astral.sh/uv/).
+- Python 3.14 or 3.15 and [uv](https://docs.astral.sh/uv/). Keep an existing
+  installation on its qualified runtime; checkout development defaults to 3.15.
 - macOS or Linux for the local application. Windows process handling is unsupported.
 - Port 8011 for the ordinary local server; reuse an already running installation.
 - Node.js 24 (see `.nvmrc`) for JavaScript checks. Playwright and other CI tools
@@ -58,6 +59,8 @@ before changes; never reseed an existing installation.
   are temporary, while existing saved hunt research remains available.
 - Vintage Shopping lots with separate included quantities and wanted targets,
   four independent guide-value scenarios and rights-permitted saved comparisons.
+- Automatic lot Hunts with up to 40 received summaries, two detailed assessments,
+  and separate native-guide subtotals and normalized cost comparisons where supported.
 
 Real-card recognition accuracy is unmeasured; all-era variant coverage and current
 buying availability remain incomplete. Unknown identity, stock, shipping and

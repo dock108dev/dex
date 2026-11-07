@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pokemon-hunter"
-version = "0.1.1rc7"
+version = "0.1.1rc20"
 description = "A local Pokémon collection app with explicit, conservative eBay research"
 requires-python = ">=3.14,<3.16"
 dependencies = [

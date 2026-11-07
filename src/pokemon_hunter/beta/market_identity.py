@@ -46,7 +46,11 @@ def compatible(printing, edition, finish):
             value = json.loads(variant)
         except (ValueError, TypeError):
             return False
-        if not isinstance(value, dict) or set(value) - {"type", "stamp"}:
+        if not isinstance(value, dict) or set(value) - {"type", "edition", "stamp"}:
+            return False
+        if "edition" in value and (
+            value["edition"] != "unlimited" or edition != "unlimited" or "stamp" in value
+        ):
             return False
         if value.get("type") not in FINISH or FINISH[value["type"]] != finish:
             return False

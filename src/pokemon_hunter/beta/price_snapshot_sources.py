@@ -364,6 +364,7 @@ def prepared_rows(value, seal, ids, *, now=None, sources_only=False, eligible_on
                 _policy_url=prepared["policy_url"],
                 _review_id=meta["review_id"],
                 _expires_at=meta["expires_at"],
+                **({"_native_context": prepared["native_context"]} if prepared.get("format") == 2 else {}),
             )
         result.extend(rows)
     present = set() if sources_only else {row["printing_id"] for row in result}

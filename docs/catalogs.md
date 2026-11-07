@@ -197,3 +197,42 @@ multiple holo or stamped children needs an explicit supported combination. Liter
 numbers such as `001/165` retain their denominators. Missing metadata stays explicit
 through [reviewed collection entry](effective-collection.md) and
 [photo entry](photo-entry.md); entry grants no artwork or pricing redistribution rights.
+
+## Physical alternatives during listing assessment
+
+Listing assessment reads existing published `parent_printing_id` and
+`physical_variant` relations with retained variant evidence. It validates parent,
+child, descriptor and publication identity, and binds the result to fingerprints.
+A stale or conflicting relation requires review; it is not silently repaired. No
+numbered parent, ownership assignment or frozen pilot ID is changed by this read path.
+The additive importer and its closed grammar are unchanged.
+
+Scoped seller language/edition/finish claims may select a supported ordinary child.
+Missing or conflicting traits leave alternatives unresolved, even if only one has a
+price. Each line retains its physical quantity, evidence and nullable selection;
+explicit separate variant lines retain their allocations, and repeated identical
+mentions do not add cards. Alternatives are non-exhaustive and never become an
+automatic minimum/maximum price or extra physical units. Unsupported catalog evidence
+and source-representation gaps remain visible; this implementation does not publish
+new children or infer unlimited, shadowless, galaxy equivalence or language.
+
+## Published set choices
+
+For a SQLite catalog with reviewed publication state, explicit
+catalog-read migration creates a covering index on printing publication state and
+set ID. Shopping uses the existing visibility query: a listed set must itself be
+published and contain a published printing. The index changes no catalog rows,
+variants, ownership or access rules. No GET or startup creates it. Follow the
+[stopped-server transition](operations.md#runtime-updates-and-recovery) for an authorized
+installation; the presence of this procedure is not an installation receipt.
+
+Literal variant publication also accepts `type: holo` with `foil: galaxy`, with or without an explicit first-edition stamp. It retains the full structured descriptor and leaves the ordinary finish field unresolved. An absent stamp assertion does not establish Unlimited, and a publisher Holofoil subtype alone does not establish galaxy-foil compatibility.
+
+Ordinary variants may carry an affirmative `edition: unlimited` alongside their
+literal finish type. This requires independently reviewed product metadata that
+explicitly names Unlimited; an absent stamp, price availability or numbered parent
+is insufficient. The descriptor cannot combine Unlimited with a stamp or special
+foil/copyright claims. First edition retains its explicit stamp descriptor. Existing
+parents and contradictory special descriptors remain unchanged. Seller matching
+still requires explicit language, edition and finish before choosing one child,
+and native price admission still binds the exact current catalog and source mapping.

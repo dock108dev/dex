@@ -363,9 +363,25 @@ def test_empty_ends_once(authority):
 
 
 @pytest.mark.parametrize("stage", ["oauth", "browse"])
-def test_deadline_during_stream(authority, stage):
+def test_deadline_during_stream(authority, stage, monkeypatch):
+    # Advance the guardian's test clock only after iteration entered the
+    # selected response body. A short real deadline can expire in HTTPX
+    # setup, before the test exercises a stalled stream at all.
+    entered = multiprocessing.get_context("fork").Event()
+    original_iter = Stream.__iter__
+
+    def observe_stream(stream):
+        if stream.stall:
+            entered.set()
+        yield from original_iter(stream)
+
+    def clock():
+        return time.monotonic() + (4 if entered.is_set() else 0)
+
+    monkeypatch.setattr(Stream, "__iter__", observe_stream)
     before = time.monotonic()
-    result, stages = run(authority, stall=stage, request_seconds=0.12)
+    result, stages = run(authority, stall=stage, clock=clock)
+    assert entered.is_set()
     assert result["outcome"] == "timeout" and result["count"] is None
     assert time.monotonic() - before < 1.5 and len(stages) == (1 if stage == "oauth" else 2)
 

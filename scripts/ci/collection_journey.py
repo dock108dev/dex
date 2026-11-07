@@ -134,7 +134,8 @@ def exercise(url, root, output):
                 raise AssertionError("Current navigation or renderer boundary failed")
             passed("invalid filter recovery and one active Library navigation target", started)
             checks.extend(photo_journey(page, url, output))
-            # Keep the owner-priority named search/More/Stop/seller loop in required CI.
+            # Preserve legacy response/More compatibility separately from the
+            # current bounded Hunt coverage in LV-06 and SHOP-17 integration.
             # Run last: its controlled response/image routes live until context teardown.
             checks.extend(
                 {"name": name, "status": "PASS", "evidence_class": "controlled engineering responses"}

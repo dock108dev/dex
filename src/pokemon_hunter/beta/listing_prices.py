@@ -71,3 +71,45 @@ def detail_shipping(raw):
         if len(amounts) == 1
         else dict(amount=None, currency=None)
     )
+
+
+def benchmark_costs(raw, *, subtotal=None, total=None, now=None):
+    """Unrounded bounded inputs for each lane; ambiguous shipping remains unknown."""
+    options = raw.get("shippingOptions")
+    shipping = None
+    if isinstance(options, list) and options:
+        admitted = []
+        for option in options:
+            if not isinstance(option, dict) or option.get("shippingCostType") not in (
+                None,
+                "FIXED",
+                "CALCULATED",
+            ):
+                break
+            cost = option.get("shippingCost")
+            try:
+                if not re.fullmatch(r"[A-Z]{3}", str(cost["currency"])):
+                    break
+                admitted.append((math.amount(cost["value"]), cost["currency"]))
+            except (ValueError, KeyError, TypeError):
+                break
+        if len(admitted) == len(options) and len(set(admitted)) == 1:
+            value, currency = admitted[0]
+            shipping = dict(value=format(value, "f"), currency=currency)
+    options = prices(raw)["buying_options"]
+    costs = {
+        lane: math.benchmark_cost(base, shipping, subtotal=subtotal, total=total)
+        for lane, base in (
+            ("auction", raw.get("currentBidPrice") if "AUCTION" in options else None),
+            ("buy_it_now", raw.get("price") if "FIXED_PRICE" in options else None),
+        )
+    }
+    from .lot_hunt_contract import lanes
+
+    eligible = lanes(raw, now=now)
+    for lane, cost in costs.items():
+        cost["eligible"] = lane in eligible
+        if lane not in eligible:
+            cost.update(difference=None, subtotal_difference=None)
+            cost["issues"]["offer"] = "unavailable_ended_or_outside_lane"
+    return costs

@@ -18,6 +18,8 @@ pytestmark = pytest.mark.allow_hosts(["127.0.0.1"])
 
 
 def received(run_id, account, binding):
+    from datetime import UTC, datetime, timedelta
+
     return dict(
         run_id=run_id,
         state="complete",
@@ -34,6 +36,7 @@ def received(run_id, account, binding):
                 shipping=None,
                 delivered_total=None,
                 price_kind="current_bid",
+                ends_at=(datetime.now(UTC) + timedelta(hours=1)).isoformat(),
                 currency="USD",
                 classification="unpriced",
                 reference=None,
@@ -137,4 +140,87 @@ def test_lost_search_response_reconciles_locally_without_reacquisition(browser_a
     expect(page.get_by_text("Engineering received lot", exact=True)).to_be_visible()
     assert len(posts) == 1 and uuid.UUID(posts[0])
     assert len(reads) == 1 and posts[0] in reads[0]
+    assert not errors
+
+
+def test_lot_values_arrive_automatically_and_controls_stay_local(browser_app):
+    import copy
+    import uuid
+    from datetime import UTC, datetime, timedelta
+
+    from playwright.sync_api import expect
+
+    state, page, base, requests, errors = browser_app
+    run_id, calls = str(uuid.uuid4()), []
+
+    def route(handler):
+        request = handler.request
+        calls.append((request.method, request.url))
+        binding = request.header_value("X-Dex-Shopping-Binding")
+        if "run_id=" not in request.url:
+            handler.fulfill(
+                json=dict(
+                    provider=dict(enabled=True, configured=True),
+                    goals=[],
+                    sets=[],
+                    authority=dict(account_id=state["actor"].user_id, binding=binding),
+                )
+            )
+            return
+        result = received(run_id, state["actor"].user_id, binding)
+        first = result["results"][0]
+        first.update(
+            title="Engineering complete lot",
+            shipping="5.00",
+            delivered_total="15.00",
+            buy_now_price="40.00",
+            buy_now_delivered_total="45.00",
+        )
+        second = copy.deepcopy(first)
+        second.update(
+            id="later",
+            title="Engineering later lot",
+            buy_now_price=None,
+            ends_at=(datetime.now(UTC) + timedelta(hours=60)).isoformat(),
+        )
+        result["results"].append(second)
+        if "view=values" in request.url:
+            result["values_checked"] = True
+            first["lot_value"] = dict(
+                total="100.00",
+                subtotal="100.00",
+                priced_quantity=3,
+                identified_quantity=3,
+                stated_quantity=3,
+                bid_difference="85.00",
+                buy_now_difference="55.00",
+                reason="Dated ungraded references",
+                references=[],
+                cards=[],
+            )
+        handler.fulfill(json=result)
+
+    page.route("**/api/shopping/discovery/**", route)
+    page.goto(base + f"/shopping/?run_id={run_id}&q=Lapras")
+    expect(page.get_by_text("$100.00 ungraded lot value", exact=True)).to_be_visible()
+    expect(
+        page.get_by_text("Buy It Now + shipping: $55.00 below reference · before tax", exact=True)
+    ).to_be_visible()
+    page.locator("#lot-time-window").select_option("48")
+    expect(page.get_by_text("Engineering later lot", exact=True)).to_have_count(0)
+    count = len(calls)
+    page.locator("#lot-time-window").select_option("72")
+    expect(page.get_by_text("Engineering later lot", exact=True)).to_be_visible()
+    page.locator("#lot-buying-mode").select_option("buy_now")
+    expect(page.get_by_text("Engineering later lot", exact=True)).to_have_count(0)
+    page.locator("#lot-value-sort").select_option("value")
+    assert len(calls) == count
+    assert all(method == "GET" for method, _ in calls)
+    for width in (320, 390, 1280):
+        page.set_viewport_size(dict(width=width, height=900))
+        for name in ("lot-time-window", "lot-buying-mode", "lot-value-sort"):
+            control = page.locator("#" + name)
+            control.scroll_into_view_if_needed()
+            box = control.bounding_box()
+            assert box and box["x"] >= 0 and box["x"] + box["width"] <= width + 1
     assert not errors

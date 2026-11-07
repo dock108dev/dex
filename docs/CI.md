@@ -20,9 +20,9 @@ not validate personal collections, live marketplace results or a hosted deployme
 | `assurance.yml / container` | Non-publishing image build and non-root installed imports without networking | Schedule or manual `compatibility` |
 | `assurance.yml / health` | Bounded Actions history and storage metadata | Schedule or manual; advisory collection |
 
-Normal hosted behavior uses Ubuntu 24.04 with Python 3.15 and retained Python 3.14 compatibility. Compatibility
+Normal hosted behavior uses Ubuntu 24.04 with Python 3.14 and 3.15. Compatibility
 adds the Linux container build, not obsolete Python versions. Every PR also installs
-and compiles the fresh package on the declared Python 3.15 runtime. Other jobs use
+and compiles the fresh package on Python 3.15. Other jobs use
 Ubuntu and Python 3.15, with Node 24 where needed. Matrix fail-fast is disabled.
 Behavior has a 45-minute limit per shard on every runtime. The core modules,
 Shopping 12–13, Shopping 14–15, and Shopping 16 onward run on independent runners;
@@ -44,7 +44,9 @@ not configured by these workflows; add `merge_group` before requiring queue gate
 
 ## Platform coverage
 
-Hosted checks use Ubuntu 24.04 and Python 3.15. macOS is supported locally;
+Hosted behavior checks use Ubuntu 24.04 and both supported Python minors. The
+fresh-distribution job uses 3.15; a release installed on 3.14 also needs its own
+noneditable distribution smoke on that runtime. macOS is supported locally;
 validate platform-sensitive changes there with the same locked dependencies and
 disposable test state. Local results do not substitute for hosted checks, and
 engineering tests do not establish behavior of a separately installed runtime.
@@ -101,8 +103,12 @@ uv run --no-sync python scripts/ci/staging.py --help
 Browser checks create a fresh synthetic root, block acquisition and cover keyboard,
 narrow-screen, enlarged-text, named Search/More/Stop, seller-link and review behavior.
 Failures retain the failing stage, traceback and completed checks. The separate
-Hunter runner `scripts/qualify_hunter_ui.py` owns disposable process setup while
-`hunter_ui_journey.py` owns its ordered browser interactions.
+Hunter runner `scripts/qualify_hunter_ui.py` owns disposable process setup.
+When the shipped page declares singles-only mode, it checks the visible one-time
+enable button, keyboard search, exactly three controlled requests, cost edits and
+responsive results using `scripts/hunter_ui_singles.py`. Its older full-mode
+journey remains separate. The five-request LV lot Hunt is on Shopping and is
+qualified by its own installed-wheel integrated and browser tests.
 
 Distribution checks validate required files, reject private inputs, compare repeated
 wheels and the wheel rebuilt from the sdist, then install locked runtime dependencies
@@ -112,7 +118,9 @@ synthetic initialization, loopback HTTP behavior and cleanup must succeed.
 PostgreSQL checks require an empty disposable database and generated synthetic source.
 They verify copied migration, account isolation, sessions, CSRF, idempotent confirmation,
 undo and occupied-destination refusal. Never point these tools at a personal or
-production installation. Container checks do not publish, sign or deploy anything.
+production installation. The container installs the package noneditably: imports must resolve under the runtime,
+and packaged catalog inputs must exist there. Container checks do not publish, sign
+or deploy anything.
 
 ## Reports and failure policy
 
@@ -234,26 +242,17 @@ the latter to the former and call a 3-second navigation a pass.
 
 ## Verification coverage and limits
 
-The retained October 30 local checks cover implemented listing-analysis lifecycle
-repairs, shared lease/identifier ownership, renderer changes and CI failure handling.
-The CI review ran 150 distinct focused tests (98 initial, 51 integration-helper,
-and one additional workflow regression; four workflow cases were repeated), clean
-JavaScript installation, security scans, synthetic browser journeys and reproducible
-fresh-package smoke. The later account-read extraction passed 30 account-read and
-11 goal-contract tests. Its function bodies, decorators and SQL were preserved.
-These are scoped results, not a combined full-suite or performance qualification.
-Local outputs remain under `reports/ci-review-20261030/` and
-`reports/cleanup-20261030/`; they are not checkout prerequisites.
+Qualification belongs to exact source, test, dependency and environment inputs.
+Keep failed samples and their dispositions alongside later focused follow-ups;
+a subsequent pass does not change a failed hosted aggregate into success. If a
+timing-only miss recurs, retain request-level phase attribution under the original
+budgets before changing code or repeating a wider suite.
 
-The recorded installed rc7 checks predate these later source repairs. They covered
-98 affected correctness tests, eight full-size/2× performance gates, 54 fresh-install
-HTTP assertions and paced checks on the actual installation. That record explicitly
-claims neither a new full-suite result nor hosted qualification. No result inspected
-in this documentation reconciliation establishes complete qualification of current
-source commit `9eaab8e`. A clean or committed checkout is not an installed update.
-See [runtime updates](operations.md#runtime-updates-and-recovery) and
-[interface review](UI_DESIGN.md#review-scope-and-known-limitations) for the separate
-installation and user-facing boundaries.
+A clean or committed checkout is not an installed update. See
+[runtime updates](operations.md#runtime-updates-and-recovery) and
+[interface review](UI_DESIGN.md#review-scope-and-known-limitations) for those
+separate boundaries. Dated candidate results and local investigation notes are
+operator records, not prerequisites for using a fresh checkout.
 
 ## Integrated Shopping decision qualification
 
@@ -292,7 +291,27 @@ complete suite are outside this focused test-value review:
 | Preserve ambiguity and seller quantities | `test_shop14_contents.py` | Exact quantities, conflict reasons, complete families and source evidence prevent claims becoming confirmed contents; parser fixtures only | Strengthened formerly redundant uncertainty assertion |
 | Reconcile lost responses without redispatch | `test_shop12_recovery.py` | Same-session handles, concurrent submission and admission failure cannot replay acquisition; controlled transport | Keep |
 | Recheck value and original authority | `test_shop15_assessment.py` | Independent cent-by-cent arithmetic oracle and interleaved source withdrawal, expiry, changed review and Stop reject stale ceilings; fabricated admitted references | Keep |
+| Forty summaries remain distinct from assessed contents | `test_feedback_repair.py` | Two detailed assessments, exact authored quantities, five sends, local evidence expansion, and withdrawal/Stop/session rejection; controlled provider and authored prices | Keep; debug prints removed without weakening assertions |
+| Verify installed members despite matching size/mtime | `test_lv08_package_identity.py` | Changed bytes, added/removed members, linked files/directories and mutation during hashing cannot reuse a stale package identity; disposable files | Keep |
+| Revalidate only contributing references | `test_lv08_reference_scope.py` | Changed or removed contributing amounts reject publication, and scoped selection is restored; mocked admitted records, no provider | Keep |
 
 These checks do not establish current market prices, live provider behavior or customer
 usability. Rendered review of changed source remains separate from source inspection;
 use the actual customer installation only after authorized delivery.
+
+## Artifact and transition qualification
+
+Test each selected wheel in separate noneditable environments on its supported
+release runtimes. Required distribution members include the automatic Hunt,
+shared valuation/preparation modules and `discovery-values.js`. Use exact wheel,
+application-member, lockfile and asset hashes; an rc label alone is insufficient.
+Existing full-size/2× suites and fixed budgets remain unchanged. Preserve failed
+and interrupted runs separately; passing repairs do not rewrite historical samples.
+
+`scripts/qualify_lv08_compatibility.py --previous-python PREVIOUS --candidate-python CANDIDATE --report REPORT`
+creates only generated disposable state and blocks external networking. It rehearses
+previous-runtime preparation, successor transition, unsupported-reader rejection,
+append-only policy binding with spent capacity, derived-only rollback and re-upgrade.
+It has no customer-root option. Retain exact outcomes with the operator's release
+records; these checks do not perform customer installation or replace required
+hosted Ubuntu reports and existing historical hold dispositions.

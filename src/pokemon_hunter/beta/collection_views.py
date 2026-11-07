@@ -130,16 +130,12 @@ def private_home(request):
 
 @require_GET
 def asset(request, filename):
-    # The inspection shell always needs these styles in this cascade order.
-    # Serve the existing sources together instead of five separately admitted
-    # requests. Members are fixed package files, never supplied by the client.
-    if filename == "listing-shell.css":
-        styles = (
-            "glass.css",
-            "collection-base.css",
-            "collection-browse.css",
-            "discovery.css",
-            "listing_check.css",
+    # Each shell discovers its fixed cascade in one request. All members are
+    # shipped styles, never filenames supplied by a request.
+    if filename in {"listing-shell.css", "public-browse-shell.css"}:
+        shared = ("glass.css", "collection-base.css", "collection-browse.css")
+        styles = shared + (
+            ("discovery.css", "listing_check.css") if filename == "listing-shell.css" else ("public.css",)
         )
         return HttpResponse(
             "\n".join((Path(__file__).parent / "static" / name).read_text() for name in styles),
@@ -163,6 +159,7 @@ def asset(request, filename):
         "listing_check.css",
         "discovery.js",
         "discovery-display.js",
+        "discovery-values.js",
         "listing-time.js",
         "discovery.css",
         "hunter.js",

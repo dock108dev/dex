@@ -39,7 +39,14 @@ class Transport:
         query=None,
         identifier=None,
         search_options=None,
+        byte_budget=None,
+        destination=None,
     ):
+        if destination is not None:
+            import re
+
+            if not isinstance(destination, str) or not re.fullmatch(r"[0-9]{5}(?:-[0-9]{4})?", destination):
+                raise ValueError("Choose a configured US shipping destination")
         headers = {"Accept": "application/json", "Accept-Encoding": "identity"}
         if stage == "oauth":
             pair = ":".join(credentials).encode()
@@ -50,6 +57,8 @@ class Transport:
             limit = 32 * 1024
         elif stage in {"browse", "detail", "resolution"}:
             headers.update(Authorization="Bearer " + token, **{"X-EBAY-C-MARKETPLACE-ID": "EBAY_US"})
+            if destination is not None:
+                headers["X-EBAY-C-ENDUSERCTX"] = "contextualLocation=country%3DUS%2Czip%3D" + destination
             method, path, data = "GET", "/buy/browse/v1/item_summary/search", None
             params = {
                 "q": query,
@@ -62,7 +71,13 @@ class Transport:
                 options = search_options or {}
                 if not isinstance(options, dict):
                     raise ValueError("Choose supported provider search options")
-                if "hunter" in options:
+                if "lot_hunt" in options:
+                    from .lot_hunt_contract import checked_params as lot_params
+
+                    if set(options) != {"lot_hunt"} or query is not None:
+                        raise ValueError("Automatic Hunt requires its captured page")
+                    params = lot_params(options["lot_hunt"])
+                elif "hunter" in options:
                     from .hunter_query import checked_params
 
                     if set(options) != {"hunter"} or query is not None:
@@ -85,7 +100,7 @@ class Transport:
                 from .listing_details import parse_identifier
 
                 checked = parse_identifier(identifier)
-                headers["X-EBAY-C-ENDUSERCTX"] = "contextualLocation=country%3DUS"
+                headers.setdefault("X-EBAY-C-ENDUSERCTX", "contextualLocation=country%3DUS")
                 if stage == "detail" and checked["rest"]:
                     path = "/buy/browse/v1/item/" + quote(checked["rest"], safe="")
                     params = {"quantity_for_shipping_estimate": "1"}
@@ -118,6 +133,8 @@ class Transport:
                     raise ProviderFailure(stage)
                 raw = bytearray()
                 async for block in response.aiter_raw():
+                    if byte_budget is not None:
+                        byte_budget.take(len(block))
                     if len(raw) + len(block) > limit:
                         raise ProviderFailure(stage)
                     raw.extend(block)

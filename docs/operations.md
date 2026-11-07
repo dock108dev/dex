@@ -146,7 +146,12 @@ screenshots or diagnostic reports. Permanent saved research requires independent
 surviving rights for every included source.
 
 Keep the independent `.dex-price-revocations/` directory and source registries
-outside app restore. Never replace them with older backups. Missing registries or
+outside app restore. The offline reference preparation service also keeps its
+noncontent `*-preparation` reservations and persistent Stop marker under this
+independent parent. Preserve them across code rollback, cleanup and source removal;
+missing/corrupt reservations fail closed and explicit resume never restores capacity.
+This service has no provider transport or recurring activation. Never replace these
+registries with older backups. Missing registries or
 version manifests fail closed; restored revoked/expired packages cannot regain
 eligibility. The expiry worker, startup and access checks enforce lifecycle while
 the app runs. They cannot erase external copies or guarantee deletion while the
@@ -156,6 +161,16 @@ Preserve `.dex-shopping-discovery`, `.dex-tcgcsv-snapshots` and
 `.dex-tcgcsv-metadata` accounting independently. App restore, failure, Stop and
 renaming a selection do not renew consumed provider capacity. Raw capture cleanup
 must keep noncontent reservation history.
+
+Finite TCGCSV plans may bind `metadata_ledger_path` to the existing sibling or
+historical parent metadata file. The capture reader requires one unique existing
+private file; it never creates replacement history. Two stores, missing/empty history,
+unmatched detailed reservations or plan digests fail closed. Do not copy a ledger to
+make a path appear valid. Bootstrap journals accept only the two metadata endpoints;
+Stop and consumed attempts survive removal and restart. The
+operator prepares stage two only after reviewing the successful retained groups
+receipt/digest. Raw capture directories need explicit operator cleanup at the approved
+retention deadline; do not assume release-shard expiry owns unadmitted raw staging.
 
 Photo-batch admissions, consumed attempts and deletion tombstones are also outside
 the root in `ROOT.parent/.dex-photo-batches/<root-path-sha256>/journal.jsonl`.
@@ -480,7 +495,7 @@ admits one legacy dynamic request and reserves one additional lane for bounded
 browsing GETs (V2 reads except resources, card/Pokédex shells and readiness).
 Mutations and legacy collection, Shopping and Hunter reads cannot enter the browsing
 lane. Both lanes have capacity one; total dynamic concurrency is capped at two.
-This rc5 policy prevents an expensive legacy comparison refresh from refusing a
+This reserved-lane policy prevents an expensive legacy comparison refresh from refusing a
 card navigation. The fixed `/collection-assets/`
 file-serving route has a separate four-slot lane; it never opens a catalog snapshot.
 This prevents script/style delivery waiting behind the data slot. Admission waits at most 500 ms, then
@@ -555,7 +570,7 @@ ownership or decoding the whole matching catalog. Owned search is now explicitly
 qualified alongside catalog search. Four simultaneous Django requests increased SQL
 wall time beyond its fixed budget. The original single admission slot bounded that
 contention, but installed QA later exposed legacy Hunter refresh blocking browsing.
-The rc5 reserved browsing lane above supersedes that policy. Four-client load and
+The reserved browsing lane above supersedes that policy. Four-client load and
 actual legacy-read overlap require installed validation as described in
 [interface review](UI_DESIGN.md#review-scope-and-known-limitations);
 queue time remains separate from application time.
@@ -575,6 +590,40 @@ See [the account guide](account-reads.md#account-storage-schema-3) for the
 supported additive transition, preparation order and rollback boundary. Stop the
 server and retain a consistent protected backup before authorized delivery. Older
 runtime/schema combinations are not interchangeable. Never restore older collections
-or independent journals as a shortcut to code rollback. Source qualification has not installed or migrated this successor.
+or independent journals as a shortcut to code rollback. Source qualification alone does not install or migrate an application.
 
-Current source adds the separate [schema 4 correction picker](account-reads.md#account-storage-schema-4). A future qualified successor must explicitly migrate and prepare it under the new account policy. Do not treat schema 3 readiness as schema 4 readiness or run this transition on the customer root as part of isolated testing. Historical performance holds remain open; current passing checks do not waive them.
+The [schema 4 correction picker](account-reads.md#account-storage-schema-4) requires explicit migration and preparation under its account policy. Do not treat schema 3 readiness as schema 4 readiness or run this transition on the customer root as part of isolated testing. Historical performance holds remain open; current passing checks do not waive them.
+
+## Native-guide compatibility boundary
+
+The source checkout supports native-guide v3 contracts and format-2 prepared indexes.
+This does not install that capability or make a customer root compatible. Older
+readers reject those contracts/indexes; do not downgrade or relabel native values to
+make them readable. Keep the ordinary runtime and supported delivery/compatibility
+checks. Engineering tests do not migrate a customer installation.
+
+All existing source admission, managed retention, no-price-backup/export, revocation,
+preparation Stop/CAS and independent accounting rules above still apply. Native
+subtotals are ephemeral; normalized comparison history refuses native observations.
+Retired proof inputs remain deleted and their allowances spent. Preserve all
+consumed attempts and closures. Engineering tests/fixtures do
+not reopen capture, create retention rights, admit a source or authorize activation.
+
+## Protected successor delivery
+
+Package a successor separately from the installed runtime. Record the selected
+wheel/member identities, stopped-server backup exclusions, account-schema transition,
+catalog/account preparation, preserved configuration, append-only Hunter package
+binding and compatible rollback. Its new `account_read_operator ... retire-schema`
+action is deliberate maintenance for rollback: it drops only schema-4 derived account
+representations, preserving authority and revision counters. The older runtime then
+migrates and prepares its own supported policy; no old database or spent journal is
+restored. Do not use retirement during ordinary startup or to bypass unknown schema.
+
+Qualification, historical release holds, hosted checks, delivery permission, source
+admission/acquisition/activation, actual useful-price proof and owner acceptance remain
+separate. Record their current status with the exact release. Schedule finite
+source capture only when delivery and the verification window are ready. Completion of capture alone
+must not prematurely end newly approved staging/verification retention; the approved
+absolute deadline and source withdrawal still bound all managed data. This grants
+no retention extension or restoration of previously deleted inputs.

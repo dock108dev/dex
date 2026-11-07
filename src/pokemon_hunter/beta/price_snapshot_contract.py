@@ -62,7 +62,11 @@ def text(value):
 
 
 def contract(value):
-    if not isinstance(value, dict) or value.get("schema") != "dex-price-contract-v1":
+    if not isinstance(value, dict) or value.get("schema") not in {
+        "dex-price-contract-v1",
+        "dex-price-contract-v2",
+        "dex-price-contract-v3",
+    }:
         raise ValueError("Unsupported price contract")
     for key in ("provider", "review_id", "policy_version", "scope", "deletion_policy", "acquisition_policy"):
         text(value.get(key))
@@ -120,6 +124,12 @@ def contract(value):
     mappings = value.get("mappings")
     if not isinstance(mappings, dict) or not 1 <= len(mappings) <= MAX_ROWS:
         raise ValueError("Independently reviewed exact provider mappings required")
+    if value["schema"] in {"dex-price-contract-v2", "dex-price-contract-v3"}:
+        from .valuation_evidence import contract as valuation_contract
+
+        valuation_contract(value)
+    elif "valuation" in value:
+        raise ValueError("Valuation extensions require contract v2")
     return value
 
 
@@ -176,6 +186,8 @@ def validate(package, entries, *, now=None):
             "source_url",
             "source_version",
         }
+        if policy["schema"] in {"dex-price-contract-v2", "dex-price-contract-v3"}:
+            fields |= {"evidence", "condition", "ceiling_applicable", "valuation_qualification"}
         if build_reference:
             fields |= {"reference_as_of", "publisher_built_at"}
         if field and field.get("identity_scope") == "conditional_market":
@@ -218,14 +230,26 @@ def validate(package, entries, *, now=None):
             raise ValueError("Independent provider identity and mapping review required")
         for value in provider.values():
             text(value)
-        if row["currency"] != "USD" or row["original_money"] != row["value"]:
-            raise ValueError("Original decimal USD amount required")
+        derived_sale = (
+            policy["schema"] == "dex-price-contract-v2" and row["estimate_kind"] == "dex_sold_estimate"
+        )
+        original_matches = (
+            row["original_money"] is None if derived_sale else row["original_money"] == row["value"]
+        )
+        if row["currency"] != "USD" or not original_matches:
+            raise ValueError(
+                "Original USD amount required; derived estimates have no upstream original quote"
+            )
         number = shopping_math.amount(row["value"])
         if number == 0 and not field["zero_is_value"]:
             raise ValueError("Provider zero semantics unavailable")
-        if type(row["estimated"]) is not bool or row["estimate_kind"] not in {"provider_guide", "observed"}:
+        if type(row["estimated"]) is not bool or row["estimate_kind"] not in (
+            {"provider_guide", "dex_sold_estimate"}
+            if policy["schema"] in {"dex-price-contract-v2", "dex-price-contract-v3"}
+            else {"provider_guide", "observed"}
+        ):
             raise ValueError("Manufactured grade estimates are unsupported")
-        if row["estimated"] != (row["estimate_kind"] == "provider_guide"):
+        if row["estimated"] != (row["estimate_kind"] in {"provider_guide", "dex_sold_estimate"}):
             raise ValueError("Estimate status conflicts with evidence class")
         captured = timestamp(row["captured_at"])
         if captured > now or captured.strftime("%Y-%m") != package["release_month"]:
@@ -243,6 +267,14 @@ def validate(package, entries, *, now=None):
         if not references.source_url(row["source_url"]):
             raise ValueError("Supported HTTPS source URL required")
         text(row["source_version"])
+        if policy["schema"] in {"dex-price-contract-v2", "dex-price-contract-v3"}:
+            from .valuation_evidence import validate as validate_evidence
+
+            validate_evidence(row, policy, expiry=package["expires_at"], now=now)
+            if policy["schema"] == "dex-price-contract-v3" and number <= 0:
+                raise ValueError("Native guide needs a positive amount")
+            if reason(row, entries[row["printing_id"]], now.date()).startswith("rejected_"):
+                raise ValueError("V2 evidence requires a nonconflicting reviewed catalog mapping")
     return package
 
 
@@ -303,6 +335,10 @@ def reason(row, printing, today):
     provider = row["provider_identity"]
     if identity != {k: printing.get(k) for k in IDENTITY}:
         return "rejected_installed_identity"
+    from .valuation_evidence import is_native
+
+    if is_native(row) and not exact_native_identity(row, printing):
+        return "rejected_unresolved_or_conflicting_variant"
     if row.get("match_scope") == "conditional_market":
         from .market_identity import applicable
 
@@ -310,6 +346,8 @@ def reason(row, printing, today):
             return "rejected_unresolved_or_conflicting_variant"
         if provider["number"] != printing["collector_number"] or provider["set"] != printing["set_name"]:
             return "rejected_provider_identity"
+        return shopping_math.fresh(reference_date(row), today.isoformat())
+    if is_native(row):
         return shopping_math.fresh(reference_date(row), today.isoformat())
     # Missing catalog variant semantics cannot be inferred from provider labels.
     if any(
@@ -325,3 +363,27 @@ def reason(row, printing, today):
 def reference_date(row):
     """Only validated TCGCSV raw rows carry the separately approved build date."""
     return row.get("reference_as_of", row["as_of"])
+
+
+def exact_native_identity(row, printing):
+    """A conditional population does not permit unknown physical attributes."""
+    provider = row["provider_identity"]
+    if any(not printing.get(k) for k in ("set_id", "collector_number", "catalog_version")):
+        return False
+    if any(not printing.get(k) or provider.get(k) != printing[k] for k in ("language", "edition", "finish")):
+        return False
+    if provider["number"] != printing["collector_number"] or provider["set"] != printing["set_name"]:
+        return False
+    if row.get("match_scope") == "conditional_market":
+        from .market_identity import applicable
+
+        return applicable(row, printing)
+    # Ordinary complete identities need no invented extra variant dimension.
+    if printing.get("variant"):
+        return provider["variant"] == printing["variant"]
+    from .market_identity import FINISH, SUBTYPES
+
+    return FINISH.get(provider["variant"]) == printing["finish"] or SUBTYPES.get(provider["variant"]) == (
+        printing["edition"],
+        printing["finish"],
+    )

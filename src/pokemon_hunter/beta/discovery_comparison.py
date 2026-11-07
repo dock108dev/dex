@@ -90,7 +90,15 @@ def _clues(raw, *, claim_text=None):
             r"\b(" + _GRADERS + r")\s*[-:]?\s*(10|[1-9](?:\.5)?)(?![\d.])", text, re.I
         )
     }
-    graded = bool(grades or re.search(r"\b(?:graded|slab|gem[ -]*mint|grade\s*\d)\b", claim_text, re.I))
+    # Explicit negative grading statements are not positive slab evidence.
+    # Keep any separate literal grader/grade claim so contradictions stay held.
+    grading_text = re.sub(
+        r"\b(?:no|not|non)[ -]+(?:professionally[ -]+)?graded\b|\bgraded\s*:\s*(?:no|false)\b",
+        "",
+        claim_text,
+        flags=re.I,
+    )
+    graded = bool(grades or re.search(r"\b(?:graded|slab|gem[ -]*mint|grade\s*\d)\b", grading_text, re.I))
     condition = str(raw.get("condition") or "").strip() or None
     condition_text = re.sub(r"\b(?:[0-9]{1,4}\s*HP|HP\s*[:=-]?\s*[0-9]{1,4})\b", "", claim_text, flags=re.I)
     condition_claims = {
@@ -286,6 +294,26 @@ def _reference(ref):
     return dict(
         amount=ref["amount"],
         currency=ref["currency"],
+        printing_id=ref.get("printing_id"),
+        evidence_id=ref.get("evidence_id", ref.get("reference_id")),
+        basis=ref.get("basis", "guide"),
+        method=ref.get("method", {"method": "publisher_guide"}),
+        sample=ref.get("sample"),
+        **(
+            {
+                k: ref[k]
+                for k in (
+                    "amount_basis",
+                    "native_money",
+                    "cohort",
+                    "provider",
+                    "field",
+                    "capabilities",
+                )
+            }
+            if ref.get("basis") == "publisher_native_guide"
+            else {}
+        ),
         as_of=ref["as_of"],
         valuation_as_of=ref.get("valuation_as_of", None if not ref.get("snapshot_version") else ref["as_of"]),
         captured_at=ref.get("captured_at"),

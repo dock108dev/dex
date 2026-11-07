@@ -115,3 +115,39 @@ def test_explicit_invalid_multiplicity_never_falls_back_to_one(entries, quantity
     )
     assert value["included_quantity"] == 0
     assert value["quantity_issues"] and value["proposals"][0]["quantity"] is None
+
+
+@pytest.mark.parametrize("multiplicity", ["6x", "6 x", "6×"])
+def test_suffix_multiplicity_is_quantity_not_collector_number(entries, multiplicity):
+    value = lots.parse(
+        raw(
+            title="Six cards",
+            shortDescription=f"Charizard {multiplicity} Base Set English Unlimited Non Holo $7",
+        ),
+        entries,
+    )
+    assert value["included_quantity"] == 6
+    assert value["proposals"][0]["quantity"] == 6
+    assert value["proposals"][0]["printing_id"] == "charizard"
+
+
+@pytest.mark.parametrize("multiplicity", ["0x", "-2x", "1.5x", "100001x"])
+def test_invalid_suffix_quantity_cannot_become_one_card(entries, multiplicity):
+    value = lots.parse(
+        raw(
+            title="Card lot", shortDescription=f"Charizard {multiplicity} Base Set English Unlimited Non Holo"
+        ),
+        entries,
+    )
+    assert value["included_quantity"] == 0
+    assert value["proposals"][0]["quantity"] is None
+
+
+def test_suffix_quantity_never_erases_an_explicit_conflicting_number(entries):
+    value = lots.parse(
+        raw(title="Six cards", shortDescription="Charizard 6x #15/102 Base Set English Unlimited Non Holo"),
+        entries,
+    )
+    assert value["proposals"][0]["quantity"] == 6
+    assert value["included_quantity"] == 0
+    assert any("collector-number" in r for r in value["proposals"][0]["reasons"])

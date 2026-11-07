@@ -55,6 +55,9 @@ Paths are relative to `src/pokemon_hunter/`.
 | Private price lifecycle | `beta/price_snapshot_contract.py`, `beta/price_snapshots.py`, `beta/price_snapshot_sources.py` |
 | Shopping input and temporary state types | `beta/discovery_contracts.py`; `discovery.py` preserves the `Choices`/`Run` imports used by Hunter and other callers |
 | Finite Shopping acquisition | `beta/discovery.py`, `beta/discovery_transport.py`, `beta/listing_check.py`; orchestration retains account/session checks, locks, deadlines and accounting |
+| Automatic lot Hunt | `beta/lot_hunt.py` owns the two-lane worker and publication; `lot_hunt_contract.py` owns its finite request/response limits; `lot_hunt_journal.py` records noncontent progress, while `hunter_policy.py` still owns consumption |
+| Lot evidence and value groups | `beta/valuation_evidence.py` admits evidence semantics; `sold_estimates.py` estimates qualified sales; `discovery_lot_values.py` projects and ranks through the existing calculator, with native guides kept outside normalized comparisons |
+| Reference coverage and preparation | `beta/reference_inventory.py`, `lot_value_readiness.py` report current admitted coverage; `reference_preparation.py` stages/activates through the existing snapshot lifecycle without provider acquisition |
 | Bulk listings Hunter | `beta/hunter.py`, `hunter_views.py`; `hunter_query.py` checks provider parameters; `hunter_traversal.py` captures finite plans/cursors; `hunter_policy.py` owns ordinary owner-selected usage; `hunter_budget.py` preserves independent finite qualification allowances |
 | Local Hunter identity/reference batches | `beta/hunter_catalog.py` indexes; shared literal `beta/discovery_matching.py` and `discovery_comparison._project`; admitted `lot_calculator.retained_records`, `lot_guides` and `shopping_math` retain lifecycle, source selection and arithmetic; no second store |
 | Hunter opportunity scenarios | `beta/hunter_ranking.py` projects freshly admitted rows through existing Shopping arithmetic and ranks equivalent cost/applicability groups |
@@ -244,6 +247,13 @@ product-category option. Actual Singles/Mixed lots/Both choices remain active th
 `discovery_paging` and the captured acquisition plan.
 
 ## Assisted listing and lot checks
+
+The automatic Hunt delegates account/session authority and metered transport to
+Discovery, exact contents to `hunter_lot_parser.py`/`hunter_lot_evidence.py`, and
+reference arithmetic to `lot_calculator.py`. Its progress journal is not another
+allowance or a recoverable seller-content store. Client `discovery-values.js`
+renders server assessments; it cannot create prices or rank native guide sums as
+normalized bargains. See [Shopping](hunts.md) for lanes, partial results and expiry.
 
 `listing_details.py` validates supplied identifiers and official response bodies;
 `listing_check.py` owns finite loads and session-private reviews. Comparisons delegate

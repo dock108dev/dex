@@ -8,19 +8,22 @@ from .account_read_build import encode
 from .account_read_select import search_ranks
 
 
-def project(value, entries):
+def project(value, entries, *, summary=None):
     source = value.pop("_contents_source", {"title": value["title"]})
     kind = value.pop("_contents_kind", "summary")
     # Parser strips markup; official detail stays a separate provenance field.
     raw = {
         k: source[k]
-        for k in ("title", "shortDescription", "condition", "itemId", "buyingOptions")
+        for k in ("title", "shortDescription", "condition", "itemId", "buyingOptions", "localizedAspects")
         if k in source
     }
     raw.setdefault("title", value["title"])
     try:
         parsed = hunter_lot_parser.parse(
-            raw, entries, detail=source if source.get("description") else None, complete_candidates=True
+            summary or raw,
+            entries,
+            detail=source if kind == "official_detail" else None,
+            complete_candidates=True,
         )
     except ValueError as exc:
         return [
@@ -33,6 +36,22 @@ def project(value, entries):
                 evidence=[],
             )
         ]
+    value["seller_contents"] = parsed
+    if (
+        parsed["unknown_remainder"] == 0
+        and all(p["included_quantity"] and not p["reasons"] for p in parsed["proposals"])
+        and len({p["clues"].get("finish") for p in parsed["proposals"] if p["included_quantity"]}) > 1
+    ):
+        # The per-card parser has accounted for the mixed-finish lot. A title
+        # describing that union is not a contradiction on every individual card.
+        value["clues"] = dict(
+            value.get("clues", {}),
+            conflicts=[
+                issue
+                for issue in value.get("clues", {}).get("conflicts", [])
+                if issue != "Conflicting seller finish claims"
+            ],
+        )
     totals = set(parsed["seller_stated_totals"])
     # A null adapter total may itself mean conflicting structured claims. Do
     # not replace that conflict with the one number repeated in the title.
@@ -132,7 +151,7 @@ def project(value, entries):
                             else "Official summary · seller claim"
                         ),
                     )
-                    for m in row["mentions"]
+                    for m in row["mentions"] + row.get("scope_mentions", [])
                 ],
             )
         )
@@ -172,6 +191,17 @@ def project(value, entries):
                         ),
                     )
                 ],
+            )
+        )
+    for i, claim in enumerate(parsed.get("excluded_claims", [])):
+        result.append(
+            dict(
+                key=f"excluded-{i}",
+                name="Excluded seller claim",
+                candidates=[],
+                quantity=None,
+                reasons=[claim["reason"] + "; contents valuation unavailable for this claim"],
+                evidence=[dict(m, provenance="Seller claim") for m in claim["mentions"]],
             )
         )
     return result or [

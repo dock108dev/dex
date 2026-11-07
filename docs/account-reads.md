@@ -245,3 +245,16 @@ A future authorized successor needs an explicit account schema transition to 4 a
 Both standalone schema checks and combined catalog/account reads require exactly one
 account schema marker at the supported version. Conflicting markers fail closed before
 prepared data is returned; a read never repairs them.
+
+## Explicit compatible rollback
+
+A qualified schema-4 successor ships `account_read_operator ... retire-schema` for
+stopped-server rollback. It transactionally removes only disposable account-read
+representations and their schema marker, requires exactly schema 4, and preserves
+catalog/account revision counters and every authoritative account/collection table.
+It does not relabel rows or restore a database. The selected older runtime must then
+explicitly migrate, prepare/activate its compatible catalog and prepare each current
+account before serving. Missing derived state stays unavailable. Returning to the
+successor requires its explicit migration and preparation again. Customer execution
+still requires the protected backup, qualified artifact and delivery authority in
+[operations](operations.md#protected-successor-delivery).

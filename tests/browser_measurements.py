@@ -1,7 +1,6 @@
 """Browser-local readiness clocks and network isolation for engineering measurements."""
 
 import json
-import re
 
 # The clock starts at the browser navigation origin and ends after the same visible
 # primary selector has had two animation-frame opportunities. Driver polling and
@@ -38,11 +37,24 @@ def isolated_network(page, base):
     cdp.send("Network.setCacheDisabled", {"cacheDisabled": True})
     blocked = []
 
-    def deny(route):
-        blocked.append(route.request.url)
-        route.abort()
+    # Chromium enforces the allowlist before dispatch. A Playwright regexp
+    # route also pauses matching infrastructure on local requests, adding a
+    # protocol round trip to each resource in precisely the phase we measure.
+    cdp.send(
+        "Network.setBlockedURLs",
+        {
+            "urlPatterns": [
+                {"urlPattern": base + "/*", "block": False},
+                {"urlPattern": "*://*:*/*", "block": True},
+            ]
+        },
+    )
 
-    page.route(re.compile(r"^(?!" + re.escape(base) + r"(?:/|$))"), deny)
+    def observe_failure(request):
+        if not request.url.startswith(base + "/") and request.url != base:
+            blocked.append(request.url)
+
+    page.on("requestfailed", observe_failure)
     return blocked
 
 

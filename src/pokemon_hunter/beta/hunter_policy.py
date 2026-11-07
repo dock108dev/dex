@@ -361,11 +361,11 @@ def _reason(state, now, *, package=True):
     return None
 
 
-def _public(state, now):
+def _public(state, now, *, checked=False):
     policy = state["policy"]
     start, end = _period(state, now)
     used = sum(_stamp(row["at"]) >= start and _stamp(row["at"]) < end for row in state["operations"])
-    reason = _reason(state, now)
+    reason = None if checked else _reason(state, now)
     remaining = max(0, policy["daily_limit"] - used)
     if not reason and not remaining:
         reason = "The selected daily limit is exhausted."
@@ -379,7 +379,7 @@ def _public(state, now):
         recurring=policy["recurring"],
         expires_at=policy["expires_at"],
         used=used,
-        remaining=remaining if _reason(state, now) is None else 0,
+        remaining=remaining if reason is None else 0,
         next_window_at=end.isoformat() if policy["recurring"] else None,
         window_start=start.isoformat(),
         window_end=end.isoformat(),
@@ -513,7 +513,7 @@ def current(actor, *, root=None, existing=None):
                     return None
                 _parent(state, existing, now)
                 return existing
-            return candidate if _public(state, now)["remaining"] > 0 else None
+            return candidate if _public(state, now, checked=True)["remaining"] > 0 else None
     except (OSError, ValueError, TypeError, KeyError, PermissionDenied):
         return None
 
@@ -532,7 +532,7 @@ def bind(run, actor):
             or state["marker"]["account_id"] != actor.user_id
             or tuple(run.owner[:2]) != (str(root), actor.user_id)
             or _reason(state, now)
-            or not _public(state, now)["remaining"]
+            or not _public(state, now, checked=True)["remaining"]
         ):
             raise ValueError("The selected Hunter policy is unavailable")
         start, end = _period(state, now)
@@ -569,7 +569,7 @@ def _parent(state, allowance, now):
 
 def _check(run):
     allowance = getattr(run, "allowance", None)
-    if run.operation == "detail":
+    if run.operation == "detail" and type(allowance) is not OrdinaryAllowance:
         from . import hunter
 
         parent = hunter._runs.get(getattr(run, "parent_run_id", None))
@@ -587,7 +587,7 @@ def _check(run):
         used = sum(row["data"]["run_id"] == allowance.parent_id for row in state["operations"])
         if (
             used > min(parent["per_hunt_limit"], state["policy"]["per_hunt_limit"])
-            or _public(state, now)["used"] > state["policy"]["daily_limit"]
+            or _public(state, now, checked=True)["used"] > state["policy"]["daily_limit"]
         ):
             raise ValueError("Hunter limits were reduced below consumed usage")
 
@@ -602,7 +602,7 @@ def check(run):
 def _capacity(state, allowance, now):
     if _reason(state, now):
         return dict.fromkeys(LIMITS, 0)
-    daily = _public(state, now)["remaining"]
+    daily = _public(state, now, checked=True)["remaining"]
     counts = dict.fromkeys(LIMITS, 0)
     ceiling = state["policy"]["per_hunt_limit"]
     if allowance.parent_id is not None:

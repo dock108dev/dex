@@ -13,6 +13,7 @@ from . import (
     discovery,
     discovery_catalog,
     image_bindings,
+    lot_hunt,
     navigation,
     shopping_context,
     shopping_views,
@@ -110,18 +111,26 @@ def searches(request):
         elif request.GET:
             raw = query(request, {"run_id", "request_id", "view"})
             view = raw.pop("view", None)
-            if view not in (None, "received"):
+            if view not in (None, "received", "values"):
                 raise ValueError("Choose a supported result view")
+            if view == "values" and "run_id" not in raw:
+                raise ValueError("Choose a received run for local values")
             if set(raw) not in ({"run_id"}, {"request_id"}):
                 raise ValueError("Choose one discovery run")
             value = (
                 discovery.action_status(who, session, raw["request_id"], received=view == "received")
                 if "request_id" in raw
-                else discovery.status(who, session, raw["run_id"], received=view == "received")
+                else discovery.status(
+                    who, session, raw["run_id"], received=view == "received", values=view == "values"
+                )
             )
         else:
             value = {**discovery.metadata(who), "goals": goals(who)}
         return shopping_views.private_json(value, request)
+    except lot_hunt.AdmissionUnavailable as exc:
+        response = JsonResponse({"error": str(exc), "code": exc.code}, status=409)
+        response["Cache-Control"] = "private, no-store"
+        return response
     except RuntimeError:
         response = JsonResponse(
             {"error": "This search cannot continue. Start a new search after checking the current status."},
@@ -129,6 +138,19 @@ def searches(request):
         )
         response["Cache-Control"] = "private, no-store"
         return response
+
+
+@endpoint
+@require_GET
+def evidence(request, run, result):
+    who, session = principal(request)
+    raw = query(request, {"revision"})
+    revision = raw.get("revision", "")
+    if not revision.isascii() or not revision.isdigit() or len(revision) > 10:
+        raise ValueError("Choose the original listing revision")
+    return shopping_views.private_json(
+        lot_hunt.evidence(who, session, str(run), result, int(revision)), request
+    )
 
 
 @endpoint

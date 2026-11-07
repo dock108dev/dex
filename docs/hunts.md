@@ -20,24 +20,41 @@ use the traditional XML API. Provider access requires separate configuration.
 
 ## Find lots
 
-The ordinary Shopping page leads with Pokémon/card name, optional set and
-**Find lots**. It searches US mixed lots, ending soonest. Budget, scope, singles,
-comparison filters and repeated disclosure controls are absent from this main flow;
-legacy hidden field values do not narrow the submitted search. Seller photos, title,
-prices/shipping, auction time, View on eBay and Assess lot lead the result cards.
-Single-card identity guesses are omitted from lot previews; assessment remains a
-separate action. No value claim follows from a low current bid alone.
+The ordinary Shopping page leads with Pokémon/card name, optional set
+and **Find lots**. That action submits the versioned automatic Hunt:
+one independent BIN search, one search for auctions ending within 72 hours, then
+full seller details and the existing local assessment for at most two unique
+candidates. It requires current ordinary Hunter usage authority and five available
+shared operations. It neither selects settings nor revives an old allowance.
+See the finite contract below. Runtime installation and active source coverage are
+verified separately; neither is inferred from a source checkout.
+
+Seller details are the primary assessment evidence. No per-listing Load Details or
+Interpret click is required for the two selected candidates. Photos are optional
+and are not processed. Other received summaries stay visible as unprocessed. Clear
+supported quantities and identities can contribute existing normalized or separate
+publisher-native projections; unavailable references leave facts visible and values
+unknown. Deterministic contents resolution and the shared calculator supply the
+automatic results. Assess lot remains available for optional review/correction. Dual offers
+retain the current bid and Buy It Now costs independently. Local reads revalidate
+reference eligibility; no price acquisition occurs during a Hunt.
 
 A selected catalog set reaches official Browse as the category's `Set` aspect,
 with the Pokémon/name as the keyword query, rather than merely appending the set to
 keywords. Named continuation preserves the facet. Other catalog set labels may differ from seller taxonomy; no fallback broadening is
 performed. A selected set is seller metadata, not physical content verification.
 
-Provider result order and returned candidates are preserved; broader matches are
-not locally reranked or discarded. Search category and seller metadata do not
-guarantee lot contents.
+The automatic auction page is ending-soonest and the independent BIN page uses
+provider best match. The default local auction view is 72 hours, with BIN available
+independently. Local filters and sorts only rearrange received results; they cannot
+expand the two-page batch or its two-candidate detail cap. No result is a market-wide
+best-value claim. The server supplies independent lane ranks and separate native cohort ranks;
+the client displays distinct assessment groups and independent buying views.
 
-## Named search and continuation
+## Named search and continuation (legacy explicit contract)
+
+The following remains supported for callers that do not submit the automatic Hunt action
+contract. It is not the ordinary automatic Find lots job and cannot continue one.
 
 Named search uses one official Browse category per request: Mixed lots selects
 **183455**, Singles selects **183454**, and Both alternates the two captured lanes.
@@ -335,8 +352,9 @@ Auction current bids, if encountered, do not become final prices.
 
 All current listing consumers use the same bounded Shopping decimal policy. Invalid
 amounts stay unknown independently, so invalid shipping cannot hide a valid asking
-price. Summary shipping shows the cheapest explicit supported USD option; review
-inputs require an agreed amount/currency across the supplied options. Missing auction
+price. Compatibility single-card summary shipping shows the cheapest explicit
+supported USD option; lot benchmarks and review inputs require an agreed
+amount/currency across the supplied options. Missing auction
 bids never use buy-now prices. Supplied invalid official-detail end times fail with
 an availability error; missing/invalid summary times stay unknown.
 
@@ -403,9 +421,12 @@ Loading opens a preview and keeps your existing review. **Use these details** ex
 replaces its contents/costs; **Keep my review** discards the preview. Available title,
 current bid or asking amount/currency, shipping and condition claims are proposed.
 Buy-now amounts and the owner's planned manual bid remain separately labelled.
-Opening a selected discovery offer transfers its checked temporary summary and
-original expiry without another provider operation. Extra official details require
-**Load additional official details**; manual URL/ID entry remains available. Listing stock,
+Opening a selected discovery offer transfers its checked temporary evidence and
+original expiry without another provider operation. For automatically enriched candidates,
+this includes the acquired full details and seller-selected quantities; **Use
+offer in review** retains those quantities without per-card confirmation. Unenriched
+summaries remain labelled separately. Extra official details outside that automatic
+job require **Load additional official details**; manual URL/ID entry remains available. Listing stock,
 eBay lot units and seller-stated card count are separate. Proposed ambiguous printings
 have zero included. Review leads with **Ungraded** and reference images. Include, remove or correct
 proposed cards and quantities; expand optional printing/condition/grader details
@@ -563,11 +584,13 @@ a replacement Hunt automatically.
 
 ## Completed-sale guidance
 
-Completed-sale comparison is not implemented. Active Browse listings and item
-details do not establish sold-history access or actual sale prices. Dated catalog
-reference values are not sold comparables. Research completed sales separately;
-Dex does not infer entitlement, scrape sale history or turn active asking prices
-into realized values.
+The checkout can consume independently admitted, qualified comparable-sold
+estimates through the shared calculator. Sold evidence requires its own source
+admission; no sold-history
+acquisition is implemented by this work. Active Browse listings and item details
+do not establish sold-history access or actual sale prices. Dated guides are not
+sold comparables. Dex does not infer entitlement, scrape sale history or turn
+active asking prices into realized values.
 
 
 ## Listing interpretation boundaries
@@ -655,14 +678,15 @@ current scoped product.
 
 ## Loading and recovery
 
-The lot finder displays received seller summaries before calculating catalog/reference
-assessments. Contents and collection fit remain unassessed at that point; unknown
+The lot finder displays received seller summaries while the bounded automatic job
+gathers selected details and invokes catalog/reference assessments. Contents and collection fit remain unassessed at that point; unknown
 shipping and currency stay unknown. Assess lot requires the checked review admission.
 Optional search settings and a closed explorer do not delay received results. Section
 reload controls make local reads.
 
-Search and official-detail actions use account/session/operation-bound request
-correlations. A lost response is reconciled against its original run, never replayed.
+Legacy Search and official-detail actions use account/session/operation-bound request
+correlations. The automatic Hunt additionally retains a durable noncontent correlation
+and progress record as described below. A lost response is reconciled against its original run, never replayed.
 A missing correlation, including after process restart, remains unknown and cannot
 refund consumed attempts or authorize a retry. Stop can reconcile a lost run identity
 before completing the requested Stop; a failed Stop stays unconfirmed and retryable.
@@ -674,7 +698,7 @@ ambiguity. Checked account/catalog snapshots and final revision, Stop and origin
 checks govern publication. See [account read preparation](account-reads.md#representation-policy).
 
 These source capabilities require a separately qualified and delivered runtime.
-Customer installation, current-reference usability and owner acceptance remain open;
+Verify customer installation, current-reference usability and owner acceptance separately;
 see [delivery and owner review](operations.md#shopping-owner-review-after-delivery).
 
 ## Collection intent
@@ -733,3 +757,334 @@ dates. Partial evidence supports only a subtotal. An auction ceiling requires co
 eligible value and costs and uses the lower of the reference and budget limits at whole
 cents. Read the reason when it is unavailable. The next required bid and actual condition
 still need checking. This is a conditional reference comparison, not a guarantee of value.
+
+## Publisher-native guide projection
+
+The existing lot assessment can expose publisher-native guide totals/subtotals in a
+separate result field when independently admitted references and scoped seller
+identity evidence exist. Unknown shipping/tax and condition remain visible. The
+Publisher guide sort orders complete contents within a compatible source/date group;
+partial contents stay separate. It makes no delivered-cost subtraction, savings or
+bid-ceiling claim. Normalized comparisons retain their own outputs.
+
+Numbered parents retain evidenced child alternatives. Missing seller traits leave
+selection empty, including when only one alternative has a price. Alternatives are
+not extra cards or automatic price ranges. Local expiry/withdrawal clears dependent
+amounts while retaining these choices. No opening, sorting or filtering action
+acquires prices or changes catalog data. Report actual active coverage from the
+installation; supported source formats do not establish available prices.
+
+## Automatic Hunt contract
+
+`dex-lot-hunt-v2` deliberately replaces per-candidate clicks for this action. The
+ordinary Find lots POST includes that contract and a fresh action UUID; the visible
+form discloses its complete finite batch. Legacy Search/More, single-card Hunter,
+manual listing checks and explicit detail contracts remain supported unchanged.
+The new action consumes the existing `hunt-09-daily-v1` ordinary policy journal;
+it creates no new allowance, increases no policy ceiling and cannot use historical
+qualification/capture grants. A policy/package binding must already be valid.
+An owner-selected per-Hunt limit of three cannot run this five-operation contract.
+
+| Bound | Implemented maximum |
+| --- | --- |
+| Summary acquisition | Two pages, 20 summaries each; 40 received total; offset zero, no continuation |
+| Buying lanes | BIN first, then auction; one page and one unique detail slot reserved for each |
+| Auction eligibility | Aware future end, more than zero and at most 72 hours away; available offer |
+| BIN eligibility | Available fixed-price option; no auction countdown requirement; ended/malformed explicit end rejected |
+| Detail candidates | Two stable exact item/variation identities; unused lane slots are not transferred |
+| Requests | One OAuth, two Browse, two detail, zero legacy-ID resolution; five total across the entire job |
+| Response bytes | OAuth 32 KiB; each summary/detail response 2 MiB; 8 MiB + 32 KiB aggregate streamed bytes |
+| Time | 30 seconds per request, 120 seconds from job admission for acquisition/assessment publication |
+| Concurrency | One automatic job per installation across processes; one provider request at a time; zero model/photo calls |
+| Content retention | Original 30-minute account/session lease; details, reads and optional review never renew it |
+| Status payload | At most 40 fact rows; oversized assessment projections are withheld with an explicit reason |
+
+Both discovery lanes run before any detail spending. Exact duplicate identities
+(including a dual-option offer seen in both lanes) use one detail request; distinct
+variations remain distinct. Out-of-window auction-only offers are rejected before
+detail selection. Resolution is zero: numeric/unresolved parent identities are
+skipped instead of buying extra resolution requests. Evidence reuse is confined to
+the same valid original job; no cross-job content cache or lease refresh is created.
+
+The saved, validated US destination is captured privately and sent through permitted
+Browse context. It never enters status, URLs in Dex, or durable progress records.
+Without a destination, calculated/unspecified shipping is withheld; explicit fixed
+shipping may remain known. Full details replace summary market fields. Missing or
+conflicting detail shipping never inherits a summary quote and never becomes free.
+
+Every send reserves through existing durable Hunter accounting before transport,
+then records its noncontent progress. Failed, uncertain and stopped in-flight
+attempts remain consumed. No retry, reauthentication, redirect, provider fallback,
+model call or recurring acquisition is added. Other authorized actions may consume
+the shared daily capacity; a job then terminates exhausted rather than extending it.
+The optional local assessment cannot grant provider or pricing-source authority.
+
+Progress has `searched` (successful page responses), `received`, `unique`, `eligible`,
+`enriched`, `assessed`, `ready`, `partial`, `unprocessed` and fixed reason counts.
+Request counts separately include failed/uncertain admissions. `assessed` means the
+available interface ran; it does not mean a complete monetary assessment. `ready`
+requires an existing complete normalized or explicitly separate native result.
+Missing prices/contents remain partial. Current reads recompute source-dependent
+amounts and readiness, including withdrawal; no reference amounts are journalled.
+
+Active states are queued, discovering, fetching_details and assessing. Terminal
+states include success, partial, busy, exhausted, failed, stopped, expired,
+conflict, unauthorized and restart_uncertain. Busy ends without a send; a later
+explicit Hunt can use remaining policy capacity after contention clears. Polling
+never drives work or retries a busy job. Deadlines/Stop prevent late publication;
+account, login session, catalog/account revision and listing-content revision are
+rechecked. A revision conflict removes content rather than silently rebasing.
+
+The hashed append-only progress journal is beside independent Hunter accounting,
+with private permissions and the same cross-process policy lock. It stores opaque
+owner/correlation digests, counters, phases, original expiry and content revisions,
+not query, postcode, seller text, prices, credentials or reference derivatives.
+Replay is rejected by both the progress correlation and the existing parent record.
+A process restart preserves progress/consumption but discards ephemeral content;
+unfinished work reports restart_uncertain, never resumes or sends again. A completed
+job after restart explicitly reports content unavailable. Corrupt progress fails
+closed. There is no new customer schema or recovery from backed-up consumption.
+
+Filtering, sorting, Back, polling, local value reload and optional review acquire no
+provider data. Actual coverage, pricing admission, compatible delivery and customer
+acceptance remain separate outcomes.
+
+
+## Seller-stated contents
+
+The automatic Hunt uses the existing deterministic parser/catalog path for full
+seller title, description and structured aspects. It does not invoke a model or
+process photos. Clear supported contents are selected automatically, including cards
+unrelated to the search target. Optional review/correction stays in the existing
+account/session-bound temporary review, with the original lease and revision checks;
+no ownership or permanent research record is written.
+
+Supported text includes hyphenated totals such as “37-card”, explicit per-card
+multiplicities, natural numeric/word lists, copies, suffix quantities and conjunctions
+between distinct card names. Literal catalog punctuation and names containing “and”
+are preserved. Explicit all/both/each-card assertions and recognized structured
+set/language/edition/finish aspects can supply shared seller scope. A name plus set
+may resolve a unique numbered catalog family when no number is stated; an explicit
+conflicting number, multiple numbered candidates, or missing physical traits cannot.
+No edition, finish, language, checklist or set completeness is invented.
+
+The versioned `dex-seller-contents-v2` projection separates seller total,
+parent-identified quantity, physically selected/identified quantity, priced quantity,
+identified-unpriced quantity and unresolved physical remainder. Provider stock,
+platform lot units and explicitly stated lots offered remain separate. Repeated
+mentions across fields do not add cards. Contradictory quantities withhold a numeric
+remainder; a stated total alone never establishes complete contents. Printing
+alternatives share one physical quantity, retain unpriced choices, and supply neither
+a selected identity nor an automatic monetary range.
+
+Each item carries literal mentions and separate scope mentions. `source_field`,
+`start`, `end` and `span_basis: sanitized_text` reference Unicode character offsets
+in the parser's sanitized `source_fields`; `aspect_names` maps aspect indices to
+seller-specific field names. Markup, hidden script/style content and figure captions
+are discarded without loading resources. These are ephemeral seller assertions, not
+authentication, condition guarantees or photograph interpretation. Listing identity,
+observation, expiry and content revision remain bound by the automatic Hunt envelope.
+
+Specific sealed/mystery/random product claims are excluded; graded lines do not
+enter automatic ungraded selection. Incidental packaging or unrelated graded-product
+prose does not reject an ordinary binder. Negative, illustrative and instruction-like
+claims stay outside selected contents. A complete-set claim remains an unresolved
+checklist assertion even when individual listed cards can be selected. Unsupported
+language/grammar, catalog gaps and work limits require optional correction; there is
+no automatic model, cloud, photo or acquisition fallback.
+
+Results distinguish unenriched summaries from enriched but unresolved contents and
+from resolved contents lacking references. Identified cards remain visible when
+prices expire or are absent. Normalized and publisher-native references preserve
+their separate capabilities; native amounts never become savings or bid ceilings.
+The finite Hunt contract is two 20-summary pages, one detail slot per
+lane, at most two unique details, five total requests including OAuth, no retries.
+Parser tests use authored seller evidence. They do not establish actual source
+coverage or the contents of a live offer.
+
+
+## Values, costs and ordering
+
+The existing server calculator now selects one qualified comparable-sold estimate
+per exactly selected ungraded printing, otherwise an eligible normalized guide.
+Automatic Hunt assessments and corrected temporary reviews use the same path.
+The result carries **Sold estimate / Guide / Mixed**, per-card evidence identity,
+source, condition, valuation/build/capture dates, method and applicable sample
+count, effective count, exclusions, sale span and descriptive spread. Guides have
+no invented transaction counts. Card postage is not intrinsic value; guides and
+their underlying sales are never averaged. Sample spread is not summed into a
+statistical lot interval. Unresolved printing alternatives have no automatic price
+or range and a sole priced alternative cannot select a physical card.
+
+Seller total, parent-identified, physically selected, normalized-priced,
+native-priced, identified-unpriced and unresolved quantities remain distinct.
+Full normalized values require complete reconciled contents and compatible references
+for every included unit. Corrected totals that disagree with the seller count stay
+partial. Other results carry an identified-card subtotal and explicit gaps; missing
+prices preserve identified cards. Native publisher numbers retain unknown shipping,
+tax and condition and use separate compatible source/date-cohort sums. They cannot
+enter normalized totals, delivered differences, savings or bid ceilings.
+
+`dex-lot-value-v3` exposes independent observed `benchmark_costs.auction` and
+`benchmark_costs.buy_it_now`: base, applicable shipping, delivered-before-tax cost,
+full difference or separately named subtotal difference, eligibility and cost issues.
+Missing bids never inherit BIN. Unknown/ambiguous shipping is not free. Currency
+mismatch, invalid money and totals over the shared cap withhold comparison. Arithmetic
+uses bounded Decimal inputs, sums exact terms and rounds the comparison once.
+Ended/unavailable offers, invalid dates and ineligible auction windows have no numeric
+comparison. Available BIN has no auction-window prerequisite; auctions require an
+aware future end with at most 72 hours remaining, inclusive at exactly 72 hours.
+These are before-tax benchmark differences, not resale profit or guaranteed savings.
+Personal planned bids, tax-aware reviews and strict condition-specific ceilings
+retain their existing separate requirements. A sold median is not a strict ceiling.
+The optional review backend exposes `benchmark` beside its existing strict assessment.
+
+`dex-lot-order-v1` supplies auditable ranks over the currently acquired batch:
+
+1. Each eligible lane independently groups complete normalized comparisons, partial
+   subtotals, unknown costs, then unpriced results. All groups remain accessible.
+2. Within complete and partial groups, sort by that lane's supported amount minus
+   its delivered-before-tax cost, descending, retaining negative differences.
+   A partial score is explicitly not a whole-lot bargain score.
+3. Ties use priced physical quantity descending, oldest contributing reference date
+   descending, auction end ascending for the auction lane, then stable item/variation
+   identity ascending. BIN ties never use the bid or auction countdown.
+4. Native ranks are separate for each lane/cohort. Complete native contents precede
+   partial contents; compatible totals/subtotals sort descending with the same
+   coverage/date/end/identity tie breaks. Incompatible cohorts have no common money rank.
+5. The compatibility combined view uses BIN whenever that offer has an eligible BIN
+   lane, otherwise auction. It never chooses the better of a dual offer's two prices.
+   The client consumes server ranks; sorting/filtering acquires nothing.
+
+References are recomputed on reads. Operation-local contributing-evidence hashes
+are rechecked against the existing source lifecycle before publication, including
+changes to underlying sold samples with an unchanged aggregate. Source expiry,
+withdrawal and changed admission cannot reuse previous derivatives. Client pruning
+clears dependent totals, differences and ranks while retaining identities and valid
+unrelated card references/native cohorts. Late responses undergo the same pruning.
+Original leases, Stop, account/session/revision checks and restart uncertainty remain.
+No reference store, persistent value cache, provider action or allowance is added.
+The Hunt retains two 20-summary pages, one detail slot per lane, at most two unique
+details and five total requests including OAuth, with no retries or capacity transfer.
+
+Qualified calculation tests do not establish real priced coverage. Report eligible
+native guides, normalized guides and sold references separately from the active
+installation, with their actual expiry and source limitations.
+
+
+## Automatic results experience
+
+Enter a Pokémon/card name, optionally select a set and choose **Find lots**. General
+search needs neither collection ownership nor a missing-species goal. Search options
+start collapsed for ordinary entry; an inherited missing-species journey opens its
+selected controls. No listing-by-listing Load, Interpret or Compare is needed for the
+available automatic assessment. **Assess lot · optional correction** reuses the
+existing temporary review and original source lease.
+
+The result controls select auctions within 24, 48 or **72 hours maximum**, available
+Buy It Now offers, or the compatibility combined view. Auction and BIN ranks are
+independent server-issued `dex-lot-order-v1` ranks. Combined ordering selects the BIN
+comparison when available, otherwise auction; it never chooses the better dual price.
+Legacy longer-window return URLs are capped at 72 hours. Local evidence filtering
+supports Sold estimate, Guide, Mixed, native guides and the default all-evidence view,
+which includes unavailable results. Local controls never acquire or refresh data.
+
+The repaired Find lots list groups **Complete assessments**, **Partially assessed**,
+**Unknown delivered cost**, **Assessed without a normalized value** and **Unprocessed**
+separately. Negative comparisons stay
+visible. A partial difference is labelled identified-card subtotal minus delivered
+cost, not a whole-lot bargain score, and leaves the remainder unvalued. The client
+consumes `dex-lot-value-v3` amounts and server ranks; it does not calculate financial
+values or retain a separate valuation cache. Ending-soonest is a local time sort.
+The old client-side highest-total sort is no longer offered.
+
+Each card immediately shows value or identified-card subtotal, evidence basis,
+normalized-priced versus seller-stated count, selected physical quantity, observed
+price, shipping, delivered-before-tax cost, applicable differences, observation time,
+auction timing and the main uncertainty. Both observed costs stay visible on a dual
+option even when one buying lane is selected. Unknown is not free or zero. Current
+bids are provisional and BIN observations are not reservations.
+
+The authenticated list response fits within 120 KiB. **Cards and value evidence**
+reads one assessed listing from its original local lease. This read checks the account,
+session, catalog, content revision and contributing sources again. It opens all
+supplied identified contents, including cards
+outside the search target, card-level reference condition/source/dates/method and
+applicable sale counts, effective samples, exclusions and descriptive spread. It also
+shows literal seller evidence, unresolved alternatives and optional correction.
+Seller assertions do not authenticate a card or guarantee its condition. Numbered
+parent identities, selected physical cards, normalized-priced, native-priced,
+identified-unpriced and unresolved quantities remain distinct; the overlapping measures
+must not be added. Stock and lot units are not physical card counts. Alternatives are
+not extra cards, automatic selections or price ranges.
+
+Publisher guides remain separate source/date cohorts. **Publisher guide contents**
+shows a heading for each compatible cohort and uses only its server rank: larger
+publisher contents sums first, complete before partial. The page explains that this
+is not best-deal ranking. Unknown shipping/tax basis and condition limitations remain
+visible. Native amounts are never pooled with normalized amounts or used for delivered
+differences, savings or bid ceilings; incompatible cohorts have no common money rank.
+
+Progress names queued, discovering, fetching details, assessing and terminal outcomes.
+It shows successful pages searched, summaries received, enriched, assessed and
+unprocessed counts. The unchanged `dex-lot-hunt-v2` allows **two 20-summary pages,
+one detail slot per lane, at most two unique details and five requests including
+OAuth**. The selector first maximizes distinct eligible lane slots. Among feasible
+pairs it favors seller summaries without explicit random or mystery wording, then
+mixed lots naming the target with itemization signals. Selected-set mentions,
+collector fractions, quantities and structured contents help resolve ties. Stable
+offer IDs break remaining ties. Selection is a reason to read details. Only the
+seller-content parser can select a physical card. Busy, exhausted capacity,
+partial acquisition, assessment failure and restart uncertainty give finite outcomes
+and explain that reads do not retry. An all-unavailable batch remains visible;
+summary-only listings differ from fetched but unresolved contents. Status reload is
+local, not acquisition. The browser bounds a local request wait to 12 seconds and
+retains uncertain acquisition status for reconciliation rather than resubmitting.
+
+Completed visible results recheck their original run locally every five seconds;
+existing one-second source/expiry checks remain. Returning to the tab withholds
+previous monetary values/ranks while current run authority is checked. Stop clears
+the visible result contents immediately while confirmation is pending. Sequence,
+account/session, revision and original-lease checks reject late responses. Source
+withdrawal removes dependent totals and ranks without inventing replacements. Local
+patching preserves evidence expansion and keyboard focus when a result remains.
+Back restores checked filters and the opaque run handle, then rereads the service;
+no seller contents or monetary result enters browser storage.
+
+Optional corrected review shows its supported **Before-tax benchmark** above the
+separate strict tax-aware assessment, personal planned bid and conditional ceiling.
+A missing strict ceiling does not hide a supported benchmark. Editing invalidates
+both; return checks compare both projections, and their contributing references share
+the existing withdrawal/expiry handling. Corrections preserve reconciliation and
+original leases and never change collection ownership.
+
+The checked exact seller offer opens deliberately in a new tab. Dex does not buy or
+bid. Browser/keyboard/narrow-layout tests use authored isolated fixtures; they establish
+engineering behavior only. Source admission, authorized acquisition, activation,
+compatible delivery and real useful-price acceptance remain separate.
+
+## Release boundary
+
+The complete automatic Hunt is packaged separately for release qualification. The
+finite five-request contract, independent lanes, original leases and accounting are
+unchanged. Native guide content remains separate from normalized deal ranking. The
+release record must distinguish local artifacts from hosted checks, installation
+and actual useful-value proof. Follow [runtime delivery](operations.md#runtime-updates-and-recovery)
+and [source lifecycle](price-snapshots.md) within existing authorization. Neither
+procedure alone establishes live acquisition permission or owner acceptance.
+
+Automatic assessment reads reference ranges for the complete candidate families
+identified in seller text. Final publication rereads contributing evidence and checks
+withdrawal, expiry and current authority. It does not retain prices between requests.
+Status publication serializes with worker content changes; session authorization
+preserves an active database read transaction and rechecks the session before return.
+
+Each assessed listing uses its own catalog candidates in catalog order, so list summaries and local evidence expansion have the same evidence identity regardless of the other selected lot. A changed evidence reply closes its disclosure before refreshing local status; it cannot reopen itself in a request loop. Explicit `SET / EDITION: All ...` seller headers apply to the supplied contents while literal card variants remain required.
+
+Per-card multiplicity accepts an explicit number followed by `x` or `×` after the card name, as well as a leading count. Multiplicity does not become a collector-number claim; invalid counts remain unresolved and explicit conflicting collector numbers remain conflicts.
+
+Standalone official-detail loads under ordinary usage settings capture their own temporary policy binding. OAuth and details, including legacy-ID resolution, debit the same preserved shared accounting. They do not require a legacy Hunter parent; Stop, policy pause, expiry and per-action limits remain enforced.
+
+Indented numbered-card attribute lists attach to their own explicit card heading. Dated headings do not become quantities; explicit copy counts retain priority. Literal multi-finish aspect lists remain choice sets and cannot override per-card finish evidence. Separate numbered sections retain their allocations; broader matching repetitions do not add copies. Conflicts and unsupported sections remain unresolved. Native guide evidence is shown beside the selected card even when no normalized reference exists.
+
+Standalone official details now use the same seller-selected contents projection as automatic Hunt details. Reviewed comparisons and local Back/return carry the separately labelled native benchmark as well as the strict assessment; neither route exposes save payloads or refreshes prices.

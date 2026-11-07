@@ -38,6 +38,14 @@ def applicable(p, row, records, today):
     admitted = []
     legacy = json.loads(p["provenance"]).get("legacy_id")
     for record in records:
+        from .valuation_evidence import is_native
+
+        if is_native(record):
+            continue
+        if record.get("estimate_kind") == "dex_sold_estimate":
+            continue  # A median benchmark is not a strict bid ceiling.
+        if "evidence" in record and record.get("ceiling_applicable") is not True:
+            continue
         if str(record.get("grade")) != grade:
             continue
         snapshot = "_snapshot_version" in record
@@ -94,9 +102,9 @@ def seller_constraints(offers, entries, included, units):
                 issues.append(f"Resolve the seller’s stated contents for {group['name']}.")
         if projected.get("seller_lot_size") not in (None, units):
             issues.append("Included quantities differ from the leased seller count.")
-        issues.extend(offer["clues"]["conflicts"])
+        issues.extend(projected["clues"]["conflicts"])
         for row in included.values():
-            clues = offer["clues"]
+            clues = projected["clues"]
             if (
                 clues.get("condition_claims")
                 and dc._condition(row.get("condition")) not in clues["condition_claims"]
@@ -106,9 +114,12 @@ def seller_constraints(offers, entries, included, units):
             ):
                 p = entries[row["printing_id"]]
                 disputed.add(p["id"])
-                issues.append(
-                    f"{p['name']} #{p['collector_number']}: the reviewed condition, grade or printing conflicts with the seller evidence."
+                reason = (
+                    "the seller's condition claim has not been matched to an assessed raw condition; condition-specific value is unavailable."
+                    if clues.get("condition_claims") and dc._condition(row.get("condition")) is None
+                    else "the reviewed condition, grade or printing conflicts with the seller evidence."
                 )
+                issues.append(f"{p['name']} #{p['collector_number']}: {reason}")
     return issues, disputed
 
 

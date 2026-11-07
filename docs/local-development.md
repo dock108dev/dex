@@ -7,7 +7,8 @@ physical copies, collecting goals and Shopping.
 
 ## Requirements
 
-Use Python 3.15 and uv on macOS or Linux. JavaScript checks use Node.js 24
+Use Python 3.14 or 3.15 and uv on macOS or Linux. The checkout commands below use
+3.15; an existing installation keeps its independently qualified runtime. JavaScript checks use Node.js 24
 from `.nvmrc`. Windows process handling is unsupported. Run development commands
 from the repository root:
 
@@ -178,6 +179,17 @@ comparison adapters; splitting its individual result fields would hide the
 revalidation boundary. Photo jobs similarly retain transactional lease/journal
 sequencing, with image processing and journal storage separate.
 
+The 1,090-line `discovery.py` retains that lifecycle boundary and compatible
+dispatch/lease exports used by listing checks, Hunter and automatic lot Hunts.
+Transport, contracts, catalog reads, comparison and lot valuation already have
+separate owners. Further splitting the synchronized transitions would spread
+their shared lock and cancellation state across modules. The 686-line
+`static/discovery.js` likewise owns one page's request, polling, recovery and
+navigation lifecycle; display, value rendering and catalog exploration are
+separate assets. Keep its closure-scoped authority and pending-request state
+together rather than duplicating them in forwarding modules. Reassess these
+retentions if either module gains another independent responsibility.
+
 Private V2 reads share `account_read_context.py` for the verified actor, snapshot,
 revision selectors, final revalidation and bounded payload links. Goal summary,
 item and source queries live in `account_read_goal_queries.py`; the existing
@@ -227,3 +239,18 @@ storage are separate modules. Keep transaction bodies together when refactoring.
 Photo lifecycle, provider-neutral photo contracts and confirmation/report tests live in
 `test_photo_batches.py`, `test_photo_contracts.py` and `test_photo_confirmation.py`.
 Their synthetic fixtures are in non-collected `tests/photo_batch_helpers.py`.
+
+## Complete successor qualification
+
+Use a separately built wheel and fresh noneditable environments for complete release
+qualification. Do not replace `.local/runtime` merely to test checkout changes.
+Separate qualification environments from the proposed immutable customer runtime
+and retain the existing root, credentials and independent accounting. Follow
+[runtime updates and recovery](operations.md#runtime-updates-and-recovery).
+Explicit migration/read preparation and compatible rollback
+are required; ordinary launch remains free of those mutations.
+
+Hunter package verification enumerates installed application members on each check.
+Unchanged file identities may reuse their content hashes; changed identities must be
+rehashable regular files, with before/after verification and symlink rejection. This
+optimization grants no new acquisition authority and does not cache seller or price data.

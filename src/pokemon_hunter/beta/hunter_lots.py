@@ -112,7 +112,11 @@ def _cost_inputs(raw):
     )
 
 
-def _compare(actor, raw, proposal, corrections, entries, records=None):
+def _compare(actor, raw, proposal, corrections, entries, records=None, *, _checks=None):
+    if any("Unsupported" in claim["reason"] for claim in proposal.get("excluded_claims", [])):
+        raise ValueError(
+            "Unsupported sealed, mystery, random or curated product; contents valuation unavailable"
+        )
     cards = corrections["cards"] if corrections else _initial_cards(proposal)
     if corrections:
         inherited = {
@@ -173,6 +177,18 @@ def _compare(actor, raw, proposal, corrections, entries, records=None):
             grade=row.get("grade") or "raw", graded=row.get("grade", "raw") not in {"raw", "unknown", ""}
         )
         values, reasons = dc._reference_cells(p, references.for_printing(p), today, clues)
+        if not clues["graded"]:
+            from . import lot_guides
+
+            condition = dc._condition(row.get("condition"))
+            benchmark = lot_guides.normalized_cell(p, references.for_printing(p), today, condition=condition)
+            if benchmark is not None and not dc.reference_issue(p, clues, benchmark, today):
+                values["raw"] = benchmark
+            elif values.get("raw") and (
+                values["raw"].get("raw_record", {}).get("condition") is not None
+                and dc._condition(values["raw"]["raw_record"]["condition"]) != condition
+            ):
+                values["raw"] = None
         reference_reasons[p["id"]] = reasons.get("raw", "No applicable admitted Ungraded reference")
         return dict.fromkeys(lot.COLUMNS) | values
 
@@ -203,7 +219,11 @@ def _compare(actor, raw, proposal, corrections, entries, records=None):
     )
     scenario = prepared["scenarios"]["raw"]
     result = scenario["result"]
-    reconciled = unknown == 0 and (corrections is not None or not proposal["quantity_issues"])
+    reconciled = (
+        unknown == 0
+        and (corrections is not None or not proposal["quantity_issues"])
+        and proposal.get("seller_stated_total") in (None, sum(c["quantity"] for c in cards))
+    )
     comparison = result["comparisons"]["listing_observation"]
     complete = (
         reconciled
@@ -215,9 +235,79 @@ def _compare(actor, raw, proposal, corrections, entries, records=None):
         for basis in result["comparisons"].values():
             basis["full_selected_reference_minus_delivered_cost"] = None
         result["full_lot_total"] = None
+    from . import lot_guides
+
+    native_refs = {}
+    for p in entries:
+        if p["id"] not in traits or repeated_conflicts.get(p["id"], set()) - corrected_fields.get(
+            p["id"], set()
+        ):
+            continue
+        row = traits[p["id"]]
+        if row.get("grade") not in {"", "raw", None} or discovery_matching.unavailable(p):
+            continue
+        if any(not row.get(k) for k in ("language", "edition", "finish") if p.get(k) != "not_applicable"):
+            continue
+        ref = lot_guides.native_cell(p, references.for_printing(p), now.date())
+        if ref and not dc._reference_claim_issue(p, dict(row, graded=False, condition_claims=[]), ref):
+            native_refs[p["id"]] = ref
+    native = shopping.math.native_subtotals(
+        cards, native_refs, now.date().isoformat(), unknown_quantity=unknown, reconciled=reconciled
+    )
+    for group in native:
+        group["references"] = [dc._reference(ref) for ref in group["references"]]
     unpriced_ids = set(result["unpriced_selection_ids"])
+    from . import valuation_evidence
+
+    basis = valuation_evidence.lot_basis(r.get("basis", "guide") for r in scenario["references"])
+    exact = shopping.math.bounded_sum(
+        [shopping.math.amount(t["exact_amount"]) for t in result["reference_terms"]], "subtotal_above_cap"
+    )
+    exact_text = format(exact, "f") if exact is not None else None
+    benchmarks = listing_prices.benchmark_costs(
+        raw, subtotal=exact_text, total=exact_text if result["full_lot_total"] is not None else None
+    )
+    card_refs = {r["printing_id"]: dc._reference(r) for r in scenario["references"]}
+    alternatives = lot_guides.family_alternatives(proposal, entries, records, now.date())
+    check = lot.reference_guard(
+        actor,
+        records,
+        [
+            *scenario["references"],
+            *native_refs.values(),
+            *(
+                choice["reference"]
+                for line in alternatives
+                for choice in line["alternatives"]
+                if choice["reference"]
+            ),
+        ],
+    )
+    check()
+    if _checks is not None:
+        _checks.append(check)
+    gaps = []
+    if not reconciled:
+        gaps.append("Contents are not fully reconciled with the seller-stated total")
+    if unknown is None:
+        gaps.append("Unresolved physical quantity is unknown")
+    elif unknown:
+        gaps.append(f"{unknown} physical cards remain unresolved")
+    if result["coverage"]["unpriced_units"]:
+        gaps.append(
+            f"{result['coverage']['unpriced_units']} identified cards lack compatible normalized references"
+        )
     return dict(cards=cards, unknown_contents=unknown, costs=costs), dict(
         scenario="Ungraded",
+        assessment_version="dex-lot-value-v3",
+        basis=basis,
+        basis_label={"guide": "Guide", "sold_estimate": "Sold estimate", "mixed": "Mixed"}.get(basis),
+        benchmark_costs=benchmarks,
+        gaps=gaps,
+        normalized_priced_quantity=result["coverage"]["priced_units"],
+        native_priced_quantity=sum(c["quantity"] for c in cards if c["printing_id"] in native_refs),
+        native_guides=native,
+        alternatives=alternatives,
         result=result,
         references=[dc._reference(r) for r in scenario["references"]],
         priced_card_quantity=result["coverage"]["priced_units"],
@@ -227,6 +317,7 @@ def _compare(actor, raw, proposal, corrections, entries, records=None):
                 printing_id=c["printing_id"],
                 quantity=c["quantity"],
                 reference_subtotal=result["line_displays"].get(c["printing_id"]),
+                reference=card_refs.get(c["printing_id"]),
             )
             for c in cards
             if c["printing_id"] not in unpriced_ids
@@ -343,6 +434,7 @@ def read(actor, session_key, review_id, *, _context=None):
 
         detail = hunter_lot_details.leased_detail(actor, session_key, value["detail_action"], value["origin"])
     proposal = parse(source["raw"], entries, detail=detail, _index=_context["index"] if _context else None)
+    checks = []
     review, comparison = _compare(
         actor,
         detail or source["raw"],
@@ -350,6 +442,7 @@ def read(actor, session_key, review_id, *, _context=None):
         value["corrections"],
         entries,
         records=_context["records"] if _context else None,
+        _checks=checks,
     )
     current_source = _source(actor, session_key, value["origin"])
     if current_source["raw"] != source["raw"] or current_source["created"] != source["created"]:
@@ -363,6 +456,8 @@ def read(actor, session_key, review_id, *, _context=None):
             raise Http404
         if current["revision"] != value["revision"]:
             raise collection.Conflict("Lot review changed while preparing comparison; reload")
+    for check in checks:
+        check()
     return _bounded_response(
         dict(
             review_id=str(review_id),

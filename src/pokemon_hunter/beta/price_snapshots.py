@@ -194,6 +194,8 @@ def reviewed(package):
         if (settings.ROOT / "SYNTHETIC_ONLY").is_file():
             return
         raise ValueError("Engineering fixtures cannot enter an ordinary installation")
+    if policy.get("valuation", {}).get("qualification") == "engineering_only":
+        raise ValueError("Uncalibrated engineering evidence cannot enter an ordinary installation")
     path = settings.ROOT / "price-contracts.json"
     registry = read(path) if path.exists() else {}
     if not isinstance(registry, dict):
@@ -256,8 +258,10 @@ def summary(package, *, today=None):
     )
 
 
-def activate(path, expected_current, *, now=None):
+def activate(path, expected_current, *, now=None, guard=None):
     with locked():
+        if guard is not None:
+            guard()
         package = preview(path, now=now)
         old = state()
         if old["current"] != expected_current:
@@ -382,6 +386,8 @@ def current(*, now=None, sources_only=False):
     for key, part in parts.items():
         policy = part["contract"]
         contract_sha256 = rules.digest(policy)
+        from .valuation_evidence import native_context
+
         rows.extend(
             dict(
                 row,
@@ -391,6 +397,11 @@ def current(*, now=None, sources_only=False):
                 _policy_url=policy["policy_url"],
                 _review_id=key,
                 _expires_at=part["expires_at"],
+                **(
+                    {"_native_context": native_context(policy)}
+                    if policy["schema"] == "dex-price-contract-v3"
+                    else {}
+                ),
             )
             for row in part["records"]
         )
@@ -420,10 +431,14 @@ def display_current(*, now=None, sources_only=False):
 
 
 def admit(reference, rows=None):
+    from .valuation_evidence import is_native
+
     if rows is None:
         rows, _ = current()
     raw = reference.get("raw_record")
     match = next((r for r in rows if r == raw), None)
+    if match and is_native(match):
+        raise ValueError("Native guides are ephemeral; normalized saved comparisons cannot retain them")
     if not match or not match["_save_allowed"]:
         raise ValueError(
             "This source permits current display only; permanent comparison saving is unavailable"

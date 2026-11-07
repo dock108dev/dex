@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/collection-assets/collection-base.css"><link rel="stylesheet" href="/collection-assets/collection-browse.css">
   {% endblock %}
   {% if request.user.is_authenticated and collection_enabled %}<script src="/collection-assets/navigation.js" defer></script>{% endif %}
-  {% if public %}<link rel="stylesheet" href="/collection-assets/public.css">{% endif %}
+  {% block public_styles %}{% if public %}<link rel="stylesheet" href="/collection-assets/public.css">{% endif %}{% endblock %}
 </head>
 <body data-navigation-account="{{ navigation_account_id }}" data-navigation-binding="{{ navigation_binding }}" class="{% block body_class %}{{ body_class|default:'public-page' }}{% endblock %}">
   <a class="skip" href="#main">Skip to content</a>

@@ -43,7 +43,13 @@ def private_json(value, request):
     )
     from .read_diagnostics import json_response
 
-    response = json_response(value)
+    if value.get("contract") == "dex-lot-hunt-v2" and value.get("results"):
+        from .discovery_lot_values import bound_list
+
+        bound_list(value)
+        response = json_response(value, json_dumps_params={"separators": (",", ":")})
+    else:
+        response = json_response(value)
     response["Cache-Control"] = "no-store, private"
     return response
 

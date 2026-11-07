@@ -184,7 +184,20 @@ def details(identifier, raw, *, source_kind="official_detail"):
         _contents_kind=source_kind,
         _contents_source={
             key: raw[key]
-            for key in ("title", "shortDescription", "description", "condition", "itemId", "buyingOptions")
+            for key in (
+                "title",
+                "shortDescription",
+                "description",
+                "condition",
+                "itemId",
+                "buyingOptions",
+                "localizedAspects",
+                "price",
+                "currentBidPrice",
+                "shippingOptions",
+                "itemEndDate",
+                "estimatedAvailabilities",
+            )
             if key in raw
         },
         item_id=item,

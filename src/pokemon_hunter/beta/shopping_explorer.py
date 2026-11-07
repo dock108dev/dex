@@ -171,8 +171,13 @@ def search(read, raw, context, offset):
             )
         total = len(rows)
     else:
+        # A plain ordered membership page can count directly in the covering index
+        # and stop its separate page scan at the limit. Materializing the full set
+        # first discards that order. Keep complex/residual predicates single-pass.
+        plain_page = len(where) == 2 and not residual
+        materialization = "NOT MATERIALIZED" if plain_page else "MATERIALIZED"
         found = store.rows(
-            "WITH matching AS MATERIALIZED ("
+            f"WITH matching AS {materialization} ("
             + matched
             + "), page AS (SELECT id,rank_set FROM matching ORDER BY rank_set,id LIMIT 40 OFFSET %s) SELECT t.n,g.id,g.payload,g.sha,a.payload AS art,a.sha AS art_sha FROM (SELECT COUNT(*) AS n FROM matching) t LEFT JOIN page ON 1 LEFT JOIN ar_groups g ON g.user_id=%s AND g.id=page.id LEFT JOIN ar_artwork a ON a.user_id=g.user_id AND a.id=g.id ORDER BY page.rank_set,page.id",
             [*args, offset, actor.user_id],

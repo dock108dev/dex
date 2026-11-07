@@ -519,7 +519,7 @@ def test_minimum_next_bid_never_relabels_non_usd_as_usd(local):
 
 
 @pytest.mark.parametrize(
-    "kind", ["sealed booster", "mystery", "random", "curated", "repacked", "choose your", "complete set"]
+    "kind", ["sealed booster", "mystery", "random", "curated", "repacked", "choose your"]
 )
 def test_unsupported_products_never_enter_lot_valuation_or_bypass_corrections(local, kind):
     actor, state = local

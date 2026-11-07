@@ -84,6 +84,8 @@ def exercise(page, base, output):
     page.goto(base + "/shopping/")
     expect(page.locator("#discovery-search")).to_be_enabled()
     assert page.locator("#discovery-product-type").input_value() == "mixed_lots"
+    expect(page.locator("#discovery-budget")).to_be_hidden()
+    page.get_by_text("Search options", exact=True).press("Enter")
     expect(page.locator("#discovery-budget")).to_be_visible()
     assert not page.locator("#catalog-cards").is_visible()
     checks.append("One primary search, mixed lots default, budget available, local explorer collapsed")

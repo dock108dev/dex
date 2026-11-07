@@ -58,6 +58,17 @@ const passed=[];async function test(name,fn){await fn();passed.push(name);}
   assert.equal(t.get('offer-overview').hidden,false);
   assert.equal(t.calls.filter(c=>c.url.includes('/candidate/')).length,1);
  });
+ await test('automatic seller-selected cards enter optional review without per-card confirmation',async()=>{
+  const selected={...identity,quantity:2,language:'en',edition:'unlimited',finish:'normal',grade:'raw'};
+  const t=setup({proposals:[selected],unknown_contents:0,seller_lot_size:2});await flush();
+  await t.get('use-listing').onclick();await flush();
+  const posts=t.calls.filter(c=>c.method==='POST');assert.equal(posts.length,1);
+  const value=JSON.parse(posts[0].body).review;
+  assert.equal(value.cards.length,1);assert.equal(value.cards[0].quantity,2);
+  assert.equal(value.cards[0].printing_id,identity.id);assert.equal(value.unknown_contents,0);
+  assert.equal(value.cards[0].authored_fields.length,0);
+  assert.ok(!t.calls.some(c=>c.url==='/api/shopping/listing/'));
+ });
  await test('a retained card absent from candidate identities keeps the checked catalog restore',async()=>{
   const t=setup({}, {restoreCards:[{...identity,id:'another-printing',name:'Other card'}],request:async(url,options,payload)=>restore(url,payload)});await flush();
   assert.equal(t.calls.filter(c=>c.url.includes('/catalog/')).length,1);
@@ -167,6 +178,49 @@ const passed=[];async function test(name,fn){await fn();passed.push(name);}
   await t.get('stop-listing').onclick();await flush();
   assert.match(t.get('check-status').textContent,/outcome is unknown/);
   assert.equal(t.get('load-listing').disabled,true);assert.equal(t.get('stop-listing').disabled,false);
+ });
+ await test('expired review obtains a fresh local lease for new details without retaining old seller content',async()=>{
+  let reads=0;
+  const fresh={...sample,title:'New engineering offer',discovery_origin:null,proposals:[{...identity,quantity:2}],unknown_contents:0};
+  const t=setup({}, {request:async(url,options,payload)=>{
+    if(url==='/api/shopping/listing/review/' && options.method!=='POST')return {...payload,lease:'lease-'+(++reads)};
+    if(url==='/api/shopping/listing/' && options.method==='POST')return {run_id:'fresh-detail',running:false,listing:fresh,expires_in_seconds:30};
+    return payload;
+  }});await flush();await t.get('use-listing').onclick();await flush();
+  t.advance(31000);await t.intervals[0]();await flush();
+  assert.equal(t.get('review-title').value,'');assert.equal(t.get('offer-overview').hidden,true);
+  t.get('listing-identifier').value='123456789012';
+  await t.get('listing-load').onsubmit({preventDefault(){}});await flush();
+  await t.get('use-listing').onclick();await flush();
+  const posts=t.calls.filter(c=>c.url==='/api/shopping/listing/review/' && c.method==='POST').map(c=>JSON.parse(c.body));
+  assert.equal(posts.length,2);assert.notEqual(posts[0].lease,posts[1].lease);
+  assert.equal(posts[1].review.title,fresh.title);assert.equal(posts[1].review.detail_run,'fresh-detail');
+  assert.equal(posts[1].review.discovery_origin,null);assert.equal(posts[1].review.cards[0].quantity,2);
+  assert.equal(t.calls.filter(c=>c.url==='/api/shopping/listing/' && c.method==='POST').length,1);
+  assert.match(t.get('check-status').textContent,/Details applied/);
+ });
+ await test('known unsent refusal unlocks explicit retry and lost reply reconciliation does not dispatch',async()=>{
+  for(const lost of [false,true]){
+    const refusal={not_dispatched:true,running:false,error:'Listing request did not start. Window expired.'};
+    const t=setup({}, {request:async(url,options,payload)=>{
+      if(url==='/api/shopping/listing/' && options.method==='POST'){if(lost)throw Error('Lost response');return refusal;}
+      if(url.includes('request_id='))return refusal;
+      return payload;
+    }});await flush();await t.get('listing-load').onsubmit({preventDefault(){}});await flush();
+    if(lost){assert.equal(t.get('load-listing').disabled,true);await t.get('check-reload').listeners.click();await flush();}
+    assert.equal(t.get('load-listing').disabled,false);assert.match(t.get('check-status').textContent,/did not start/);
+    assert.equal(t.calls.filter(c=>c.url==='/api/shopping/listing/' && c.method==='POST').length,1);
+  }
+ });
+ await test('native guide total has its own coverage without an unvalued remainder claim',async()=>{
+  const t=setup({}, {request:async(url,options,payload)=>{
+    if(url.includes('/compare/'))return {assessment:{evidence:[],priced:0,units:3,subtotal:null,value:null,auction:false,costs:{listing_observation:{unknown_or_ineligible_components:[]}},issues:[]},benchmark:{priced_card_quantity:0,unpriced_card_quantity:3,result:{full_lot_total:null,known_selected_subtotal:null},native_guides:[{total:'25.00',complete:true,priced_quantity:3,provider:'Engineering guide',reference_date:'2026-11-07'}]}};
+    return payload;
+  }});await flush();await t.get('check-compare').onclick();await flush();
+  const text=t.get('check-results').textContent;
+  assert.match(text,/25.00 publisher guide total · 3 guide-priced cards/);
+  assert.match(text,/0 of 3 included cards have condition-specific references/);
+  assert.doesNotMatch(text,/remaining cards are unvalued|0 of 3 included cards priced/);
  });
  process.stdout.write(JSON.stringify({passed:passed.length,cases:passed,provider_calls:0,customer_data:false})+'\n');
 })().catch(e=>{console.error(e);process.exitCode=1;});

@@ -20,7 +20,7 @@ collection task bar; collection tools remain in Menu. My Cards also offers a dir
 Add many cards shortcut.
 
 Shopping leads with Pokémon/card name, optional Set and Find lots, in that order.
-The ordinary lot finder uses US mixed lots and ending-soonest order; broader
+The ordinary lot finder uses US mixed lots, an independent available BIN lane and auctions ending within 72 hours; broader
 controls remain hidden under the ordinary flow. Stop stays beside
 Find lots while a search runs. Explicit eBay search supports loose mixed lots, singles and
 auctions. Check a listing/lot remains directly available, with secondary links
@@ -130,7 +130,7 @@ than warning surfaces.
 
 Received offers retain stable photo areas and complete titles. The listing amount
 has stronger emphasis than ancillary costs; unknown costs stay explicitly readable.
-Results filters and counts sit together. Inspection leads with the offer, price and
+Results filters and counts sit together. Automatic lot assessments use separate complete, partial, unknown-cost and unpriced groups; native guide contents have independent source/date groups. Each result shows both applicable observed costs and comparisons, with card/source/seller evidence one expansion away. Find lots assesses its finite selected detail batch automatically; optional review is for corrections. Inspection leads with the offer, price and
 seller action; review is secondary, and closed setup/research disclosures use simple
 rows instead of separate empty panels. Review inputs stack on narrow screens. The
 zero/unknown remainder distinction stays beside its field; extended help stays in
@@ -174,7 +174,7 @@ selected. Archived or unsupported targets remain unavailable. Entry opens the co
 remain explicit.
 Current possession and frozen goal policy remain distinct.
 
-In the source implementation, Search options exposes the missing-species picker, scope, all-in budget and vintage preference. Assess lot shows seller-text entries and unverified printing alternatives. Use offer in review opens the editor. Correct identity and quantity expands one entry, and optional card details holds the condition and literal grader. Compare groups the observed bid and planned costs above itemized reference evidence, the conditional ceiling or its blockers, and the seller link. Returning to Dex rechecks the original assessment before displaying it again. See [post-delivery owner review](operations.md#shopping-owner-review-after-delivery).
+In the source implementation, Search options starts collapsed for ordinary entry and opens for inherited missing-species intent. It exposes the missing-species picker, scope, all-in budget and vintage preference. Assess lot shows seller-text entries and unverified printing alternatives. Use offer in review opens the editor. Correct identity and quantity expands one entry, and optional card details holds the condition and literal grader. Compare shows any supported corrected before-tax benchmark separately from the strict observed bid and planned costs, itemized reference evidence, the conditional ceiling or its blockers, and the seller link. Returning to Dex rechecks the original assessment before displaying it again. See [post-delivery owner review](operations.md#shopping-owner-review-after-delivery).
 
 The compact assisted review leads with Ungraded and included quantities. Printing,
 condition, grading and cost corrections are optional disclosures. Current auction
@@ -344,16 +344,13 @@ saved reports, confirmation and Undo must remain available; AI photo recognition
 is not part of the current product scope. Engineering fixtures cannot substitute
 for this review, and test results do not constitute owner acceptance.
 
-The recorded rc7 owner session described My Cards as straightforward, but did not
-accept browsing overall, Shopping or Hunter. Disclosed observations included roughly
-four-second collection confirmation, roughly 1.2-second saved-photo report loading,
-a raw variant label in one temporary lot proposal and a retained 403.30 ms search
-sample within the passing p95 calculation. These observations belong to that runtime;
-they do not establish the behavior of later source changes. In particular, the
-browsing timing targets do not silently become new mutation-time guarantees.
+Keep owner observations with the exact reviewed runtime. Prior feedback and
+historical timings do not establish acceptance or behavior of a later build.
+Browsing timing targets do not silently become mutation-time guarantees.
 
 Retained seller evidence is dated and temporary results may have expired. Review
 current availability honestly. A new acquisition or model call requires its own
-explicit authorization and available allowance; reopening a review must not renew
+authorization and available allowance; existing standing execution authorization
+may cover a finite verification window. Reopening a review must not renew
 consumed capacity. A reproducible problem requires a bounded repair and affected
 re-verification before acceptance of the changed behavior.

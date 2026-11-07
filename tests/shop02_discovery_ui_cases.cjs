@@ -35,7 +35,7 @@ function setup(responses, search='') {
   const initial=Object.fromEntries(new URLSearchParams(search));get('discovery-context').textContent=JSON.stringify({generation:7,species:initial.species?Number(initial.species):null,group:initial.group||null,child:initial.child||null});get('discovery-initial').textContent=JSON.stringify(initial);get('discovery-goals').textContent='[]';get('discovery-product-type').value='both';get('discovery-sort').value='ending_soonest';get('discovery-english-vintage').checked=true;
   const location={origin:'http://local.test',href:'http://local.test/shopping/'+search,search,reload(){calls.push({reload:true});}};
   const window={scrollY:0,scrollTo(){},addEventListener(type,fn){events[type]=fn;}};
-  const context={crypto:require('node:crypto').webcrypto,document:{createElement:()=>({getContext:()=>null}),getElementById:get,querySelector:()=>get('local-explorer'),body:{dataset:{navigationBinding:'binding-test',navigationAccount:'account-test'}},addEventListener(type,fn){events[type]=fn;}},window,location,requestAnimationFrame:fn=>fn(),history:{replaceState(a,b,url){location.href=location.origin+url;}},URL,URLSearchParams,Intl,Date:{now:()=>clockNow,parse:Date.parse},setInterval(fn){intervals.set(++timerId,fn);return timerId;},clearInterval(id){intervals.delete(id);},setTimeout(fn){timers.set(++timerId,fn);return timerId;},clearTimeout(id){timers.delete(id);},fetch:async(url,init)=>{
+  const context={crypto:require('node:crypto').webcrypto,document:{createElement:()=>({getContext:()=>null}),getElementById:get,querySelector:selector=>get(selector === '.discovery-options' ? 'search-options' : 'local-explorer'),body:{dataset:{navigationBinding:'binding-test',navigationAccount:'account-test'}},addEventListener(type,fn){events[type]=fn;}},window,location,requestAnimationFrame:fn=>fn(),history:{replaceState(a,b,url){location.href=location.origin+url;}},URL,URLSearchParams,Intl,Date:{now:()=>clockNow,parse:Date.parse},setInterval(fn){intervals.set(++timerId,fn);return timerId;},clearInterval(id){intervals.delete(id);},setTimeout(fn){timers.set(++timerId,fn);return timerId;},clearTimeout(id){timers.delete(id);},fetch:async(url,init)=>{
     if (url.startsWith('/api/shopping/discovery/catalog/')) {localCalls.push({url,init});const reply=await (localResponses.shift() || {mode:'cards',results:[],total:0,offset:0,sets:[],has_more:false});return {ok:true,status:200,json:async()=>({...reply,authority:{account_id:'account-test',binding:'binding-test'}})};}
     calls.push({url,init,body:init.body?JSON.parse(init.body):undefined});
     const response=responses.shift();if(response instanceof Error) throw response;
@@ -58,7 +58,7 @@ const passed=[];
     t.get('discovery-product-type').value='singles';t.get('discovery-budget').value='1';
     t.get('discovery-focus').value='bulk';
     await t.get('discovery-form').emit('submit');await flush();
-    assert.deepEqual(t.calls[1].body,{...baseChoices,query:'Venusaur',set_id:'Base Set',product_type:'mixed_lots',english_vintage:false,budget:'1',focus:'bulk',collection_intent:false,prefer_vintage:false,currency:'USD'});
+    assert.deepEqual(t.calls[1].body,{...baseChoices,query:'Venusaur',set_id:'Base Set',product_type:'mixed_lots',english_vintage:false,budget:'1',focus:'bulk',collection_intent:false,prefer_vintage:false,currency:'USD',acquisition_contract:'dex-lot-hunt-v2'});
     assert.equal(t.get('discovery-stop').hidden,true);
   });
   await check('lot finder preserves provider order without guessing a single-card identity',async()=>{
@@ -71,6 +71,22 @@ const passed=[];
     assert.ok(html.indexOf('offer-broad') < html.indexOf('offer-target'));
     assert.doesNotMatch(html,/Other lots returned by eBay/);
     assert.doesNotMatch(html,/Proposed:/);
+  });
+  await check('automatic Hunt needs one POST; polling reaches assessed details without per-item actions',async()=>{
+    const queued={...complete(),contract:'dex-lot-hunt-v2',state:'queued',running:true,results:[],has_next:false,values_checked:true,progress:{searched:0,received:0,enriched:0,assessed:0,unprocessed:0}};
+    const assessed={...queued,state:'partial',running:false,results:[{...row,evidence_kind:'seller_details'}],progress:{searched:2,received:2,enriched:2,assessed:2,unprocessed:0}};
+    const t=setup([{goals:[],sets:[]},queued,assessed]);await flush();
+    t.get('discovery-form').dataset.lotSearch='true';t.get('discovery-query').value='Lapras';
+    await t.get('discovery-form').emit('submit');await flush();
+    assert.equal(t.calls[1].body.acquisition_contract,'dex-lot-hunt-v2');
+    const poll=[...t.timers.values()][0];await poll();await flush();
+    assert.equal(t.calls.filter(call=>call.init?.method==='POST').length,1);
+    assert.match(t.calls[2].url,/view=received/);
+    assert.match(t.get('discovery-status').textContent,/2 assessed/);
+    assert.match(t.get('discovery-cards').innerHTML,/Based on full seller details/);
+    assert.equal(t.get('discovery-next').disabled,true);
+    await t.get('discovery-filter').emit('change');await flush();
+    assert.equal(t.calls.length,3);
   });
   await check('opening uses local metadata only; deals require neither goal nor card',async()=>{
     const t=setup([{goals:[],sets:[]}]);await flush();

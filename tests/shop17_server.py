@@ -3,6 +3,7 @@
 import json
 import runpy
 import sys
+import traceback
 from datetime import datetime, timedelta
 from pathlib import Path
 from types import SimpleNamespace
@@ -16,7 +17,7 @@ original = asgi.get_asgi_application
 
 def application():
     app = original()
-    from pokemon_hunter.beta import discovery, price_snapshot_sources, read_diagnostics
+    from pokemon_hunter.beta import discovery, lot_hunt, price_snapshot_sources, read_diagnostics
 
     class SnapshotClock(datetime):
         @classmethod
@@ -33,14 +34,38 @@ def application():
             with (root / "controlled-calls").open("a") as log:
                 print(stage, file=log)
             if stage == "oauth":
-                return {"access_token": "engineering", "expires_in": 1800, "token_type": "Bearer"}
-            assert stage == "browse"
-            return {"itemSummaries": [raw], "total": 1}
+                value = {"access_token": "engineering", "expires_in": 1800, "token_type": "Bearer"}
+            elif stage == "detail":
+                value = raw
+            else:
+                assert stage == "browse"
+                page = kwargs["search_options"]["lot_hunt"]
+                rows = [raw] if page.lane == "auction" else []
+                value = {"itemSummaries": rows, "total": len(rows)}
+            if kwargs.get("byte_budget") is not None:
+                kwargs["byte_budget"].take(len(json.dumps(value).encode()))
+            return value
 
         async def close(self):
             pass
 
     discovery.Transport = Controlled
+    lot_hunt.Transport = Controlled
+    guard = lot_hunt._guard
+
+    def observed_guard(*args, **kwargs):
+        try:
+            return guard(*args, **kwargs)
+        except Exception as error:
+            frames = [
+                dict(file=Path(frame.filename).name, line=frame.lineno, function=frame.name)
+                for frame in traceback.extract_tb(error.__traceback__)
+            ]
+            with (root / "guard-failures.jsonl").open("a") as log:
+                print(json.dumps(dict(type=type(error).__name__, frames=frames)), file=log)
+            raise
+
+    lot_hunt._guard = observed_guard
     discovery.ebay_hunts.configuration = lambda: (
         SimpleNamespace(environment="production"),
         dict(EBAY_CLIENT_ID="engineering", EBAY_CLIENT_SECRET="engineering"),

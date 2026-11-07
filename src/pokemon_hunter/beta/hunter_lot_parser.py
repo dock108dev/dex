@@ -8,8 +8,9 @@ import hashlib
 import re
 from html.parser import HTMLParser
 
+from . import catalog_variants, discovery_matching, hunter_catalog, listing_details, shopping
 from . import discovery_comparison as dc
-from . import discovery_matching, hunter_catalog, listing_details, shopping
+from . import hunter_lot_evidence as evidence
 
 MAX_TEXT_BYTES = 65536
 MAX_TOKENS = 8192
@@ -20,7 +21,7 @@ MAX_QUANTITY = 100000
 MAX_CANDIDATES = 40
 MAX_CANDIDATE_BINDINGS = 200
 _BLOCKS = {"br", "p", "div", "li", "ul", "ol", "tr", "td", "h1", "h2", "h3"}
-_HIDDEN = {"script", "style", "iframe", "object", "svg", "template"}
+_HIDDEN = {"script", "style", "iframe", "object", "svg", "template", "figcaption"}
 
 
 class _PlainText(HTMLParser):
@@ -62,9 +63,14 @@ def _text(raw):
 
 
 def _quantity(text, *, title=False):
+    text = evidence.quantity_text(text)
     if re.search(r"\b[0-9]+\s*[x×]{2,}", text, re.I):
         return None, "Explicit per-card multiplicity is malformed"
     explicit_patterns = (
+        r"^\s*([+-]?[0-9]+(?:\.[0-9]+)?)\s+(?:19|20)[0-9]{2}\s+[A-Za-z]",
+        r"(?<![\w/#.])([+-]?[0-9]+(?:\.[0-9]+)?)\s*[x×](?!\w)",
+        r"^\s*(?:[-*•]\s+)?([+-]?[0-9]+(?:\.[0-9]+)?)\s+(?!cards?\b|total\b|lots?\b)[A-Za-z]",
+        r"\(\s*([+-]?[0-9]+(?:\.[0-9]+)?)\s*\)\s*$",
         r"^\s*(?:[-*•]\s+)?([+-]?[0-9]+(?:\.[0-9]+)?)\s*[x×]+\b",
         r"\b[x×]\s*([+-]?[0-9]+(?:\.[0-9]+)?)(?![\w.])",
         r"\b(?:qty|quantity)\s*[:=]?\s*([+-]?[0-9]+(?:\.[0-9]+)?)\b",
@@ -75,6 +81,11 @@ def _quantity(text, *, title=False):
             if not re.fullmatch(r"[1-9][0-9]{0,5}", match[1]) or int(match[1]) > MAX_QUANTITY:
                 return None, "Explicit per-card multiplicity is invalid or exceeds the review limit"
     patterns = (
+        r"^\s*([1-9][0-9]{0,5})\s+(?:19|20)[0-9]{2}\s+[A-Za-z]",
+        r"(?<![\w/#.])([1-9][0-9]{0,5})\s*[x×](?!\w)",
+        r"\(\s*([1-9][0-9]{0,5})\s*\)\s*$",
+        r"^\s*(?:[-*•]\s+)?([1-9][0-9]{0,5})\s+(?!cards?\b|total\b|lots?\b|[x×]\b)[A-Za-z]",
+        r"\b([1-9][0-9]{0,5})\s+copies?\b",
         r"^\s*(?:[-*•]\s+)?([1-9][0-9]{0,5})\s*[x×]\s+",
         r"^\s*(?:[-*•]\s+)?([1-9][0-9]{0,5})\s+(?:copies?\s+(?:of\s+)?|of\s+)",
         r"\s+[x×]\s*([1-9][0-9]{0,5})\s*$",
@@ -90,7 +101,11 @@ def _quantity(text, *, title=False):
         if value > MAX_QUANTITY:
             return None, "Per-card quantity exceeds the review limit"
         return value, None
-    if re.search(r"\b(?:pair|several|multiple|various|some|many|random|assorted|choose|pick)\b", text, re.I):
+    if re.search(
+        r"\b(?:hundred|thousand|dozen|pair|several|multiple|various|some|many|random|assorted|choose|pick)\b",
+        text,
+        re.I,
+    ):
         return None, "Per-card quantity is ambiguous"
     return (None, "A title mention does not establish per-card multiplicity") if title else (1, None)
 
@@ -100,8 +115,8 @@ def _totals(text):
         r"(?<!\d)[1-9][0-9]{0,2}(?:,[0-9]{3})+(?!\d)", lambda match: match[0].replace(",", ""), text
     )
     patterns = (
-        r"\blot\s+of\s+([1-9][0-9]{0,5})\b",
-        r"\b([1-9][0-9]{0,5})\s+(?:total\s+)?cards?\b",
+        r"\blot\s+of\s+([1-9][0-9]{0,5})\b(?!\s+lots?\b)",
+        r"\b([1-9][0-9]{0,5})(?:\s+|[-‐‑–])(?:total\s+)?cards?\b",
         r"\btotal\s*(?:cards?\s*)?[:=]?\s*([1-9][0-9]{0,5})\b",
     )
     return {int(m[1]) for pattern in patterns for m in re.finditer(pattern, text, re.I)}
@@ -135,50 +150,30 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
     """
     if not isinstance(raw, dict):
         raise ValueError("Choose an authorized listing summary")
-    fields = [("title", raw.get("title", "")), ("summary", raw.get("shortDescription", ""))]
     if detail is not None:
         listing_details.validate_response(raw.get("itemId"), detail)
-        fields.extend(
-            [
-                ("detail_title", detail.get("title", "")),
-                ("official_description", detail.get("description", "")),
-            ]
-        )
-        aspects = detail.get("localizedAspects", [])
-        if not isinstance(aspects, list) or len(aspects) > 100:
-            raise ValueError("Official lot details exceed 100 structured aspects")
-        for aspect in aspects:
-            if not isinstance(aspect, dict):
-                raise ValueError("Unsupported official detail aspect")
-            if str(aspect.get("name", "")).casefold() in {"number of cards", "lot size"}:
-                value = aspect.get("value", "")
-                if not isinstance(value, str) or len(value) > 100:
-                    raise ValueError("Seller card-count aspect exceeds its bound")
-                fields.append(("official_card_count", "total cards: " + value))
-    if any(not isinstance(value, str) for _, value in fields):
-        raise ValueError("Seller content must be bounded text")
-    raw_bytes = sum(len(value.encode("utf-8")) for _, value in fields)
-    if raw_bytes > MAX_TEXT_BYTES:
-        raise ValueError("Seller text exceeds 65536 bytes; explicit manual review required")
-    fields = [(name, _text(value)) for name, value in fields]
+    fields, aspects, raw_bytes = evidence.fields(raw, detail, _text)
     if sum(len(re.findall(r"\S+", value)) for _, value in fields) > MAX_TOKENS:
         raise ValueError("Seller text exceeds 8192 tokens; explicit manual review required")
-    segments = []
-    totals = set()
-    for field, value in fields:
-        totals.update(_totals(value))
-        # Avoid splitting collector fractions or thousands separators. A comma
-        # between textual items is an ordinary seller list delimiter.
-        for piece in re.split(r"[\n;]+|,(?![0-9]{3}\b)", value):
-            piece = piece.strip()
-            if not piece:
-                continue
-            if len(piece) > MAX_SEGMENT_CHARS:
-                raise ValueError("Seller text segment exceeds 2048 characters; manual review required")
-            segments.append((field, piece))
+    index = _index or hunter_catalog.IdentityIndex(printings)
+    segments, scopes, set_claims = evidence.segments(fields, aspects, index)
+    sections_present = any(m.get("section") for _, _, m in segments)
+    if any(len(text) > MAX_SEGMENT_CHARS for _, text, _ in segments):
+        raise ValueError("Seller text segment exceeds 2048 characters; manual review required")
     if len(segments) > MAX_SEGMENTS:
         raise ValueError("Seller text exceeds 400 segments; manual review required")
-    index = _index or hunter_catalog.IdentityIndex(printings)
+    totals, total_mentions = set(), []
+    for field, value in fields:
+        claims = (
+            {int(value)}
+            if aspects.get(field) in evidence.COUNT_ASPECTS and re.fullmatch(r"[1-9][0-9]{0,5}", value)
+            else set()
+            if field in aspects
+            else _totals(value)
+        )
+        if claims:
+            totals.update(claims)
+            total_mentions.append(dict(evidence.mention(field, value), quantities=sorted(claims)))
     lookups = {}
 
     def candidates_for(clues):
@@ -190,46 +185,134 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
         return lookups[text_key]
 
     multiple_catalog_names = complete_candidates and len({p["name"].casefold() for p in printings}) > 1
-    combined_text = " ".join(value for _, value in fields)
-    combined_clues = dc._clues(dict(title=combined_text))
-    literal_names = discovery_matching.literal_candidates(candidates_for(combined_clues), combined_text)
-    product_claims = discovery_matching.without_names(literal_names, combined_text)
-    exact_sets = [p for p in literal_names if discovery_matching.evidence(p, combined_clues)["matched"]]
-    product_claims = discovery_matching.without_sets(exact_sets, product_claims)
-    if dc.product_kind(product_claims) == "unsupported":
-        raise ValueError(
-            "Unsupported sealed, mystery, random or curated product; contents valuation unavailable"
-        )
     proposals, seen, unresolved = [], {}, []
+    product_excluded = any(
+        evidence.unsupported(value, candidates_for(dc._clues(dict(title=value))))
+        for field, value in fields
+        if field.endswith("title")
+    )
     candidate_bindings = 0
-    for field, text in sorted(segments, key=lambda segment: segment[0].endswith("title")):
+    excluded = []
+    for field, text, literal_evidence in sorted(segments, key=lambda segment: segment[0].endswith("title")):
         # Multiplicity is parsed separately; it cannot become a conflicting
         # collector-number claim in the shared literal matcher.
         identity_text = re.sub(r"\b(?:qty|quantity)\s*[:=]?\s*[1-9][0-9]{0,5}\b", " ", text, flags=re.I)
         identity_text = re.sub(r"\b[x×]\s*[1-9][0-9]{0,5}\b", " ", identity_text, flags=re.I)
-        clues = dc._clues(dict(title=identity_text, condition=raw.get("condition", "")))
-        candidates = candidates_for(clues)
+        identity_text = re.sub(r"(?<![\w/#.])[1-9][0-9]{0,5}\s*[x×](?!\w)", " ", identity_text, flags=re.I)
+        scoped_text = " ".join([identity_text, *evidence.scoped_claims(identity_text, scopes, aspects)])
+        clues = dc._clues(dict(title=scoped_text, condition=raw.get("condition", "")))
+        local_ids = {p["id"] for p in index.candidates(dict(text=identity_text))}
+        candidates = [p for p in candidates_for(clues) if p["id"] in local_ids]
         plausible = dc._approx_matches(candidates, clues)
         if multiple_catalog_names:
             literal = discovery_matching.literal_candidates(printings, identity_text)
             if len({p["name"].casefold() for p in literal}) > 1:
                 # A shared set/number cannot disambiguate different named cards.
                 plausible = literal
+        exclusion = evidence.noncontents(text, plausible)
+        if product_excluded or evidence.unsupported(text, plausible):
+            exclusion = "Unsupported sealed, mystery or random contents"
+        if exclusion:
+            repeated = next(
+                (c for c in excluded if c["reason"] == exclusion and c["mentions"][0]["text"] == text), None
+            )
+            if repeated:
+                repeated["mentions"].extend(literal_evidence.get("mentions", [literal_evidence]))
+            else:
+                excluded.append(
+                    dict(
+                        mentions=literal_evidence.get("mentions", [literal_evidence]),
+                        reason=exclusion,
+                        candidate_ids=[p["id"] for p in plausible],
+                    )
+                )
+            continue
         if not plausible:
+            if re.search(r"\b(?:complete|full)\s+(?:set|collection)|\bset\b", text, re.I) and not _totals(
+                text
+            ):
+                set_claims.append(literal_evidence)
             # Headers/counts and innocuous listing prose are not invented cards.
             # Unrecognized explicit quantity lines are retained as unresolved.
             quantity, reason = _quantity(text, title=field.endswith("title"))
-            if quantity is not None and re.search(r"(?:^\s*\d+\s*[x×]|\b(?:qty|quantity)\b)", text, re.I):
+            quantity_line = evidence.quantity_text(text)
+            metadata_only = bool(re.search(r"\b(?:stock|available|lots?\s+offered)\b", text, re.I))
+            if (
+                quantity is not None
+                and not metadata_only
+                and not _totals(text)
+                and re.search(r"(?:^\s*\d+\s*(?:[x×]|[A-Za-z])|\b(?:qty|quantity)\b)", quantity_line, re.I)
+            ):
                 unresolved.append(
-                    dict(text=text, source_field=field, quantity=quantity, reason="No local card identity")
+                    dict(
+                        text=text,
+                        source_field=field,
+                        quantity=quantity,
+                        reason="No local card identity",
+                        mentions=literal_evidence.get("mentions", [literal_evidence]),
+                    )
                 )
                 if len(proposals) + len(unresolved) > MAX_ITEMS:
                     raise ValueError("Lot exceeds 200 content items; explicit manual review required")
             continue
         exact = dc._matches(candidates, clues)
-        quantity, quantity_reason = _quantity(text, title=field.endswith("title"))
+        numbered = [p for p in plausible if discovery_matching.evidence(p, clues)["matched"]]
+        # A literal name + set can identify a unique numbered catalog family.
+        # Missing set, multiple numbers or conflicting explicit numbers never do.
+        set_named = [p for p in plausible if discovery_matching.set_claimed(p, clues["text"])]
+        if (
+            not numbered
+            and set_named
+            and not any(discovery_matching.number_claims(p, clues["text"]) for p in set_named)
+        ):
+            families = {(p["set_id"], p["collector_number"], p["name"].casefold()) for p in set_named}
+            if len(families) == 1:
+                numbered = set_named
+                fitting = [p for p in set_named if not dc._identity_conflicts(p, clues)]
+                exact = catalog_variants.seller_candidates(fitting or set_named, clues)
+        quantity_text = text
+        if literal_evidence.get("section"):
+            quantity_text = re.sub(r"^\s*[-*•]\s+(?:19|20)[0-9]{2}\s+", "", text)
+        quantity, quantity_reason = _quantity(
+            quantity_text,
+            title=field.endswith("title")
+            or field == "structured_identity"
+            or (sections_present and not literal_evidence.get("section")),
+        )
+        if field == "structured_identity" and totals == {1}:
+            quantity, quantity_reason = 1, None
+        if (
+            sections_present
+            and not literal_evidence.get("section")
+            and quantity is None
+            and quantity_reason == "A title mention does not establish per-card multiplicity"
+        ):
+            context = evidence.section_context(proposals, plausible, identity_text, clues)
+            if context:
+                for row in context:
+                    row["mentions"].extend(literal_evidence.get("mentions", [literal_evidence]))
+                continue
         names = {p["name"].casefold() for p in plausible}
         reasons = list(clues["conflicts"])
+        numbers = {number for p in plausible for number in discovery_matching.number_claims(p, identity_text)}
+        if numbers and all(
+            any(
+                discovery_matching.number_key(number)[0]
+                != discovery_matching.number_key(p["collector_number"])[0]
+                or (
+                    len(discovery_matching.number_key(number)) > 1
+                    and len(discovery_matching.number_key(p["collector_number"])) > 1
+                    and discovery_matching.number_key(number)[1:]
+                    != discovery_matching.number_key(p["collector_number"])[1:]
+                )
+                for number in numbers
+            )
+            for p in plausible
+        ):
+            reasons.append("Seller collector-number claims conflict with catalog identity")
+        reasons.extend(index.set_issues(plausible, clues))
+        if clues["graded"]:
+            reasons.append("Graded contents are excluded from automatic ungraded selection")
         if quantity_reason:
             reasons.append(quantity_reason)
         if len(names) > 1:
@@ -246,7 +329,32 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
         if chosen and discovery_matching.unavailable(chosen):
             reasons.append(discovery_matching.unavailable(chosen))
             chosen = None
-        candidate_rows = plausible if complete_candidates and len(names) > 1 else exact or plausible
+        family_candidates = numbered
+        family_selection = catalog_variants.selection_projection(
+            family_candidates,
+            chosen,
+            clues,
+            quantity=quantity,
+            mentions=literal_evidence.get("mentions", [literal_evidence]) + [m for _, m in scopes],
+        )
+        if family_selection and not family_selection.get("selected_child_id"):
+            chosen = None
+            reasons.append("Physical variant requires scoped seller evidence")
+        if chosen and any(
+            not chosen.get(k) or (not clues.get(k) and chosen.get(k) != "not_applicable")
+            for k in ("language", "edition", "finish")
+        ):
+            reasons.append("Physical identity is not established")
+            chosen = None
+        if family_selection and (chosen is None or reasons):
+            family_selection.update(selected_child_id=None, allocations=[])
+        candidate_rows = (
+            family_candidates
+            if family_selection
+            else plausible
+            if complete_candidates and len(names) > 1
+            else exact or plausible
+        )
         visible_candidates = (
             candidate_rows
             if complete_candidates
@@ -258,11 +366,16 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
         # Same identity+quantity repeated in title/description never adds units.
         # Conflicting repeated quantities stay as separate unresolved claims.
         identity_key = tuple(sorted(p["id"] for p in candidate_rows))
-        key = (identity_key, quantity)
-        evidence = dict(source_field=field, text=text)
+        key = (
+            identity_key,
+            quantity,
+            chosen["id"] if chosen else None,
+            clues.get("finish") if sections_present else None,
+        )
+        item_mentions = literal_evidence.get("mentions", [literal_evidence])
         if key in seen:
             previous = seen[key]
-            previous["mentions"].append(evidence)
+            previous["mentions"].extend(item_mentions)
             conflicting = []
             for trait in ("language", "edition", "finish", "grader", "grade"):
                 before, after = previous["clues"].get(trait), clues.get(trait)
@@ -273,9 +386,16 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
             )
             if len(conditions) > 1:
                 conflicting.append("condition")
+            has_conflict = bool(
+                conflicting
+                or clues["conflicts"]
+                or any("conflict" in reason.casefold() for reason in reasons)
+            )
             if reasons or conflicting:
                 previous["included_quantity"] = 0
                 previous["printing_id"] = None
+                if previous.get("variant_selection"):
+                    previous["variant_selection"].update(selected_child_id=None, allocations=[])
                 previous["conflicting_fields"] = sorted(
                     set(previous.get("conflicting_fields", []))
                     | set(conflicting)
@@ -286,7 +406,13 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
                         [
                             *previous["reasons"],
                             *reasons,
-                            "Repeated seller mentions contain conflicting identity or applicability claims",
+                            *(
+                                [
+                                    "Repeated seller mentions contain conflicting identity or applicability claims"
+                                ]
+                                if has_conflict
+                                else []
+                            ),
                         ]
                     )
                 )
@@ -295,28 +421,91 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
                         [
                             *previous["clues"]["conflicts"],
                             *clues["conflicts"],
-                            "Repeated seller mentions require explicit attribute correction",
+                            *(
+                                ["Repeated seller mentions require explicit attribute correction"]
+                                if has_conflict
+                                else []
+                            ),
                         ]
                     )
                 )
             continue
-        other = [p for (ids, _), p in seen.items() if ids == identity_key]
+        other = [
+            p
+            for (ids, _, selected, _), p in seen.items()
+            if ids == identity_key
+            and not (
+                sections_present
+                and p["clues"].get("finish")
+                and clues.get("finish")
+                and p["clues"]["finish"] != clues["finish"]
+            )
+            and (
+                selected == (chosen["id"] if chosen else None)
+                or selected is None
+                or chosen is None
+                or p["mentions"][0]["source_field"] != field
+            )
+        ]
         if (
             other
             and quantity is None
             and quantity_reason == "A title mention does not establish per-card multiplicity"
+            and not any("conflict" in reason.casefold() for reason in reasons)
         ):
-            other[0]["mentions"].append(evidence)
+            previous = other[0]
+            previous["mentions"].extend(item_mentions)
+            if any(
+                clues.get(k) and previous["clues"].get(k) and clues[k] != previous["clues"][k]
+                for k in ("language", "edition", "finish")
+            ):
+                previous.update(included_quantity=0, printing_id=None)
+                previous["reasons"].append("Conflicting seller identity claims")
+                if previous.get("variant_selection"):
+                    previous["variant_selection"].update(selected_child_id=None, allocations=[])
             continue
         if other:
             reasons.append("Repeated card mention has conflicting quantities; correct multiplicity")
             quantity = None
             for previous in other:
+                previous["quantity"] = None
                 previous["included_quantity"] = 0
+                previous["printing_id"] = None
+                if previous.get("variant_selection"):
+                    previous["variant_selection"].update(selected_child_id=None, allocations=[])
                 previous["reasons"].append(
                     "Repeated card mention has conflicting quantities; correct multiplicity"
                 )
+        if family_selection:
+            family_selection["quantity"] = quantity
+            if not chosen or not quantity or reasons:
+                family_selection.update(selected_child_id=None, allocations=[])
+            if "seller_evidence" in family_selection:
+                family_selection["seller_evidence"].update(
+                    observation_sha256=shopping.digest(dict(fields=fields, aspects=aspects)),
+                    item_id=raw.get("itemId"),
+                )
         row = dict(
+            section=bool(literal_evidence.get("section")),
+            parent_identity=(
+                tuple(
+                    next(
+                        iter(
+                            {
+                                (p["set_id"], p["collector_number"], p["name"].casefold())
+                                for p in family_candidates
+                            }
+                        )
+                    )
+                )
+                if family_candidates
+                and len(
+                    {(p["set_id"], p["collector_number"], p["name"].casefold()) for p in family_candidates}
+                )
+                == 1
+                else None
+            ),
+            variant_selection=family_selection,
             proposal_id=hashlib.sha256((str(len(proposals)) + "\0" + text).encode()).hexdigest()[:24],
             name=next(iter(names)) if len(names) == 1 else None,
             quantity=quantity,
@@ -330,12 +519,24 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
             reasons=reasons,
             conflicting_fields=sorted(_conflicting_fields(clues)),
             clues={k: v for k, v in clues.items() if k != "text"},
-            mentions=[evidence],
+            mentions=item_mentions,
+            scope_mentions=[m for _, m in scopes],
         )
         seen[key] = row
         proposals.append(row)
         if len(proposals) + len(unresolved) > MAX_ITEMS:
             raise ValueError("Lot exceeds 200 content items; explicit manual review required")
+    proposals = evidence.reconcile(proposals)
+    for claim in excluded:
+        if "excludes" not in claim["reason"]:
+            continue
+        for row in proposals:
+            if set(claim["candidate_ids"]) & {p["id"] for p in row["candidates"]}:
+                row.update(included_quantity=0, printing_id=None)
+                row["reasons"].append("Seller inclusion and exclusion claims conflict")
+                row["mentions"].extend(claim["mentions"])
+                if row.get("variant_selection"):
+                    row["variant_selection"].update(selected_child_id=None, allocations=[])
     if any(total > MAX_QUANTITY for total in totals):
         raise ValueError("Seller card total exceeds 100000 cards")
     total = next(iter(totals)) if len(totals) == 1 else None
@@ -344,14 +545,28 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
         raise ValueError("Proposed quantities exceed 100000 cards")
     unknown = total - known if total is not None and total >= known else None
     issues = []
+    if any(
+        re.search(r"\b(?:complete|full)\s+(?:set|collection)|\bcomplete\s+.+\bset\b", m["text"], re.I)
+        for m in set_claims
+    ):
+        issues.append("Set-wide completeness claim is not a verified checklist")
     if len(totals) > 1:
         issues.append("Conflicting seller-stated total card counts")
     if total is not None and known > total:
         issues.append("Proposed quantities exceed the seller-stated card count")
     if not proposals:
         issues.append("Vague or photos-only contents remain unresolved")
+    if any("Unsupported" in p["reason"] for p in excluded):
+        issues.append("Unsupported products are outside the selected cards")
     if unresolved or any(not p["included_quantity"] for p in proposals):
         issues.append("Unresolved identity or quantity claims require correction")
+    if any(
+        "conflicting quantities" in reason.casefold()
+        or ("quantity claims conflict" in reason.casefold() and p["quantity"] is None)
+        for p in proposals
+        for reason in p["reasons"]
+    ):
+        unknown = None
     if unknown is None or unknown:
         issues.append("The complete lot contents have not been reconciled")
     availability = raw.get("estimatedAvailabilities", [])
@@ -364,24 +579,49 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
         if isinstance(availability, list)
         else set()
     )
+    offered = {
+        int(m[1])
+        for _, value in fields
+        for m in re.finditer(r"\b([1-9][0-9]{0,5})\s+lots?\s+(?:of|available|offered)\b", value, re.I)
+    }
     units = raw.get("lotSize")
     lot_units = (
         int(units) if isinstance(units, (int, str)) and re.fullmatch(r"[1-9][0-9]{0,5}", str(units)) else None
     )
     return dict(
+        schema="dex-seller-contents-v2",
+        evidence_basis="seller_stated",
+        source_fields=dict(fields),
+        aspect_names=aspects,
+        total_mentions=total_mentions,
+        set_claims=set_claims,
+        excluded_claims=excluded,
+        physically_selected_quantity=known,
+        unidentified_quantity=unknown,
+        contents_state="resolved" if not issues else "unresolved",
         proposals=proposals,
         unresolved_contents=unresolved,
         seller_stated_total=total,
         seller_stated_totals=sorted(totals),
         included_quantity=known,
+        parent_identified_quantity=sum(p["quantity"] or 0 for p in proposals if p.get("parent_identity")),
         unknown_remainder=unknown,
         stock_quantity=next(iter(stock)) if len(stock) == 1 else None,
         lot_units=lot_units,
+        seller_lots_offered=next(iter(offered)) if len(offered) == 1 else None,
         quantity_issues=issues,
         text_bytes=raw_bytes,
         segment_count=len(segments),
         detail_used=detail is not None,
     )
+
+
+def catalog_text(raw, detail=None):
+    """Use every supplied text field for catalog narrowing, never the hunt target."""
+    if detail is not None:
+        listing_details.validate_response(raw.get("itemId"), detail)
+    fields, _, _ = evidence.fields(raw, detail, _text)
+    return " ".join(value for _, value in fields)
 
 
 def interpretation_fields(raw):

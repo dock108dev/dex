@@ -159,10 +159,12 @@ def _aware(value):
         raise CaptureRefused("aware_timestamp_required") from None
 
 
-def batch_steps(groups, include_groups=False):
+def batch_steps(groups, include_groups=False, *, bootstrap=False):
     steps = [{"filename": "build-before.txt", "url": STEPS[0][1], "kind": "text", "group_id": None}]
-    if include_groups:
+    if include_groups or bootstrap:
         steps.append({"filename": "groups.json", "url": STEPS[1][1], "kind": "groups", "group_id": None})
+    if bootstrap:
+        return steps
     for group in groups:
         group_id = group["group_id"]
         for kind in ("products", "prices"):
@@ -199,8 +201,8 @@ def make_batch_plan(
         include_groups=include_groups,
         retained_groups_sha256=retained_groups_sha256,
         limits=limits or dict(BATCH_LIMITS),
-        steps=batch_steps(groups, include_groups),
-        request_count=2 * len(groups) + 2 + int(include_groups),
+        steps=batch_steps(groups, include_groups, bootstrap=purpose == "metadata_bootstrap"),
+        request_count=2 if purpose == "metadata_bootstrap" else 2 * len(groups) + 2 + int(include_groups),
     )
     # Omitted purpose preserves the exact legacy refresh plan and its digest.
     if purpose is not None:
@@ -237,22 +239,36 @@ def validate_batch_plan(plan, root):
     }
     if (
         not isinstance(plan, dict)
-        or not keys <= set(plan) <= keys | {"purpose", "refresh_cadence", "timing_override"}
+        or not keys
+        <= set(plan)
+        <= keys
+        | {"purpose", "refresh_cadence", "timing_override", "retained_groups_path", "metadata_ledger_path"}
         or plan["schema"] != "dex-tcgcsv-batch-plan-v1"
         or "purpose" in plan
-        and (not isinstance(plan["purpose"], str) or plan["purpose"] not in {"refresh", "initial_fill"})
+        and (
+            not isinstance(plan["purpose"], str)
+            or plan["purpose"] not in {"refresh", "initial_fill", "metadata_bootstrap"}
+        )
     ):
         raise CaptureRefused("invalid_batch_plan")
     if "refresh_cadence" in plan and (
         not isinstance(plan["refresh_cadence"], str)
         or plan["refresh_cadence"]
-        not in {"selected_groups", "selected_groups_new_build", "owner_r3_acquire1_same_build_once"}
-        or plan.get("purpose", "refresh") != "refresh"
+        not in {
+            "selected_groups",
+            "selected_groups_new_build",
+            "metadata_new_build",
+            "owner_r3_acquire1_same_build_once",
+        }
+        or plan.get("purpose", "refresh")
+        != ("metadata_bootstrap" if plan["refresh_cadence"] == "metadata_new_build" else "refresh")
         or plan["include_groups"] is not False
+        and plan["refresh_cadence"] not in {"selected_groups", "selected_groups_new_build"}
     ):
         raise CaptureRefused("invalid_refresh_cadence")
     newer_build_override = plan.get("refresh_cadence") in {
         "selected_groups_new_build",
+        "metadata_new_build",
         "owner_r3_acquire1_same_build_once",
     }
     if (
@@ -273,6 +289,22 @@ def validate_batch_plan(plan, root):
         or not re.fullmatch(r"[0-9a-f]{64}", plan["retained_groups_sha256"])
     ):
         raise CaptureRefused("invalid_batch_identity")
+    if "retained_groups_path" in plan:
+        path = plan["retained_groups_path"]
+        if (
+            not isinstance(path, str)
+            or not path.startswith("price-snapshots/staging/")
+            or ".." in Path(path).parts
+            or str(Path(path)) != path
+            or not path.endswith("/groups.json")
+            or plan.get("purpose") == "metadata_bootstrap"
+        ):
+            raise CaptureRefused("invalid_retained_group_path")
+    if "metadata_ledger_path" in plan and plan["metadata_ledger_path"] not in {
+        str(Path(root).absolute().parent / ".dex-tcgcsv-metadata/attempts.json"),
+        str(Path(root).absolute().parents[1] / ".dex-tcgcsv-metadata/attempts.json"),
+    }:
+        raise CaptureRefused("invalid_metadata_ledger_path")
     _aware(plan["not_before"])
     groups = plan["groups"]
     if not isinstance(groups, list) or not 1 <= len(groups) <= 68:
@@ -314,7 +346,10 @@ def validate_batch_plan(plan, root):
             raise CaptureRefused("batch_limit_expansion")
         if not key.endswith("seconds") and type(value) is not int:
             raise CaptureRefused("invalid_batch_limits")
-    steps = batch_steps(groups, plan["include_groups"])
+    bootstrap = plan.get("purpose") == "metadata_bootstrap"
+    if bootstrap and (plan["include_groups"] or plan["retained_groups_sha256"] != "0" * 64):
+        raise CaptureRefused("bootstrap_requires_no_retained_metadata")
+    steps = batch_steps(groups, plan["include_groups"], bootstrap=bootstrap)
     if (
         plan["steps"] != steps
         or type(plan["request_count"]) is not int

@@ -18,7 +18,7 @@ from pathlib import Path
 from threading import Timer
 
 from django.conf import settings
-from django.db import close_old_connections
+from django.db import close_old_connections, connection
 from django.http import Http404
 
 from . import discovery_listing, discovery_paging, ebay_hunts, goal_hunts, parity, shopping_index, store
@@ -262,6 +262,8 @@ def _lookup_owned(owner, run_id):
 
 def _acquisition_timeout(run):
     """A watchdog and local reads enforce the same fixed publication boundary."""
+    if run.operation == "lot_hunt":
+        return  # LV-03 owns its fixed job deadline and partial publication.
     with run.lock:
         if (
             run.deadline is None
@@ -289,6 +291,9 @@ def _arm_deadline(run):
 
 
 def _check_acquisition(run, *, authorization=True):
+    if run.operation == "lot_hunt":
+        run.acquisition_check()
+        return
     _acquisition_timeout(run)
     if run.named_pages is not None and time.monotonic() - run.created >= EPHEMERAL_SECONDS:
         with run.lock:
@@ -375,13 +380,29 @@ def _summary(run):
 
 
 def _readable(run):
+    if run.operation == "lot_hunt":
+        return run.state not in {"stopped", "expired", "conflict", "unauthorized", "restart_uncertain"}
     return run.state in {"complete", "failed"} or (
         run.named_pages is not None and bool(run.raws) and run.state in {"queued", "running"}
     )
 
 
+def status(actor, session_key, run_id, *, selected_result=None, received=False, values=False):
+    from . import lot_hunt
+
+    with _lock:
+        existing = _runs.get(str(run_id))
+    if (existing is not None and existing.operation == "lot_hunt") or (
+        existing is None and lot_hunt.owns(actor, session_key, run_id)
+    ):
+        return lot_hunt.status(actor, session_key, run_id)
+    return _legacy_status(
+        actor, session_key, run_id, selected_result=selected_result, received=received, values=values
+    )
+
+
 @shopping_index.indexed
-def status(actor, session_key, run_id, *, selected_result=None, received=False):
+def _legacy_status(actor, session_key, run_id, *, selected_result=None, received=False, values=False):
     run = _lookup(actor, session_key, run_id)
     with run.lock:
         result = _summary(run)
@@ -401,14 +422,20 @@ def status(actor, session_key, run_id, *, selected_result=None, received=False):
     from .discovery_comparison import compare
 
     receipt_only = (
-        received
+        (received or values)
         and selected_result is None
         and run.choices.query
         and run.choices.product_type == "mixed_lots"
     )
+    value_checks = []
     if receipt_only:
         _context_current(actor, run.choices)
         rows = discovery_listing.received_rows(raws)
+        if values:
+            from . import discovery_lot_values
+
+            discovery_lot_values.project(actor, raws, rows, _checks=value_checks)
+            result["values_checked"] = True
     else:
         from .shopping_index import current
 
@@ -456,6 +483,8 @@ def status(actor, session_key, run_id, *, selected_result=None, received=False):
         _lookup(actor, session_key, run_id)
     with run.lock:
         if not run.cancel.is_set() and _readable(run):
+            for check in value_checks:
+                check()
             result["results"] = visible
             result["coverage"] = dict(
                 received=len(raws), shown=len(visible), filtered=len(rows) - len(visible)
@@ -507,7 +536,14 @@ def _summary_lease(run, result_id):
     )
     if raw is None:
         raise Http404
-    return {"raw": deepcopy(raw), "created": run.created, "expires_in_seconds": remaining}
+    return {
+        "raw": deepcopy(raw),
+        "created": run.created,
+        "expires_in_seconds": remaining,
+        "detail": deepcopy(getattr(run, "details", {}).get(raw.get("itemId"))),
+        "summary": deepcopy(getattr(run, "summaries", {}).get(raw.get("itemId"))),
+        "content_revision": getattr(run, "content_revision", None),
+    }
 
 
 def summary_lease(actor, session_key, run_id, result_id):
@@ -557,7 +593,10 @@ def review_candidate(actor, session_key, run_id, result_id):
                     if _runs.get(run.id) is not run:
                         raise Http404
                     final = _summary_lease(run, result_id)
-                    if final["raw"] != lease["raw"] or final["created"] != lease["created"]:
+                    if any(
+                        final.get(k) != lease.get(k)
+                        for k in ("raw", "created", "detail", "summary", "content_revision")
+                    ):
                         raise Http404
 
             indexed.publication_checks.append(final_lease)
@@ -575,6 +614,10 @@ def review_candidate(actor, session_key, run_id, result_id):
 
 
 def stop(actor, session_key, run_id):
+    from . import lot_hunt
+
+    if lot_hunt.owns(actor, session_key, run_id):
+        return lot_hunt.stop(actor, session_key, run_id)
     run = _lookup(actor, session_key, run_id)
     with run.lock:
         run.cancel.set()
@@ -590,11 +633,18 @@ def stop(actor, session_key, run_id):
 
 def action_status(actor, session_key, request_id, *, operation="browse", received=False):
     """Local reconciliation only. Absence is never permission to replay a POST."""
+    from . import lot_hunt, lot_hunt_journal
+
+    automatic_id = lot_hunt_journal.run_id(_owner(actor, session_key), request_id)
+    if operation == "browse" and lot_hunt.owns(actor, session_key, automatic_id):
+        return lot_hunt.status(actor, session_key, automatic_id)
     key = (_owner(actor, session_key), operation, str(uuid.UUID(request_id)))
     with _lock:
         run_id = _actions.get(key)
     if not run_id:
         return {"outcome_unknown": True, "request_id": request_id}
+    if isinstance(run_id, dict):
+        return deepcopy(run_id)
     if operation == "detail":
         from . import listing_check
 
@@ -605,6 +655,10 @@ def action_status(actor, session_key, request_id, *, operation="browse", receive
 
 
 def start_action(actor, session_key, raw, request_id, *, auth_session=None, operation="browse"):
+    if operation == "browse" and isinstance(raw, dict) and "acquisition_contract" in raw:
+        from . import lot_hunt
+
+        return lot_hunt.start(actor, session_key, raw, request_id, auth_session=auth_session)
     key = (_owner(actor, session_key), operation, str(uuid.UUID(request_id)))
     with _lock:
         if key in _actions:
@@ -615,7 +669,20 @@ def start_action(actor, session_key, raw, request_id, *, auth_session=None, oper
     if operation == "detail":
         from . import listing_check
 
-        result = listing_check.start(actor, session_key, raw["identifier"], auth_session=auth_session)
+        try:
+            result = listing_check.start(actor, session_key, raw["identifier"], auth_session=auth_session)
+        except listing_check.AdmissionRefused as error:
+            result = dict(
+                request_id=request_id,
+                state="rejected",
+                running=False,
+                not_dispatched=True,
+                error="Listing request did not start. " + str(error),
+                counts=dict(oauth=0, detail=0, resolution=0, total=0),
+            )
+            with _lock:
+                _actions[key] = result
+            return deepcopy(result)
     else:
         result = start(actor, session_key, raw, auth_session=auth_session)
     with _lock:
@@ -749,19 +816,35 @@ class _Stopped(Exception):
 
 
 def _authorize(actor, session_key=None):
-    close_old_connections()
+    # Indexed request reads own their transaction. Closing an aged connection
+    # inside that snapshot invalidates it and turns a valid login into an error.
+    # Worker calls outside a transaction still release their old connections.
+    cleanup = not connection.in_atomic_block
+    if cleanup:
+        close_old_connections()
     try:
         store.verified(actor)
         if session_key is not None:
-            from django.contrib.sessions.models import Session
-            from django.core.exceptions import PermissionDenied
-            from django.utils import timezone
-
-            row = Session.objects.filter(session_key=session_key, expire_date__gt=timezone.now()).first()
-            if row is None or row.get_decoded().get("_auth_user_id") != str(actor.subject):
-                raise PermissionDenied
+            indexed = shopping_index.current(actor)
+            if indexed is None or session_key not in indexed.session_checks:
+                _session_current(actor, session_key)
+                if indexed is not None:
+                    # Reuse only this immutable read's check; recheck the live
+                    # session after all publication checks, outside its snapshot.
+                    indexed.session_checks[session_key] = lambda: _session_current(actor, session_key)
     finally:
-        close_old_connections()
+        if cleanup:
+            close_old_connections()
+
+
+def _session_current(actor, session_key):
+    from django.contrib.sessions.models import Session
+    from django.core.exceptions import PermissionDenied
+    from django.utils import timezone
+
+    row = Session.objects.filter(session_key=session_key, expire_date__gt=timezone.now()).first()
+    if row is None or row.get_decoded().get("_auth_user_id") != str(actor.subject):
+        raise PermissionDenied
 
 
 def _discard_dispatch_result(task):
@@ -788,8 +871,12 @@ async def _dispatch(run, transport, stage, deadline, *, actor=None, **kwargs):
         remaining = deadline - time.monotonic()
         if remaining <= 0:
             raise ProviderFailure(stage, uncertain=False)
+        from .lot_hunt_contract import LIMITS as LOT_HUNT_LIMITS
+
         limits = (
-            {"oauth": 1, "browse": 2}
+            LOT_HUNT_LIMITS
+            if run.operation == "lot_hunt"
+            else {"oauth": 1, "browse": 2}
             if run.operation == "hunter"
             else {"oauth": MAX_OAUTH, "browse": 1 if run.named_pages is not None else MAX_BROWSE}
             if run.operation == "browse"
@@ -799,9 +886,10 @@ async def _dispatch(run, transport, stage, deadline, *, actor=None, **kwargs):
         limit_counts = run.counts if action_counts is None else action_counts
         if (
             stage not in limits
+            or (run.operation == "lot_hunt" and run.counts["total"] >= limits["total"])
             or limit_counts.get(stage, 0) >= limits[stage]
             or (
-                run.operation != "browse"
+                run.operation not in {"browse", "lot_hunt"}
                 and run.counts.get("detail", 0) + run.counts.get("resolution", 0) >= 2
             )
         ):
@@ -824,11 +912,12 @@ async def _dispatch(run, transport, stage, deadline, *, actor=None, **kwargs):
         remaining = deadline - time.monotonic()
         if remaining <= 0:
             raise ProviderFailure(stage, uncertain=False)
+        request_seconds = getattr(run, "request_seconds", REQUEST_SECONDS)
         # Stop and admission share this lock; no dispatch is scheduled after Stop.
         task = asyncio.create_task(
-            transport.request(stage, timeout=min(REQUEST_SECONDS, remaining), **kwargs)
+            transport.request(stage, timeout=min(request_seconds, remaining), **kwargs)
         )
-    expires = min(deadline, time.monotonic() + REQUEST_SECONDS)
+    expires = min(deadline, time.monotonic() + request_seconds)
     try:
         while not task.done():
             if run.cancel.is_set():

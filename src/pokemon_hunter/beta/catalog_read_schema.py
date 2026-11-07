@@ -47,7 +47,7 @@ def migrate():
             c.execute("SELECT version FROM catalog_read_schema")
             if c.fetchall() != [(VERSION,)]:
                 raise ValueError("Incompatible catalog read schema")
-            optional_triggers(c, tables)
+            optional_read_support(c, tables)
             return
         c.execute("CREATE TABLE catalog_read_schema(version INTEGER PRIMARY KEY)")
         c.execute("INSERT INTO catalog_read_schema VALUES (%s)", [VERSION])
@@ -134,10 +134,17 @@ def migrate():
                     f"CREATE TRIGGER cr_account_{table}_{event.lower()} AFTER {event} ON {table} BEGIN {' '.join(statements)} END"
                 )
 
-        optional_triggers(c, tables)
+        optional_read_support(c, tables)
 
 
-def optional_triggers(cursor, tables):
+def optional_read_support(cursor, tables):
+    # Existing roots get this additive access path on explicit migrate, never a
+    # GET or startup. Early catalogs may not yet support reviewed publication.
+    cursor.execute("PRAGMA table_info(printings)")
+    if any(row[1] == "publication_state" for row in cursor.fetchall()):
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS cr_source_printing_publication_set ON printings(publication_state,set_id)"
+        )
     # Pipeline era metadata is authoritative when that optional capability exists.
     if "catalog_batches" in tables:
         cursor.execute(

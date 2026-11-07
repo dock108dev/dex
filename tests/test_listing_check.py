@@ -16,6 +16,7 @@ from price_snapshot_helpers import snapshot as snapshot
 from test_discovery import discovery as discovery
 from test_discovery import ledger
 from test_discovery_comparison import active
+from test_hunter_policy import everyday as everyday
 from test_lot_calculator import post
 from test_lot_calculator import workspace as workspace
 
@@ -198,6 +199,52 @@ def test_token_reuse_and_no_browse_fallback(discovery, monkeypatch):
     body = ledger(discovery).read_text()
     assert "fixture-token" not in body and "Engineering Base Set" not in body
     assert body.count('"state":"admitted"') == 3
+
+
+@pytest.mark.parametrize("identifier,stage", [(REST, "detail"), (ITEM, "resolution")])
+def test_standalone_details_debit_ordinary_policy_without_hunter_parent(
+    everyday, monkeypatch, identifier, stage
+):
+    from pokemon_hunter.beta import hunter_policy as policy
+
+    e = everyday
+    e.choose(per_hunt_limit=3)
+    monkeypatch.setattr(d, "_tokens", {})
+    monkeypatch.setattr(c, "Transport", Fake)
+    Fake.calls = []
+    r = run(e, identifier)
+    c._bind_policy(r, e.actor)
+    asyncio.run(c._acquire(r, ("fixture", "secret")))
+    assert r.state == "complete" and Fake.calls == ["oauth", stage]
+    assert r.counts["total"] == policy.status(e.actor)["used"] == 2
+    state = policy._load(e.root)
+    assert [x["data"]["stage"] for x in state["operations"]] == ["oauth", "detail"]
+    assert all(x["data"]["run_id"] == r.id for x in state["operations"])
+    r.cancel.set()
+    with pytest.raises(d._Stopped):
+        asyncio.run(d._dispatch(r, Fake(), "detail", r.deadline))
+    assert policy.status(e.actor)["used"] == 2
+
+
+def test_standalone_detail_policy_pause_and_expiry_prevent_dispatch(everyday):
+    from datetime import timedelta
+
+    from pokemon_hunter.beta import hunter_policy as policy
+
+    e = everyday
+    e.choose()
+    r = run(e, REST)
+    c._bind_policy(r, e.actor)
+    e.choose(enabled=False)
+    with pytest.raises(ValueError):
+        d._check_acquisition(r)
+    with pytest.raises(ValueError, match="current Hunter usage"):
+        c._bind_policy(run(e, REST), e.actor)
+    e.choose()
+    e.clock.now += timedelta(minutes=31)
+    with pytest.raises(ValueError, match="lease expired"):
+        d._check_acquisition(r)
+    assert policy.status(e.actor)["used"] == 0
 
 
 def test_explicit_operation_ceilings_and_stop(discovery):
@@ -653,7 +700,7 @@ def test_candidate_restore_includes_contents_identities_without_clipping_or_bypa
             raise Http404
         return source
 
-    def project(actor, value):
+    def project(actor, value, *, summary=None):
         return dict(value, proposals=[entries[0]], contents=[dict(candidates=family)])
 
     original = c.catalog
@@ -751,3 +798,51 @@ def test_checked_exact_target_survives_conflicting_sibling_contents(workspace, m
     assert candidate["listing"]["unknown_contents"] is None
     assert candidate["context"]["selected_target"] == shopping.identity(target)
     assert candidate["context"]["choices"]["printing_id"] == target["id"]
+
+
+def test_http_comparison_and_return_deliver_native_benchmark_without_save_payload(workspace, monkeypatch):
+    benchmark = dict(native_guides=[dict(provider="Authored", subtotal="12.00", references=[])], result={})
+    monkeypatch.setattr(
+        c,
+        "saved_comparison",
+        lambda *args: dict(
+            assessment={"evidence": []}, benchmark=benchmark, scenarios={"private": "not for browser"}
+        ),
+    )
+    monkeypatch.setattr(c, "start", lambda *args: pytest.fail("Comparison cannot acquire"))
+    for response in [
+        post(workspace, "/api/shopping/listing/compare/", dict(revision="revision", lease="lease")),
+        workspace["a"].get(
+            "/api/shopping/listing/return/",
+            HTTP_X_DEX_REVIEW_REVISION="revision",
+            HTTP_X_DEX_REVIEW_LEASE="lease",
+        ),
+    ]:
+        assert response.status_code == 200
+        assert response.json()["benchmark"] == benchmark
+        assert "scenarios" not in response.json()
+        assert "no-store" in response["Cache-Control"]
+
+
+def test_policy_refusal_is_proven_before_worker_registration(everyday, monkeypatch):
+    e = everyday
+    e.choose(enabled=False)
+    monkeypatch.setattr(c.d.threading, "Thread", lambda *a, **k: pytest.fail("worker must not start"))
+    before = set(d._runs)
+    with pytest.raises(c.AdmissionRefused):
+        c.start(e.actor, "session", ITEM)
+    assert set(d._runs) == before
+    from pokemon_hunter.beta import hunter_policy
+
+    assert hunter_policy.status(e.actor)["used"] == 0
+
+
+@pytest.mark.parametrize("claim", ["Not graded", "Not professionally graded", "Graded: No", "Graded: False"])
+def test_explicit_negative_grading_claim_does_not_make_raw_cards_graded(claim):
+    from pokemon_hunter.beta import discovery_comparison as dc
+
+    clues = dc._clues(dict(title="Authored English Unlimited card", shortDescription=claim))
+    assert not clues["graded"] and clues["grade"] == "raw"
+    assert "No supported literal grader and grade combination" not in clues["conflicts"]
+    positive = dc._clues(dict(title="Authored PSA 10 card", shortDescription=claim))
+    assert positive["graded"] and positive["grade"] == "10" and positive["grader"] == "PSA"

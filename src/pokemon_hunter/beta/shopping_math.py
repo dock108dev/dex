@@ -37,6 +37,10 @@ def money(value):
 
 
 def eligibility(ref, today):
+    from .valuation_evidence import is_native
+
+    if is_native(ref):
+        return "native_guide_not_normalized"
     if ref.get("amount") is None:
         return "missing_amount"
     try:
@@ -64,6 +68,39 @@ def bounded_sum(values, reason):
 
 def fraction(n, d):
     return [n, d] if d else None
+
+
+def benchmark_cost(base, shipping, *, subtotal=None, total=None):
+    """Independent observed offer cost; tax/ceiling requirements do not gate it."""
+    values, issues = {}, {}
+    for name, component in (("base", base), ("shipping", shipping)):
+        component = component if isinstance(component, dict) else {}
+        try:
+            value = amount(component.get("value"))
+            if component.get("currency") != "USD":
+                raise ValueError("unsupported_or_missing_currency")
+            values[name] = value
+        except ValueError as error:
+            issues[name] = str(error)
+    delivered = None
+    if len(values) == 2:
+        try:
+            delivered = bounded_sum(list(values.values()), "cost_total_above_cap")
+        except ValueError as error:
+            issues["total"] = str(error)
+    return dict(
+        base=money(values.get("base")),
+        shipping=money(values.get("shipping")),
+        delivered_before_tax=money(delivered),
+        currency="USD",
+        tax="unknown",
+        difference=money(amount(total) - delivered) if total is not None and delivered is not None else None,
+        subtotal_difference=money(amount(subtotal) - delivered)
+        if total is None and subtotal is not None and delivered is not None
+        else None,
+        issues=issues,
+        meaning="before_tax_reference_comparison_not_profit_or_guaranteed_savings",
+    )
 
 
 def useful_values(data, selected, refs, terms):
@@ -352,3 +389,80 @@ def _evaluate(data):
         goal=goal,
         comparisons=comparisons(data, known, full, useful_known, useful_full),
     )
+
+
+def native_subtotals(lines, references, today, *, unknown_quantity, reconciled):
+    """Same exact money/quantity primitives, separate publisher-number result.
+
+    References are server-selected admitted projections, never client prices.
+    Cohorts cannot contribute to normalized totals, comparisons or ceiling inputs.
+    """
+    from .valuation_evidence import NATIVE, NATIVE_AMOUNT, NATIVE_MONEY
+
+    ids = set()
+    units = 0
+    groups = {}
+    for line in lines:
+        pid, count = line["printing_id"], quantity(line["quantity"])
+        if pid in ids:
+            raise ValueError("duplicate_native_selection")
+        ids.add(pid)
+        units += count
+        if units > 100000:
+            raise ValueError("selected_quantity_above_cap")
+        ref = references.get(pid)
+        if not ref:
+            continue
+        if (
+            ref.get("basis") != NATIVE
+            or ref.get("amount_basis") != NATIVE_AMOUNT
+            or ref.get("native_money") != NATIVE_MONEY
+            or ref.get("currency") != "USD"
+            or ref.get("printing_id") != pid
+            or ref.get("match_status") != "exact"
+            or ref.get("value_scope") != "per_card"
+            or not ref.get("cohort")
+        ):
+            raise ValueError("incompatible_native_reference")
+        if fresh(ref.get("as_of"), today) != "eligible":
+            continue
+        value = amount(ref["amount"])
+        if value <= 0:
+            raise ValueError("native_amount_must_be_positive")
+        group = groups.setdefault(
+            ref["cohort"],
+            dict(
+                cohort=ref["cohort"],
+                basis=NATIVE,
+                label="Publisher guide subtotal — shipping/tax basis unknown",
+                provider=ref["provider"],
+                reference_date=ref["as_of"],
+                date_basis=ref["date_basis"],
+                condition=None,
+                native_money=dict(NATIVE_MONEY),
+                priced_quantity=0,
+                references=[],
+                lines=[],
+                terms=[],
+            ),
+        )
+        group["priced_quantity"] += count
+        group["references"].append(ref)
+        group["terms"].append(value * count)
+        group["lines"].append(dict(printing_id=pid, quantity=count, reference_subtotal=money(value * count)))
+    if unknown_quantity is not None and (
+        type(unknown_quantity) is not int or unknown_quantity < 0 or units + unknown_quantity > 100000
+    ):
+        raise ValueError("invalid_unknown_quantity")
+    for group in groups.values():
+        group["subtotal"] = money(bounded_sum(group.pop("terms"), "native_subtotal_above_cap"))
+        group["complete"] = bool(
+            reconciled and unknown_quantity == 0 and units and group["priced_quantity"] == units
+        )
+        group["total"] = group["subtotal"] if group["complete"] else None
+        group["expires_at"] = min(
+            (r["expires_at"] for r in group["references"] if r.get("expires_at")), default=None
+        )
+        # The existing save service owns permanent rights. Native aggregates are ephemeral.
+        group["save_allowed"] = False
+    return sorted(groups.values(), key=lambda g: g["cohort"])

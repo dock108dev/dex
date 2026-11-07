@@ -40,6 +40,7 @@ or alerting service; repeated failures produce repeated records.
 | `watcher_database_close_failed`, `watcher_client_close_failed`, `legacy_ebay_client_close_failed` | Resource cleanup failed. Inspect committed state before replaying an otherwise successful action. |
 | `legacy_request_failed`, `legacy_ebay_search_failed` | The original app returned a safe server/provider failure without private error text. |
 | `shopping_search_failed`, `hunter_acquisition_failed`, `shopping_listing_failed`, `hunter_lot_detail_failed` | A background Shopping action failed. The temporary status remains safe; consumed/uncertain operations are not refunded or retried. Explicit Stop is not logged as an acquisition fault. |
+| `automatic_lot_hunt_failed` | The automatic lot worker failed; its partial/failed status preserves prior consumption and performs no automatic retry. Authorization loss erases publishable seller data. |
 | `shopping_dispatch_failed` | An unexpected transport, authorization or journal failure was converted to a safe uncertain provider result. Inspect this record for the original class and code locations. |
 | `shopping_transport_close_failed`, `shopping_response_close_failed` | Closing a Shopping client or response failed or timed out. Cleanup preserves an existing acquisition error or cancellation; otherwise it fails the action. |
 | `worker_shutdown_incomplete` | The local worker remained alive after its five-second join; this does not certify provider cancellation. |
@@ -102,6 +103,13 @@ create ownership. Frontend failures remain visible with recovery actions and ret
 input where supported.
 
 ## Shopping cancellation and cleanup
+
+A known listing admission refusal before dispatch returns `not_dispatched`, so
+the client can finish recovery without polling an operation that never started.
+An ambiguous transport or journal outcome remains uncertain; it must not use that
+unsent status. Review expiry clears the old lease, revision and pending saves,
+preserving only authored inputs. A subsequent explicit review action can create a
+fresh lease; a late response cannot restore expired seller evidence.
 
 Discovery, listing checks, Hunter and selected lot details share redacted async
 cleanup. Client and response closing use a 0.5-second timeout. This relies on
