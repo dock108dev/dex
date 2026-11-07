@@ -134,3 +134,56 @@ def test_official_detail_quantities_use_the_existing_selected_contents_projectio
     listing_check._selected_contents(value)
     assert {p["id"]: p["quantity"] for p in value["proposals"]} == {"child-10": 2, "child-25": 1}
     assert value["unknown_contents"] == 0
+
+
+def descriptive_sample():
+    raw = sample()
+    raw["title"] = "Pokemon 1999 Fossil Lapras Holo and Non-Holo Unlimited group"
+    raw["shortDescription"] = (
+        "A collectible Lapras Fossil card group. Featuring two 1999 Fossil Lapras Holo Unlimited cards and one 1999 Fossil Lapras Non-Holo Unlimited card."
+    )
+    raw["description"] = (
+        raw["title"]
+        + "\n"
+        + raw["shortDescription"]
+        + "\n"
+        + raw["description"].replace("  - ", "\u00a0 - ")
+        + "\n- Special Feature: Shiny holographic finish featuring Lapras\n- Special Feature: Plain non-holo version of Lapras\n- Character: Lapras\n- Collectors: Add these Lapras cards\n"
+    )
+    return raw
+
+
+def test_descriptive_and_aggregate_claims_do_not_poison_numbered_sections():
+    raw = descriptive_sample()
+    value = parser.parse(raw, catalog(), detail=raw, complete_candidates=True)
+    assert {
+        p["printing_id"]: p["included_quantity"] for p in value["proposals"] if p["included_quantity"]
+    } == {"child-10": 2, "child-25": 1}
+    assert value["unknown_remainder"] == 0
+
+
+def test_descriptive_context_does_not_hide_actual_identity_or_quantity_conflicts():
+    for before, after in [
+        ("Featuring two", "Featuring three"),
+        ("10/62, 25/62", "99/62, 25/62"),
+        ("10/62, 25/62", "10/99, 25/62"),
+        ("Unlimited group", "First Edition group"),
+    ]:
+        raw = descriptive_sample()
+        raw = json.loads(json.dumps(raw).replace(before, after))
+        value = parser.parse(raw, catalog(), detail=raw, complete_candidates=True)
+        assert value["included_quantity"] < 3, (before, after)
+
+
+def test_projected_complete_mixed_finish_lot_has_no_false_global_conflict():
+    from pokemon_hunter.beta import discovery_comparison as dc
+    from pokemon_hunter.beta import shopping_contents
+
+    raw = descriptive_sample()
+    value = dict(
+        title=raw["title"], clues=dc._clues(raw), _contents_source=raw, _contents_kind="official_detail"
+    )
+    groups = shopping_contents.project(value, catalog())
+    assert value["seller_contents"]["included_quantity"] == 3
+    assert value["clues"]["conflicts"] == []
+    assert not any("Conflicting seller finish claims" in g["reasons"] for g in groups)

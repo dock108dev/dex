@@ -281,6 +281,17 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
         )
         if field == "structured_identity" and totals == {1}:
             quantity, quantity_reason = 1, None
+        if (
+            sections_present
+            and not literal_evidence.get("section")
+            and quantity is None
+            and quantity_reason == "A title mention does not establish per-card multiplicity"
+        ):
+            context = evidence.section_context(proposals, plausible, identity_text, clues)
+            if context:
+                for row in context:
+                    row["mentions"].extend(literal_evidence.get("mentions", [literal_evidence]))
+                continue
         names = {p["name"].casefold() for p in plausible}
         reasons = list(clues["conflicts"])
         numbers = {number for p in plausible for number in discovery_matching.number_claims(p, identity_text)}
@@ -440,6 +451,7 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
             other
             and quantity is None
             and quantity_reason == "A title mention does not establish per-card multiplicity"
+            and not any("conflict" in reason.casefold() for reason in reasons)
         ):
             previous = other[0]
             previous["mentions"].extend(item_mentions)

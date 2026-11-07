@@ -37,6 +37,21 @@ def project(value, entries, *, summary=None):
             )
         ]
     value["seller_contents"] = parsed
+    if (
+        parsed["unknown_remainder"] == 0
+        and not parsed["quantity_issues"]
+        and len({p["clues"].get("finish") for p in parsed["proposals"] if p["included_quantity"]}) > 1
+    ):
+        # The per-card parser has accounted for the mixed-finish lot. A title
+        # describing that union is not a contradiction on every individual card.
+        value["clues"] = dict(
+            value.get("clues", {}),
+            conflicts=[
+                issue
+                for issue in value.get("clues", {}).get("conflicts", [])
+                if issue != "Conflicting seller finish claims"
+            ],
+        )
     totals = set(parsed["seller_stated_totals"])
     # A null adapter total may itself mean conflicting structured claims. Do
     # not replace that conflict with the one number repeated in the title.

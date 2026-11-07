@@ -232,15 +232,60 @@ def scoped_claims(text, scopes, aspects):
     finish = dc._clues(dict(title=text))["finish"]
     result = []
     for claim, source in scopes:
-        if aspects.get(source["source_field"]) in {"finish", "card finish"} and finish:
+        if aspects.get(source["source_field"]) in {"finish", "card finish"}:
             parts = re.split(r"\s*[,/]\s*", claim)
             finishes = {
                 dc._clues(dict(title="normal" if p.casefold() == "regular" else p))["finish"] for p in parts
             }
-            if len(parts) > 1 and None not in finishes and finish in finishes:
+            if len(parts) > 1 and None not in finishes and (finish is None or finish in finishes):
                 continue
         result.append(claim)
     return result
+
+
+def section_context(rows, candidates, text, clues):
+    """Attach unquantified descriptive/list-wide claims to compatible sections.
+
+    A mixed-finish title or numbered list describes the enumerated union, not a
+    contradictory claim about every individual card. Unknown numbers, conflicting
+    scalar traits and explicit quantities remain ordinary reconciliation inputs.
+    """
+    sections = [r for r in rows if r.get("section") and r["printing_id"]]
+    ids = {p["id"] for p in candidates}
+    related = [r for r in sections if r["printing_id"] in ids]
+    if not related or set(clues["conflicts"]) - {"Conflicting seller finish claims"}:
+        return []
+    numbers = {matching.number_key(n) for p in candidates for n in matching.number_claims(p, text)}
+    known = {
+        matching.number_key(n)
+        for r in related
+        for p in r["candidates"]
+        for n in [
+            p["collector_number"],
+            *matching.number_claims(p, " ".join(m["text"] for m in r["mentions"])),
+        ]
+    }
+    if numbers and not numbers <= known:
+        return []
+    related = [
+        r
+        for r in related
+        if not numbers or matching.number_key(r["parent_identity"][1])[0] in {n[0] for n in numbers}
+    ]
+    for trait in ("language", "edition", "finish", "grader", "grade"):
+        if clues.get(trait):
+            related = [r for r in related if r["clues"].get(trait) == clues[trait]]
+    if "Conflicting seller finish claims" in clues["conflicts"]:
+        finishes = set()
+        for phrase in re.split(r"[,/]|\band\b", text, flags=re.I):
+            value = dc._clues(dict(title=phrase))
+            if value["conflicts"]:
+                return []
+            if value["finish"]:
+                finishes.add(value["finish"])
+        if len(finishes) < 2 or not finishes <= {r["clues"].get("finish") for r in related}:
+            return []
+    return related
 
 
 def noncontents(text, candidates=()):
@@ -312,13 +357,14 @@ def reconcile(rows):
                     if candidate.get("section")
                     and candidate["printing_id"]
                     and candidate["printing_id"] in {p["id"] for p in other["candidates"]}
-                    and other["quantity"] in (None, candidate["quantity"])
                     and all(
                         not other["clues"].get(k) or other["clues"][k] == candidate["clues"].get(k)
                         for k in ("language", "edition", "finish", "grader", "grade")
                     )
                 ]
-                if targets != [row]:
+                if targets != [row] and not any(
+                    "conflict" in reason.casefold() for reason in other["reasons"]
+                ):
                     continue
             shared = {p["id"] for p in row["candidates"]} & {p["id"] for p in other["candidates"]}
             parent = row.get("parent_identity") and row.get("parent_identity") == other.get("parent_identity")
