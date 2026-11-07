@@ -798,3 +798,27 @@ def test_checked_exact_target_survives_conflicting_sibling_contents(workspace, m
     assert candidate["listing"]["unknown_contents"] is None
     assert candidate["context"]["selected_target"] == shopping.identity(target)
     assert candidate["context"]["choices"]["printing_id"] == target["id"]
+
+
+def test_http_comparison_and_return_deliver_native_benchmark_without_save_payload(workspace, monkeypatch):
+    benchmark = dict(native_guides=[dict(provider="Authored", subtotal="12.00", references=[])], result={})
+    monkeypatch.setattr(
+        c,
+        "saved_comparison",
+        lambda *args: dict(
+            assessment={"evidence": []}, benchmark=benchmark, scenarios={"private": "not for browser"}
+        ),
+    )
+    monkeypatch.setattr(c, "start", lambda *args: pytest.fail("Comparison cannot acquire"))
+    for response in [
+        post(workspace, "/api/shopping/listing/compare/", dict(revision="revision", lease="lease")),
+        workspace["a"].get(
+            "/api/shopping/listing/return/",
+            HTTP_X_DEX_REVIEW_REVISION="revision",
+            HTTP_X_DEX_REVIEW_LEASE="lease",
+        ),
+    ]:
+        assert response.status_code == 200
+        assert response.json()["benchmark"] == benchmark
+        assert "scenarios" not in response.json()
+        assert "no-store" in response["Cache-Control"]

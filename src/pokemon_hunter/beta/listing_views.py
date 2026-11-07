@@ -148,4 +148,6 @@ def return_assessment(request):
 def _assessment(request, revision, lease):
     who, session = discovery_views.principal(request)
     result = checks.saved_comparison(who, session, revision, lease)
-    return shopping_views.private_json({"assessment": result["assessment"]}, request)
+    return shopping_views.private_json(
+        {key: result[key] for key in ("assessment", "benchmark") if key in result}, request
+    )

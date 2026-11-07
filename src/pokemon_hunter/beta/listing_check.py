@@ -194,6 +194,7 @@ def status(actor, session, key):
 
 @shopping_index.indexed
 def _proposals(actor, value, *, summary=None):
+    official = value.get("_contents_kind") == "official_detail"
     clues = dict(value["clues"], text=value.pop("match_text"))
     indexed = shopping_index.current(actor)
     entries = (
@@ -226,7 +227,26 @@ def _proposals(actor, value, *, summary=None):
     ]
     value["unknown_contents"] = value["seller_lot_size"]
     value["contents"] = shopping_contents.project(value, entries, summary=summary)
+    if official:
+        _selected_contents(value)
     return value
+
+
+def _selected_contents(value):
+    """Apply the same evidence-selected quantities to either official-detail path."""
+    parsed = value["seller_contents"]
+    selected = {p["printing_id"]: p for p in parsed["proposals"] if p["included_quantity"]}
+    entries = {p["id"]: p for group in parsed["proposals"] for p in group["candidates"]}
+    unresolved = [dict(p, quantity=0) for p in value.get("proposals", []) if p["id"] not in selected]
+    value["proposals"] = [
+        dict(
+            entries[pid],
+            quantity=p["included_quantity"],
+            **{k: p["clues"].get(k) for k in ("condition", "grade", "grader")},
+        )
+        for pid, p in selected.items()
+    ] + unresolved
+    value["unknown_contents"] = parsed["unknown_remainder"]
 
 
 @shopping_index.indexed
@@ -287,19 +307,6 @@ def candidate(actor, session, run_id, result_id):
         summary=source.get("summary"),
     )
     automatic = source.get("detail") is not None
-    if automatic:
-        parsed = value["seller_contents"]
-        selected = {p["printing_id"]: p for p in parsed["proposals"] if p["included_quantity"]}
-        entries = {p["id"]: p for group in parsed["proposals"] for p in group["candidates"]}
-        value["proposals"] = [
-            dict(
-                entries[pid],
-                quantity=p["included_quantity"],
-                **{k: p["clues"].get(k) for k in ("condition", "grade", "grader")},
-            )
-            for pid, p in selected.items()
-        ]
-        value["unknown_contents"] = parsed["unknown_remainder"]
     suggestions = source.get("result", {}).get("identity_candidates") or []
     ids = list(dict.fromkeys(row.get("printing_id") for row in suggestions if row.get("printing_id")))
     strict_ids = {row["id"] for row in value["proposals"]}
