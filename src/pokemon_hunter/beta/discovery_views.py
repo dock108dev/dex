@@ -128,7 +128,18 @@ def searches(request):
             value = {**discovery.metadata(who), "goals": goals(who)}
         return shopping_views.private_json(value, request)
     except lot_hunt.AdmissionUnavailable as exc:
-        response = JsonResponse({"error": str(exc), "code": exc.code}, status=409)
+        # Exception text may contain private diagnostics; publish only known codes/messages.
+        messages = lot_hunt.AdmissionUnavailable.MESSAGES
+        code = exc.code if exc.code in messages else "lot_hunt_unavailable"
+        response = JsonResponse(
+            {
+                "error": messages.get(
+                    code, "Automatic Hunt is unavailable. Check the current status and Hunter usage settings."
+                ),
+                "code": code,
+            },
+            status=409,
+        )
         response["Cache-Control"] = "private, no-store"
         return response
     except RuntimeError:
