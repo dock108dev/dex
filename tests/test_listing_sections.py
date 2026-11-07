@@ -133,7 +133,7 @@ def test_official_detail_quantities_use_the_existing_selected_contents_projectio
     value = dict(seller_contents=parser.parse(raw, catalog(), detail=raw, complete_candidates=True))
     listing_check._selected_contents(value)
     assert {p["id"]: p["quantity"] for p in value["proposals"]} == {"child-10": 2, "child-25": 1}
-    assert value["unknown_remainder"] == 0
+    assert value["unknown_contents"] == 0
 
 
 def descriptive_sample():
