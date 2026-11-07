@@ -180,6 +180,7 @@ def test_projected_complete_mixed_finish_lot_has_no_false_global_conflict():
     from pokemon_hunter.beta import shopping_contents
 
     raw = descriptive_sample()
+    raw["description"] += "\nComplete collection of the listed cards. Photos show the cards.\n"
     value = dict(
         title=raw["title"], clues=dc._clues(raw), _contents_source=raw, _contents_kind="official_detail"
     )
@@ -187,3 +188,16 @@ def test_projected_complete_mixed_finish_lot_has_no_false_global_conflict():
     assert value["seller_contents"]["included_quantity"] == 3
     assert value["clues"]["conflicts"] == []
     assert not any("Conflicting seller finish claims" in g["reasons"] for g in groups)
+
+
+def test_review_comparison_keeps_parent_context_for_selected_physical_children(monkeypatch):
+    from pokemon_hunter.beta import listing_details, lot_assessment
+
+    raw = descriptive_sample()
+    offer = listing_details.details(raw["itemId"], raw)
+    cards = [dict(printing_id="child-10", quantity=2), dict(printing_id="child-25", quantity=1)]
+    issues, disputed = lot_assessment.seller_constraints(
+        [offer], {p["id"]: p for p in catalog()}, {p["printing_id"]: p for p in cards}, 3
+    )
+    assert not disputed
+    assert not any("conflict" in issue.casefold() for issue in issues)

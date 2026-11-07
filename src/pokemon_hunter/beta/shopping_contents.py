@@ -39,7 +39,7 @@ def project(value, entries, *, summary=None):
     value["seller_contents"] = parsed
     if (
         parsed["unknown_remainder"] == 0
-        and not parsed["quantity_issues"]
+        and all(p["included_quantity"] and not p["reasons"] for p in parsed["proposals"])
         and len({p["clues"].get("finish") for p in parsed["proposals"] if p["included_quantity"]}) > 1
     ):
         # The per-card parser has accounted for the mixed-finish lot. A title

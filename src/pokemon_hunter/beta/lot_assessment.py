@@ -102,9 +102,9 @@ def seller_constraints(offers, entries, included, units):
                 issues.append(f"Resolve the seller’s stated contents for {group['name']}.")
         if projected.get("seller_lot_size") not in (None, units):
             issues.append("Included quantities differ from the leased seller count.")
-        issues.extend(offer["clues"]["conflicts"])
+        issues.extend(projected["clues"]["conflicts"])
         for row in included.values():
-            clues = offer["clues"]
+            clues = projected["clues"]
             if (
                 clues.get("condition_claims")
                 and dc._condition(row.get("condition")) not in clues["condition_claims"]

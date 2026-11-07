@@ -739,15 +739,28 @@ def compare(actor, value, *, offers=(), _checks=None):
         records = lot.retained_records()
     from .read_diagnostics import phase
 
+    # Seller evidence needs numbered parents and sibling variants as well as
+    # the selected children. The selected cost/reference rows remain unchanged.
+    evidence_entries = selected
+    if offers and offers[-1].get("_contents_source"):
+        source = offers[-1]["_contents_source"]
+        indexed = shopping_index.current(actor)
+        evidence_entries = (
+            indexed.proposals(hunter_lot_parser.catalog_text(source, source))
+            if indexed
+            else lot.catalog(actor, include_goals=True, include_current=True)
+        )
     with phase("composition_ms"):
-        result = _assessed(actor, value, selected, raw, records, now, offers)
+        result = _assessed(
+            actor, value, selected, raw, records, now, offers, evidence_entries=evidence_entries
+        )
     # Keep the strict tax-aware assessment/ceiling intact. The same automatic
     # benchmark engine also consumes explicitly corrected physical selections.
     if offers and offers[-1].get("_contents_source"):
         from . import hunter_lots
 
         source = offers[-1]["_contents_source"]
-        proposal = hunter_lot_parser.parse(source, selected, detail=source)
+        proposal = hunter_lot_parser.parse(source, evidence_entries, detail=source)
         corrections = dict(
             cards=[
                 {
@@ -769,7 +782,7 @@ def compare(actor, value, *, offers=(), _checks=None):
     return result
 
 
-def _assessed(actor, value, selected, raw, records, now, offers):
+def _assessed(actor, value, selected, raw, records, now, offers, *, evidence_entries=None):
     payload = lot.prepare(
         actor,
         raw,
@@ -788,7 +801,7 @@ def _assessed(actor, value, selected, raw, records, now, offers):
     return dict(
         assessment=lot_assessment.assess(
             value,
-            {p["id"]: p for p in selected},
+            {p["id"]: p for p in (evidence_entries if evidence_entries is not None else selected)},
             records,
             now.date(),
             scenarios["raw"]["result"]["comparisons"],
