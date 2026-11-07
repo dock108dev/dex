@@ -333,7 +333,11 @@ def _scope_label(run):
 
         c = run.choices
         basis = f"Frozen goal: {run.scope['name']}" if run.scope else "Current collection"
-        budget = f"{c.budget} USD all-in budget" if c.budget is not None else "All-in budget not set"
+        budget = (
+            f"{c.budget} USD all-in {'baseline; higher-priced options require review' if c.budget_mode == 'flexible' else 'budget limit'}"
+            if c.budget is not None
+            else "All-in budget not set"
+        )
         return f"{basis} · {c.focus} · {registry()[c.species]['name']} · {budget} · " + (
             "Vintage preferred; any qualifying era" if c.prefer_vintage else "Any qualifying era"
         )
@@ -377,6 +381,14 @@ def _summary(run):
         "note": "Temporary eBay summaries; seller text proposes identity. Prices exclude tax. References retain their source dates; searching does not refresh them. Results expire when the server restarts or after 30 minutes.",
         "results": [],
     }
+
+
+def within_budget(row, choices):
+    """Filter only a known USD cost floor; a flexible baseline never hides it."""
+    if choices.budget is None or choices.budget_mode == "flexible":
+        return True
+    floor = row.get("delivered_total") or row.get("listing_price")
+    return floor is None or Decimal(floor) <= choices.budget
 
 
 def _readable(run):
@@ -472,10 +484,8 @@ def _legacy_status(actor, session_key, run_id, *, selected_result=None, received
         item_id = str(row.pop("item_id", ""))
         handle = discovery_listing.result_handle(run.id, item_id)
         row["id"], row["revealed"] = handle, True
-        if run.choices.budget is not None:
-            minimum = row.get("delivered_total") or row.get("listing_price")
-            if minimum is not None and Decimal(minimum) > run.choices.budget:
-                continue
+        if not within_budget(row, run.choices):
+            continue
         visible.append(row)
 
     if receipt_only:

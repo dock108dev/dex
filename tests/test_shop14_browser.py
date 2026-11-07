@@ -79,7 +79,7 @@ def test_contents_keyboard_layout_correction_and_failed_save(browser_app):
             box = control.bounding_box()
             assert box and 0 <= box["x"] and box["x"] + box["width"] <= width + 1
         assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1")
-    include = page.locator("#review-cards .review-include input").first
+    include = page.locator("#review-cards .review-include input[data-printing]").first
     include.focus()
     include.press("Space")
     expect(include).to_be_checked()
@@ -109,7 +109,7 @@ def test_contents_keyboard_layout_correction_and_failed_save(browser_app):
     # corrected zero-unit identity must restore while contributing no gain.
     correction = page.locator("#review-cards summary").filter(has_text="Correct identity").first
     correction.click()
-    page.locator("#review-cards .review-include input").first.uncheck()
+    page.locator("#review-cards .review-include input[data-printing]").first.uncheck()
     page.locator("#review-cards summary").filter(has_text="optional card details").first.click()
     page.get_by_label("Condition claim", exact=True).first.fill("User checked corner wear")
     page.locator("#check-back").click()
@@ -118,7 +118,7 @@ def test_contents_keyboard_layout_correction_and_failed_save(browser_app):
     page.locator("#review-cards summary").filter(has_text="Correct identity").first.click()
     page.locator("#review-cards summary").filter(has_text="optional card details").first.click()
     expect(page.get_by_label("Condition claim", exact=True).first).to_have_value("User checked corner wear")
-    expect(page.locator("#review-cards .review-include input").first).not_to_be_checked()
+    expect(page.locator("#review-cards .review-include input[data-printing]").first).not_to_be_checked()
     page.evaluate("window.dispatchEvent(new Event('dex:authority-revoked'))")
     assert page.locator("#review-cards").inner_text() == ""
     assert not errors

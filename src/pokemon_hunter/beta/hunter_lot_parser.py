@@ -110,7 +110,8 @@ def _quantity(text, *, title=False):
     return (None, "A title mention does not establish per-card multiplicity") if title else (1, None)
 
 
-def _totals(text):
+def _totals(text, names=()):
+    text = evidence.quantity_text(text)
     text = re.sub(
         r"(?<!\d)[1-9][0-9]{0,2}(?:,[0-9]{3})+(?!\d)", lambda match: match[0].replace(",", ""), text
     )
@@ -119,7 +120,17 @@ def _totals(text):
         r"\b([1-9][0-9]{0,5})(?:\s+|[-‐‑–])(?:total\s+)?cards?\b",
         r"\btotal\s*(?:cards?\s*)?[:=]?\s*([1-9][0-9]{0,5})\b",
     )
-    return {int(m[1]) for pattern in patterns for m in re.finditer(pattern, text, re.I)}
+    totals = {int(m[1]) for pattern in patterns for m in re.finditer(pattern, text, re.I)}
+    # A complete named-family count sentence is a total, not an item subtotal
+    # inside a longer conjunction/list. Only actual catalog names qualify.
+    for name in names:
+        pattern = (
+            r"(?:^|[.\n])\s*(?:(?:this\s+(?:lot|bundle)\s+(?:includes|contains)|you\s+(?:will\s+)?receive)\s+)?([1-9][0-9]{0,5})\s+"
+            + re.escape(name)
+            + r"\s+cards?\s*(?:[.!]|$)"
+        )
+        totals.update(int(m[1]) for m in re.finditer(pattern, text, re.I))
+    return totals
 
 
 def _conflicting_fields(clues):
@@ -169,7 +180,7 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
             if aspects.get(field) in evidence.COUNT_ASPECTS and re.fullmatch(r"[1-9][0-9]{0,5}", value)
             else set()
             if field in aspects
-            else _totals(value)
+            else _totals(value, {p["name"] for p in index.candidates(dict(text=value))})
         )
         if claims:
             totals.update(claims)
@@ -201,6 +212,10 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
         identity_text = re.sub(r"(?<![\w/#.])[1-9][0-9]{0,5}\s*[x×](?!\w)", " ", identity_text, flags=re.I)
         scoped_text = " ".join([identity_text, *evidence.scoped_claims(identity_text, scopes, aspects)])
         clues = dc._clues(dict(title=scoped_text, condition=raw.get("condition", "")))
+        # Retain a per-card condition category only when this scoped segment
+        # states exactly one. The literal source spans remain available below.
+        if len(clues["condition_claims"]) == 1:
+            clues["condition"] = clues["condition_claims"][0]
         local_ids = {p["id"] for p in index.candidates(dict(text=identity_text))}
         candidates = [p for p in candidates_for(clues) if p["id"] in local_ids]
         plausible = dc._approx_matches(candidates, clues)
@@ -236,13 +251,31 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
             # Unrecognized explicit quantity lines are retained as unresolved.
             quantity, reason = _quantity(text, title=field.endswith("title"))
             quantity_line = evidence.quantity_text(text)
-            metadata_only = bool(re.search(r"\b(?:stock|available|lots?\s+offered)\b", text, re.I))
+            metadata_only = bool(
+                re.search(
+                    r"\b(?:stock|available|lots?\s+offered|business\s+days?|handling|shipping|returns?|delivery)\b",
+                    text,
+                    re.I,
+                )
+            )
+            subgroup = bool(
+                re.match(
+                    r"^\s*\d+\s+(?:of\s+(?:these|them|the\s+cards)|are\b|have\b|show\b)", quantity_line, re.I
+                )
+            )
             if (
                 quantity is not None
                 and not metadata_only
+                and not subgroup
                 and not _totals(text)
                 and re.search(r"(?:^\s*\d+\s*(?:[x×]|[A-Za-z])|\b(?:qty|quantity)\b)", quantity_line, re.I)
             ):
+                repeated = next(
+                    (r for r in unresolved if r["text"] == text and r["quantity"] == quantity), None
+                )
+                if repeated:
+                    repeated["mentions"].extend(literal_evidence.get("mentions", [literal_evidence]))
+                    continue
                 unresolved.append(
                     dict(
                         text=text,
@@ -344,7 +377,12 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
             not chosen.get(k) or (not clues.get(k) and chosen.get(k) != "not_applicable")
             for k in ("language", "edition", "finish")
         ):
-            reasons.append("Physical identity is not established")
+            missing = [
+                k
+                for k in ("language", "edition", "finish")
+                if not chosen.get(k) or (not clues.get(k) and chosen.get(k) != "not_applicable")
+            ]
+            reasons.append("Physical identity is not established: confirm " + ", ".join(missing))
             chosen = None
         if family_selection and (chosen is None or reasons):
             family_selection.update(selected_child_id=None, allocations=[])

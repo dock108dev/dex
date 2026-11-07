@@ -4,14 +4,14 @@
   const binding = JSON.parse($('check-binding').textContent), account = JSON.parse($('check-account').textContent);
   const csrf = root.querySelector('[name=csrfmiddlewaretoken]').value;
   const entry = JSON.parse($('check-entry').textContent);
-  const fields = ['title','url','price','currency','shipping','tax','other_costs','planned_bid','budget','tax_rate'];
+  const fields = ['title','url','price','currency','shipping','tax','other_costs','planned_bid','budget','tax_rate','budget_mode','budget_rule','budget_value_basis','decision','decision_notes'];
   let reviewDirty = false, saving = null, collectionContext = null;
   let detailAction = entry.request_id || null, detailUnknown = Boolean(detailAction), admissionPending = false;
   let contents = [], correctingEntry = null;
   const authoredFields={}, authoredCards=new Map();
   function rememberCard(row, key, value){authoredCards.set(row.printing_id,{...(authoredCards.get(row.printing_id) || {printing_id:row.printing_id,quantity:0}),[key]:value});}
   async function expireEvidence(){
-    invalidate();clearTimeout(saveTimer);reviewDirty=false;
+    invalidate();resetBatch();clearTimeout(saveTimer);reviewDirty=false;delete authoredFields.decision;delete authoredFields.decision_notes;
     lease=null;reviewRevision=null;retentionDeadline=null;
     const manual={currency:'USD',unknown_contents:null,...authoredFields,authored_fields:Object.keys(authoredFields),cards:[...authoredCards.values()].map(r=>({...r,authored_fields:Object.keys(r).filter(k=>k!=='printing_id')}))};
     clearOffer();$('listing-identifier').value='';showContext(null);
@@ -25,10 +25,10 @@
   const say = (text, error = false) => { if($('check-reload')) $('check-reload').hidden = !error; $('check-status').textContent = text; $('check-status').setAttribute('role', error ? 'alert' : 'status'); };
   function revoke() {
     authoredCards.clear();for(const key of Object.keys(authoredFields))delete authoredFields[key];
-    invalidate();clearOffer();active = false; ++version; ++loadVersion; ++searchVersion; clearTimeout(saveTimer);
-    cards = []; contents=[]; preview = null; discoveryOrigin=null;sourceOrigin=null;sourceItem=null;buyNowPrice='';buyNowCurrency='';root.querySelectorAll('input').forEach(n => n.value = '');$('review-buy-now').textContent='';$('review-source-counts').textContent='';$('check-context').textContent='';
+    invalidate();resetBatch();clearOffer();active = false; ++version; ++loadVersion; ++searchVersion; clearTimeout(saveTimer);
+    cards = []; contents=[]; preview = null; discoveryOrigin=null;sourceOrigin=null;sourceItem=null;buyNowPrice='';buyNowCurrency='';root.querySelectorAll('input,textarea').forEach(n => n.value = '');$('review-buy-now').textContent='';$('review-source-counts').textContent='';$('check-context').textContent='';
     for(const id of ['review-cards','check-matches','listing-details','contents-preview','check-results']) $(id).replaceChildren();
-    root.querySelectorAll('input,button,select').forEach(n => n.disabled = true);
+    root.querySelectorAll('input,button,select,textarea').forEach(n => n.disabled = true);
     $('listing-preview').hidden = true; $('check-results').hidden = true;
     $('review-count').textContent='';
     say('Your session changed. Sign in again to use Shopping.', true);
@@ -52,6 +52,10 @@
   }
   function invalidate() {handoff=null;references=[];assessmentEnd=null;delete $('check-results').dataset.pending;++version;if(collectionContext?.collection_fit) showContext({...collectionContext,collection_fit:null}); $('check-results').hidden = true; $('check-results').replaceChildren(); count();}
   function count() {
+    const baseline=$('review-budget').value, flexible=$('review-budget_mode').value==='flexible';
+    $('review-budget-policy').textContent=`Active review ${flexible?'baseline':'budget limit'}: ${baseline ? baseline+' USD all-in' : 'not set'}. ${flexible?'Higher-priced options require explicit evidence review; no automatic exception or spending authorization. ':''}${$('review-budget_rule').value ? 'Your rule: '+$('review-budget_rule').value+'. ' : ''}${flexible?'Value basis: '+($('review-budget_value_basis').value==='resale'?'net resale proceeds after selling costs':'estimated collectible value')+'.':''}`;
+
+    for(const summary of $('review-cards').querySelectorAll('[data-included]')){const entry=contents.find(e=>e.key===summary.dataset.included);if(entry)summary.textContent=includedSummary(cards.filter(r=>entry.candidates.some(p=>p.id===r.printing_id)));}
     $('review-price-label').textContent = $('review-price-kind').value === 'current_bid' ? 'Whole-lot current bid' : 'Whole-lot asking price';
     $('review-buy-now').hidden = !buyNowPrice;
     $('review-buy-now').textContent = `Separate buy-now asking price: ${buyNowPrice} ${buyNowCurrency}. This is not the auction current bid.`;
@@ -80,7 +84,7 @@
         const value = await request('/api/shopping/listing/review/',{review:data,lease:savedLease}, keepalive);
         if(lease!==savedLease || !active)continue;
         reviewRevision=value.revision;
-        if(version===revision){reviewDirty=false;showContext(value.context);}
+        if(version===revision){reviewDirty=false;showContext(value.context);$('review-save-status').textContent='Review saved for the remaining temporary session.';}
         const expires=Date.now()+value.expires_in_seconds*1000;
         retentionDeadline=retentionDeadline ? Math.min(retentionDeadline,expires) : expires;
         if(offerDeadline)offerDeadline=Math.min(offerDeadline,retentionDeadline);
@@ -89,7 +93,7 @@
     const job=drain();saving=job;
     try{await job;}finally{if(saving===job)saving=null;}
   }
-  function changed() {reviewDirty=true;invalidate(); clearTimeout(saveTimer); saveTimer = setTimeout(() => {persist().catch(e => say(e.message,true));},400);}
+  function changed() {resetBatch();$('review-save-status').textContent='Saving your changes…';reviewDirty=true;invalidate(); clearTimeout(saveTimer); saveTimer = setTimeout(() => {persist().catch(e => say(e.message,true));},400);}
   function rememberControl(control,label,value){
     const key={'Condition claim':'condition','Language code (en, ja…)':'language','Edition claim':'edition','Finish claim':'finish','Value basis':'grade','Literal grader':'grader'}[label];
     const id=control.closest('.review-card')?.dataset.printing,row=cards.find(r=>r.printing_id===id);
@@ -111,11 +115,13 @@
     if(art?.availability==='reference' && art.image_url){const img=node('img');img.src=art.image_url;img.alt=art.alt || `${p.name || 'Card'} catalog reference`;img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';img.onload=()=>fallback.hidden=true;img.onerror=()=>img.remove();frame.prepend(img);}
     parent.append(frame);
   }
-  function exclusive(row) {
-    if(row.quantity<=0)return;
-    for(const entry of contents)if(entry.candidates.some(p=>p.id===row.printing_id)){
-      for(const other of cards)if(other!==row && entry.candidates.some(p=>p.id===other.printing_id)){other.quantity=0;if(authoredCards.has(other.printing_id))rememberCard(other,'quantity',0);for(const control of $('review-cards').querySelectorAll('input')){if(control.dataset.printing===other.printing_id){control.checked=false;control.parentElement.lastChild.textContent='Include this proposed card';}if(control.dataset.quantity===other.printing_id)control.value=0;}}
-    }
+  function includedSummary(rows){
+    const included=rows.filter(r=>r.quantity>0);
+    return included.length?`Included: ${included.map(r=>`${r.quantity} × ${printingLabel(r.identity)} (${authoredCards.has(r.printing_id)?'User-confirmed allocation / edits':'Automatically proposed from seller text'})`).join('; ')}. Physical contents remain unverified.`:'Not included · choose a printing and quantity to include it.';
+  }
+  function allocationStatus(entry, rows) {
+    const allocated=rows.reduce((n,r)=>n+(Number(r.quantity)||0),0);
+    return `Allocated: ${allocated} · Remaining in this entry: ${entry.quantity === null ? 'Unknown' : Math.max(0,entry.quantity-allocated)}${entry.quantity !== null && allocated>entry.quantity ? ' · Exceeds seller quantity; reconcile before comparing.' : ''}`;
   }
   const printingLabel=p=>`${p.name} · ${p.set_name} #${p.collector_number} · ${[p.language,p.edition,p.finish,p.variant].filter(Boolean).join(' / ')}`;
   function contentsSummary(host, entry) {
@@ -129,9 +135,11 @@
     const host=$('review-cards'), opened=new Set([...host.querySelectorAll('.contents-entry')].filter(e=>e.querySelector('details[data-correction]')?.open).map(e=>e.dataset.key));host.replaceChildren();const grouped=new Set(), byId=new Map(cards.map(r=>[r.printing_id,r]));
     for(const entry of contents){
       const box=node('section');box.className='contents-entry';box.dataset.key=entry.key;contentsSummary(box,entry);
+      const sharedLabel=node('label',''),shared=node('input');shared.type='checkbox';sharedLabel.className='review-include';shared.dataset.sharedEntry=entry.key;shared.onchange=resetBatch;sharedLabel.append(shared,node('span',' Include this entry in shared-trait confirmation'));box.append(sharedLabel);
       const rows=entry.candidates.map(p=>{let r=byId.get(p.id);if(!r){r={printing_id:p.id,quantity:0,grade:'raw',identity:identityOnly(p)};cards.push(r);byId.set(p.id,r);}return r;});rows.forEach(r=>grouped.add(r));
       const included=rows.filter(r=>r.quantity>0);
-      box.append(node('p',included.length?`Included by your review: ${included.map(r=>`${r.quantity} × ${r.identity?.name || 'card'}`).join(', ')}. User correction; not verified seller contents.`:'Not included · choose a printing and quantity to include it.'));
+      const includedText=node('p',includedSummary(rows));includedText.dataset.included=entry.key;box.append(includedText);
+      const allocation=node('p',allocationStatus(entry,rows));allocation.dataset.allocation=entry.key;box.append(allocation);
       const correction=node('details');correction.dataset.correction='true';correction.append(node('summary','Correct identity and quantity'));
       const options=node('div');correction.append(options);
       const draw=()=>{
@@ -141,7 +149,7 @@
         rows.forEach(r=>{const choice=node('option',printingLabel(r.identity));choice.value=r.printing_id;picker.append(choice);});
         picker.value=included[0]?.printing_id || (rows.length===1?rows[0].printing_id:'');
         label.append(picker);options.append(label,editor);
-        const show=()=>{editor.replaceChildren();const selected=rows.find(r=>r.printing_id===picker.value);if(selected)renderCardRows(editor,[selected]);};
+        const show=()=>{editor.replaceChildren();const selected=rows.find(r=>r.printing_id===picker.value);renderCardRows(editor,rows.filter(r=>r.quantity>0 || r===selected));};
         picker.onchange=show;show();
       };
       correction.addEventListener('toggle',()=>{if(correction.open)draw();});
@@ -158,8 +166,8 @@
       const p=r.identity || {}, heading=node('h3', `${p.name || 'Selected card'} · ${p.set_name || ''} #${p.collector_number || ''} · ${[p.edition,p.finish,p.variant].filter(Boolean).join(' / ')}`);
       artwork(box,p);const content=node('div');content.className='review-card-content';content.append(heading);const grid=node('div');grid.className='traits';
       const includeLabel=node('label'), include=node('input');include.type='checkbox';include.dataset.printing=r.printing_id;include.checked=r.quantity>0;includeLabel.className='review-include';includeLabel.append(include,node('span',r.quantity>0?'Included':'Include this proposed card'));grid.append(includeLabel);
-      include.onchange=()=>{r.quantity=include.checked?Math.max(1,r.quantity,contents.find(e=>e.candidates.some(c=>c.id===r.printing_id))?.quantity || 1):0;rememberCard(r,'quantity',r.quantity);exclusive(r);renderCards();changed();[...$('review-cards').querySelectorAll('.review-include input')].find(i=>i.dataset.printing===r.printing_id)?.focus();};
-      const q=input(grid,'Cards inside this one lot',r.quantity,v=>{r.quantity=v;rememberCard(r,'quantity',v);exclusive(r);include.checked=v>0;includeLabel.lastChild.textContent=v>0?'Included':'Include this proposed card';},'number');q.min='0';q.max='100000';q.dataset.quantity=r.printing_id;
+      include.onchange=()=>{r.quantity=include.checked?Math.max(1,r.quantity):0;rememberCard(r,'quantity',r.quantity);renderCards();changed();[...$('review-cards').querySelectorAll('.review-include input')].find(i=>i.dataset.printing===r.printing_id)?.focus();};
+      const q=input(grid,'Cards inside this one lot',r.quantity,v=>{r.quantity=v;rememberCard(r,'quantity',v);include.checked=v>0;includeLabel.lastChild.textContent=v>0?'Included':'Include this proposed card';for(const entry of contents){const status=[...$('review-cards').querySelectorAll('[data-allocation]')].find(n=>n.dataset.allocation===entry.key);if(status)status.textContent=allocationStatus(entry,cards.filter(c=>entry.candidates.some(p=>p.id===c.printing_id)));}},'number');q.min='0';q.max='100000';q.dataset.quantity=r.printing_id;
       const attributes=node('details'), attributeGrid=node('div');attributeGrid.className='traits';attributes.append(node('summary',`${r.grade==='raw'?'Ungraded':r.grade?('Grade '+r.grade):'Unpriced'} · optional card details`),attributeGrid);
       select(attributeGrid,'Value basis',r.grade,[['raw','Ungraded'],['','Unknown / unpriced'],['8','Grade 8'],['9','Grade 9'],['10','Grade 10']],v=>{r.grade=v;attributes.querySelector('summary').textContent=`${v==='raw'?'Ungraded':v?('Grade '+v):'Unpriced'} · optional card details`;});
       select(attributeGrid,'Literal grader',r.grader,[['','Unknown / not graded'],['PSA','PSA'],['BGS','BGS'],['CGC','CGC'],['SGC','SGC']],v=>r.grader=v);
@@ -168,18 +176,44 @@
       select(attributeGrid,'Edition claim',r.edition,[['','Unknown'],['unlimited','Unlimited'],['first_edition','First edition']],v=>r.edition=v);
       select(attributeGrid,'Finish claim',r.finish,[['','Unknown'],['normal','Non-holo'],['holo','Holo'],['reverse_holo','Reverse holo']],v=>r.finish=v);
       attributes.append(node('p','Claims remain unverified. Generic guides are independent scenarios, not exact slab matches.'));content.append(grid,attributes);
-      const actions=node('div');actions.className='discovery-actions';const correct=node('button','Correct card');correct.type='button';correct.className='secondary';correct.onclick=()=>{correcting=index;correctingEntry=contents.find(e=>e.candidates.some(c=>c.id===r.printing_id))?.key || null;$('check-query').value=[p.name,p.set_name,p.collector_number].filter(Boolean).join(' ');$('check-query').focus();say('Find the correct card below, then choose its printing.');};actions.append(correct);
-      const remove=node('button','Remove card');remove.type='button';remove.className='secondary';remove.onclick=()=>{authoredCards.delete(r.printing_id);if(contents.some(e=>e.candidates.some(p=>p.id===r.printing_id)))r.quantity=0;else cards.splice(index,1);renderCards();changed();$('check-query').focus();};actions.append(remove);content.append(actions);box.append(content);host.append(box);
+      const actions=node('div');actions.className='discovery-actions';const correct=node('button','Find a different printing');correct.type='button';correct.className='secondary';correct.onclick=()=>{correcting=index;correctingEntry=contents.find(e=>e.candidates.some(c=>c.id===r.printing_id))?.key || null;$('check-query').value=[p.name,p.set_name,p.collector_number].filter(Boolean).join(' ');$('check-query').focus();say('Quantity and detail edits save automatically. Search below to replace this printing.');};actions.append(correct);
+      const remove=node('button','Remove card');remove.type='button';remove.className='secondary';remove.onclick=()=>{if(contents.some(e=>e.candidates.some(p=>p.id===r.printing_id))){r.quantity=0;rememberCard(r,'quantity',0);}else cards.splice(index,1);renderCards();changed();$('check-query').focus();};actions.append(remove);content.append(actions);box.append(content);host.append(box);
     });count();
   }
+  let batchPlan=[];
+  function resetBatch(){batchPlan=[];$('batch-confirm').hidden=true;$('batch-preview').replaceChildren();}
+  $('batch-plan').onclick=()=>{
+    resetBatch();const selected=new Set([...$('review-cards').querySelectorAll('[data-shared-entry]:checked')].map(n=>n.dataset.sharedEntry));
+    const claims=Object.fromEntries(['language','edition','finish','condition'].map(k=>[k,$('batch-'+k).value.trim()]));
+    const setName=$('batch-set').value.trim().toLocaleLowerCase();
+    for(const entry of contents.filter(e=>selected.has(e.key))){
+      const matches=entry.candidates.filter(p=>(!setName || p.set_name.toLocaleLowerCase()===setName) && ['language','edition','finish'].every(k=>!claims[k] || p[k]===claims[k]));
+      if(matches.length!==1 || !entry.quantity || entry.reasons.some(r=>/conflict|contradict|does not establish/i.test(r))){$('batch-preview').append(node('p',`${entry.name}: still needs individual identity, quantity or conflict review.`));continue;}
+      const p=matches[0];batchPlan.push({entry:entry.key,p,quantity:entry.quantity,claims});
+      $('batch-preview').append(node('p',`Confirm ${entry.quantity} × ${printingLabel(p)}${claims.condition?' · condition claim '+claims.condition:''}. This replaces this entry’s current allocation.`));
+    }
+    if(!selected.size)$('batch-preview').append(node('p','Select the entries sharing these traits first.'));
+    $('batch-confirm').hidden=!batchPlan.length;
+  };
+  $('batch-confirm').onclick=()=>{
+    for(const plan of batchPlan){
+      const entry=contents.find(e=>e.key===plan.entry);if(!entry)continue;
+      for(const row of cards.filter(r=>entry.candidates.some(p=>p.id===r.printing_id))){row.quantity=0;rememberCard(row,'quantity',0);}
+      const row=cards.find(r=>r.printing_id===plan.p.id);row.quantity=plan.quantity;rememberCard(row,'quantity',row.quantity);
+      for(const [k,v] of Object.entries(plan.claims))if(v){row[k]=v;rememberCard(row,k,v);}
+      entry.evidence.push({provenance:'User confirmation',source_field:'Shared-trait review',text:`Confirmed ${plan.quantity} copies of ${printingLabel(plan.p)} after reviewing shared traits.`});
+    }
+    resetBatch();renderCards();changed();say('Previewed allocations confirmed. Remaining entries still need individual review. Seller claims remain unverified.');
+  };
+  for(const id of ['batch-set','batch-language','batch-edition','batch-finish','batch-condition'])$(id).addEventListener('input',resetBatch);
   async function applyReview(value, identities=[]) {
-    reviewDirty=false;contents=value.contents || [];authoredCards.clear();
+    reviewDirty=false;resetBatch();contents=value.contents || [];authoredCards.clear();
     for(const key of Object.keys(authoredFields))delete authoredFields[key];
     for(const key of value.authored_fields || [])authoredFields[key]=value[key];
     for(const r of value.cards)for(const key of r.authored_fields || [])rememberCard(r,key,r[key]);
     detailRun = value.detail_run || null;discoveryOrigin=value.discovery_origin || null;buyNowPrice=value.buy_now_price || '';buyNowCurrency=value.buy_now_currency || '';correcting=null;correctingEntry=null;sellerCardCount=value.seller_card_count ?? null;lotUnits=value.lot_units ?? null;stockQuantity=value.stock_quantity ?? null;remainderAuto=value.remainder_auto===true;
     $('review-price-kind').value=value.price_kind || 'current_asking_price';
-    for(const f of fields) $('review-'+f).value = value[f === 'url' ? 'listing_url' : f] ?? '';
+    for(const f of fields) $('review-'+f).value = value[f === 'url' ? 'listing_url' : f] ?? ({budget_mode:'limit',budget_value_basis:'collectible',decision:'reviewing'}[f] || '');
     $('review-unknown').value=value.unknown_contents ?? '';
     const ids=value.cards.map(r=>r.printing_id);
     if(ids.length && !identities.length) {
@@ -227,6 +261,7 @@
     $('listing-preview-heading').textContent=value.discovery_origin?'Selected temporary offer':'Loaded listing';
     out.replaceChildren(node('p',`Exact item: ${value.item_id}`),node('p',`${kind}: ${value.price.amount ?? 'Unknown'} ${value.price.currency ?? ''} · Shipping: ${value.shipping.amount ?? 'Unknown'} ${value.shipping.currency ?? ''}`));
     if(value.price_kind==='current_bid' && value.buy_now?.amount!==null && value.buy_now?.amount!==undefined)out.append(node('p',`Separate buy-now asking price: ${value.buy_now.amount} ${value.buy_now.currency}. Current bid is not the final purchase cost.`));
+    if(value.condition_description)out.append(node('p','Seller condition description: '+value.condition_description));
     out.append(node('p',`Seller-stated card count: ${value.seller_lot_size ?? 'Unknown'} · eBay lot units (not necessarily cards): ${value.api_lot_size ?? 'Unknown'} · Listing stock: ${value.stock_quantity ?? 'Unknown'}`),node('p',`Condition claim: ${value.condition || 'Unknown'}`),node('p',`Identity cautions: ${value.clues.conflicts.join('; ') || 'Attributes remain seller claims'}`),node('p',`${value.contents?.length || 0} contents entries. Printing alternatives remain unverified.`));
     const d=node('details');d.append(node('summary','Seller-stated item specifics'));
     value.aspects.forEach(a=>d.append(node('p',a.name+': '+a.value)));out.append(d);
@@ -307,7 +342,7 @@
     const p=preview;
     // Ambiguous identities remain excluded. Stock is deliberately never used here.
     const currency=p.price.currency || p.shipping.currency || p.buy_now?.currency || 'USD';
-    const value={budget:collectionContext?.choices?.budget ?? '',contents:p.contents || [],seller_card_count:p.seller_lot_size ?? null,lot_units:p.api_lot_size===null || p.api_lot_size===undefined?null:Number(p.api_lot_size),stock_quantity:p.stock_quantity ?? null,remainder_auto:p.seller_lot_size!==null && p.seller_lot_size!==undefined,detail_run:p.detail_run || null,discovery_origin:p.discovery_origin || null,price_kind:p.price_kind || 'current_asking_price',planned_bid:'',buy_now_price:p.price_kind==='current_bid' ? p.buy_now?.amount || '' : '',buy_now_currency:p.buy_now?.currency || '',title:p.title,listing_url:p.item_url,price:p.price.amount || '',currency,shipping:p.shipping.currency===currency ? p.shipping.amount || '' : '',tax:'',other_costs:'',unknown_contents:'unknown_contents' in p ? p.unknown_contents : p.seller_lot_size,cards:(p.proposals || []).filter(row=>row.quantity>0).map(row=>({printing_id:row.id,quantity:row.quantity,grade:row.grade || 'raw',grader:row.grader || '',condition:row.condition || '',language:row.language || '',edition:row.edition || '',finish:row.finish || ''}))};
+    const value={budget:$('review-budget').value || collectionContext?.choices?.budget || '',budget_mode:collectionContext?.choices?.budget_mode || $('review-budget_mode').value || 'limit',budget_rule:$('review-budget_rule').value || collectionContext?.choices?.budget_rule || '',budget_value_basis:collectionContext?.choices?.budget_value_basis || $('review-budget_value_basis').value || 'collectible',contents:p.contents || [],seller_card_count:p.seller_lot_size ?? null,lot_units:p.api_lot_size===null || p.api_lot_size===undefined?null:Number(p.api_lot_size),stock_quantity:p.stock_quantity ?? null,remainder_auto:p.seller_lot_size!==null && p.seller_lot_size!==undefined,detail_run:p.detail_run || null,discovery_origin:p.discovery_origin || null,price_kind:p.price_kind || 'current_asking_price',planned_bid:'',buy_now_price:p.price_kind==='current_bid' ? p.buy_now?.amount || '' : '',buy_now_currency:p.buy_now?.currency || '',title:p.title,listing_url:p.item_url,price:p.price.amount || '',currency,shipping:p.shipping.currency===currency ? p.shipping.amount || '' : '',tax:'',other_costs:'',unknown_contents:'unknown_contents' in p ? p.unknown_contents : p.seller_lot_size,cards:(p.proposals || []).filter(row=>row.quantity>0).map(row=>({printing_id:row.id,quantity:row.quantity,grade:row.grade || 'raw',grader:row.grader || '',condition:row.condition || '',language:row.language || '',edition:row.edition || '',finish:row.finish || ''}))};
     await applyReview(value,p.proposals);preview=null;$('listing-preview').hidden=true;$('review-editor').open=true;$('review-heading').focus({preventScroll:true});$('review-editor').scrollIntoView({block:'start'});
     try{reviewDirty=true;await persist();say('Details applied. Correct the cards and quantities, then compare.');}catch(e){say(e.message,true);}
   };
@@ -322,7 +357,7 @@
         if(replacement){authoredCards.delete(replacement.printing_id);if(existing && existing!==replacement){existing.quantity+=replacement.quantity;cards.splice(correcting,1);}else cards[correcting]={...replacement,printing_id:p.id,identity:p};correcting=null;}
         else if(existing)existing.quantity+=1;
         else cards.push({printing_id:p.id,quantity:1,grade:'raw',grader:'',condition:'',language:'',edition:'',finish:'',identity:p});
-        const entry=contents.find(e=>e.key===correctingEntry);if(entry){if(!entry.candidates.some(c=>c.id===p.id))entry.candidates.push(Object.fromEntries(Object.entries(identityOnly(p)).filter(([k])=>k!=='artwork')));entry.evidence.push({provenance:'User correction',source_field:'local selection',text:`Selected ${p.name} · ${p.set_name} #${p.collector_number}`});}const chosen=cards.find(r=>r.printing_id===p.id);rememberCard(chosen,'quantity',chosen.quantity);exclusive(chosen);correctingEntry=null;
+        const entry=contents.find(e=>e.key===correctingEntry);if(entry){if(!entry.candidates.some(c=>c.id===p.id))entry.candidates.push(Object.fromEntries(Object.entries(identityOnly(p)).filter(([k])=>k!=='artwork')));entry.evidence.push({provenance:'User correction',source_field:'local selection',text:`Selected ${p.name} · ${p.set_name} #${p.collector_number}`});}const chosen=cards.find(r=>r.printing_id===p.id);rememberCard(chosen,'quantity',chosen.quantity);correctingEntry=null;
         renderCards();changed();say('Card included with Ungraded value basis. Review its quantity and optional details.');};$('check-matches').append(b);});
     }catch(e){say(e.message,true);}
   };
@@ -409,6 +444,7 @@
       const usd=v=>v==null?'Unavailable':`$${v}`;
       const charge=v=>v ? `${v} ${data.currency}` : 'unknown';
       const out=$('check-results');out.replaceChildren(node('h2','Reviewed comparison'));
+      if(data.budget_mode==='flexible')out.append(node('p',`Baseline ${usd(data.budget || null)} all-in. ${data.budget_rule ? 'Your exception rule: '+data.budget_rule+'. ' : 'No exception rule specified. '}Higher-price exception is not established by this comparison; review complete contents, all costs and applicable value evidence. ${data.budget_value_basis==='resale'?'Subtract selling fees, postage and other resale costs; guide value is not net proceeds.':'Collectible value is not guaranteed resale proceeds.'}`));
       const b=value.benchmark;
       if(b){
         const part=node('section');part.className='review-benchmark';
@@ -501,7 +537,7 @@
   addEventListener('pagehide',()=>{clearOffer();if(active){persist(true).catch(()=>{});if(run && loading){request(`/api/shopping/listing/${run}/stop/`,{},true).catch(()=>{});}++loadVersion;}});
   addEventListener('pageshow',event=>{if(event.persisted)location.reload();});
   $('manual-entry').addEventListener('click',()=>{$('review-editor').open=true;});
-  root.querySelectorAll('input,button,select').forEach(n=>n.disabled=true);
+  root.querySelectorAll('input,button,select,textarea').forEach(n=>n.disabled=true);
   async function selectedOffer(){
     const value=await request('/api/shopping/listing/candidate/?'+new URLSearchParams(entry));
     return {value,deadline:Date.now()+value.expires_in_seconds*1000};
@@ -538,10 +574,15 @@
         if(Date.now()>=selected.deadline)throw Error('The temporary offer expired. Reopen Shopping to continue.');
         const picked=selected.value;previewDeadline=selected.deadline;sourceDeadline=previewDeadline;
         sourceOrigin=picked.listing.discovery_origin;sourceItem=picked.listing.item_id;
-        $('listing-identifier').value=sourceItem;$('load-listing').textContent='Load additional official details';
+        $('listing-identifier').value=sourceItem;$('load-listing').textContent='Load full seller details';
         showPreview(picked.listing);showContext(picked.context);say('');
+        if(picked.saved_review){
+          retentionDeadline=Math.min(retentionDeadline,Date.now()+picked.review_expires_in_seconds*1000);
+          await applyReview(picked.saved_review);reviewDirty=true;await persist();
+          $('review-editor').open=true;say('This lot’s temporary review and decision were restored. Original expiry is unchanged.');
+        }
       }
-    }catch(e){say(e.message,true);}finally{if(active){root.querySelectorAll('input,button,select').forEach(n=>n.disabled=false);setLoading(loading || detailUnknown);}}
+    }catch(e){say(e.message,true);}finally{if(active){root.querySelectorAll('input,button,select,textarea').forEach(n=>n.disabled=false);setLoading(loading || detailUnknown);}}
   }
   $('check-reload').addEventListener('click',restoreSection);
   restoreSection();

@@ -1,0 +1,28 @@
+{% if lot_usage_owner %}
+  <section id="hunter-usage" class="hunter-usage" aria-labelledby="hunter-usage-title">
+    <h2 id="hunter-usage-title">Lot search allowance</h2>
+    <button id="lot-usage-refresh" type="button" class="secondary">Refresh allowance</button>
+    <p id="hunter-usage-status" role="status" aria-live="polite">Checking your selected limits…</p>
+    <p id="hunter-usage-capacity"></p>
+    <details id="hunter-usage-settings"><summary>Usage settings</summary>
+      <p>Set a limit for each Hunt and for the day. Searches, official details and provider sign-in each count as operations, including failed or stopped attempts.</p>
+      <p id="hunter-usage-window" class="hunter-note"></p>
+      <form id="hunter-usage-form">
+        <div class="discovery-controls">
+          <label for="hunter-usage-enabled">Acquisition<select id="hunter-usage-enabled" required><option value="">Choose enabled or paused</option><option value="true">Enabled</option><option value="false">Paused</option></select></label>
+          <label for="hunter-usage-per-hunt">Operations per Hunt<input id="hunter-usage-per-hunt" type="number" min="1" max="15" step="1" required inputmode="numeric" aria-describedby="hunter-usage-bounds"></label>
+          <label for="hunter-usage-daily">Operations across all Hunts per day<input id="hunter-usage-daily" type="number" min="1" max="1000" step="1" required inputmode="numeric" aria-describedby="hunter-usage-bounds"></label>
+          <label for="hunter-usage-timezone">Daily window timezone<select id="hunter-usage-timezone" required><option value="">Choose a timezone</option><option value="America/New_York">Eastern Time (New York)</option><option value="America/Chicago">Central Time (Chicago)</option><option value="America/Denver">Mountain Time (Denver)</option><option value="America/Phoenix">Arizona Time (Phoenix)</option><option value="America/Los_Angeles">Pacific Time (Los Angeles)</option><option value="America/Anchorage">Alaska Time (Anchorage)</option><option value="Pacific/Honolulu">Hawaii Time (Honolulu)</option><option value="UTC">Coordinated Universal Time (UTC)</option></select></label>
+          <label for="hunter-usage-recurring">New daily capacity<select id="hunter-usage-recurring" required><option value="">Choose once or recurring</option><option value="false">This daily window only</option><option value="true">Repeat each day until paused or expired</option></select></label>
+          <label for="hunter-usage-expiry-mode">Policy expiry<select id="hunter-usage-expiry-mode" required><option value="">Choose an expiry</option><option value="none">Until paused</option><option value="at">At a chosen date and time</option></select></label>
+          <label id="hunter-usage-expiry-label" for="hunter-usage-expiry" hidden>Stop at (your browser’s local time)<input id="hunter-usage-expiry" type="datetime-local"></label>
+        </div>
+        <p id="hunter-usage-bounds" class="hunter-note">1–15 operations per Hunt; 1–1,000 per day, shared across all tabs. Editing limits or timezone does not reset consumed usage.</p>
+        <p class="hunter-note">New daily capacity starts at local midnight only if you select repeat each day. Browsing results, revealing sellers and reviewing comparisons use no operations.</p>
+        <div class="hunter-actions"><button id="hunter-usage-save" type="submit" class="primary">Save usage settings</button><button id="hunter-usage-pause" type="button" disabled>Pause acquisition now</button></div>
+        <p id="hunter-usage-feedback" role="status" aria-live="polite"></p>
+      </form>
+    </details>
+  </section>
+{% endif %}
+<script src="/collection-assets/lot_usage.js" defer></script>

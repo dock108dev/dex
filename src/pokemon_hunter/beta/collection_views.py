@@ -156,6 +156,8 @@ def asset(request, filename):
         "species-screens.js",
         "shopping.js",
         "listing_check.js",
+        "lot_usage.js",
+        "lot_journal.js",
         "listing_check.css",
         "discovery.js",
         "discovery-display.js",

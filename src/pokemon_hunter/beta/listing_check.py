@@ -40,6 +40,83 @@ from .listing_details import parse_identifier as parse_identifier
 from .listing_details import validate_response as validate_response
 
 _reviews = {}
+_review_history = {}
+
+
+def _remember_review(owner, created, value):
+    origin = value.get("discovery_origin")
+    if not origin:
+        return
+    key = (origin["run_id"], origin["result_id"])
+    rows = _review_history.setdefault(owner, {})
+    old = rows.get(key)
+    created = min(created, old[0]) if old else created
+    rows[key] = (created, deepcopy(value))
+    while len(rows) > 20:
+        del rows[next(iter(rows))]
+
+    def erase():
+        with d._lock:
+            current = _review_history.get(owner, {}).get(key)
+            if current and current[0] <= created:
+                _review_history[owner].pop(key, None)
+            if not _review_history.get(owner):
+                _review_history.pop(owner, None)
+
+    # Only the first save schedules erasure. Subsequent saves cannot renew it.
+    if not old or created < old[0]:
+        timer = Timer(max(0, created + d.EPHEMERAL_SECONDS - time.monotonic()), erase)
+        timer.daemon = True
+        timer.start()
+
+
+def _retained_lease(owner, key):
+    # The review was already admitted. Recheck its lease without recomputing
+    # valuations or granting an additional assessment on a journal read.
+    run = d._lookup_owned(owner, key[0])
+    with run.lock:
+        return d._summary_lease(run, key[1])
+
+
+def _retained_reviews(actor, session, selected=None):
+    owner = d._owner(actor, session)
+    with d._lock:
+        history = _review_history.get(owner, {})
+        rows = deepcopy({selected: history[selected]} if selected in history else {} if selected else history)
+        kept = {}
+        for key, (created, value) in rows.items():
+            try:
+                if time.monotonic() >= created + d.EPHEMERAL_SECONDS:
+                    raise ValueError("Review expired")
+                _retained_lease(owner, key)
+                if value.get("detail_run"):
+                    detail = d._lookup_owned(owner, value["detail_run"])
+                    if detail.cancel.is_set() or detail.state != "complete":
+                        raise ValueError("Details unavailable")
+                kept[key] = (created, value)
+            except (ValueError, Http404):
+                _review_history.get(owner, {}).pop(key, None)
+        return kept
+
+
+def journal(actor, session):
+    return dict(
+        entries=[
+            dict(
+                run_id=key[0],
+                result_id=key[1],
+                title=value.get("title", "Reviewed lot"),
+                decision=value.get("decision", "reviewing"),
+                notes=value.get("decision_notes", ""),
+                budget=value.get("budget", ""),
+                budget_mode=value.get("budget_mode", "limit"),
+                budget_rule=value.get("budget_rule", ""),
+                budget_value_basis=value.get("budget_value_basis", "collectible"),
+                expires_in_seconds=max(0, int(created + d.EPHEMERAL_SECONDS - time.monotonic())),
+            )
+            for key, (created, value) in _retained_reviews(actor, session).items()
+        ]
+    )
 
 
 class AdmissionRefused(ValueError):
@@ -289,16 +366,33 @@ def _context(source, actor=None, review=None):
         if actor and source["choices"].get("collection_intent")
         else None
     )
+    label = source.get("scope_label") or (
+        "Find deals · owned cards included"
+        if source["choices"].get("intent") == "deals"
+        else "Current collection · Original 151 · missing species"
+    )
+    choices = dict(source["choices"])
+    if review is not None:
+        for key in ("budget", "budget_mode", "budget_rule", "budget_value_basis"):
+            if key in review:
+                choices[key] = review[key]
+        if any(
+            choices.get(k) != source["choices"].get(k)
+            for k in ("budget", "budget_mode", "budget_rule", "budget_value_basis")
+        ):
+            label = (
+                "Search: "
+                + label
+                + " · Review policy override: "
+                + (choices.get("budget") or "not set")
+                + " USD "
+                + ("baseline" if choices.get("budget_mode") == "flexible" else "limit")
+            )
     return dict(
         collection_fit=fit,
-        choices=source["choices"],
+        choices=choices,
         scope=d.goal_hunts.public(source["scope"]),
-        scope_label=source.get("scope_label")
-        or (
-            "Find deals · owned cards included"
-            if source["choices"].get("intent") == "deals"
-            else "Current collection · Original 151 · missing species"
-        ),
+        scope_label=label,
         selected_target=selected,
     )
 
@@ -352,7 +446,12 @@ def candidate(actor, session, run_id, result_id):
     current_source = d.review_candidate(actor, session, run_id, result_id)
     if any(current_source.get(k) != source.get(k) for k in ("raw", "detail", "content_revision", "created")):
         raise ValueError("Listing evidence changed during review; reopen the current assessment")
+    retained = _retained_reviews(actor, session, (run_id, result_id)).get((run_id, result_id))
     return dict(
+        saved_review=deepcopy(retained[1]) if retained else None,
+        review_expires_in_seconds=max(0, int(retained[0] + d.EPHEMERAL_SECONDS - time.monotonic()))
+        if retained
+        else None,
         listing=value,
         restore_cards=restore_cards,
         expires_in_seconds=source["expires_in_seconds"],
@@ -402,6 +501,7 @@ def review(actor, session, value=None, lease=None):
                 raise ValueError("This temporary review expired. Your edits remain on screen.")
             previous_created = current[0]
             _reviews[owner] = (created, deepcopy(value), current[2])
+            _remember_review(owner, created, value)
             if created < previous_created:
                 timer = Timer(
                     max(0, created + d.EPHEMERAL_SECONDS - time.monotonic()),
@@ -474,6 +574,11 @@ def validate_review(actor, value):
             "discovery_origin",
             "price_kind",
             "budget",
+            "budget_mode",
+            "budget_rule",
+            "decision",
+            "decision_notes",
+            "budget_value_basis",
             "tax_rate",
             "planned_bid",
             "buy_now_price",
@@ -498,12 +603,27 @@ def validate_review(actor, value):
             "tax",
             "other_costs",
             "budget",
+            "budget_mode",
+            "budget_rule",
+            "decision",
+            "decision_notes",
+            "budget_value_basis",
             "tax_rate",
             "planned_bid",
             "unknown_contents",
             "price_kind",
         },
     )
+    if value.get("budget_mode", "limit") not in {"limit", "flexible"} or value.get(
+        "budget_value_basis", "collectible"
+    ) not in {"collectible", "resale"}:
+        raise ValueError("Choose a supported budget policy and value basis.")
+    if not isinstance(value.get("budget_rule", ""), str) or len(value.get("budget_rule", "")) > 200:
+        raise ValueError("Use an exception rule up to 200 characters.")
+    if value.get("decision", "reviewing") not in {"reviewing", "shortlisted", "needs_evidence", "passed"}:
+        raise ValueError("Choose a supported decision.")
+    if not isinstance(value.get("decision_notes", ""), str) or len(value.get("decision_notes", "")) > 1000:
+        raise ValueError("Use decision notes up to 1000 characters.")
     shopping_contents.validate(value.get("contents", []))
     for key in (
         "title",

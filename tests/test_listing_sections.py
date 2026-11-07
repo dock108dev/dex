@@ -248,3 +248,33 @@ def test_structured_regular_finish_selects_one_supported_card_without_inventing_
     raw["localizedAspects"] = [a for a in raw["localizedAspects"] if a["name"] != "Finish"]
     raw["shortDescription"] += " Regular customer service."
     assert parser.parse(raw, entries)["included_quantity"] == 0
+
+
+def test_named_family_total_and_subgroup_prose_do_not_invent_cards():
+    raw = sample()
+    raw["title"] = "Lapras card bundle"
+    raw["shortDescription"] = "Four Lapras cards. Two are moderately played. Ships in 2 business days."
+    raw["description"] = raw["shortDescription"]
+    raw["localizedAspects"] = []
+    value = parser.parse(raw, catalog(), detail=raw, complete_candidates=True)
+    assert value["seller_stated_totals"] == [4]
+    assert value["unresolved_contents"] == []
+    assert value["included_quantity"] == 0
+
+
+def test_named_subtotals_do_not_override_whole_lot_total():
+    assert parser._totals(
+        "Lot of 6. Includes two Lapras cards and four Moltres cards.", {"Lapras", "Moltres"}
+    ) == {6}
+
+
+def test_scoped_condition_is_retained_without_authenticating_it():
+    raw = sample()
+    raw["description"] = raw["description"].replace(
+        "Card Number: 10/62", "Card Number: 10/62\n  - Condition: Moderately Played"
+    )
+    raw["conditionDescription"] = "See individual condition claims in the contents list."
+    value = parser.parse(raw, catalog(), detail=raw, complete_candidates=True)
+    selected = [p for p in value["proposals"] if p["printing_id"] == "child-10"]
+    assert selected and selected[0]["clues"]["condition"] == "MP"
+    assert value["source_fields"]["official_condition"] == raw["conditionDescription"]

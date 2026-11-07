@@ -115,7 +115,10 @@ def details(identifier, raw, *, source_kind="official_detail"):
     item = validate_response(identifier, raw)
     from .hunter_lot_parser import MAX_TEXT_BYTES
 
-    text = [raw.get(k, "") for k in ("title", "shortDescription", "description", "condition")]
+    text = [
+        raw.get(k, "")
+        for k in ("title", "shortDescription", "description", "condition", "conditionDescription")
+    ]
     if any(not isinstance(v, str) for v in text) or sum(len(v.encode()) for v in text) > MAX_TEXT_BYTES:
         raise ValueError("Seller text exceeds the bounded contents review; review manually")
     aspects = [
@@ -209,6 +212,7 @@ def details(identifier, raw, *, source_kind="official_detail"):
         **listing_prices.prices(raw),
         shipping=listing_prices.detail_shipping(raw),
         condition=condition[:1000].strip(),
+        condition_description=_text(raw.get("conditionDescription"), 2000),
         aspects=aspects,
         seller_lot_size=size,
         api_lot_size=raw.get("lotSize")

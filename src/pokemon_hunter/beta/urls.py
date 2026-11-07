@@ -106,6 +106,7 @@ if settings.B2_ENABLED:
         path("api/shopping/discovery/", discovery_views.searches),
         path("api/shopping/hunter/", hunter_views.hunts),
         path("api/shopping/hunter/usage/", hunter_views.usage),
+        path("api/shopping/listing/journal/", listing_views.journal),
         path("api/shopping/hunter/catalog/", hunter_views.catalog),
         path("api/shopping/hunter/<uuid:run>/stop/", hunter_views.stop),
         path("api/shopping/hunter/<uuid:run>/continue/", hunter_views.continuation),

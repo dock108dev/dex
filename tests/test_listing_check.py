@@ -846,3 +846,94 @@ def test_explicit_negative_grading_claim_does_not_make_raw_cards_graded(claim):
     assert "No supported literal grader and grade combination" not in clues["conflicts"]
     positive = dc._clues(dict(title="Authored PSA 10 card", shortDescription=claim))
     assert positive["graded"] and positive["grade"] == "10" and positive["grader"] == "PSA"
+
+
+def test_review_journal_keeps_separate_decisions_original_expiry_and_stop(workspace, monkeypatch):
+    import uuid
+
+    from django.http import Http404
+
+    actor, p = workspace["actor"], workspace["catalog"][0]
+    c._reviews.clear()
+    c._review_history.clear()
+    origin = dict(run_id=str(uuid.uuid4()), result_id="j" * 24)
+    created = time.monotonic() - 200
+    available = [True]
+
+    def source(who, session, run_id, result_id):
+        if not available[0] or session != "journal-session":
+            raise Http404
+        return dict(
+            raw=raw(),
+            choices=dict(intent="deals", budget="120", budget_mode="flexible"),
+            scope=None,
+            created=created,
+            expires_in_seconds=1600,
+        )
+
+    monkeypatch.setattr(d, "review_candidate", source)
+    monkeypatch.setattr(c, "_retained_lease", lambda owner, key: source(actor, owner[2], *key))
+    opened = c.review(actor, "journal-session")
+    value = review_value(
+        p,
+        discovery_origin=origin,
+        budget="125",
+        budget_mode="flexible",
+        budget_rule="Supported upside",
+        budget_value_basis="collectible",
+        decision="needs_evidence",
+        decision_notes="Tax and remaining cards need checking.",
+    )
+    saved = c.review(actor, "journal-session", value, opened["lease"])
+    assert "Review policy override: 125 USD baseline" in saved["context"]["scope_label"]
+    assert saved["context"]["choices"]["budget"] == "125"
+    entry = c.journal(actor, "journal-session")["entries"][0]
+    assert entry["decision"] == "needs_evidence"
+    assert 1597 <= entry["expires_in_seconds"] <= 1600
+    assert c.journal(actor, "another-session")["entries"] == []
+    c.review(actor, "journal-session", dict(value, decision="shortlisted"), opened["lease"])
+    assert (
+        c.journal(actor, "journal-session")["entries"][0]["expires_in_seconds"] <= entry["expires_in_seconds"]
+    )
+    available[0] = False
+    assert c.journal(actor, "journal-session")["entries"] == []
+    assert not c._review_history.get(d._owner(actor, "journal-session"))
+
+
+def test_review_budget_and_decision_inputs_are_bounded(workspace):
+    p = workspace["catalog"][0]
+    for changes in [
+        dict(budget_mode="automatic"),
+        dict(budget_value_basis="guaranteed"),
+        dict(budget_rule="x" * 201),
+        dict(decision="buy-now"),
+        dict(decision_notes="x" * 1001),
+    ]:
+        with pytest.raises(ValueError):
+            c.validate_review(workspace["actor"], review_value(p, **changes))
+
+
+def test_split_family_allocations_reconcile_without_exclusivity(monkeypatch):
+    from pokemon_hunter.beta import lot_assessment, shopping_contents
+
+    candidates = [
+        dict(id="a", name="Moltres", collector_number="12"),
+        dict(id="b", name="Moltres", collector_number="27"),
+    ]
+    monkeypatch.setattr(
+        shopping_contents,
+        "project",
+        lambda offer, entries: [dict(name="Moltres", candidates=candidates, quantity=4, reasons=[])],
+    )
+    monkeypatch.setattr(c.dc, "_identity_conflicts", lambda *args: [])
+    offer = dict(seller_lot_size=4, clues=dict(conflicts=[], condition_claims=[], graded=False))
+    included = {p["id"]: dict(printing_id=p["id"], quantity=q) for p, q in zip(candidates, [1, 3])}
+    issues, disputed = lot_assessment.seller_constraints(
+        [offer], {p["id"]: p for p in candidates}, included, 4
+    )
+    assert not issues and not disputed
+    included["b"]["quantity"] = 4
+    issues, disputed = lot_assessment.seller_constraints(
+        [offer], {p["id"]: p for p in candidates}, included, 5
+    )
+    assert issues and disputed == {"a", "b"}
