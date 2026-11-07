@@ -81,9 +81,13 @@ shipping, unknown costs, reference source/date/condition and coverage, your deci
 and any step you had to handle outside the app. Keep personal collection details and
 restricted source data private; use generalized examples in public documentation.
 
-The observed walkthrough produced a candidate containing a photographed vintage Lapras
-and a conditional collector-purchase decision. It did not establish a full-lot value,
-resale margin, final tax-inclusive total or a completed purchase. The corresponding
+The initial walkthrough produced a candidate containing a photographed vintage Lapras.
+The installed Moltres rerun then restored a three-card physical allocation, flexible
+baseline, authored shipping and decision notes through the temporary journal. A
+higher-priced offer remained visible but did not qualify as an exception. Both Moltres
+decisions stayed **Needs evidence** because applicable value and final costs were
+unavailable. Neither walkthrough established a full-lot value, resale margin,
+final tax-inclusive total or a completed purchase. The corresponding
 [feature backlog](lot-walkthrough-backlog-20261107.md) records the product gaps.
 
 ## Capture a useful walkthrough
@@ -93,5 +97,5 @@ allowance settings, allocation and decision steps. Embed each screenshot immedia
 under its numbered step with a caption explaining what it proves. Record the actual
 runtime and observation time privately. Never substitute a test account for the
 customer app. Capture controls and authored decisions without retaining removable
-source values, seller evidence or credentials. A screenshot does not make a dated
+source values, restricted seller evidence or credentials. A screenshot does not make a dated
 listing or reference current. Keep private collection screenshots out of public Git.

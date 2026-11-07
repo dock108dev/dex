@@ -70,4 +70,31 @@ and candidate routes (candidate p95 93.8 ms in the latest run); candidate end-to
 p95 was 276.4 ms. This is a recorded timing limitation, not a claim of a passing
 performance gate. Hosted CI and installed behavior are tracked independently.
 
-Customer installation, hosted CI and screenshot-backed Moltres rerun: pending.
+The protected existing customer installation received application commit
+`c621ea29851047a2143ee49ef0fab550694f4d8b`. The actual Moltres rerun verified
+target selection, the flexible baseline, finite usage accounting, explicit detail
+loading, one-copy allocations, cost edits, comparison, separate review status,
+the two-entry decision journal and restored review. Eleven screenshots are embedded
+at the relevant steps of the private walkthrough. Original owned-copy rows and
+consumed accounting history were preserved; no purchase, bid or inventory change.
+
+Hosted run 42405202177 identified two stale browser expectations: toggling the
+details disclosure now closed it, and the new shared-trait checkbox was mistaken
+for a physical printing selection. The browser scripts now assert the expanded
+panel, target actual printing controls and explicitly enter two copies. The full
+isolated browser script and both focused restoration/expiry tests passed locally.
+The hosted volume journey also reported candidate processing over its 60 ms
+non-SQL allowance; functional assertions completed. Hosted status is not green.
+
+## Follow-up observations from the Moltres rerun
+
+These are newly observed follow-ups, distinct from the eleven initial fixes.
+Personal screenshots, listing IDs, prices and collection details stay outside Git.
+
+| ID | Observation | Next behavior |
+| --- | --- | --- |
+| M-01 | Full item specifics named one bird while the title and photo showed three. Local search was required for the others. | Reconcile missing title candidates as unconfirmed evidence, without treating mentions as physical cards. |
+| M-02 | Source benchmark shipping remained unknown while authored cost calculations used the observed shipping. | Label provider-reported and reviewed costs clearly. |
+| M-03 | Broad printing search exposed raw variant attributes and required a more specific set query. | Readable trait labels and clearer set refinement. |
+| M-04 | No applicable normalized or condition-specific value supported the chosen lot. | Obtain qualified condition-matched evidence within source rights; preserve unknown values meanwhile. |
+| M-05 | Screenshots and the durable how-to were assembled outside Dex. | A walkthrough export with retention-aware screenshots and authored decision records. |
