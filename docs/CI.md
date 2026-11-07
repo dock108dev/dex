@@ -266,6 +266,12 @@ input metadata survive navigation. Browser scheduling, transfer, parsing and two
 animation-frame opportunities still count, with the same budgets and 20 samples.
 The seller-tab return retains its explicit close/return boundary.
 
+Automatic lot parsing, alternative-price composition and valuation use the same
+composition timing field as manual comparison. Catalog lookup and initial price
+loading happen before those spans; valuation includes its immediate evidence
+validation, while final publication checks remain outside. The unchanged total
+response budget still includes every phase.
+
 ```sh
 uv run --no-sync pytest -q tests/test_shop17_journey.py tests/test_shop17_snapshot_volume.py --disable-socket --allow-unix-socket
 ```
@@ -291,9 +297,14 @@ complete suite are outside this focused test-value review:
 | Preserve ambiguity and seller quantities | `test_shop14_contents.py` | Exact quantities, conflict reasons, complete families and source evidence prevent claims becoming confirmed contents; parser fixtures only | Strengthened formerly redundant uncertainty assertion |
 | Reconcile lost responses without redispatch | `test_shop12_recovery.py` | Same-session handles, concurrent submission and admission failure cannot replay acquisition; controlled transport | Keep |
 | Recheck value and original authority | `test_shop15_assessment.py` | Independent cent-by-cent arithmetic oracle and interleaved source withdrawal, expiry, changed review and Stop reject stale ceilings; fabricated admitted references | Keep |
-| Forty summaries remain distinct from assessed contents | `test_feedback_repair.py` | Two detailed assessments, exact authored quantities, five sends, local evidence expansion, and withdrawal/Stop/session rejection; controlled provider and authored prices | Keep; debug prints removed without weakening assertions |
+| Summary interpretation remains distinct from full seller details | `test_feedback_repair.py`, `test_lv04_integration.py` | Forty summaries can be interpreted locally while only two receive full seller details; exact authored quantities, five sends, and withdrawal/Stop/session rejection; controlled provider and authored prices | Keep; summary availability alone cannot establish identified contents or value |
+| Infer original numbered finishes without inventing seller claims | `test_listing_sections.py`, `test_lv02_variant_selection.py` | An unambiguous catalog finish carries inference evidence; conflicting language/edition and generic seller prose cannot resolve exact variants | Updated positive inference case while retaining ambiguity checks |
+| Retain withdrawn sources across late Hunt results | `test_lv06_browser.py`, `test_shop02_discovery_ui.py` | Source checks continue during acquisition; late result rendering cannot restore a withdrawn value, while bounded read recovery remains usable; controlled transport | Repaired lifecycle handling and retained withdrawal, timeout and recovery checks |
+| Preserve saved-goal return links with the full Shopping filter state | `test_cx07_navigation.py`, `test_shop13_browser_performance.py` | Accepted Shopping fields fit the bounded return parser; unknown/duplicate fields and external destinations remain rejected | Replaced the older generic field cap with Shopping's existing allowed-field count |
+| Exercise compact Shopping rows through their disclosures | `test_lv06_browser.py`, `test_shop12_browser.py`, `test_shop13_browser_performance.py`, `test_shop14_browser.py`, `test_shop15_performance.py`, `test_shop16_return.py`, `test_shop17_journey.py` | Open seller contents and cost evidence before inspecting details; verify retained budget inputs, keyboard navigation and local-only filtering; authored browser state | Updated selectors and copy without changing catalog sizes, samples or latency budgets |
 | Verify installed members despite matching size/mtime | `test_lv08_package_identity.py` | Changed bytes, added/removed members, linked files/directories and mutation during hashing cannot reuse a stale package identity; disposable files | Keep |
-| Revalidate only contributing references | `test_lv08_reference_scope.py` | Changed or removed contributing amounts reject publication, and scoped selection is restored; mocked admitted records, no provider | Keep |
+| Revalidate only contributing references | `test_lv08_reference_scope.py` | Changed or removed snapshot and legacy amounts reject publication; empty contributing sets avoid hashing/reloading unrelated records; scoped selection is restored, no provider | Strengthened while preserving final evidence checks |
+| Reuse release mappings only within the current read | `test_shop12_indexed.py` | Repeated projections share catalog release dates inside one authorized snapshot; caller edits cannot alter the retained mapping, and a new request reads again | Scoped reuse; no price or seller-assessment cache |
 
 These checks do not establish current market prices, live provider behavior or customer
 usability. Rendered review of changed source remains separate from source inspection;

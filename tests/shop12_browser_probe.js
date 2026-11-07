@@ -1,7 +1,7 @@
 /* Engineering-only timing. No product state is kept by this probe. */
 (() => {
   const absolute=()=>performance.timeOrigin+performance.now();
-  const selector=()=>location.pathname==='/shopping/check/'?'#listing-preview:not([hidden]) #use-listing:not(:disabled)':'#discovery-cards .review-offer';
+  const selector=()=>location.pathname==='/shopping/check/'?'#listing-preview:not([hidden]) #use-listing:not(:disabled)':'#discovery-cards .discovery-card';
   const old=Response.prototype.json;
   const arrival=sessionStorage.getItem('shop-navigation-selector');sessionStorage.removeItem('shop-navigation-selector');
   window.shopProbe={selector:arrival,parses:[],ready:null,input:JSON.parse(sessionStorage.getItem('shop12-input')||'null'),previous_server_intervals:JSON.parse(sessionStorage.getItem('shop12-prior-spans')||'[]')};

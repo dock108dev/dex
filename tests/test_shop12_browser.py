@@ -202,10 +202,12 @@ def test_lot_values_arrive_automatically_and_controls_stay_local(browser_app):
 
     page.route("**/api/shopping/discovery/**", route)
     page.goto(base + f"/shopping/?run_id={run_id}&q=Lapras")
+    page.locator("#offer-engineering-result .lot-more > summary").click()
     expect(page.get_by_text("$100.00 ungraded lot value", exact=True)).to_be_visible()
     expect(
         page.get_by_text("Buy It Now + shipping: $55.00 below reference · before tax", exact=True)
     ).to_be_visible()
+    page.locator(".result-settings > summary").click()
     page.locator("#lot-time-window").select_option("48")
     expect(page.get_by_text("Engineering later lot", exact=True)).to_have_count(0)
     count = len(calls)

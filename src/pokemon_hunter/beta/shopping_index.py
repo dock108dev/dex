@@ -5,15 +5,17 @@ revision and final publication checks. Legacy roots without read infrastructure
 retain their compatibility path; stale/prepared roots never fall back to it.
 """
 
+import json
 import re
 from contextvars import ContextVar
+from copy import deepcopy
 from functools import wraps
 
 from . import account_read_build as builds
 from . import account_read_context, discovery_matching, store
 
 _current = ContextVar("shopping_index", default=None)
-_COMMON_SQL = "SELECT 'game' AS kind,id,id AS value FROM games WHERE game_key='pokemon' UNION ALL SELECT 'alias',internal_id,external_id FROM external_mappings WHERE provider='legacy' AND entity_kind='set'"
+_COMMON_SQL = "SELECT 'game' AS kind,id,id AS value FROM games WHERE game_key='pokemon' UNION ALL SELECT 'alias',internal_id,external_id FROM external_mappings WHERE provider='legacy' AND entity_kind='set' UNION ALL SELECT 'release_mapping',internal_id,json_object('provider',provider,'external_id',external_id,'internal_id',internal_id) FROM external_mappings WHERE entity_kind='set'"
 
 
 def words(text):
@@ -88,6 +90,18 @@ class Read:
         self._games = None
         self._aliases = None
         self.species_rows = {}
+        self._release_dates = None
+        self._release_mappings = None
+
+    def release_dates(self):
+        """Reuse release mappings only inside this authorized catalog snapshot."""
+        from . import species_scope
+
+        if self._release_dates is None:
+            if self._release_mappings is None:
+                self.common()
+            self._release_dates = species_scope.release_dates(mappings=self._release_mappings)
+        return deepcopy(self._release_dates)
 
     def printings(self, ids):
         ids = set(ids)
@@ -224,6 +238,7 @@ class Read:
     def _common(self, rows):
         self._games = {r["id"] for r in rows if r["kind"] == "game"}
         self._aliases = {r["id"]: r["value"] for r in rows if r["kind"] == "alias"}
+        self._release_mappings = [json.loads(r["value"]) for r in rows if r["kind"] == "release_mapping"]
 
     def artwork(self, catalog):
         from . import image_bindings

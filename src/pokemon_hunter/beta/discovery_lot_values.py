@@ -20,6 +20,7 @@ from . import (
     shopping_index,
     species_scope,
 )
+from .read_diagnostics import phase
 
 
 def project(actor, raws, rows, *, details=None, summaries=None, _checks=None):
@@ -48,7 +49,7 @@ def project(actor, raws, rows, *, details=None, summaries=None, _checks=None):
     with lot_calculator.price_snapshots.selected(p["id"] for p in entries):
         records = lot_calculator.retained_records()
     sources = {raw.get("itemId"): raw for raw in raws}
-    release_dates = species_scope.release_dates()
+    release_dates = indexed.release_dates() if indexed else species_scope.release_dates()
     for row in rows:
         raw = sources[row["item_id"]]
         entries = catalogs[raw["itemId"]] if indexed else fallback
@@ -83,12 +84,13 @@ def project(actor, raws, rows, *, details=None, summaries=None, _checks=None):
         )
         row["lot_value"] = unavailable
         try:
-            proposal = hunter_lot_parser.parse(
-                summaries.get(raw.get("itemId"), raw),
-                entries,
-                detail=details.get(raw.get("itemId")),
-                _index=index,
-            )
+            with phase("composition_ms"):
+                proposal = hunter_lot_parser.parse(
+                    summaries.get(raw.get("itemId"), raw),
+                    entries,
+                    detail=details.get(raw.get("itemId")),
+                    _index=index,
+                )
             unavailable["identified_quantity"] = sum(p["included_quantity"] for p in proposal["proposals"])
             unavailable["parent_identified_quantity"] = proposal["parent_identified_quantity"]
             unavailable.update(
@@ -108,9 +110,10 @@ def project(actor, raws, rows, *, details=None, summaries=None, _checks=None):
                 source_fields=proposal["source_fields"],
                 aspect_names=proposal["aspect_names"],
             )
-            unavailable["alternatives"] = lot_guides.family_alternatives(
-                proposal, entries, records, datetime.now(timezone.utc).date()
-            )
+            with phase("composition_ms"):
+                unavailable["alternatives"] = lot_guides.family_alternatives(
+                    proposal, entries, records, datetime.now(timezone.utc).date()
+                )
             if not unavailable["identified_quantity"]:
                 if proposal["proposals"]:
                     unavailable["reason"] = (
@@ -127,7 +130,10 @@ def project(actor, raws, rows, *, details=None, summaries=None, _checks=None):
                         "No individually identifiable card lines were found in the supplied seller fields."
                     )
                 continue
-            _, assessment = hunter_lots._compare(actor, raw, proposal, None, entries, records, _checks=checks)
+            with phase("composition_ms"):
+                _, assessment = hunter_lots._compare(
+                    actor, raw, proposal, None, entries, records, _checks=checks
+                )
         except ValueError as error:
             unavailable["reason"] = str(error)
             continue

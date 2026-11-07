@@ -119,7 +119,12 @@ def test_collection_intent_action_to_usable(cx, count, copies, frozen):
             page.on("request", lambda r: requests.append((r.method, r.url)))
 
             def take(kind):
-                page.locator("html[data-shop-ready=true]").wait_for(timeout=10000)
+                try:
+                    page.locator("html[data-shop-ready=true]").wait_for(timeout=10000)
+                except Exception:
+                    report["last_action"] = kind
+                    report["last_screen"] = page.locator("body").inner_text(timeout=1000)[:5000]
+                    raise
                 value = page.evaluate(
                     """() => {
                     const p=window.shopProbe, origin=performance.timeOrigin;
@@ -158,12 +163,12 @@ def test_collection_intent_action_to_usable(cx, count, copies, frozen):
                 take("targets")
                 page.locator(".review-offer").first.evaluate("(e)=>{window.shopMark('candidate');e.click();}")
                 take("candidate")
-                assert "87.25 USD all-in budget" in page.locator("#check-context").text_content()
                 assert page.locator("#listing-details").text_content().find("contents entries") >= 0
                 page.locator("#use-listing").evaluate(
                     "(e)=>{window.shopMark('use_offer','#review-cards .contents-entry');e.click();}"
                 )
                 take("use_offer")
+                assert page.locator("#review-budget").input_value() == "87.25"
                 # Edit while the first save may still be pending. Back must drain
                 # the latest revision, rather than publish the earlier payload.
                 page.locator("#review-price").fill("11")

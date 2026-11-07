@@ -168,13 +168,23 @@ def reference_guard(actor, records, refs):
         for r in refs
         if r.get("snapshot_version")
     }
-    raw_hashes = {shopping.digest(r["raw_record"]) for r in refs if r.get("raw_record")}
-    contributing = [
-        r
-        for r in records
-        if shopping.digest(r) in raw_hashes
-        or (r.get("_snapshot_version"), r.get("_contract_sha256"), r.get("observation_id")) in keys
-    ]
+
+    def raw_key(row):
+        key = row.get("card_id")
+        return key if isinstance(key, str) else None
+
+    raw_hashes = {}
+    for ref in refs:
+        if raw := ref.get("raw_record"):
+            raw_hashes.setdefault(raw_key(raw), set()).add(shopping.digest(raw))
+
+    def contributes(row):
+        if (row.get("_snapshot_version"), row.get("_contract_sha256"), row.get("observation_id")) in keys:
+            return True
+        hashes = raw_hashes.get(raw_key(row))
+        return bool(hashes and shopping.digest(row) in hashes)
+
+    contributing = [row for row in records if contributes(row)]
     expected = {shopping.digest(r) for r in contributing}
     printing_ids = {r["printing_id"] for r in contributing if r.get("printing_id")}
     dates = [
@@ -187,7 +197,7 @@ def reference_guard(actor, records, refs):
     def check():
         if expected:
             with price_snapshots.selected(printing_ids):
-                current = {shopping.digest(r) for r in retained_records()}
+                current = {shopping.digest(r) for r in retained_records() if contributes(r)}
             if not expected <= current:
                 raise ValueError("Contributing reference changed; reload local values")
         if any(deadline <= datetime.now(timezone.utc) for deadline in deadlines):

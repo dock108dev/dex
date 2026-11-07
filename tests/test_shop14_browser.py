@@ -49,6 +49,7 @@ def test_contents_keyboard_layout_correction_and_failed_save(browser_app):
     handle = discovery_listing.result_handle(run.id, run.raws[0]["itemId"])
     page.goto(base + f"/shopping/check/?discovery_run={run.id}&item_id={handle}")
     expect(page.locator("#contents-preview .contents-entry")).to_have_count(2)
+    page.locator("#listing-preview > details > summary").first.click()
     assert page.locator("#contents-preview").inner_text().count("contents unverified") == 2
     layouts = [(width, zoom) for zoom in (100, 200) for width in (320, 390, 1280)]
     for width, zoom in layouts:

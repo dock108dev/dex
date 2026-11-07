@@ -247,6 +247,13 @@ def test_structured_regular_finish_selects_one_supported_card_without_inventing_
     assert chosen["printing_id"] == "child-25" and chosen["clues"]["finish"] == "normal"
     raw["localizedAspects"] = [a for a in raw["localizedAspects"] if a["name"] != "Finish"]
     raw["shortDescription"] += " Regular customer service."
+    inferred = parser.parse(raw, entries)
+    assert inferred["included_quantity"] == 1 and inferred["unknown_remainder"] == 2
+    selected = next(p for p in inferred["proposals"] if p["included_quantity"])
+    assert selected["printing_id"] == "child-25"
+    assert selected["variant_selection"]["seller_evidence"]["catalog_finish_inference"]
+    # Generic customer-service prose cannot supply missing edition evidence.
+    raw["localizedAspects"] = [a for a in raw["localizedAspects"] if a["name"] != "Edition"]
     assert parser.parse(raw, entries)["included_quantity"] == 0
 
 

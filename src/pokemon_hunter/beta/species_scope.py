@@ -83,7 +83,7 @@ def interval(value):
     return None
 
 
-def release_dates():
+def release_dates(*, mappings=None):
     """Hash-checked retained English evidence, joined by exact external identity only.
 
     Promo series start dates cannot date their individual releases. The source's
@@ -96,7 +96,9 @@ def release_dates():
         provider, language, key = assessment.split(":", 2)
         external[provider + ":" + language, key] = by_id[canonical]
     candidates = {}
-    for mapping in store.rows("SELECT * FROM external_mappings WHERE entity_kind='set'"):
+    if mappings is None:
+        mappings = store.rows("SELECT * FROM external_mappings WHERE entity_kind='set'")
+    for mapping in mappings:
         source = external.get((mapping["provider"], mapping["external_id"]))
         if not source or source["language"] != "en" or source["medium"] != "physical":
             continue

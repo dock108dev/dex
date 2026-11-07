@@ -63,7 +63,7 @@ def test_automatic_contents_unpriced_and_manual_correction_same_lease(env, entri
     assert len(env.calls) == 5
 
 
-def test_unenriched_is_not_confused_with_enriched_unresolved(env):
+def test_summary_assessment_remains_distinct_from_full_seller_details(env):
     env.bin.append(offer(3))
     env.details[env.bin[0]["itemId"]] = dict(env.bin[0], description="All cards from Base Set; see photos")
     _, result = env.execute()
@@ -74,7 +74,10 @@ def test_unenriched_is_not_confused_with_enriched_unresolved(env):
     )
     assert enriched["lot_value"]["contents_state"] == "unresolved"
     unprocessed = next(r for r in result["results"] if r["assessment_state"] == "unprocessed")
-    assert unprocessed["evidence_kind"] == "seller_summary" and "lot_value" not in unprocessed
+    assert unprocessed["evidence_kind"] == "seller_summary"
+    assert unprocessed["lot_value"]["identified_quantity"] == 0
+    assert unprocessed["lot_value"]["total"] is None
+    assert unprocessed["lot_value"]["references"] == []
     assert result["progress"]["unprocessed"] == 1 and len(env.calls) == 5
 
 
@@ -123,7 +126,13 @@ def test_indexed_catalog_narrowing_includes_aspects_and_all_cards(env, entries, 
         return entries if "Blastoise" in text else []
 
     monkeypatch.setattr(
-        shopping_index, "current", lambda *a: SimpleNamespace(proposals=proposals, publication_checks=[])
+        shopping_index,
+        "current",
+        lambda *a: SimpleNamespace(
+            proposals=proposals,
+            publication_checks=[],
+            release_dates=discovery_lot_values.species_scope.release_dates,
+        ),
     )
     rows = discovery_listing.received_rows([source])
     discovery_lot_values.project(env.actor, [source], rows, details={source["itemId"]: detail})

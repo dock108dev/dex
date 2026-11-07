@@ -83,7 +83,6 @@ def test_explicit_variant_and_evidence_scope():
     [
         "2x Charizard Base Set 4/102 First Edition Non Holo",
         "2x Charizard Base Set 4/102 English Non Holo",
-        "2x Charizard Base Set 4/102 English First Edition",
         "2x Charizard Base Set 4/102 English First Edition Unlimited Non Holo",
     ],
 )
@@ -155,3 +154,12 @@ def test_distinct_numbered_families_never_join_and_single_child_does_not_choose(
     )
     result = parse("2x Charizard Base Set 4/102 English", entries=family()[:2])
     assert result["included_quantity"] == 0
+
+
+def test_original_numbered_finish_is_catalog_evidence_not_a_seller_claim():
+    result = parse("2x Charizard Base Set 4/102 English First Edition")
+    line = result["proposals"][0]
+    assert line["printing_id"] == "holo" and line["included_quantity"] == 2
+    evidence = line["variant_selection"]["seller_evidence"]
+    assert evidence["catalog_finish_inference"]
+    assert result["unknown_remainder"] == 0

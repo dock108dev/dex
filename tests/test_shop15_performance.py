@@ -214,7 +214,8 @@ def test_assessment_action_to_usable(cx, count, copies, action):
                         end = link.locator("..").inner_text()
                         assert "2031" in end and "UTC" in end
                         scope = page.locator("#check-context").inner_text()
-                        assert "Venusaur" in scope and "12 USD" in scope and "Vintage preferred" in scope
+                        assert page.locator("#review-budget").input_value() == "12"
+                        assert page.locator("#review-planned_bid").input_value() == "9"
                         link.focus()
                         scroll = page.evaluate("scrollY")
                         with context.expect_page() as opened:
@@ -259,6 +260,9 @@ def test_assessment_action_to_usable(cx, count, copies, action):
                     assert len(sample["parses"]) == 1 and sample["parses"][0]["end"] <= sample["ready"]
                     out = page.locator("#check-results")
                     report["samples"][scenario][-1].update(width=width, text_percent=zoom)
+                    breakdown = out.locator(":scope > details")
+                    if not breakdown.evaluate("e=>e.open"):
+                        breakdown.locator(":scope > summary").click()
                     content = out.inner_text()
                     assert (
                         "$9.00" in content and "Observed bid already exceeds ceiling" in content

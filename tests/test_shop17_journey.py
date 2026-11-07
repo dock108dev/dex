@@ -168,6 +168,7 @@ def changed_evidence(page, root, frozen):
     def compare():
         page.locator("#check-compare").press("Enter")
         expect(out).to_contain_text("Recommendation unavailable")
+        out.locator(":scope > details > summary").press("Enter")
         return out.inner_text()
 
     group = page.locator("#review-cards .contents-entry").filter(
@@ -195,6 +196,7 @@ def changed_evidence(page, root, frozen):
 
     page.locator("#check-compare").press("Enter")
     expect(out).to_contain_text("Binding limit: budget")
+    out.locator(":scope > details > summary").press("Enter")
     link = out.locator("a")
     assert link.get_attribute("href") == SELLER
     seller = open_controlled_seller(page, link)
@@ -224,7 +226,7 @@ def journey(page, base, goal, cx, report, width, zoom, exercise_changes):
             '#discovery-target:enabled:has(option[value="3"])',
             "/api/shopping/discovery/targets/",
         ),
-        "controlled search": (".review-offer", "/api/shopping/discovery/"),
+        "controlled search": (".compact-lot", "/api/shopping/discovery/"),
         "candidate": (None, "/api/shopping/listing/candidate/"),
         "use offer": ("#review-cards .contents-entry", "/api/shopping/listing/review/"),
         "compare": ("#check-results:not([hidden]) a", "/api/shopping/listing/compare/"),
@@ -237,7 +239,7 @@ def journey(page, base, goal, cx, report, width, zoom, exercise_changes):
             css, path = probes[label]
             destination = None
             if label == "back":
-                destination = 'body:has(#discovery-target:enabled option[value="3"]:checked) .review-offer'
+                destination = 'body:has(#discovery-target:enabled option[value="3"]:checked) .compact-lot'
             # Keyboard actions start in the browser before product event handlers,
             # excluding the driver's round trip between arming and key delivery.
             # Seller return is a close/focus sequence with its own explicit boundary.
@@ -298,9 +300,9 @@ def journey(page, base, goal, cx, report, width, zoom, exercise_changes):
     measure("vintage preference", vintage.check, lambda: expect(vintage).to_be_checked())
 
     def hunt_ready():
-        loc(".review-offer").first.wait_for()
+        loc(".compact-lot").first.wait_for()
         expect(loc("#discovery-stop")).to_be_hidden()
-        expect(loc("#discovery-status")).to_contain_text("1/2 enriched · 1 assessed")
+        expect(loc("#discovery-status")).to_contain_text("1 listings found · 1 checked in detail")
 
     measure(
         "controlled search",
@@ -308,6 +310,7 @@ def journey(page, base, goal, cx, report, width, zoom, exercise_changes):
         hunt_ready,
     )
     result = loc("#discovery-cards").inner_text()
+    loc(".lot-more > summary").first.press("Enter")
     measure(
         "candidate",
         lambda: loc(".review-offer").first.press("Enter"),
@@ -319,6 +322,7 @@ def journey(page, base, goal, cx, report, width, zoom, exercise_changes):
     ]
     # This retained review uses the selected offer's admitted printing identities.
     assert not any(r["path"] == "/api/shopping/listing/catalog/" for r in resources)
+    loc("#listing-preview > details > summary").first.press("Enter")
     preview = loc("#contents-preview").inner_text()
     assert "2 printing alternatives" in preview and "Seller quantity: 2" in preview, preview
     measure(
@@ -367,6 +371,7 @@ def journey(page, base, goal, cx, report, width, zoom, exercise_changes):
         loc("#check-compare").press("Enter")
 
     measure("compare", compare, lambda: out.locator("a").wait_for())
+    out.locator(":scope > details > summary").press("Enter")
     content = out.inner_text()
     assert all(
         s in content
@@ -382,11 +387,13 @@ def journey(page, base, goal, cx, report, width, zoom, exercise_changes):
     ), content
     assert out.evaluate("e=>e.scrollWidth<=e.clientWidth+1 && e.getBoundingClientRect().right<=innerWidth+1")
     scope = loc("#check-context").inner_text()
-    assert (
-        "outside retained goal coverage"
-        if goal
-        else "potentially new species from included review identities: Venusaur"
-    ) in scope
+    if goal:
+        # These reviewed printings are outside the frozen goal. The compact
+        # context must not advertise them as additions to that goal.
+        assert scope == ""
+        expect(loc("#check-context")).to_be_hidden()
+    else:
+        assert "Potential collection additions: Venusaur" in scope
     link = out.locator("a")
     assert link.get_attribute("href") == SELLER
     link.focus()
@@ -413,7 +420,7 @@ def journey(page, base, goal, cx, report, width, zoom, exercise_changes):
     if exercise_changes:
         report["changed_evidence"] = changed_evidence(page, cx["root"], bool(goal))
     start += time.perf_counter() - excluded
-    measure("back", lambda: loc("#check-back").press("Enter"), lambda: loc(".review-offer").first.wait_for())
+    measure("back", lambda: loc("#check-back").press("Enter"), lambda: loc(".compact-lot").first.wait_for())
     assert loc("#discovery-target").input_value() == "3" and loc("#discovery-budget").input_value() == "20"
     assert loc("#discovery-prefer-vintage").is_checked() and loc("#discovery-goal").input_value() == (
         goal["id"] if goal else ""
@@ -469,9 +476,7 @@ def test_integrated_journey(cx, count, copies):
                     try:
                         report["answers"] = journey(page, base, goal, cx, report, width, zoom, i == 19)
                     except Exception:
-                        report["last_screen"] = page.locator(
-                            "main, #discovery, #listing-check"
-                        ).first.inner_text(timeout=1000)[:9000]
+                        report["last_screen"] = page.locator("body").inner_text(timeout=1000)[:9000]
                         raise
                     assert not errors and not blocked
             browser.close()

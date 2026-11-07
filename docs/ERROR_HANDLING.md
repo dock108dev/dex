@@ -104,6 +104,12 @@ input where supported.
 
 ## Shopping cancellation and cleanup
 
+Shopping keeps checking source availability while a Hunt is acquiring listings.
+A late result cannot erase a confirmed source withdrawal or restore its values.
+A newly validated response can recover from a failed lifecycle read, but retains
+known withdrawal state until the source check confirms recovery. These local
+checks do not dispatch another marketplace search.
+
 A known listing admission refusal before dispatch returns `not_dispatched`, so
 the client can finish recovery without polling an operation that never started.
 An ambiguous transport or journal outcome remains uncertain; it must not use that

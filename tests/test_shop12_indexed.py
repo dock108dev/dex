@@ -31,6 +31,34 @@ def clean(value):
     }
 
 
+def test_release_dates_reused_only_inside_one_authorized_read(visual, monkeypatch):
+    from pokemon_hunter.beta import shopping_index, species_scope
+
+    enable_read_fixture(visual, monkeypatch)
+    original = species_scope.release_dates
+    reads = []
+
+    def counted(**kwargs):
+        value = original(**kwargs)
+        reads.append(value)
+        return value
+
+    monkeypatch.setattr(species_scope, "release_dates", counted)
+
+    @shopping_index.indexed
+    def inspect(actor):
+        indexed = shopping_index.current(actor)
+        dates = indexed.release_dates()
+        dates["caller-change"] = {"start": "1900-01-01"}
+        assert "caller-change" not in indexed.release_dates()
+        return {}
+
+    inspect(visual["actor"])
+    assert len(reads) == 1
+    inspect(visual["actor"])
+    assert len(reads) == 2
+
+
 def test_explorer_equivalent_before_and_after_read_preparation(visual, monkeypatch):
     actor = visual["actor"]
     requests = [

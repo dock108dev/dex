@@ -214,10 +214,19 @@ def ui(browser_app):
     return page, base, model, calls, control, pending, errors
 
 
-def open_results(ui):
+def open_results(ui, *, advanced=False):
     page, base, model, *_ = ui
     page.goto(base + f"/shopping/?run_id={model['run_id']}&q=Lapras")
     page.locator("#discovery-results:not([hidden])").wait_for()
+    if advanced:
+        page.locator(".result-settings > summary").click()
+        page.locator("#lot-value-sort").select_option("value")
+
+
+def open_details(page, key="complete"):
+    panel = page.locator(f"#offer-{key} .lot-more")
+    if not panel.evaluate("e=>e.open"):
+        panel.locator(":scope > summary").click()
 
 
 def test_glance_groups_dual_costs_evidence_keyboard_and_layout(ui):
@@ -230,7 +239,7 @@ def test_glance_groups_dual_costs_evidence_keyboard_and_layout(ui):
         offer("unknown", "unknown_cost", "sold_estimate", 3),
         offer("unpriced", "unpriced", rank=4),
     ]
-    open_results(ui)
+    open_results(ui, advanced=True)
     for label in (
         "Complete assessments",
         "Partially assessed",
@@ -238,17 +247,19 @@ def test_glance_groups_dual_costs_evidence_keyboard_and_layout(ui):
         "Assessed without a normalized value",
     ):
         expect(page.locator(".lot-group-heading").filter(has_text=label)).to_be_visible()
+    open_details(page)
+    open_details(page, "partial")
     first = page.locator("#offer-complete")
     expect(first.get_by_text("$40.00 ungraded lot value", exact=True)).to_be_visible()
     expect(
         first.get_by_text("Buy It Now + shipping: $15.00 above reference · before tax", exact=True)
     ).to_be_visible()
-    expect(first.locator(".discovery-amounts")).to_contain_text("$6.00")
-    expect(first.locator(".discovery-amounts")).to_contain_text("$55.00")
+    expect(first.locator(".lot-value")).to_contain_text("Bid + shipping: $34.00 below reference")
+    expect(first.locator(".lot-buy")).to_contain_text("$55.00")
     expect(page.locator("#offer-partial .partial-difference").first).to_contain_text(
         "not a whole-lot bargain score"
     )
-    expect(page.locator("#discovery-status")).to_contain_text("2/2 enriched · 2 assessed · 38 unprocessed")
+    expect(page.locator("#discovery-status")).to_contain_text("40 listings found · 2 checked in detail")
     from pathlib import Path
 
     out = Path("reports/lv-06-20261104")
@@ -305,7 +316,7 @@ def test_independent_bin_rank_and_native_cohorts(ui):
             dict(lane=lane, cohort=cohort, rank=1) for lane in ("auction", "buy_it_now")
         ]
     model["results"] = [a, b]
-    open_results(ui)
+    open_results(ui, advanced=True)
     page.locator("#lot-buying-mode").select_option("buy_now")
     expect(page.locator(".discovery-card").first).to_have_id("offer-b")
     page.locator("#lot-buying-mode").select_option("auction")
@@ -313,6 +324,7 @@ def test_independent_bin_rank_and_native_cohorts(ui):
     page.locator("#lot-value-sort").select_option("native")
     expect(page.locator(".lot-group-heading").first).to_contain_text("cohort-a")
     expect(page.locator(".lot-group-heading")).to_have_count(2)
+    open_details(page, "a")
     expect(page.locator(".native-guide").first).to_contain_text("Shipping/tax basis unknown")
     assert not errors
 
@@ -353,15 +365,22 @@ def test_all_unavailable_distinguishes_unfetched_from_unresolved(ui):
 
     page, base, model, calls, control, pending, errors = ui
     first, second = offer("unresolved", "unpriced"), offer("unfetched", "unpriced", rank=2)
-    first["lot_value"].update(contents_state="unresolved", reason="Supplied contents could not be resolved.")
+    first["lot_value"].update(
+        contents_state="unresolved",
+        total=None,
+        subtotal=None,
+        references=[],
+        reason="Supplied contents could not be resolved.",
+    )
     second.pop("lot_value")
     second.update(evidence_kind="seller_summary", assessment_state="unprocessed")
     model["results"] = [first, second]
     open_results(ui)
     expect(page.locator(".discovery-card")).to_have_count(2)
+    open_details(page, "unresolved")
     expect(page.locator("#offer-unresolved")).to_contain_text("Supplied contents could not be resolved")
-    expect(page.locator("#offer-unfetched")).to_contain_text("Full details have not been assessed")
-    expect(page.locator("#lot-values-status")).to_contain_text("No usable prices in this batch")
+    expect(page.locator("#offer-unfetched")).to_contain_text("Contents need checking")
+    expect(page.locator("#lot-values-status")).to_contain_text("No supported value comparisons yet")
     assert not errors
 
 
@@ -371,6 +390,7 @@ def test_withdrawal_late_response_stop_and_expiry(ui):
     page, base, model, calls, control, pending, errors = ui
     model.update(state="assessing", running=True)
     open_results(ui)
+    open_details(page)
     expect(page.get_by_text("$40.00 ungraded lot value", exact=True)).to_be_visible()
     control["hold"] = True
     page.wait_for_timeout(750)
@@ -401,16 +421,19 @@ def test_one_action_automatic_assessment_and_local_back(ui):
     page, base, model, calls, control, pending, errors = ui
     page.goto(base + "/shopping/?q=Lapras")
     page.locator("#discovery-search").click()
+    open_details(page)
     expect(page.get_by_text("$40.00 ungraded lot value", exact=True)).to_be_visible()
     posts = [c for c in calls if c[0] == "POST"]
     assert len(posts) == 1 and posts[0][2]["acquisition_contract"] == "dex-lot-hunt-v2"
-    seller = page.locator("#offer-complete .seller a").first
+    seller = page.locator("#offer-complete .lot-buy a").first
     assert seller.get_attribute("target") == "_blank"
     assert seller.get_attribute("href") == "https://www.ebay.com/itm/123456789012?var=123456789013"
+    page.locator(".result-settings > summary").click()
     page.locator("#lot-buying-mode").select_option("buy_now")
     # Ordinary Back restores only the handle and filters; it must read values again.
     page.goto(base + "/shopping/check/")
     page.go_back()
+    open_details(page)
     expect(page.get_by_text("$40.00 ungraded lot value", exact=True)).to_be_visible()
     expect(page.locator("#lot-buying-mode")).to_have_value("buy_now")
     assert len([c for c in calls if c[0] == "POST"]) == 1
@@ -422,6 +445,7 @@ def test_local_refresh_preserves_expansion_focus_and_clears_changed_authority(ui
 
     page, base, model, calls, control, pending, errors = ui
     open_results(ui)
+    open_details(page)
     summary = page.locator("#offer-complete .lot-evidence > summary")
     summary.focus()
     summary.press("Enter")
@@ -660,7 +684,11 @@ def test_find_lots_forty_rows_worker_and_local_evidence(browser_app, monkeypatch
     monkeypatch.setattr(lot_hunt, "Transport", lambda: Transport(transport=httpx.MockTransport(respond)))
     page.goto(base + "/shopping/?q=Lapras")
     page.get_by_role("button", name="Find lots", exact=True).click()
-    expect(page.locator("#discovery-status")).to_contain_text("2 assessed · 38 unprocessed", timeout=30000)
+    expect(page.locator("#discovery-status")).to_contain_text(
+        "40 listings found · 2 checked in detail", timeout=30000
+    )
+    page.locator(".result-settings > summary").click()
+    page.locator("#lot-value-sort").select_option("value")
     heads = page.locator(".lot-group-heading h3")
     groups = (
         ["Partially assessed · 1", "Unknown delivered cost · 1", "Unprocessed · 38"]
@@ -670,6 +698,7 @@ def test_find_lots_forty_rows_worker_and_local_evidence(browser_app, monkeypatch
     expect(heads).to_have_text(groups)
     expect(page.locator(".discovery-card")).to_have_count(40)
     row = page.locator(".discovery-card").filter(has=page.locator(".lot-evidence")).first
+    row.locator(".lot-more > summary").click()
     if guide:
         expect(row.locator(".lot-value")).to_contain_text("$5.10")
         if guide == "native":
@@ -678,6 +707,8 @@ def test_find_lots_forty_rows_worker_and_local_evidence(browser_app, monkeypatch
             expect(heads.first).to_contain_text(" · 2")
             expect(heads.last).to_contain_text("No compatible publisher guide · 38")
             page.locator("#lot-value-sort").select_option("value")
+    if not row.locator(".lot-more").evaluate("e=>e.open"):
+        row.locator(".lot-more > summary").click()
     with page.expect_response(lambda r: "/evidence/" in r.url) as response:
         row.locator(".lot-evidence > summary").click()
     assert response.value.ok
@@ -726,6 +757,7 @@ def test_changed_evidence_closes_disclosure_without_refresh_loop(ui):
 
     page.route("**/api/shopping/discovery/*/evidence/**", mismatch)
     open_results(ui)
+    open_details(page)
     panel = page.locator("#offer-complete .lot-evidence")
     panel.locator("summary").click()
     expect(panel).not_to_have_attribute("open", "")

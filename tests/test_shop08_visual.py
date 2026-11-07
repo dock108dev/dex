@@ -63,7 +63,7 @@ def test_selected_inspection_orders_offer_before_optional_identifier_and_editor(
     text = response.content.decode()
     assert '<div class="check-heading">' in text
     assert text.index('id="offer-overview"') < text.index('id="listing-identifier"')
-    assert '<details id="listing-tools" class="check-panel" open>' in text
+    assert '<details id="listing-tools" class="check-panel">' in text
     assert '<details id="review-editor" class="check-panel review-editor">' in text
     directives = [part.split() for part in response["Content-Security-Policy"].split(";")]
     assert [parts for parts in directives if parts and parts[0] == "img-src"] == [

@@ -85,7 +85,7 @@ def test_original_assessment_across_return_failures(cx):
             with page.expect_response(lambda r: "/listing/compare/" in r.url) as decision:
                 button.press("Enter")
             assert decision.value.ok, decision.value.text()
-            expect(status).to_contain_text("Comparison updated")
+            expect(status).to_contain_text("Lot summary updated")
             result.locator("a").focus()
             with context.expect_page() as opened:
                 result.locator("a").press("Enter")

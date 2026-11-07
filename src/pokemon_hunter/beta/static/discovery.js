@@ -269,7 +269,7 @@
     return removed;
   }
   async function checkSources() {
-    if (checkingSources || validatingRun || loadingValues || acquiring || revoked || !run || !sourceUnavailable && !run.results?.some(result => managed(result.reference) || window.DexLotValues?.references(result).some(managed))) return;
+    if (checkingSources || validatingRun || loadingValues || revoked || !run || !sourceUnavailable && !run.results?.some(result => managed(result.reference) || window.DexLotValues?.references(result).some(managed))) return;
     const active = run, token = sequence;let recovered = false;checkingSources = true;
     try {
       const state = await request('/api/shopping/price-source-status/',undefined,null,2000);
@@ -431,7 +431,8 @@
     }
     // This authenticated response just revalidated every reference. An earlier
     // failed lifecycle read must not erase it before a fresh check can run.
-    sourceState = null;sourceUnavailable = false;
+    // A late result must not erase a confirmed source withdrawal.
+    sourceUnavailable = false;
     run = value;captureDeadline(value);
     acquiring = Boolean(value.running);
     $('discovery-results').hidden = false;

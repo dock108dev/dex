@@ -124,7 +124,12 @@ def return_context(value, *, list_only=False, _depth=0):
     parts = urlsplit(value)
     if parts.scheme or parts.netloc or parts.fragment:
         raise ValueError("Choose a supported local return destination")
-    pairs = parse_qsl(parts.query, keep_blank_values=True, strict_parsing=True, max_num_fields=24)
+    field_limit = 24
+    if not list_only and parts.path == "/shopping/":
+        from . import discovery_catalog
+
+        field_limit = len(discovery_catalog.PAGE_FIELDS)
+    pairs = parse_qsl(parts.query, keep_blank_values=True, strict_parsing=True, max_num_fields=field_limit)
     raw = dict(pairs)
     if any(ord(char) < 32 or ord(char) == 127 for key, value in pairs for char in key + value):
         raise ValueError("Choose supported return fields without control characters")
@@ -190,8 +195,6 @@ def return_context(value, *, list_only=False, _depth=0):
     elif not list_only and parts.path == "/goals/" and not raw:
         pass
     elif not list_only and parts.path == "/shopping/":
-        from . import discovery_catalog
-
         discovery_catalog.validate_page(raw)
         if "return" in raw:
             return_context(raw["return"], _depth=_depth + 1)

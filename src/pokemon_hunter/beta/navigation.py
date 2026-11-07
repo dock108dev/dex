@@ -117,7 +117,8 @@ def authorize_destination(who, value):
     """Recheck every referenced private object in the bounded return chain."""
     value = return_context(value)
     parts = urlsplit(value)
-    raw = dict(parse_qsl(parts.query, keep_blank_values=True, strict_parsing=True, max_num_fields=24))
+    # return_context already applied the destination's finite field bound.
+    raw = dict(parse_qsl(parts.query, keep_blank_values=True, strict_parsing=True))
     store.verified(who)
     if raw.get("goal"):
         species_projection.authorize_goal(who, raw["goal"], raw.get("version"))

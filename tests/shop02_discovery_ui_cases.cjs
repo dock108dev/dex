@@ -7,8 +7,8 @@ const source = fs.readFileSync(process.argv[2], 'utf8');
 const runId = '11111111-1111-4111-8111-111111111111';
 const nextId = '22222222-2222-4222-8222-222222222222';
 const baseChoices = {intent:'deals',goal_id:null,missing_basis:'species',focus:'all',budget:null,budget_mode:'limit',budget_rule:'',budget_value_basis:'collectible',query:'',set_id:null,product_type:'both',sort:'ending_soonest',english_vintage:true,species:null,group_id:null,printing_id:null,goal_version:null,generation:7,browse_requests:1};
-const row = {id:'one',proposed_identity:{name:'Engineering card',set_name:'Engineering set',collector_number:'1',artwork_url:null},listing_price:'10',shipping:null,delivered_total:null,classification:'conditional',reason:'Shipping is unknown.',basis:'Raw condition scenario.',reference:{amount:'20',as_of:'2020-01-01',valuation_as_of:null,captured_at:'2021-01-01',grade:'raw'},comparison:{reference_minus_listing_price:'10',reference_minus_delivered_total:null},revealed:false,save_allowed:false,save_reason:'Temporary comparison; saving unavailable.'};
-const complete = (id=runId, rows=[row]) => ({run_id:id,state:'complete',running:false,choices:baseChoices,scope_label:'Deals include owned cards',expires_in_seconds:1800,results:structuredClone(rows),counts:{summary_count:1},has_next:true,note:'Temporary results.'});
+const row = {id:'one',proposed_identity:{name:'Engineering card',set_name:'Engineering set',collector_number:'1',artwork_url:null},listing_price:'10',buy_now_price:'10',shipping:null,delivered_total:null,classification:'conditional',reason:'Shipping is unknown.',basis:'Raw condition scenario.',reference:{amount:'20',as_of:'2020-01-01',valuation_as_of:null,captured_at:'2021-01-01',grade:'raw'},comparison:{reference_minus_listing_price:'10',reference_minus_delivered_total:null},revealed:false,save_allowed:false,save_reason:'Temporary comparison; saving unavailable.'};
+const complete = (id=runId, rows=[row]) => ({run_id:id,state:'complete',running:false,values_checked:true,choices:baseChoices,scope_label:'Deals include owned cards',expires_in_seconds:1800,results:structuredClone(rows),counts:{summary_count:1},has_next:true,note:'Temporary results.'});
 class Element {
   constructor(id) {this.id=id;this.options=[];this.value='';this.dataset={};this.listeners={};this.disabled=false;this.hidden=false;this.textContent='';this._html='';}
   addEventListener(type, fn) {(this.listeners[type] ||= []).push(fn);}
@@ -31,18 +31,18 @@ class Element {
 function setup(responses, search='') {
   const elements=new Map(),calls=[],localCalls=[],localResponses=[],timers=new Map(),intervals=new Map(),events={};let timerId=0,clockNow=Date.now();
   const get=id=>{if(!elements.has(id)) elements.set(id,new Element(id));return elements.get(id);};
-  get('discovery-focus').value='all';get('discovery-missing-basis').value='species';get('discovery-filter').value='all';
+  get('lot-time-window').value='72';get('lot-buying-mode').value='both';get('lot-value-sort').value='best';get('lot-value-basis').value='all';get('lot-estimate-filter').value='all';get('discovery-focus').value='all';get('discovery-missing-basis').value='species';get('discovery-filter').value='all';
   const initial=Object.fromEntries(new URLSearchParams(search));get('discovery-context').textContent=JSON.stringify({generation:7,species:initial.species?Number(initial.species):null,group:initial.group||null,child:initial.child||null});get('discovery-initial').textContent=JSON.stringify(initial);get('discovery-goals').textContent='[]';get('discovery-product-type').value='both';get('discovery-sort').value='ending_soonest';get('discovery-english-vintage').checked=true;
   const location={origin:'http://local.test',href:'http://local.test/shopping/'+search,search,reload(){calls.push({reload:true});}};
-  const window={scrollY:0,scrollTo(){},addEventListener(type,fn){events[type]=fn;}};
+  const window={AbortController,scrollY:0,scrollTo(){},addEventListener(type,fn){events[type]=fn;}};
   const context={crypto:require('node:crypto').webcrypto,document:{createElement:()=>({getContext:()=>null}),getElementById:get,querySelector:selector=>get(selector === '.discovery-options' ? 'search-options' : 'local-explorer'),body:{dataset:{navigationBinding:'binding-test',navigationAccount:'account-test'}},addEventListener(type,fn){events[type]=fn;}},window,location,requestAnimationFrame:fn=>fn(),history:{replaceState(a,b,url){location.href=location.origin+url;}},URL,URLSearchParams,Intl,Date:{now:()=>clockNow,parse:Date.parse},setInterval(fn){intervals.set(++timerId,fn);return timerId;},clearInterval(id){intervals.delete(id);},setTimeout(fn){timers.set(++timerId,fn);return timerId;},clearTimeout(id){timers.delete(id);},fetch:async(url,init)=>{
     if (url.startsWith('/api/shopping/discovery/catalog/')) {localCalls.push({url,init});const reply=await (localResponses.shift() || {mode:'cards',results:[],total:0,offset:0,sets:[],has_more:false});return {ok:true,status:200,json:async()=>({...reply,authority:{account_id:'account-test',binding:'binding-test'}})};}
     calls.push({url,init,body:init.body?JSON.parse(init.body):undefined});
     const response=responses.shift();if(response instanceof Error) throw response;
-    const data=typeof response==='function'?await response(calls.at(-1)):await response;
+    const data=await Promise.race([typeof response==='function'?response(calls.at(-1)):response,new Promise((resolve,reject)=>init.signal?.addEventListener('abort',()=>reject(Object.assign(new Error('Aborted'),{name:'AbortError'})),{once:true}))]);
     return {ok:!data.httpStatus,status:data.httpStatus || 200,json:async()=>({...data,provider:{enabled:true,configured:true,...data.provider},authority:{account_id:'account-test',binding:'binding-test',...data.authority}})};
   }};
-  vm.createContext(context);vm.runInContext(source,context);
+  vm.createContext(context);vm.runInContext(fs.readFileSync(require('node:path').join(require('node:path').dirname(process.argv[2]),'discovery-values.js'),'utf8'),context);vm.runInContext(source,context);
   return {get,calls,localCalls,localResponses,timers,intervals,events,window,location,context,advance(ms){clockNow+=ms;},now:()=>clockNow};
 }
 async function flush() {for(let i=0;i<80;i++) await Promise.resolve();}
@@ -82,8 +82,8 @@ const passed=[];
     const poll=[...t.timers.values()][0];await poll();await flush();
     assert.equal(t.calls.filter(call=>call.init?.method==='POST').length,1);
     assert.match(t.calls[2].url,/view=received/);
-    assert.match(t.get('discovery-status').textContent,/2 assessed/);
-    assert.match(t.get('discovery-cards').innerHTML,/Based on full seller details/);
+    assert.match(t.get('discovery-status').textContent,/2 listings found · 2 checked in detail/);
+    assert.match(t.get('discovery-cards').innerHTML,/class="lot-more"/);
     assert.equal(t.get('discovery-next').disabled,true);
     await t.get('discovery-filter').emit('change');await flush();
     assert.equal(t.calls.length,3);
@@ -92,7 +92,7 @@ const passed=[];
     const t=setup([{goals:[],sets:[]}]);await flush();
     assert.equal(t.calls.length,1);assert.equal(t.calls[0].init.method,'GET');
     assert.equal(t.get('discovery-search').disabled,false);
-    assert.match(t.get('intent-description').textContent,/including cards you own/);
+    assert.match(t.get('intent-description').textContent,/best matches for your request/);
     assert.equal(t.timers.size,0);
   });
   await check('explicit start captures defaults and preserves unknown shipping and dates',async()=>{

@@ -20,6 +20,55 @@ from test_migration import snapshot as snapshot
 from test_sealed_catalog import e1 as e1
 
 
+def test_shopping_return_preserves_full_filter_state_with_frozen_goal(cx):
+    from test_b2 import apply
+
+    from pokemon_hunter.beta import collection, navigation
+    from pokemon_hunter.beta.card_group_views import return_context
+
+    goal = apply(cx, "goal", dict(name="Shopping return", goal_kind="original151"))["changes"][0]["after"]
+    prepare_reads(cx)
+    fields = dict(
+        run_id="11111111-1111-4111-8111-111111111111",
+        q="Venusaur",
+        species="3",
+        goal=goal["id"],
+        version=goal["version"],
+        generation=str(collection.generation(cx["actor"])),
+        intent="missing",
+        missing_basis="species",
+        scope="all",
+        budget="87.25",
+        budget_mode="flexible",
+        budget_rule="Higher cost only with supported value",
+        budget_value_basis="collectible",
+        prefer_vintage="1",
+        product_type="mixed_lots",
+        sort="ending_soonest",
+        english_vintage="1",
+        result_filter="all",
+        time_window="72",
+        value_sort="best",
+        buying_mode="both",
+        value_basis="all",
+        estimate_filter="estimated",
+        era_filter="pre2000",
+        scroll="312",
+        focus="offer-example",
+    )
+    destination = "/shopping/?" + urlencode(fields)
+    assert len(fields) > 24
+    assert return_context(destination) == destination
+    assert navigation.authorize_destination(cx["actor"], destination) == destination
+    for invalid in (
+        destination + "&unsupported=1",
+        destination + "&q=duplicate",
+        "https://example.test" + destination,
+    ):
+        with pytest.raises(ValueError):
+            return_context(invalid)
+
+
 def test_bounded_shopping_return_chain_retains_null_and_explicit_child(cx):
     from pokemon_hunter.beta import navigation
 
