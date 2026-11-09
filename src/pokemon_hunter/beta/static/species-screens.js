@@ -270,6 +270,12 @@
     explore.href=exploreDestination();explore.addEventListener('click',()=>{rememberAction('species-explore');explore.href=exploreDestination();});
     shopping.href=window.collectionShoppingDestination?.({species:dex},identity.scope,currentReturn())||'/shopping/';
     shopping.addEventListener('click',()=>{rememberAction('species-shopping');shopping.href=window.collectionShoppingDestination?.({species:dex},identity.scope,currentReturn())||'/shopping/';});
+    const singles=document.createElement('a');
+    singles.id='species-find-listings';singles.className='button-link secondary';singles.textContent='Find listings';
+    const singlesDestination=()=>window.collectionShoppingDestination?.({species:dex},null,currentReturn(),'singles')||'/shopping/?product_type=singles';
+    singles.href=singlesDestination();
+    singles.addEventListener('click',()=>{rememberAction('species-find-listings');singles.href=singlesDestination();});
+    shopping.before(singles);
     window.rememberCollectionDestination?.();
     const restore=Number(params.get('scroll'))||0;requestAnimationFrame(()=>{if(!active())return;
       try{const focus=sessionStorage.getItem('dex-species-card-focus:'+account()+':'+location.pathname);if(focus)Array.from(document.querySelectorAll('#species-owned-cards .owned-card-tile')).find(link=>new URL(link.href).pathname===focus)?.focus({preventScroll:true});}catch{/* Optional focus memory. */}

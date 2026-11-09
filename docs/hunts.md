@@ -108,6 +108,39 @@ expand the two-page batch or its two-candidate detail cap. No result is a market
 best-value claim. The server supplies independent lane ranks and separate native cohort ranks;
 the client displays distinct assessment groups and independent buying views.
 
+## Shopping singles
+
+Choose **Singles** in Shopping or **Find listings** on a supported species or
+card page. Selecting the card page's exact printing prepares its name, number
+and set. Search stays explicit. A selected set narrows the provider keywords
+and Dex checks the catalog set against the returned seller evidence. An exact
+printing choice requires seller evidence that distinguishes the child printing.
+
+Singles uses eBay Browse category 183454 in the US marketplace, with US item
+location and delivery. Buy It Now and Auction use the documented buying-option
+filters. Selecting both starts with a Buy It Now page. **More results** can
+then request an Auction page, with available pages alternating between the
+formats. The next format is displayed before each request. One click sends at
+most one Browse request with up to 20 summaries, plus OAuth when needed. The
+original run holds at most four pages. All sends debit the existing shared
+allowance. Stop, continuation and the original temporary lease still apply.
+
+Leaving the name blank uses the keywords `Pokemon WOTC`, or `Pokemon` with
+the selected set's name. This samples seller keyword matches in the singles
+category. The received counts describe those pages, including duplicates and
+other exclusions. The sample favors sellers whose listings match those words.
+Dex sends no Game, Set, language or manufacturing-year aspect in this flow.
+
+**Through 2000** locally screens the received offers through December 31, 2000
+using the retained catalog's language-specific release evidence. A dated set
+can support its original numbered issue when seller name, set and number agree.
+Special releases and reprints need their own dated evidence. Later releases,
+unknown dates and conflicting claims have separate counts. Original numbered
+English Fossil Lapras #10 and #25 carry distinct holo and non-holo identities.
+Edition remains unresolved when the listing does not distinguish it. The
+existing **Pre-2000** filter still ends December 31, 1999. Local filtering and
+opening or returning from review use zero provider operations.
+
 ## Named search and continuation (legacy explicit contract)
 
 The following remains supported for callers that do not submit the automatic Hunt action

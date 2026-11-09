@@ -12,6 +12,7 @@ from dataclasses import dataclass, replace
 PAGE_SIZE = 20
 MAX_PAGES = 4
 CATEGORIES = {"mixed_lots": ("183455",), "singles": ("183454",), "both": ("183455", "183454")}
+BUYING = {"buy_it_now": "FIXED_PRICE", "auction": "AUCTION"}
 
 
 @dataclass(frozen=True)
@@ -21,6 +22,7 @@ class NamedPage:
     sort: str
     offset: int = 0
     set_name: str | None = None
+    lane: str | None = None
 
 
 def checked_params(page):
@@ -35,6 +37,7 @@ def checked_params(page):
         or page.offset < 0
         or page.offset >= MAX_PAGES * PAGE_SIZE
         or page.offset % PAGE_SIZE
+        or (page.lane is not None and (page.category != "183454" or page.lane not in BUYING))
         or (
             page.set_name is not None
             and (
@@ -46,10 +49,11 @@ def checked_params(page):
         )
     ):
         raise ValueError("Choose a checked finite named-search page")
+    options = BUYING[page.lane] if page.lane else "FIXED_PRICE|AUCTION"
     result = {
         "q": page.query,
         "category_ids": page.category,
-        "filter": "buyingOptions:{FIXED_PRICE|AUCTION},deliveryCountry:US,itemLocationCountry:US",
+        "filter": f"buyingOptions:{{{options}}},deliveryCountry:US,itemLocationCountry:US",
         "limit": PAGE_SIZE,
         "offset": page.offset,
         "fieldgroups": "EXTENDED",
@@ -69,6 +73,18 @@ def first_pages(query, product_type, sort, *, set_name=None):
         if not query:
             query = "Pokemon"
     pages = [NamedPage(query, category, sort, set_name=set_name) for category in CATEGORIES[product_type]]
+    for page in pages:
+        checked_params(page)
+    return pages
+
+
+def singles_pages(query, buying):
+    lanes = (
+        ("buy_it_now", "auction")
+        if buying == "both"
+        else ("buy_it_now" if buying == "buy_now" else "auction",)
+    )
+    pages = [NamedPage(query, "183454", "best_match", lane=lane) for lane in lanes]
     for page in pages:
         checked_params(page)
     return pages

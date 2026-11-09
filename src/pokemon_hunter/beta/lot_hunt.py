@@ -45,6 +45,8 @@ class AdmissionUnavailable(ValueError):
     MESSAGES = {
         "lot_hunt_policy": "Automatic Hunt is unavailable. Open Hunter usage settings and select current limits first.",
         "lot_hunt_capacity": "Automatic Hunt needs five remaining shared operations and two detail slots. Check Hunter usage settings; no requests were sent.",
+        "singles_policy": "Singles search needs a current allowance. Open Search allowance and settings.",
+        "singles_capacity": "The next singles page needs a remaining Browse operation in its buying format. Check the allowance; no requests were sent.",
     }
 
     def __init__(self, code):

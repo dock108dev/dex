@@ -549,7 +549,9 @@
   $('manual-entry').addEventListener('click',()=>{$('review-editor').open=true;});
   root.querySelectorAll('input,button,select,textarea').forEach(n=>n.disabled=true);
   async function selectedOffer(){
-    const value=await request('/api/shopping/listing/candidate/?'+new URLSearchParams(entry));
+    let value;
+    try {value=await request('/api/shopping/listing/candidate/?'+new URLSearchParams(entry));}
+    catch(error){if(error.status===404) throw Error('This temporary offer is unavailable. Use Back to search to keep your search inputs.');throw error;}
     return {value,deadline:Date.now()+value.expires_in_seconds*1000};
   }
   async function restoreSection(){

@@ -19,9 +19,9 @@
         if([...url.searchParams.keys()].some(field=>!['child','generation','return'].includes(field)))return null;
         if(url.searchParams.has('return')){const nested=safeDestination(url.searchParams.get('return'),depth+1,true);if(!nested||nested.startsWith('/card-groups/'))return null;}
       }else if(url.pathname==='/shopping/'){
-        const fields=['species','group','child','goal','version','generation','return','missing','run_id','q','set_id','intent','missing_basis','scope','budget','product_type','sort','english_vintage','result_filter','scroll','focus'];
+        const fields=['species','group','child','goal','version','generation','return','missing','run_id','request_id','q','set_id','intent','missing_basis','scope','budget','budget_mode','budget_rule','budget_value_basis','prefer_vintage','product_type','sort','english_vintage','result_filter','scroll','focus','single_buying','single_release','time_window','value_sort','buying_mode','value_basis','estimate_filter','era_filter'];
         if([...url.searchParams.keys()].some(field=>!fields.includes(field)))return null;
-        const options={intent:['deals','missing'],missing_basis:['species','printing'],scope:['all','kanto','johto','rares','bulk'],product_type:['singles','mixed_lots','both'],sort:['best_match','ending_soonest'],english_vintage:['0','1'],result_filter:['all','below','conditional','unpriced']};
+        const options={intent:['deals','missing'],missing_basis:['species','printing'],scope:['all','kanto','johto','rares','bulk'],product_type:['singles','mixed_lots','both'],sort:['best_match','ending_soonest'],english_vintage:['0','1'],result_filter:['all','below','conditional','unpriced'],single_buying:['both','buy_now','auction'],single_release:['all','through2000']};
         for(const [field,values] of Object.entries(options))if(url.searchParams.has(field)&&!values.includes(url.searchParams.get(field)))return null;
         if(url.searchParams.has('return')&&!safeDestination(url.searchParams.get('return'),depth+1,true))return null;
       }else if(window.safeSpeciesReturn&&url.pathname.startsWith('/pokedex/'))return window.safeSpeciesReturn(value);
@@ -94,14 +94,14 @@
   }
   window.rememberCollectionDestination=remember;
   addEventListener('pagehide',()=>{if(successful)remember();});
-  window.collectionShoppingDestination=(identity,scope,returnTo)=>{
+  window.collectionShoppingDestination=(identity,scope,returnTo,productType='mixed_lots')=>{
     const params=new URLSearchParams();
     if(identity.species)params.set('species',String(identity.species));
     else if(identity.group){params.set('group',identity.group);if(identity.child)params.set('child',identity.child);}
     if(scope?.goal_id&&scope?.version){params.set('goal',scope.goal_id);params.set('version',scope.version);}
     if(typeof data!=='undefined'&&Number.isSafeInteger(data?.effective_collection?.generation))params.set('generation',data.effective_collection.generation);
     const safe=safeDestination(returnTo);if(safe)params.set('return',safe);
-    params.set('product_type','mixed_lots');
+    params.set('product_type',productType);
     return '/shopping/?'+params;
   };
   window.navigationReady=(async()=>{

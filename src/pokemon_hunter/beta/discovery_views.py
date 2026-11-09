@@ -56,16 +56,23 @@ def home(request):
     if context.get("species") and "q" not in initial:
         initial["q"] = canonical_species.registry()[context["species"]]["name"]
     if context.get("group"):
-        group = card_groups.detail(who, context["group"], selected_child=context.get("child"))["group"]
+        detail = card_groups.detail(who, context["group"], selected_child=context.get("child"))
+        group = detail["group"]
         initial.setdefault("q", group["name"] + " " + group["collector_number"])
         initial.setdefault("set_id", group["set_name"])
-    if (
+        if context.get("child"):
+            initial["printing_label"] = next(
+                (row.get("label") for row in detail["variants"] if row["id"] == context["child"]), None
+            )
+    if initial.get("product_type") != "singles" and (
         context["kind"] in {"goal", "missing"}
         or context.get("goal_version")
         or context.get("species")
         and not context.get("current_present")
     ):
         initial.setdefault("intent", "missing")
+    if initial.get("product_type") == "singles":
+        initial["intent"] = "deals"
     initial, scope_note = discovery_catalog.entry_refinements(who, initial, context)
     context = shopping_context.finish(who, context)
     with store.read_authority(who):

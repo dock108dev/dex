@@ -37,6 +37,7 @@ class Choices(BaseModel):
     goal_version: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     generation: StrictInt | None = Field(default=None, ge=0, le=10**18)
     product_type: Literal["singles", "mixed_lots", "both"] = "mixed_lots"
+    single_buying: Literal["both", "auction", "buy_now"] | None = None
     sort: Literal["best_match", "ending_soonest"] = "ending_soonest"
     english_vintage: StrictBool = False
     browse_requests: StrictInt = Field(default=1, ge=1, le=MAX_BROWSE)
@@ -48,6 +49,14 @@ class Choices(BaseModel):
 
     @model_validator(mode="after")
     def checked_context(self):
+        if self.single_buying is not None and (
+            self.product_type != "singles"
+            or self.intent != "deals"
+            or self.browse_requests != 1
+            or self.english_vintage
+            or self.collection_intent
+        ):
+            raise ValueError("Choose the bounded Shopping singles search")
         if self.collection_intent:
             if (
                 self.intent != "missing"
@@ -86,6 +95,9 @@ class Run:
     offset: int = 0
     named_pages: list | None = None
     named_count: int = 0
+    single_set_name: str | None = None
+    single_targets: frozenset = field(default_factory=frozenset)
+    single_pages: list[str] = field(default_factory=list)
     action_counts: dict | None = None
     raws: list = field(default_factory=list)
     seen: set = field(default_factory=set)

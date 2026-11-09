@@ -21,7 +21,16 @@ from django.conf import settings
 from django.db import close_old_connections, connection
 from django.http import Http404
 
-from . import discovery_listing, discovery_paging, ebay_hunts, goal_hunts, parity, shopping_index, store
+from . import (
+    discovery_listing,
+    discovery_paging,
+    ebay_hunts,
+    goal_hunts,
+    hunter_policy,
+    parity,
+    shopping_index,
+    store,
+)
 from .diagnostics import async_closing, failure
 from .discovery_contracts import MAX_BROWSE as MAX_BROWSE
 from .discovery_contracts import Choices as Choices
@@ -308,6 +317,8 @@ def _check_acquisition(run, *, authorization=True):
 
         check_dispatch(run)
         check_installed_dispatch(run)
+        if run.choices.single_buying:
+            hunter_policy.check(run)
 
 
 def _expire(run_id):
@@ -328,6 +339,8 @@ def _expire(run_id):
 
 
 def _scope_label(run):
+    if run.choices.single_buying:
+        return "Singles · eBay US · " + run.queries[0]
     if run.choices.collection_intent:
         from .canonical_species import registry
 
@@ -376,6 +389,8 @@ def _summary(run):
         ),
         "pages_completed": run.named_count,
         "page_limit": discovery_paging.MAX_PAGES if run.named_pages is not None else None,
+        "next_buying_lane": run.named_pages[0].lane if run.named_pages else None,
+        "received_buying_lanes": list(dict.fromkeys(run.single_pages)),
         "continuation_run": run.id,
         "error": run.error,
         "note": "Temporary eBay summaries; seller text proposes identity. Prices exclude tax. References retain their source dates; searching does not refresh them. Results expire when the server restarts or after 30 minutes.",
@@ -421,6 +436,7 @@ def _legacy_status(actor, session_key, run_id, *, selected_result=None, received
         if run.cancel.is_set() or not _readable(run):
             return result
         raws = deepcopy(run.raws)
+    singles = bool(run.choices.single_buying) and selected_result is None
     if selected_result is not None:
         # Review revalidates its one opaque offer, not every previously received
         # page. Authorization, candidate scope and source lifecycle stay below.
@@ -458,13 +474,21 @@ def _legacy_status(actor, session_key, run_id, *, selected_result=None, received
             indexed.candidate_rows = list(
                 {p["id"]: p for raw in raws for p in indexed.matching(_clues(raw)["text"])}.values()
             )
-        candidates = _candidate_data(actor, run.choices, run.scope, ownership=False)
+        # A selected set/child constrains results after seller matching, so a
+        # neighboring printing cannot become a match by removing its siblings.
+        choices = (
+            run.choices.model_copy(update={"group_id": None, "printing_id": None, "set_id": None})
+            if singles
+            else run.choices
+        )
+        _context_current(actor, run.choices)
+        candidates = _candidate_data(actor, choices, run.scope, ownership=False)
         # Review renders its checked proposal artwork separately. Do not bind
         # images for the whole comparison catalog merely to admit one offer.
         rows = (
             compare(actor, raws, candidates, include_artwork=False)
             if selected_result is not None
-            else compare(actor, raws, candidates)
+            else compare(actor, raws, candidates, singles=run if singles else None)
         )
     if run.choices.sort == "ending_soonest":
         positions = {str(raw.get("itemId")): i for i, raw in enumerate(raws)}
@@ -480,6 +504,8 @@ def _legacy_status(actor, session_key, run_id, *, selected_result=None, received
             and kind == "single"
             and run.named_pages is None
         ):
+            continue
+        if singles and not row.pop("single_scope_match"):
             continue
         item_id = str(row.pop("item_id", ""))
         handle = discovery_listing.result_handle(run.id, item_id)
@@ -499,6 +525,8 @@ def _legacy_status(actor, session_key, run_id, *, selected_result=None, received
             result["coverage"] = dict(
                 received=len(raws), shown=len(visible), filtered=len(rows) - len(visible)
             )
+            if singles:
+                result["coverage"]["filtered"] = result["counts"]["summary_count"] - len(visible)
     if not result["results"] and run.state == "complete":
         result["limitation"] = (
             "No supported summaries in this batch matched the selected product and budget choices. "
@@ -700,6 +728,36 @@ def start_action(actor, session_key, raw, request_id, *, auth_session=None, oper
     return result
 
 
+def _singles_capacity(actor, run, *, bind=False):
+    from .lot_hunt import AdmissionUnavailable
+
+    if bind:
+        allowance, capacity = hunter_policy.admission(actor, root=run.owner[0])
+        if allowance is None:
+            raise AdmissionUnavailable("singles_policy")
+        run.allowance = allowance
+    else:
+        capacity = hunter_policy.remaining(run.owner[0], run.allowance)
+    page = run.named_pages[0]
+    if not capacity["browse"] or not capacity[page.lane]:
+        raise AdmissionUnavailable("singles_capacity")
+    if bind:
+        hunter_policy.bind(run, actor)
+
+
+def _admit_singles(run, stage):
+    page = run.named_pages[0]
+    hunter_policy.consume(
+        run.owner[0],
+        run.id,
+        stage,
+        page.lane if stage == "browse" else None,
+        dispatch_id=f"{page.lane}-{page.offset}" if stage == "browse" else "oauth",
+        allowance=run.allowance,
+        scope="singles",
+    )
+
+
 def start(actor, session_key, raw, *, auth_session=None):
     owner = _owner(actor, session_key)
     if not isinstance(raw, dict):
@@ -724,6 +782,8 @@ def start(actor, session_key, raw, *, auth_session=None):
                 # Keep one cursor and the ORIGINAL content lease. Concurrent/replayed
                 # More cannot fork a page, renew expiry or reset the overall bound.
                 run = previous
+                if run.choices.single_buying:
+                    _singles_capacity(actor, run)
                 run.state = "queued"
                 run.deadline = None
                 run.acquired_at = None
@@ -765,7 +825,7 @@ def start(actor, session_key, raw, *, auth_session=None):
             and choices.species is None
             and choices.group_id is None
         )
-        candidates = [] if plain_named else _candidate_data(actor, choices, scope)
+        candidates = [] if plain_named or choices.single_buying else _candidate_data(actor, choices, scope)
         set_name = None
         if choices.set_id:
             sets = _sets(actor)
@@ -789,14 +849,43 @@ def start(actor, session_key, raw, *, auth_session=None):
             else [],
             auth_session=auth_session,
         )
-        if choices.query:
+        if choices.single_buying:
+            from . import card_groups
+
+            query = choices.query
+            if choices.group_id:
+                detail = card_groups.detail(actor, choices.group_id, selected_child=choices.printing_id)
+                run.single_targets = frozenset(
+                    row["id"]
+                    for row in detail["variants"]
+                    if row["available"] and (not choices.printing_id or row["id"] == choices.printing_id)
+                )
+                if not run.single_targets:
+                    raise ValueError("Choose an available printing")
+                group = detail["group"]
+                query = f"{group['name']} {group['collector_number']}"
+                set_name = group["set_name"]
+            run.single_set_name = set_name
+            run.queries = [
+                submitted_query(query or ("Pokemon" if set_name else "Pokemon WOTC"), set_name=set_name)
+            ]
+            run.named_pages = discovery_paging.singles_pages(run.queries[0], choices.single_buying)
+            run.action_counts = {}
+            _singles_capacity(actor, run, bind=True)
+            run.admit = lambda stage: _admit_singles(run, stage)
+        elif choices.query:
             run.named_pages = discovery_paging.first_pages(
                 run.queries[0], choices.product_type, choices.sort, set_name=set_name
             )
             run.action_counts = {}
     with _lock:
         for old in _runs.values():
-            if old is not run and old.owner == owner and old.state in {"queued", "running"}:
+            if (
+                old is not run
+                and old.owner == owner
+                and not (run.choices.single_buying and old.operation == "lot_hunt")
+                and old.state in {"queued", "running"}
+            ):
                 old.cancel.set()
                 old.state = "stopped"
                 old.raws.clear()
@@ -1049,6 +1138,8 @@ async def _acquire(run, credentials, actor=None):
                 if named:
                     run.named_pages.pop(0)
                     run.named_count += 1
+                    if page.lane:
+                        run.single_pages.append(page.lane)
                     next_page = discovery_paging.following(query, payload, rows)
                     if next_page and run.named_count < discovery_paging.MAX_PAGES:
                         run.named_pages.append(next_page)

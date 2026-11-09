@@ -301,7 +301,10 @@
     const destinationForShopping=()=>returnTo.startsWith('/shopping/')?returnTo:window.collectionShoppingDestination?.(context,goalScope,shoppingReturn())||'/shopping/';
     shopping.href=destinationForShopping();
     shopping.addEventListener('click',()=>{shopping.href=destinationForShopping();});
-    document.querySelector('.card-related-links').append(shopping);
+    const singles=document.createElement('a');
+    singles.id='card-find-listings';singles.textContent='Find listings';
+    singles.href=window.collectionShoppingDestination?.(context,null,shoppingReturn(),'singles')||'/shopping/?product_type=singles';
+    document.querySelector('.card-related-links').append(singles,shopping);
     window.rememberCollectionDestination?.();
   }
   window.renderCardScreens = async route => {

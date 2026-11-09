@@ -15,6 +15,7 @@ from pokemon_hunter.security import ebay_url
 from . import (
     collection,
     discovery_matching,
+    discovery_singles,
     image_bindings,
     listing_prices,
     lot_calculator,
@@ -388,7 +389,7 @@ def _arithmetic(price, shipping, ref, today, *, auction=False):
     )
 
 
-def compare(actor, raw_rows, candidates, *, now=None, include_artwork=True):
+def compare(actor, raw_rows, candidates, *, now=None, include_artwork=True, singles=None):
     """Project supplied single/loose-lot summaries without calls or saves.
 
     Candidates must be internally scoped, authorized catalog rows. Additional
@@ -414,8 +415,14 @@ def compare(actor, raw_rows, candidates, *, now=None, include_artwork=True):
         if p is None or any(candidate.get(k) != p.get(k) for k in p):
             raise ValueError("Discovery catalog differs from authorized metadata")
         printings.append(p)
-    with lot_calculator.price_snapshots.selected(p["id"] for p in printings):
-        records = lot_calculator.retained_records()
+    records, dates = [], None
+    if singles:
+        from . import species_scope
+
+        dates = indexed.release_dates() if indexed else species_scope.release_dates()
+    else:
+        with lot_calculator.price_snapshots.selected(p["id"] for p in printings):
+            records = lot_calculator.retained_records()
     names = discovery_matching.NameIndex(printings)
     return _project(
         actor,
@@ -424,7 +431,9 @@ def compare(actor, raw_rows, candidates, *, now=None, include_artwork=True):
         records,
         now=now,
         candidates_for=names.candidates,
-        artwork=None if include_artwork else {},
+        artwork=None if include_artwork and not singles else {},
+        singles=singles,
+        release_dates=dates,
     )
 
 
@@ -440,6 +449,8 @@ def _project(
     artwork=None,
     include_unsupported=False,
     identity_issues_for=None,
+    singles=None,
+    release_dates=None,
 ):
     """Shared arithmetic over internally authorized catalog/reference batches.
 
@@ -485,6 +496,8 @@ def _project(
             identity_issues.extend(identity_issues_for(candidates, clues))
         if p:
             identity_issues.extend(_identity_conflicts(p, clues))
+        elif singles and matched and all(_identity_conflicts(c, clues) for c in matched):
+            identity_issues.append("Seller attributes conflict with the catalog candidates")
         elif not matched:
             for candidate in approximate:
                 identity_issues.extend(discovery_matching.evidence(candidate, clues)["conflicts"])
@@ -565,6 +578,15 @@ def _project(
             or re.search(r"(?:\bx\s*[2-9]\d*\b|\b[2-9]\d*\s*[x×]\b)", clues["text"], re.I)
         ):
             issues.append("A multiple-card or selectable offer cannot use a single-card reference")
+        if singles:
+            if kind != "single" or count is not None and count != 1:
+                continue
+            row["single_scope_match"] = discovery_singles.scope_match(singles, matched, options)
+            row["release"] = discovery_singles.classify(matched, clues, identity_issues, release_dates)
+            row["unavailable"] = discovery_singles.unavailable(raw, row["ends_at"])
+            row["reason"] = "; ".join(issues) if issues else None
+            result.append(row)
+            continue
         if issues:
             row["reason"] = "; ".join(issues)
         elif p:

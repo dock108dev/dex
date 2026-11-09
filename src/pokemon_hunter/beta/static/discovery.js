@@ -4,6 +4,9 @@
   const $ = id => document.getElementById(id);
   if (!$('discovery-form')) return;
   const api = '/api/shopping/discovery/';
+  const singlesMode = () => $('discovery-product-type').value === 'singles';
+  const singlesResults = () => Boolean(run?.choices?.single_buying);
+  const buyingLabel = {both:'Buy It Now and auction',buy_now:'Buy It Now',auction:'Auction',buy_it_now:'Buy It Now'};
   const receiptView = () => $('discovery-form').dataset.lotSearch === 'true' ? '&view=received' : '';
   const page = document.body, binding = page.dataset.navigationBinding || '', account = page.dataset.navigationAccount || '';
   const currentAuthority = () => !revoked && document.body === page && page.dataset.navigationBinding === binding && page.dataset.navigationAccount === account && !window.navigationAuthorityDiscarded && !window.navigationReauthorizing;
@@ -56,8 +59,8 @@
     const controller=window.AbortController ? new window.AbortController() : null;
     const timeout=controller ? setTimeout(()=>controller.abort(),timeoutMs) : null;
     let response;
-    try { response = await fetch(url, {...(controller ? {signal:controller.signal} : {}),method:body === undefined ? 'GET' : 'POST',credentials:'same-origin',redirect:'error',cache:'no-store',headers:{'X-Dex-Shopping-Binding':binding,...(action ? {'X-Dex-Shopping-Action':action} : {}),...(generation == null ? {} : {'X-Dex-Shopping-Generation':String(generation)}),...(body === undefined ? {} : {'Content-Type':'application/json','X-CSRFToken':csrf()})},...(body === undefined ? {} : {body:JSON.stringify(body)})});
-    if (response.status === 403 || response.status === 401) {
+    try { response = await fetch(url, {...(controller ? {signal:controller.signal} : {}),method:body === undefined ? 'GET' : 'POST',credentials:'same-origin',redirect:'manual',cache:'no-store',headers:{'X-Dex-Shopping-Binding':binding,...(action ? {'X-Dex-Shopping-Action':action} : {}),...(generation == null ? {} : {'X-Dex-Shopping-Generation':String(generation)}),...(body === undefined ? {} : {'Content-Type':'application/json','X-CSRFToken':csrf()})},...(body === undefined ? {} : {body:JSON.stringify(body)})});
+    if (response.status === 403 || response.status === 401 || response.type === 'opaqueredirect') {
       window.discardNavigationAuthority?.();if (!revoked) invalidate();
       throw new Error('Your session is unavailable. Sign in again to continue.');
     }
@@ -65,7 +68,7 @@
     try { data = await response.json(); } catch { throw new Error('Shopping did not return a readable response.'); }
     if (!response.ok) {
       const busy = response.status === 503 && data.error === 'runtime_busy';
-      if (response.status === 409 && ['lot_hunt_policy','lot_hunt_capacity'].includes(data.code)) throw Object.assign(new Error(data.error), {status:409, category:'not_dispatched', code:data.code});
+      if (response.status === 409 && ['lot_hunt_policy','lot_hunt_capacity','singles_policy','singles_capacity'].includes(data.code)) throw Object.assign(new Error(data.error), {status:409, category:'not_dispatched', code:data.code});
       throw Object.assign(new Error(busy ? 'Dex is busy with another local action. This request did not start.' : 'This section could not be loaded. Reload this section to check its current state.'), {status:response.status, category:busy ? 'not_dispatched' : 'unknown', code:data.error});
     }
     if (!currentAuthority() || !binding || !account || data.authority?.binding !== binding || data.authority?.account_id !== account) {
@@ -78,20 +81,22 @@
     } finally {clearTimeout(timeout);}
   }
   function choices() {
+    if (singlesMode()) return {intent:'deals',focus:'all',query:$('discovery-query').value.trim(),set_id:$('discovery-set').value || null,product_type:'singles',sort:'best_match',english_vintage:false,single_buying:$('single-buying').value,...target,generation,browse_requests:1};
     const selected = {intent,goal_id:intent === 'missing' ? $('discovery-goal').value || null : null,missing_basis:intent === 'missing' ? $('discovery-missing-basis').value : 'species',focus:$('discovery-focus').value,budget:$('discovery-budget').value.trim() || null,budget_mode:$('discovery-budget-mode').value || 'limit',budget_rule:$('discovery-budget-rule').value.trim(),budget_value_basis:$('discovery-budget-value-basis').value || 'collectible',query:$('discovery-query').value.trim(),set_id:$('discovery-set').value || null,product_type:$('discovery-product-type').value,sort:$('discovery-sort').value,english_vintage:$('discovery-english-vintage').checked,...target,goal_version:intent === 'missing' ? (goalVersion || ($('discovery-form').dataset.lotSearch !== 'true' ? goals.find(row => row.id === $('discovery-goal').value)?.version : null)) : null,generation,browse_requests:1};
     if ($('discovery-form').dataset.lotSearch === 'true') Object.assign(selected, {collection_intent:intent === 'missing',prefer_vintage:Boolean($('discovery-prefer-vintage').checked),currency:'USD',missing_basis:'species',product_type:'mixed_lots',sort:'ending_soonest',english_vintage:false});
     return selected;
   }
   function signature(value) {
-    return JSON.stringify({prefer_vintage:Boolean(value.prefer_vintage),collection_intent:Boolean(value.collection_intent),intent:value.intent || 'deals',goal_id:value.goal_id || '',missing_basis:value.missing_basis || 'species',focus:value.focus || 'all',budget:value.budget == null ? '' : String(value.budget),budget_mode:value.budget_mode || 'limit',budget_rule:value.budget_rule || '',budget_value_basis:value.budget_value_basis || 'collectible',query:value.query || '',set_id:value.set_id || '',product_type:value.product_type || 'both',sort:value.sort || 'ending_soonest',english_vintage:value.english_vintage !== false,species:value.species || null,group_id:value.group_id || null,printing_id:value.printing_id || null,goal_version:value.goal_version || null,generation:value.generation ?? generation,browse_requests:1});
+    return JSON.stringify({prefer_vintage:Boolean(value.prefer_vintage),collection_intent:Boolean(value.collection_intent),intent:value.intent || 'deals',goal_id:value.goal_id || '',missing_basis:value.missing_basis || 'species',focus:value.focus || 'all',budget:value.budget == null ? '' : String(value.budget),budget_mode:value.budget_mode || 'limit',budget_rule:value.budget_rule || '',budget_value_basis:value.budget_value_basis || 'collectible',query:value.query || '',set_id:value.set_id || '',product_type:value.product_type || 'both',single_buying:value.single_buying || null,sort:value.sort || 'ending_soonest',english_vintage:value.english_vintage !== false,species:value.species || null,group_id:value.group_id || null,printing_id:value.printing_id || null,goal_version:value.goal_version || null,generation:value.generation ?? generation,browse_requests:1});
   }
   function changed() { return captured !== null && signature(choices()) !== captured; }
   function updateButtons() {
-    $('discovery-search').disabled = !ready || revoked || acquiring || uncertain || (intent === 'missing' && (!targetsReady || !target.species));
+    $('discovery-search').disabled = !ready || revoked || acquiring || uncertain || (!singlesMode() && intent === 'missing' && (!targetsReady || !target.species));
+    $('discovery-product-type').disabled = acquiring || uncertain;
     $('discovery-stop').hidden = !acquiring && !uncertain;
     $('discovery-stop').disabled = (!acquiring && !run?.run_id) || ['stopped','expired'].includes(run?.state) || (stopWanted && !uncertain) || revoked;
     $('discovery-next').disabled = !run?.has_next || acquiring || uncertain || changed() || revoked;
-    $('discovery-next-note').textContent = acquiring && run?.run_id ? 'Loading more… You can keep browsing or Stop.' : changed() ? 'Select Find lots to search with these changes.' : run?.has_next ? 'More from this search.' : run ? 'You’ve reached the end of this search.' : '';
+    $('discovery-next-note').textContent = acquiring && run?.run_id ? 'Loading more… You can keep browsing or Stop.' : changed() ? 'Search again to apply changes to the request.' : run?.has_next ? (run.next_buying_lane ? `Next page: ${buyingLabel[run.next_buying_lane]} · 1 Browse operation` : 'More from this search.') : run ? 'You’ve reached the end of this search.' : '';
   }
   function selectionCaptions() {
     const captions = {
@@ -115,7 +120,16 @@
   }
   function policy() {
     selectionCaptions();
-    const missing = intent === 'missing';
+    const singles = singlesMode(), missing = !singles && intent === 'missing';
+    $('discovery-form').dataset.lotSearch = String(!singles);
+    $('discovery-search').textContent = singles ? 'Find singles' : 'Find lots';
+    $('single-controls').hidden = !singles;
+    document.querySelectorAll('[data-lots-only]').forEach(element => {element.hidden = singles;});
+    const singleTarget = $('single-target');
+    singleTarget.hidden = !target.group_id;
+    singleTarget.textContent = target.group_id ? (target.printing_id ? 'Exact printing selected · ' + (initial.printing_label || 'Edit the name or set to clear this selection') : 'Selected card number and set') : '';
+    if (singles && singles !== policy.wasSingles) document.querySelector('.discovery-options').open = true;
+    policy.wasSingles = singles;
     $('missing-controls').hidden = !missing;
     if (missing) document.querySelector('.discovery-options').open = true;
     $('find-deals').setAttribute('aria-pressed',String(!missing));
@@ -138,12 +152,14 @@
     target = {species:value?.species || null,group_id:value?.group_id || null,printing_id:value?.printing_id || null};
     $('discovery-english-vintage').checked = value?.english_vintage !== false;
     $('discovery-prefer-vintage').checked = Boolean(value?.prefer_vintage);
+    if (value?.single_buying) $('single-buying').value = value.single_buying;
     policy();
-    captured = signature(choices());
+    captured = signature(value?.single_buying ? value : choices());
   }
   function rememberChoices(extra = {}, replace = true) {
     const selected = choices(), url = new URL(location.href);url.searchParams.delete('missing');
     const fields = {prefer_vintage:selected.prefer_vintage ? '1' : '0',q:selected.query,set_id:selected.set_id,intent,missing_basis:selected.missing_basis,scope:selected.focus,budget:selected.budget,budget_mode:selected.budget_mode,budget_rule:selected.budget_rule,budget_value_basis:selected.budget_value_basis,product_type:selected.product_type,sort:selected.sort,english_vintage:selected.english_vintage ? '1' : '0',result_filter:$('discovery-filter').value,...(window.DexLotValues ? {time_window:$('lot-time-window').value,value_sort:$('lot-value-sort').value,buying_mode:$('lot-buying-mode').value,value_basis:$('lot-value-basis')?.value || 'all',estimate_filter:$('lot-estimate-filter').value,era_filter:$('lot-era-filter').checked?'pre2000':'all'} : {}),species:target.species,group:target.group_id,child:target.printing_id,goal:selected.goal_id,version:selected.goal_version,generation,...extra};
+    if (singlesMode() || singlesResults()) Object.assign(fields,{intent:selected.intent,single_buying:$('single-buying').value,single_release:$('single-release').value});
     for (const [key,value] of Object.entries(fields)) {if (value == null || value === '') url.searchParams.delete(key);else url.searchParams.set(key,String(value));}
     if (replace) history.replaceState(null,'',url.pathname + url.search);
     return url.pathname + url.search;
@@ -306,6 +322,18 @@
   function below(result) {
     return result.classification === 'comparable' && result.comparison?.below_reference !== false && result.delivered_total !== null && result.delivered_total !== undefined && Number(result.comparison?.reference_minus_delivered_total) > 0;
   }
+  function singleCard(result) {
+    const release = result.release || {}, identity = release.name ? release : null;
+    const finish = {normal:'Non-holo',holo:'Holo','reverse-holo':'Reverse holo'};
+    const edition = {first_edition:'First edition',unlimited:'Unlimited'};
+    const options = result.buying_options || [];
+    const availability = result.unavailable || result.ends_at && Date.parse(result.ends_at) <= Date.now();
+    const seller = link(result.item_url,true);
+    const review = '/shopping/check/?' + new URLSearchParams({discovery_run:run.run_id,item_id:result.id});
+    const metadata = identity ? `${identity.name} · ${identity.set_name} #${identity.collector_number} · ${finish[identity.finish] || 'Finish unresolved'} · ${edition[identity.edition] || 'Edition unresolved'}` : 'Printing or release date unresolved';
+    const date = release.end ? `Catalog release: ${release.start === release.end ? release.end : release.start + ' to ' + release.end} · ${release.language === 'en' ? 'English catalog match' : release.language}` : '';
+    return `<article class="discovery-card" id="offer-${esc(result.id)}" tabindex="-1" data-result="${esc(result.id)}"><h3>${esc(result.title)}</h3><p>${esc(metadata)}</p>${date ? `<p>${esc(date)}</p>` : ''}<dl class="discovery-amounts">${options.includes('FIXED_PRICE') ? `<div><dt>Buy It Now</dt><dd>${esc(money(result.buy_now_price ?? (result.price_kind === 'fixed_price' ? result.listing_price : null)))}</dd></div>` : ''}${options.includes('AUCTION') ? `<div><dt>Current bid</dt><dd>${esc(money(result.current_bid))}</dd></div>` : ''}<div><dt>Shipping</dt><dd>${esc(money(result.shipping))}</dd></div></dl><p>${availability ? 'This listing ended or is unavailable. Return to the received results or search again for current offers.' : 'Seller summary · check the physical card and current availability.'}</p><div class="seller">${seller ? `<a href="${esc(seller)}" target="_blank" rel="noopener noreferrer">View on eBay</a>` : ''}${availability ? '' : `<a data-review-id="${esc(result.id)}" href="${esc(review)}">Review listing</a>`}</div></article>`;
+  }
   function card(result) {
     if ($('discovery-form').dataset.lotSearch === 'true') return compactLot(result);
     const identity = $('discovery-form').dataset.lotSearch === 'true' ? {} : result.proposed_identity || (result.identity_candidates?.length === 1 ? result.identity_candidates[0] : {}) || {}, reference = result.reference;
@@ -397,6 +425,26 @@
   function renderCards() {
     pruneLocal();
     const results = Array.isArray(run?.results) ? run.results : [];
+    if (singlesResults()) {
+      const received = run.counts?.summary_count || 0;
+      const strict = $('single-release').value === 'through2000';
+      const counts = {eligible:0,later:0,unknown:0,conflicting:0};
+      for (const row of results) counts[row.release?.status || 'unknown']++;
+      const rows = strict ? results.filter(row => row.release?.status === 'eligible') : results;
+      const unavailable = rows.filter(row => row.unavailable || row.ends_at && Date.parse(row.ends_at) <= Date.now()).length;
+      $('discovery-shown').textContent = `${received} received · ${rows.length - unavailable} eligible in this view · ${buyingLabel[run.choices.single_buying]}`;
+      const lanes = (run.received_buying_lanes || []).map(lane => buyingLabel[lane]).join(' + ');
+      $('discovery-scope').textContent = `${run.scope_label} · ${strict ? 'Through 2000' : 'Any release date'} · ${run.pages_completed || 0} of up to 4 pages${lanes ? ' · Pages received: ' + lanes : ''}`;
+      const empty = run.state === 'expired' ? 'This search expired. Select Find singles to search again.' :
+        run.state === 'stopped' ? 'This search was stopped.' : acquiring ? 'Waiting for the next eBay page…' :
+        !received ? (run.error || 'eBay returned no listing summaries in this batch.') : strict && results.length ?
+        'No received singles qualify through 2000. Choose Any release date to inspect the excluded offers.' :
+        'The received summaries did not match the selected singles criteria.';
+      const markup = `<p class="field-help" data-result="singles-counts">${counts.eligible} through 2000 · ${counts.later} later · ${counts.unknown} unknown date · ${counts.conflicting} conflicting evidence · ${Math.max(0,received-results.length)} duplicate or outside search criteria${unavailable ? ' · ' + unavailable + ' unavailable in this view' : ''}.</p>${rows.map(singleCard).join('') || `<p>${esc(empty)}</p>`}`;
+      if (window.DexDiscoveryDisplay) window.DexDiscoveryDisplay.patch($('discovery-cards'),markup);else $('discovery-cards').innerHTML = markup;
+      bindReviewLinks();
+      return;
+    }
     const filter = $('discovery-form').dataset.lotSearch === 'true' ? 'all' : $('discovery-filter').value;
     let rows = results.filter(result => filter === 'all' || filter === 'below' && below(result) || filter === result.classification);
     if (window.DexLotValues) rows = window.DexLotValues.select(rows,{hours:$('lot-time-window').value,mode:$('lot-buying-mode').value,sort:$('lot-value-sort').value,basis:$('lot-value-basis')?.value || 'all',estimate:$('lot-estimate-filter').value,era:$('lot-era-filter').checked?'pre2000':'all'});
@@ -414,6 +462,9 @@
     const markup = (grouped ?? rows.map(card).join('')) || `<div class="discovery-empty"><h3>${results.length ? validatingRun || loadingValues ? 'Checking current estimates…' : 'No results match this filter' : acquiring ? 'Searching this small batch…' : 'No listings to show'}</h3><p>${results.length ? 'Broaden Value or turn off Pre-2000 only to see more of this search. Unknown contents are excluded by Pre-2000 only.' : acquiring ? 'You can stop acquisition at any time.' : 'Try different keywords or filters, or choose More results when available. No new search starts automatically.'}</p></div>`;
     if (window.DexDiscoveryDisplay) window.DexDiscoveryDisplay.patch($('discovery-cards'),markup);else $('discovery-cards').innerHTML = markup;
     if ($('discovery-form').dataset.lotSearch !== 'true') $('discovery-cards').querySelectorAll('article[data-result]').forEach(card => { const id = run?.run_id; window.DexInterpretation?.mount(card, {kind:'discovery',run_id:id,result_id:card.dataset.result}, () => currentAuthority() && run?.run_id === id && !['stopped','expired'].includes(run?.state) && !changed()); });
+    bindReviewLinks();
+  }
+  function bindReviewLinks() {
     $('discovery-cards').querySelectorAll('[data-review-id]').forEach(anchor => {if (anchor.dataset.reviewBound) return;anchor.dataset.reviewBound = '1';anchor.addEventListener('click',() => {anchor.href = '/shopping/check/?' + new URLSearchParams({discovery_run:run.run_id,item_id:anchor.dataset.reviewId,return:reviewReturn(anchor.dataset.reviewId)});});});
   }
   function render(value) {
@@ -435,6 +486,10 @@
     sourceUnavailable = false;
     run = value;captureDeadline(value);
     acquiring = Boolean(value.running);
+    $('discovery-results-title').textContent = singlesResults() ? 'Received singles' : 'Best options';
+    document.querySelectorAll('[data-lot-results]').forEach(element => {element.hidden = singlesResults();});
+    $('lot-values-status').hidden = singlesResults();
+    if (singlesResults()) $('lot-values-reload').hidden = true;
     $('discovery-results').hidden = false;
     $('discovery-scope').textContent = value.scope_label || (value.choices?.intent === 'missing' ? 'Missing cards · current collection' : 'Find deals · includes owned cards');
     $('discovery-limitation').textContent = [value.note || 'Temporary comparison · references retain their original dates. Results are not saved to history.',value.limitation].filter(Boolean).join(' ');
@@ -444,8 +499,8 @@
     $('discovery-next').hidden = value.contract === 'dex-lot-hunt-v2';
     if (value.contract === 'dex-lot-hunt-v2') $('lot-values-status').textContent = value.running ? 'Checking contents and value…' : value.results?.some(r=>r.lot_value?.subtotal!=null || r.lot_value?.native_guides?.length) ? 'Value comparisons use dated references. Open Details to see the evidence.' : 'No supported value comparisons yet. Order reflects request match, contents and known cost.';
     renderCards();updateButtons();checkSources();
-    if (window.DexLotValues && !acquiring && value.results?.length && !value.values_checked) loadValues();
-    if (focusResults && !acquiring && value.results?.length) {
+    if (window.DexLotValues && !singlesResults() && !acquiring && value.results?.length && !value.values_checked) loadValues();
+    if (focusResults && !acquiring && (value.results?.length || singlesResults())) {
       focusResults = false;requestAnimationFrame(() => {$('discovery-results-title').focus({preventScroll:true});$('discovery-results').scrollIntoView?.({block:'start'});});
     }
   }
@@ -495,7 +550,7 @@
     if (!next && $('discovery-form').dataset.lotSearch === 'true' && !selected.query) {status('Enter a Pokémon or card name.');$('discovery-query').focus();return;}
     captured = next ? captured : signature(selected);
     const token = ++sequence;
-    const keepBrowsing = next && Boolean(prior.choices?.query);
+    const keepBrowsing = next && Boolean(prior.choices?.query || prior.choices?.single_buying);
     focusResults = !next;
     if (!keepBrowsing) clearResults(prior);
     acquiring = true;stopWanted = false;run = keepBrowsing ? prior : null;
@@ -524,7 +579,7 @@
         acquiring = false;uncertain = false;stopWanted = false;actionId = null;
         const destination = new URL(location.href);destination.searchParams.delete('request_id');
         history.replaceState(null,'',destination.pathname + destination.search);
-        status(error.message + ' Select Find lots when you are ready to try again.',true);
+        status(error.message + ' Use the search controls when you are ready to try again.',true);
       } else {
         uncertain = true;acquiring = true;
         status('The search response was lost or unavailable. Its outcome is unknown. Reload this section to check; no new search will be sent.',true);
@@ -557,6 +612,9 @@
   function invalidate() {
     revoked = true;++targetSequence;$('discovery-target').replaceChildren();$('discovery-goal').replaceChildren();goals=[];target={species:null,group_id:null,printing_id:null};$('discovery-query').value='';document.querySelector('.discovery-context')?.replaceChildren();$('discovery-context').textContent='{}';$('discovery-goals').textContent='[]';$('discovery-initial').textContent='{}';targetsReady = false;++catalogSequence;clearTimeout(catalogTimer);$('catalog-cards').replaceChildren();++sequence;clearTimeout(timer);clearInterval(lifecycleTimer);clearResults();run = null;captured = null;
     $('discovery-cards').replaceChildren();$('discovery-results').hidden = true;
+    const signIn = $('discovery-sign-in');
+    signIn.href = '/login/?' + new URLSearchParams({next:location.pathname+location.search});
+    signIn.hidden = false;
     status('Your session changed. Sign in again to continue.',true);updateButtons();
   }
   $('discovery-form').addEventListener('submit',event => {event.preventDefault();rememberChoices();start();});
@@ -567,6 +625,8 @@
   $('find-missing').addEventListener('click',() => {intent = 'missing';if (!$('discovery-goal').value) {$('discovery-focus').value = 'kanto';$('discovery-missing-basis').value = 'species';}policy();loadTargets();});
   $('discovery-stop').addEventListener('click',stop);
   $('discovery-next').addEventListener('click',() => start(true));
+  $('single-release').addEventListener('change',() => {if (singlesResults()) renderCards();});
+  $('discovery-product-type').addEventListener('change',() => {if (!singlesMode() && intent === 'missing' && !targetsReady) loadTargets();});
   if (window.DexLotValues) {
     for (const [id,field] of [['lot-time-window','time_window'],['lot-value-sort','value_sort'],['lot-buying-mode','buying_mode'],['lot-value-basis','value_basis'],['lot-estimate-filter','estimate_filter']]) {
       if (initial[field]) { const value = field === 'time_window' && ['all','168'].includes(initial[field]) ? '72' : field === 'value_sort' && initial[field] === 'total' ? 'value' : initial[field]; $(id).value = value; }
@@ -600,6 +660,9 @@
   if (intent === 'missing' && !initial.scope && !initial.goal) $('discovery-focus').value = 'kanto';
   if (initial.prefer_vintage !== undefined) $('discovery-prefer-vintage').checked = initial.prefer_vintage === '1';
   if (initial.english_vintage !== undefined) $('discovery-english-vintage').checked = initial.english_vintage === '1';
+  if (initial.product_type === 'both') $('discovery-product-type').value = 'mixed_lots';
+  if (initial.single_buying) $('single-buying').value = initial.single_buying;
+  if (initial.single_release) $('single-release').value = initial.single_release;
   populateSets(initial.set_id ? [{id:initial.set_id,name:initial.set_id}] : []);
   if (initial.set_id) $('discovery-set').value = initial.set_id;
   $('discovery-goal').innerHTML = '<option value="">My current collection</option>' + goals.map(goal => `<option value="${esc(goal.id)}">Frozen goal · ${esc(goal.name)}</option>`).join('');
@@ -667,6 +730,14 @@
       requestAnimationFrame(() => {if (!currentAuthority()) return;if (initial.scroll) window.scrollTo(0,Number(initial.scroll));if (initial.focus) $(initial.focus)?.focus({preventScroll:true});});
     } catch (error) {
       if (sequence !== token || !currentAuthority()) return;
+      if (error.status === 404 && !actionId) {
+        const url = new URL(location.href);url.searchParams.delete('run_id');
+        history.replaceState(null,'',url.pathname + url.search);
+        clearResults();run = null;captured = null;acquiring = false;uncertain = false;stopWanted = false;
+        $('discovery-results').hidden = true;
+        status('This temporary search is unavailable. Your inputs are ready for a new search.',true);
+        updateButtons();return;
+      }
       uncertain = true;acquiring = true;stopWanted = false;
       status(error.message + ' Search status is unknown. Reload this section; no new search will be sent.',true);
       $('discovery-reload').hidden = false;updateButtons();
@@ -710,9 +781,10 @@
     updateButtons();
     // Dispatch the receipt first on the shared local admission lane.
     // Optional sections can still recover independently of its response.
-    reloadRun();
+    if (singlesMode()) reloadRun().then(() => {if (currentAuthority()) loadOptions();});
+    else reloadRun();
   }
   if (intent === 'missing') loadTargets();
-  loadOptions();
+  if (!singlesMode() || !(initial.run_id || initial.request_id)) loadOptions();
   if (!catalogStarted && document.querySelector('.discovery-local').open) catalogSearch();
 })();
