@@ -56,6 +56,7 @@ CARDS = [
         ("Lapras Fossil 10/62 English", "eligible", "holo"),
         ("Fossil Lapras #25/62 English non-holo", "eligible", "normal"),
         ("Team Rocket Dratini 53/82 English", "eligible", None),
+        ("Team Rocket Dratini 53/82 English LP/MP", "eligible", None),
         ("Lapras Boundary 1/10", "later", None),
         ("Lapras Unknown 1/10", "unknown", None),
         ("Fossil Lapras #10/62 #25/62", "conflicting", None),
@@ -143,8 +144,30 @@ def test_singles_use_named_pages_and_shared_durable_allowance(env, monkeypatch):
 
 
 def test_broad_wire_is_finite_and_singles_optional_set_is_a_keyword():
-    (page,) = discovery_paging.singles_pages("Pokemon WOTC", "buy_now")
+    (page,) = discovery_paging.singles_pages("Pokemon", "buy_now", vintage_sample=True)
     params = discovery_paging.checked_params(page)
-    assert params["q"] == "Pokemon WOTC" and params["limit"] == 20
-    assert params["category_ids"] == "183454" and "aspect_filter" not in params
+    assert params["q"] == "Pokemon" and params["limit"] == 20
+    assert params["category_ids"] == "183454"
+    assert params["aspect_filter"] == "categoryId:183454,Game:{Pokémon TCG},Set:{Base Set|Fossil|Neo Genesis}"
+    assert discovery_paging.following(page, {"total": 80}, [None] * 20).vintage_sample
     assert discovery.submitted_query("Lapras", set_name="Fossil") == "Lapras Fossil"
+    (named,) = discovery_paging.singles_pages("Lapras Fossil", "buy_now")
+    assert "aspect_filter" not in discovery_paging.checked_params(named)
+
+
+def test_pack_in_singles_category_is_excluded(monkeypatch):
+    monkeypatch.setattr(comparison.store, "verified", lambda actor: actor)
+    run = SimpleNamespace(
+        choices=discovery.Choices(product_type="singles", single_buying="both"),
+        single_targets=set(),
+        single_set_name=None,
+    )
+    assert not comparison._project(
+        None,
+        [offer(title="Vintage Pokemon Cards Pack! 1999 WOTC")],
+        CARDS,
+        [],
+        artwork={},
+        singles=run,
+        release_dates=DATES,
+    )

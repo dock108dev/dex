@@ -13,6 +13,8 @@ PAGE_SIZE = 20
 MAX_PAGES = 4
 CATEGORIES = {"mixed_lots": ("183455",), "singles": ("183454",), "both": ("183455", "183454")}
 BUYING = {"buy_it_now": "FIXED_PRICE", "auction": "AUCTION"}
+# eBay US lists these Set values and the Pokémon TCG Game in Single Cards.
+VINTAGE_SAMPLE_SETS = ("Base Set", "Fossil", "Neo Genesis")
 
 
 @dataclass(frozen=True)
@@ -23,6 +25,7 @@ class NamedPage:
     offset: int = 0
     set_name: str | None = None
     lane: str | None = None
+    vintage_sample: bool = False
 
 
 def checked_params(page):
@@ -38,6 +41,7 @@ def checked_params(page):
         or page.offset >= MAX_PAGES * PAGE_SIZE
         or page.offset % PAGE_SIZE
         or (page.lane is not None and (page.category != "183454" or page.lane not in BUYING))
+        or (page.vintage_sample and (not page.lane or page.set_name is not None or page.query != "Pokemon"))
         or (
             page.set_name is not None
             and (
@@ -58,7 +62,10 @@ def checked_params(page):
         "offset": page.offset,
         "fieldgroups": "EXTENDED",
     }
-    if page.set_name:
+    if page.vintage_sample:
+        sets = "|".join(VINTAGE_SAMPLE_SETS)
+        result["aspect_filter"] = f"categoryId:183454,Game:{{Pokémon TCG}},Set:{{{sets}}}"
+    elif page.set_name:
         result["aspect_filter"] = f"categoryId:{page.category},Set:{{{page.set_name}}}"
     if page.sort == "ending_soonest":
         result["sort"] = "endingSoonest"
@@ -78,13 +85,15 @@ def first_pages(query, product_type, sort, *, set_name=None):
     return pages
 
 
-def singles_pages(query, buying):
+def singles_pages(query, buying, *, vintage_sample=False):
     lanes = (
         ("buy_it_now", "auction")
         if buying == "both"
         else ("buy_it_now" if buying == "buy_now" else "auction",)
     )
-    pages = [NamedPage(query, "183454", "best_match", lane=lane) for lane in lanes]
+    pages = [
+        NamedPage(query, "183454", "best_match", lane=lane, vintage_sample=vintage_sample) for lane in lanes
+    ]
     for page in pages:
         checked_params(page)
     return pages

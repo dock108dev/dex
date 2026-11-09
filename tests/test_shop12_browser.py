@@ -226,3 +226,74 @@ def test_lot_values_arrive_automatically_and_controls_stay_local(browser_app):
             box = control.bounding_box()
             assert box and box["x"] >= 0 and box["x"] + box["width"] <= width + 1
     assert not errors
+
+
+def test_singles_filter_review_back_reload_and_expired_receipt_are_local(browser_app):
+    from playwright.sync_api import expect
+
+    state, page, base, _, errors = browser_app
+    run_id, calls = str(uuid.uuid4()), []
+    expired = False
+
+    def route(handler):
+        request = handler.request
+        calls.append(request.method)
+        binding = request.header_value("X-Dex-Shopping-Binding")
+        result = received(run_id, state["actor"].user_id, binding)
+        if not urlsplit(request.url).query:
+            handler.fulfill(
+                json=dict(
+                    provider={"enabled": True, "configured": True},
+                    goals=[],
+                    sets=[],
+                    authority=result["authority"],
+                )
+            )
+            return
+        if expired:
+            handler.fulfill(status=404, body="Expired")
+            return
+        result["choices"].update(
+            query="Lapras", product_type="singles", single_buying="auction", sort="best_match"
+        )
+        result["scope_label"] = "Singles · Lapras"
+        result["counts"]["summary_count"] = 2
+        first = result["results"][0]
+        first.update(
+            title="Controlled Fossil Lapras",
+            buying_options=["AUCTION"],
+            release=dict(
+                status="eligible", name="Lapras", set_name="Fossil", collector_number="25", finish="normal"
+            ),
+        )
+        result["results"].append(
+            dict(first, id="later", title="Controlled later Lapras", release={"status": "later"})
+        )
+        handler.fulfill(json=result)
+
+    page.route("**/api/shopping/discovery/**", route)
+    page.goto(
+        base
+        + f"/shopping/?run_id={run_id}&q=Lapras&product_type=singles&single_buying=auction&single_release=through2000"
+    )
+    expect(page.get_by_text("2 received · 1 eligible in this view")).to_be_visible()
+    assert not page.get_by_text("Controlled later Lapras").count()
+    page.locator("#single-release").select_option("all")
+    expect(page.get_by_text("Controlled later Lapras")).to_be_visible()
+    page.locator("#single-release").select_option("through2000")
+    page.get_by_role("link", name="Review listing").click()
+    page.get_by_role("link", name="Back to search").click()
+    offer = page.locator("#offer-engineering-result")
+    expect(offer).to_be_focused()
+    page.reload()
+    expect(offer).to_be_focused()
+    expect(page.locator("#discovery-query")).to_have_value("Lapras")
+    expect(page.locator("#single-buying")).to_have_value("auction")
+    expect(page.locator("#single-release")).to_have_value("through2000")
+    expired = True
+    page.reload()
+    expect(page.get_by_text("Your inputs are ready for a new search.", exact=False)).to_be_visible()
+    expect(page.get_by_role("button", name="Find singles")).to_be_enabled()
+    expect(page.locator("#discovery-query")).to_have_value("Lapras")
+    assert calls and set(calls) == {"GET"}
+    assert not errors

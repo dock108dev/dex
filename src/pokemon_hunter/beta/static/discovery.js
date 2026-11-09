@@ -65,7 +65,7 @@
       throw new Error('Your session is unavailable. Sign in again to continue.');
     }
     let data;
-    try { data = await response.json(); } catch { throw new Error('Shopping did not return a readable response.'); }
+    try { data = await response.json(); } catch { throw Object.assign(new Error('Shopping did not return a readable response.'),{status:response.status}); }
     if (!response.ok) {
       const busy = response.status === 503 && data.error === 'runtime_busy';
       if (response.status === 409 && ['lot_hunt_policy','lot_hunt_capacity','singles_policy','singles_capacity'].includes(data.code)) throw Object.assign(new Error(data.error), {status:409, category:'not_dispatched', code:data.code});
@@ -617,7 +617,7 @@
     signIn.hidden = false;
     status('Your session changed. Sign in again to continue.',true);updateButtons();
   }
-  $('discovery-form').addEventListener('submit',event => {event.preventDefault();rememberChoices();start();});
+  $('discovery-form').addEventListener('submit',event => {event.preventDefault();rememberChoices({focus:null,scroll:null});start();});
   $('catalog-search').addEventListener('click',() => catalogSearch(false,true));
   $('catalog-next').addEventListener('click',() => {if (catalogHasMore) catalogSearch(true);});
   $('catalog-clear-target').addEventListener('click',() => {target = {species:null,group_id:null,printing_id:null};catalogSearch();updateButtons();});

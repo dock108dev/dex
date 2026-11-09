@@ -22,10 +22,16 @@ ORIGINAL_TOTALS = {
 SPECIAL = re.compile(
     r"\b(?:reprint(?:ed)?|celebrations?|jumbo|galaxy|cosmos|copyright|1999\s*[-–]\s*2000)\b", re.I
 )
+PACK = re.compile(r"\bpacks?\b(?![ -](?:fresh|pulled)\b)", re.I)
+NON_IDENTITY_ISSUES = {
+    "Conflicting literal grader or grade claims",
+    "Conflicting seller raw-condition claims",
+    "No supported literal grader and grade combination",
+}
 
 
 def classify(matched, clues, issues, dates):
-    if issues:
+    if set(issues) - NON_IDENTITY_ISSUES:
         return {"status": "conflicting"}
     if not matched:
         return {"status": "unknown"}

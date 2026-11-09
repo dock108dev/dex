@@ -579,7 +579,12 @@ def _project(
         ):
             issues.append("A multiple-card or selectable offer cannot use a single-card reference")
         if singles:
-            if kind != "single" or count is not None and count != 1:
+            if (
+                kind != "single"
+                or discovery_singles.PACK.search(claim_text)
+                or count is not None
+                and count != 1
+            ):
                 continue
             row["single_scope_match"] = discovery_singles.scope_match(singles, matched, options)
             row["release"] = discovery_singles.classify(matched, clues, identity_issues, release_dates)

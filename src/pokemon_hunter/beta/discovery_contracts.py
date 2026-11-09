@@ -96,6 +96,7 @@ class Run:
     named_pages: list | None = None
     named_count: int = 0
     single_set_name: str | None = None
+    single_vintage_sample: bool = False
     single_targets: frozenset = field(default_factory=frozenset)
     single_pages: list[str] = field(default_factory=list)
     action_counts: dict | None = None

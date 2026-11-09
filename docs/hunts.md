@@ -125,11 +125,12 @@ most one Browse request with up to 20 summaries, plus OAuth when needed. The
 original run holds at most four pages. All sends debit the existing shared
 allowance. Stop, continuation and the original temporary lease still apply.
 
-Leaving the name blank uses the keywords `Pokemon WOTC`, or `Pokemon` with
-the selected set's name. This samples seller keyword matches in the singles
-category. The received counts describe those pages, including duplicates and
-other exclusions. The sample favors sellers whose listings match those words.
-Dex sends no Game, Set, language or manufacturing-year aspect in this flow.
+Leaving the name and set blank samples seller-classified Pokémon TCG singles
+in Base Set, Fossil and Neo Genesis. That request uses `Pokemon` and the
+verified Game and Set aspects. An explicitly selected catalog set uses
+keywords because seller taxonomy can use a different name. Counts describe the
+received pages, including duplicates and other exclusions. Seller metadata can
+omit listings and admit incorrect matches. The release cutoff remains local.
 
 **Through 2000** locally screens the received offers through December 31, 2000
 using the retained catalog's language-specific release evidence. A dated set

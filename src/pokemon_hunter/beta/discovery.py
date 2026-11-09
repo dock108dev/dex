@@ -340,6 +340,8 @@ def _expire(run_id):
 
 def _scope_label(run):
     if run.choices.single_buying:
+        if run.single_vintage_sample:
+            return "Singles · eBay US · Pokémon TCG · " + ", ".join(discovery_paging.VINTAGE_SAMPLE_SETS)
         return "Singles · eBay US · " + run.queries[0]
     if run.choices.collection_intent:
         from .canonical_species import registry
@@ -866,10 +868,11 @@ def start(actor, session_key, raw, *, auth_session=None):
                 query = f"{group['name']} {group['collector_number']}"
                 set_name = group["set_name"]
             run.single_set_name = set_name
-            run.queries = [
-                submitted_query(query or ("Pokemon" if set_name else "Pokemon WOTC"), set_name=set_name)
-            ]
-            run.named_pages = discovery_paging.singles_pages(run.queries[0], choices.single_buying)
+            run.single_vintage_sample = not (query or set_name)
+            run.queries = [submitted_query(query or "Pokemon", set_name=set_name)]
+            run.named_pages = discovery_paging.singles_pages(
+                run.queries[0], choices.single_buying, vintage_sample=run.single_vintage_sample
+            )
             run.action_counts = {}
             _singles_capacity(actor, run, bind=True)
             run.admit = lambda stage: _admit_singles(run, stage)
