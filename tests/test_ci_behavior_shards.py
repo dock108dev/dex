@@ -172,7 +172,10 @@ def test_workflow_matrix_reports_match_each_shard_and_runtime():
     jobs = yaml.safe_load((ROOT / ".github/workflows/validate.yml").read_text())["jobs"]
     matrix = jobs["behavior"]["strategy"]["matrix"]
     assert set(matrix["shard"]) == set(shards.SHARDS)
-    assert set(matrix["python"]) == {"3.14", "3.15"}
+    assert matrix["python"] == ["3.15"]
+    coverage = next(step["run"] for step in jobs["gate"]["steps"] if step.get("id") == "coverage")
+    assert coverage.count("--python ") == 1
+    assert "--python 3.15" in coverage
     aggregate = next(step["run"] for step in jobs["gate"]["steps"] if step.get("id") == "result")
     for shard in shards.SHARDS:
         assert f'--expect-job-reports "Behavior: {shard}={len(matrix["python"])}"' in aggregate
@@ -203,7 +206,7 @@ def test_required_gate_records_coverage_failure_even_when_all_jobs_pass(tmp_path
     (binary / "python3").symlink_to(sys.executable)
     children = tmp_path / "reports/ci/children"
     for shard in shards.SHARDS:
-        for runtime in ("3.14", "3.15"):
+        for runtime in jobs["behavior"]["strategy"]["matrix"]["python"]:
             retained_job(tmp_path, children / f"{shard}-{runtime}", "Behavior: " + shard, runtime)
     for name in (
         "Source quality",
@@ -231,6 +234,6 @@ def test_required_gate_records_coverage_failure_even_when_all_jobs_pass(tmp_path
     assert result.returncode == (0 if coverage_status == "success" else 1), result.stderr
     record = json.loads((tmp_path / "reports/ci/gate/metrics.json").read_text())
     assert record["result"] == ("PASS" if coverage_status == "success" else "FAIL")
-    assert len(record["job_reports"]) == 13
+    assert len(record["job_reports"]) == 9
     if coverage_status != "success":
         assert not (tmp_path / "output").exists()

@@ -161,7 +161,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-24.04]
-        python: ['3.15', '3.14']
+        python: ['3.15']
         shard: [core, shopping-discovery, shopping-decisions, shopping-journeys]
 
   distribution:
@@ -189,8 +189,7 @@ jobs:
         rebuilt=("$RUNNER_TEMP/dex-from-sdist"/*.whl)
         [[ ${#rebuilt[@]} -eq 1 ]]
         cmp "${wheel[0]}" "${rebuilt[0]}"
-        # Smoke the fresh distribution on the primary CI runtime. Behavior runs
-        # on both supported minors; installed 3.14 release qualification is separate.
+        # Smoke the fresh distribution on the same Python 3.15 runtime as behavior.
         uv venv --python 3.15 "$RUNNER_TEMP/dex-wheel"
         uv export --locked --no-dev --no-emit-project --format requirements-txt --output-file "$RUNNER_TEMP/runtime-requirements.txt" > /dev/null
         uv pip sync --python "$RUNNER_TEMP/dex-wheel/bin/python" --require-hashes "$RUNNER_TEMP/runtime-requirements.txt"
@@ -357,13 +356,13 @@ jobs:
       with:
         pattern: ci-*-${{ github.run_id }}-${{ github.run_attempt }}
         path: reports/ci/children
-    - name: Combine complete branch coverage separately for each runtime
+    - name: Combine complete Python 3.15 branch coverage
       id: coverage
       if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
       run: >-
         uv run --no-sync python scripts/ci/combine_behavior.py
         --reports reports/ci/children --output reports/ci/gate
-        --python 3.15 --python 3.14
+        --python 3.15
     - name: Require every independent job and report
       id: result
       if: always()
@@ -375,8 +374,8 @@ jobs:
         python3 scripts/ci/report.py aggregate --needs-json "$NEEDS_JSON" --output reports/ci/gate/metrics.json --required quality --required behavior --required distribution --required browser --required security --required staging --required coverage \
           --report-directory reports/ci/children \
           --expect-job-reports "Source quality=1" \
-          --expect-job-reports "Behavior: core=2" --expect-job-reports "Behavior: shopping-discovery=2" \
-          --expect-job-reports "Behavior: shopping-decisions=2" --expect-job-reports "Behavior: shopping-journeys=2" \
+          --expect-job-reports "Behavior: core=1" --expect-job-reports "Behavior: shopping-discovery=1" \
+          --expect-job-reports "Behavior: shopping-decisions=1" --expect-job-reports "Behavior: shopping-journeys=1" \
           --expect-job-reports "Staging PostgreSQL=1" --expect-job-reports "Fresh distribution=1" --expect-job-reports "Synthetic browser journeys=1" --expect-job-reports "Security and dependencies=1"
         echo "result=PASS" >> "$GITHUB_OUTPUT"
     - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

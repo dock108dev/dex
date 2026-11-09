@@ -20,15 +20,15 @@ not validate personal collections, live marketplace results or a hosted deployme
 | `assurance.yml / container` | Non-publishing image build and non-root installed imports without networking | Schedule or manual `compatibility` |
 | `assurance.yml / health` | Bounded Actions history and storage metadata | Schedule or manual; advisory collection |
 
-Normal hosted behavior uses Ubuntu 24.04 with Python 3.14 and 3.15. Compatibility
+Normal hosted behavior uses Ubuntu 24.04 with Python 3.15 only. Compatibility
 adds the Linux container build, not obsolete Python versions. Every PR also installs
 and compiles the fresh package on Python 3.15. Other jobs use
 Ubuntu and Python 3.15, with Node 24 where needed. Matrix fail-fast is disabled.
-Behavior has a 45-minute limit per shard on every runtime. The core modules,
+Behavior has a 45-minute limit per shard. The core modules,
 Shopping 12–13, Shopping 14–15, and Shopping 16 onward run on independent runners;
 tests inside each shard remain serial so performance measurements do not compete.
 `scripts/ci/behavior_shards.py` assigns every discovered test module exactly once,
-including future modules. Every shard and both runtimes must pass. Full-size datasets,
+including future modules. Every Python 3.15 shard must pass. Full-size datasets,
 sample counts, performance budgets and the 90-second diagnostic timer are unchanged.
 Verbose pytest output identifies the active test before a diagnostic stack dump;
 that dump reports a long-running test and does not terminate it.
@@ -44,9 +44,9 @@ not configured by these workflows; add `merge_group` before requiring queue gate
 
 ## Platform coverage
 
-Hosted behavior checks use Ubuntu 24.04 and both supported Python minors. The
-fresh-distribution job uses 3.15; a release installed on 3.14 also needs its own
-noneditable distribution smoke on that runtime. macOS is supported locally;
+Hosted behavior and fresh-distribution checks use Ubuntu 24.04 and Python 3.15.
+Python 3.14 remains allowed by the package metadata but is outside hosted CI coverage.
+macOS is supported locally;
 validate platform-sensitive changes there with the same locked dependencies and
 disposable test state. Local results do not substitute for hosted checks, and
 engineering tests do not establish behavior of a separately installed runtime.
@@ -129,10 +129,10 @@ JSON records and native GitHub job summaries. Records include the tested merge S
 PR head, ref/event, run/attempt, runtime, tool versions and actual outcomes. Missing
 values stay unavailable; a previous successful run does not qualify changed source.
 
-The hosted aggregate expects thirteen job reports: eight behavior shards and five
+The hosted aggregate expects nine job reports: four behavior shards and five
 other checks. It verifies execution of every module assigned to each shard.
 The gate additionally validates all four shard identities and combines their raw
-branch coverage separately for Python 3.14 and 3.15. Combined XML/JSON coverage is
+branch coverage for Python 3.15. Combined XML/JSON coverage is
 retained in the gate artifact; percentages from individual shards are not added or
 averaged. Missing or invalid coverage fails the required gate. The compatibility container reports
 separately and must succeed for its assurance workflow to pass. It rejects
