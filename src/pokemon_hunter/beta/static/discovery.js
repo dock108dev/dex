@@ -4,7 +4,7 @@
   const $ = id => document.getElementById(id);
   if (!$('discovery-form')) return;
   const api = '/api/shopping/discovery/';
-  const singlesMode = () => $('discovery-product-type').value === 'singles';
+  const singlesMode = () => $('discovery-product-type').value === 'singles' && Boolean($('single-buying')?.value);
   const singlesResults = () => Boolean(run?.choices?.single_buying);
   const buyingLabel = {both:'Buy It Now and auction',buy_now:'Buy It Now',auction:'Auction',buy_it_now:'Buy It Now'};
   const receiptView = () => $('discovery-form').dataset.lotSearch === 'true' ? '&view=received' : '';
@@ -121,10 +121,10 @@
   function policy() {
     selectionCaptions();
     const singles = singlesMode(), missing = !singles && intent === 'missing';
-    $('discovery-form').dataset.lotSearch = String(!singles);
+    if (singles || policy.wasSingles) $('discovery-form').dataset.lotSearch = String(!singles);
     $('discovery-search').textContent = singles ? 'Find singles' : 'Find lots';
     $('single-controls').hidden = !singles;
-    document.querySelectorAll('[data-lots-only]').forEach(element => {element.hidden = singles;});
+    $('discovery-form').querySelectorAll('[data-lots-only]').forEach(element => {element.hidden = singles;});
     const singleTarget = $('single-target');
     singleTarget.hidden = !target.group_id;
     singleTarget.textContent = target.group_id ? (target.printing_id ? 'Exact printing selected · ' + (initial.printing_label || 'Edit the name or set to clear this selection') : 'Selected card number and set') : '';
@@ -487,7 +487,7 @@
     run = value;captureDeadline(value);
     acquiring = Boolean(value.running);
     $('discovery-results-title').textContent = singlesResults() ? 'Received singles' : 'Best options';
-    document.querySelectorAll('[data-lot-results]').forEach(element => {element.hidden = singlesResults();});
+    $('discovery-results').querySelectorAll('[data-lot-results]').forEach(element => {element.hidden = singlesResults();});
     $('lot-values-status').hidden = singlesResults();
     if (singlesResults()) $('lot-values-reload').hidden = true;
     $('discovery-results').hidden = false;

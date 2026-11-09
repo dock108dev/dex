@@ -62,7 +62,8 @@ def home(request):
         initial.setdefault("set_id", group["set_name"])
         if context.get("child"):
             initial["printing_label"] = next(
-                (row.get("label") for row in detail["variants"] if row["id"] == context["child"]), None
+                (row.get("variant_label") for row in detail["variants"] if row["id"] == context["child"]),
+                None,
             )
     if initial.get("product_type") != "singles" and (
         context["kind"] in {"goal", "missing"}

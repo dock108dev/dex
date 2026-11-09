@@ -483,15 +483,17 @@ def _legacy_status(actor, session_key, run_id, *, selected_result=None, received
             if singles
             else run.choices
         )
-        _context_current(actor, run.choices)
+        if singles:
+            _context_current(actor, run.choices)
         candidates = _candidate_data(actor, choices, run.scope, ownership=False)
         # Review renders its checked proposal artwork separately. Do not bind
         # images for the whole comparison catalog merely to admit one offer.
-        rows = (
-            compare(actor, raws, candidates, include_artwork=False)
-            if selected_result is not None
-            else compare(actor, raws, candidates, singles=run if singles else None)
-        )
+        if selected_result is not None:
+            rows = compare(actor, raws, candidates, include_artwork=False)
+        elif singles:
+            rows = compare(actor, raws, candidates, singles=run)
+        else:
+            rows = compare(actor, raws, candidates)
     if run.choices.sort == "ending_soonest":
         positions = {str(raw.get("itemId")): i for i, raw in enumerate(raws)}
         rows.sort(key=lambda row: positions.get(str(row.get("item_id")), len(positions)))
