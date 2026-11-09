@@ -20,6 +20,15 @@ NOW = datetime(2026, 10, 9, 12, tzinfo=ZoneInfo("America/New_York"))
 
 @pytest.fixture
 def shop(b2, monkeypatch):
+    # Route calls and reevaluation must use the same clock as these dated inputs.
+    # Keep the real freshness rules: only this fixture's domain clock is fixed.
+    class ShoppingDatetime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return NOW.astimezone(tz) if tz is not None else NOW.replace(tzinfo=None)
+
+    monkeypatch.setattr(shopping, "datetime", ShoppingDatetime)
+    monkeypatch.setattr(lot_calculator, "datetime", ShoppingDatetime)
     guides = [
         dict(
             card_id="b",
