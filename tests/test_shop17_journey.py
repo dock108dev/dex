@@ -388,12 +388,13 @@ def journey(page, base, goal, cx, report, width, zoom, exercise_changes):
     assert out.evaluate("e=>e.scrollWidth<=e.clientWidth+1 && e.getBoundingClientRect().right<=innerWidth+1")
     scope = loc("#check-context").inner_text()
     if goal:
-        # These reviewed printings are outside the frozen goal. The compact
-        # context must not advertise them as additions to that goal.
-        assert scope == ""
-        expect(loc("#check-context")).to_be_hidden()
+        # The title may suggest a goal candidate, but the reviewed printings
+        # are outside its frozen membership and cannot count as matches.
+        assert "No reviewed collection matches yet" in scope
+        assert "Possible additions mentioned in the title, not included in the review" in scope
+        assert "Reviewed collection matches:" not in scope
     else:
-        assert "Potential collection additions: Venusaur" in scope
+        assert "Reviewed collection matches: Venusaur" in scope
     link = out.locator("a")
     assert link.get_attribute("href") == SELLER
     link.focus()
