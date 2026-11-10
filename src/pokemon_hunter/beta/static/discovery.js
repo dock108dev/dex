@@ -443,7 +443,7 @@
       $('discovery-shown').textContent = `${received} received · ${rows.length - unavailable} eligible in this view · ${buyingLabel[run.choices.single_buying]}`;
       const lanes = (run.received_buying_lanes || []).map(lane => buyingLabel[lane]).join(' + ');
       $('discovery-scope').textContent = `${run.scope_label} · ${strict ? 'Through 2000' : 'Any release date'} · ${run.pages_completed || 0} of up to 4 pages${lanes ? ' · Pages received: ' + lanes : ''}`;
-      const empty = run.state === 'expired' ? 'This search expired. Select Find singles to search again.' :
+      const empty = run.state === 'unauthorized' ? 'Authority changed; the received listings were removed.' : run.state === 'expired' ? 'This search expired. Select Find singles to search again.' :
         run.state === 'stopped' ? 'This search was stopped.' : acquiring ? 'Waiting for the next eBay page…' :
         !received ? (run.error || 'eBay returned no listing summaries in this batch.') : strict && results.length ?
         'No received singles qualify through 2000. Choose Any release date to inspect the excluded offers.' :
@@ -467,8 +467,8 @@
         return card(row).replace(`data-result="${esc(row.id)}"`,`data-result="${esc(key)}"`).replace(`id="offer-${esc(row.id)}"`,`id="offer-${esc(duplicate ? key : row.id)}"`);
       }).join('');
     }).join('');
-    const emptyTitle=run.state==='expired'?'This search expired':run.state==='stopped'?'This search was stopped':results.length ? validatingRun || loadingValues ? 'Checking current estimates…' : 'No results match these filters' : acquiring ? 'Searching this small batch…' : 'No listings in this batch';
-    const emptyHelp=run.state==='expired'?'The original listing evidence has expired. Start a new search for current offers.':run.state==='stopped'?'The stopped search no longer has available listings.':results.length?'Broaden Value or turn off Pre-2000 only to see more of this search. Unknown contents are excluded by Pre-2000 only.':acquiring?'You can stop acquisition at any time.':'Try different keywords or choose More results when available. No new search starts automatically.';
+    const emptyTitle=run.state==='unauthorized'?'Search results removed':run.state==='expired'?'This search expired':run.state==='stopped'?'This search was stopped':results.length ? validatingRun || loadingValues ? 'Checking current estimates…' : 'No results match these filters' : acquiring ? 'Searching this small batch…' : 'No listings in this batch';
+    const emptyHelp=run.state==='unauthorized'?'Authority changed; the received listings are no longer available.':run.state==='expired'?'The original listing evidence has expired. Start a new search for current offers.':run.state==='stopped'?'The stopped search no longer has available listings.':results.length?'Broaden Value or turn off Pre-2000 only to see more of this search. Unknown contents are excluded by Pre-2000 only.':acquiring?'You can stop acquisition at any time.':'Try different keywords or choose More results when available. No new search starts automatically.';
     const markup = (grouped ?? rows.map(card).join('')) || `<div class="discovery-empty"><h3>${esc(emptyTitle)}</h3><p>${esc(emptyHelp)}</p></div>`;
     if (window.DexDiscoveryDisplay) window.DexDiscoveryDisplay.patch($('discovery-cards'),markup);else $('discovery-cards').innerHTML = markup;
     if ($('discovery-form').dataset.lotSearch !== 'true') $('discovery-cards').querySelectorAll('article[data-result]').forEach(card => { const id = run?.run_id; window.DexInterpretation?.mount(card, {kind:'discovery',run_id:id,result_id:card.dataset.result}, () => currentAuthority() && run?.run_id === id && !['stopped','expired'].includes(run?.state) && !changed()); });

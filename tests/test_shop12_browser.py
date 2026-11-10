@@ -111,6 +111,31 @@ def test_received_lot_shows_costs_and_review_action_at_narrow_width(browser_app,
     assert not errors
 
 
+def test_removed_results_are_not_reported_as_an_empty_provider_batch(browser_app, monkeypatch):
+    from playwright.sync_api import expect
+
+    from pokemon_hunter.beta import discovery
+
+    state, page, base, _, errors = browser_app
+    monkeypatch.setattr(discovery.ebay_hunts, "status", lambda: dict(enabled=True, configured=True))
+    run_id = str(uuid.uuid4())
+
+    def route(handler):
+        binding = handler.request.header_value("X-Dex-Shopping-Binding")
+        if urlsplit(handler.request.url).query:
+            value = received(run_id, state["actor"].user_id, binding)
+            value.update(state="unauthorized", results=[], error="Authority changed; previous results were removed")
+            handler.fulfill(json=value)
+        else:
+            handler.continue_()
+
+    page.route("**/api/shopping/discovery/**", route)
+    page.goto(base + f"/shopping/?run_id={run_id}&q=Lapras")
+    expect(page.locator("#discovery-cards")).to_contain_text("Search results removed")
+    expect(page.locator("#discovery-cards")).not_to_contain_text("No listings in this batch")
+    assert not errors
+
+
 def test_options_failure_and_keyboard_recovery_preserve_results_at_narrow_sizes(browser_app, monkeypatch):
     from playwright.sync_api import expect
 
