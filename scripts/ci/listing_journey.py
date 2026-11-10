@@ -151,7 +151,7 @@ def exercise(page, base, output):
         page.locator("#discard-listing").click()
         passed("revealed temporary summary and checked return arrive without an eBay detail request")
         page.locator("#review-editor > summary").click()
-        page.get_by_text("Bid, budget and purchase costs", exact=True).click()
+        page.get_by_text("Bid, budget and listing details", exact=True).click()
         page.locator("#review-title").fill("My reviewed edits")
         page.locator("#review-price").fill("7.25")
         expect(page.locator("#listing-tools")).not_to_have_attribute("open", "")
@@ -183,6 +183,9 @@ def exercise(page, base, output):
         page.locator("#review-unknown").fill("10")
         page.locator("#check-compare").click()
         expect(page.locator("#check-results")).to_be_visible()
+        expect(page.locator("#check-results h2")).to_be_focused()
+        expect(page.locator("#check-results")).to_contain_text("check inbound shipping, purchase tax")
+        expect(page.locator("#check-results")).to_contain_text("Near-market comparison unavailable")
         assert set(compares[-1]) == {"lease", "revision"}
         assert saves[-1]["cards"][0]["quantity"] == 2
         assert saves[-1]["price"] == "3.00"

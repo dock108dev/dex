@@ -179,9 +179,9 @@ def useful_values(data, selected, refs, terms):
     return result, known, full
 
 
-def comparisons(data, known, full, useful_known, useful_full):
+def comparisons(data, known, full, useful_known, useful_full, *, bases=BASES):
     result = {}
-    for name in BASES:
+    for name in bases:
         basis = data[name]
         components = {
             "base_price": basis,

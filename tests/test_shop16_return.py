@@ -79,6 +79,13 @@ def test_original_assessment_across_return_failures(cx):
         status = page.locator("#check-status")
         bid = page.locator("#review-planned_bid")
         budget = page.locator("#review-budget")
+        rate = page.locator("#review-tax_rate")
+        page.locator("#review-tax").fill("")
+        rate.fill("0")
+        expect(page.locator("#review-save-status")).to_contain_text("Review saved")
+        page.reload()
+        expect(rate).to_have_value("0")
+        expect(rate).to_be_focused()
 
         def leave():
             expect(button).to_be_enabled()
@@ -114,7 +121,10 @@ def test_original_assessment_across_return_failures(cx):
         if result.get_attribute("data-pending"):
             page.get_by_role("button", name="Verify comparison").click()
         expect(result).not_to_have_attribute("data-pending", "true")
-        expect(result).to_contain_text("Lot summary")
+        expect(result).to_contain_text("Delivered cost")
+        expect(result).to_contain_text("Your 0% estimate on price plus shipping")
+        expect(result.locator("a")).to_be_focused()
+        expect(rate).to_have_value("0")
         now = datetime.now(ZoneInfo("America/New_York"))
         before_midnight = now.replace(hour=23, minute=59, second=50, microsecond=0)
         for issue in ("withdrawn", "aged", "midnight"):
@@ -153,7 +163,7 @@ def test_original_assessment_across_return_failures(cx):
         isolated_network(other, base)
         other.goto(page.url)
         expect(other.locator("#review-budget")).to_have_value("12")
-        other.get_by_text("Bid, budget and purchase costs", exact=True).click()
+        other.get_by_text("Bid, budget and listing details", exact=True).click()
         other.locator("#review-budget").fill("8")
         other.locator("#review-planned_bid").fill("10")
         other.locator("#check-compare").click()
@@ -168,12 +178,13 @@ def test_original_assessment_across_return_failures(cx):
         expect(result).to_contain_text("Budget bid limit $7.00")
 
         # Leave via browser Back before the autosave debounce.
-        page.get_by_text("Bid, budget and purchase costs", exact=True).click()
+        page.get_by_text("Bid, budget and listing details", exact=True).click()
         bid.fill("6")
         page.go_back()
         assert "q=Venusaur" in page.url
         page.go_forward()
         expect(bid).to_have_value("6")
+        expect(rate).to_have_value("0")
 
         seller = leave()
         stop()

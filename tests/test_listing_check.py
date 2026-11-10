@@ -623,6 +623,54 @@ def test_review_current_bid_and_planned_bid_are_independent_whole_lot_amounts(se
     assert all(item["full_delivered_cost"] is None for item in result["comparisons"].values())
 
 
+def test_delivered_breakdown_for_both_checked_buying_options(setup, monkeypatch):
+    _, p = active(setup)
+    collection.execute("UPDATE catalog_sets SET name='Base Set'")
+    monkeypatch.setattr(c, "datetime", SimpleNamespace(now=lambda tz: NOW))
+    offer = c.details(
+        ITEM,
+        raw(
+            buyingOptions=["AUCTION", "FIXED_PRICE"],
+            currentBidPrice=dict(value="4.25", currency="USD"),
+            shippingOptions=[dict(shippingCost=dict(value="0", currency="USD"))],
+        ),
+    )
+    actor = setup["actor"]
+    review = review_value(
+        p, price="4.25", price_kind="current_bid", shipping="0.00", tax_rate="7", other_costs="0"
+    )
+    assessment = c.compare(actor, review, offers=[offer])["assessment"]
+    bid = assessment["costs"]["listing_observation"]
+    buy_now = assessment["costs"]["buy_it_now"]
+    assert bid["base_plus_shipping"] == "4.25" and bid["full_delivered_cost"] == "4.55"
+    assert buy_now["base_plus_shipping"] == "3.50" and buy_now["full_delivered_cost"] == "3.75"
+    assert bid["components"]["tax"] == dict(amount="0.30", currency="USD", source="rate_estimate")
+    assert buy_now["components"]["tax"]["amount"] == "0.25"
+    assert buy_now["components"]["base_price"]["source"] == "seller_reported"
+    assert bid["components"]["shipping"] == dict(amount="0.00", currency="USD", source="seller_reported")
+    assert assessment["value"] is None and any(
+        "raw condition" in issue for issue in assessment["market_issues"]
+    )
+
+    review.update(tax_rate="", tax="0", authored_fields=["shipping", "tax"])
+    fixed = c.compare(actor, review, offers=[offer])["assessment"]["costs"]
+    assert fixed["buy_it_now"]["full_delivered_cost"] == "3.50"
+    assert fixed["listing_observation"]["components"]["shipping"]["source"] == "your_entry"
+    assert fixed["listing_observation"]["components"]["tax"]["source"] == "your_entry"
+
+    review.update(shipping="", tax="", tax_rate="0", other_costs="")
+    partial = c.compare(actor, review, offers=[offer])["assessment"]["costs"]["buy_it_now"]
+    assert partial["components"]["tax"] == dict(amount="0", currency="USD", source="rate_estimate")
+    assert partial["base_plus_shipping"] is None and partial["full_delivered_cost"] is None
+    assert partial["unknown_or_ineligible_components"] == ["shipping", "other_costs"]
+
+    review.update(shipping="0", tax_rate="", tax="0", other_costs="0")
+    offer["buy_now"] = dict(amount=None, currency=None)
+    missing = c.compare(actor, review, offers=[offer])["assessment"]["costs"]["buy_it_now"]
+    assert missing["unknown_or_ineligible_components"] == ["base_price"]
+    assert missing["full_delivered_cost"] is None
+
+
 def test_listing_catalog_exposes_checked_images_without_reference_values(workspace):
     data = c.catalog(workspace["actor"], workspace["catalog"][0]["name"])
     assert data["cards"] and all("artwork" in row for row in data["cards"])

@@ -164,19 +164,24 @@ def assess(value, entries, records, today, comparisons, offers, request):
         auction=auction,
         costs={
             basis: {
-                key: c[key]
-                for key in (
-                    "base_price",
-                    "base_plus_shipping",
-                    "before_tax",
-                    "full_delivered_cost",
-                    "unknown_or_ineligible_components",
-                )
+                **{
+                    key: c[key]
+                    for key in (
+                        "base_price",
+                        "base_plus_shipping",
+                        "before_tax",
+                        "full_delivered_cost",
+                        "unknown_or_ineligible_components",
+                        "cost_component_eligibility",
+                    )
+                },
+                "components": purchase_components(value, offers, request, basis),
             }
             for basis, c in comparisons.items()
         },
         evidence=evidence,
         issues=issues,
+        market_issues=issues.copy(),
         units=units,
         priced=priced,
         subtotal=math.money(subtotal),
@@ -222,4 +227,33 @@ def assess(value, entries, records, today, comparisons, offers, request):
     result.update(maximum=math.money(maximum))
     for key in ("price", "planned_bid"):
         result[key + "_above"] = math.amount(value[key]) > maximum if value.get(key) else None
+    return result
+
+
+def purchase_components(value, offers, request, basis):
+    """Project the amounts actually used and distinguish checked observations from inputs."""
+    offer = offers[-1] if offers else {}
+    authored = set(value.get("authored_fields", []))
+    inputs = {"base_price": request[basis], **request["delivery_cost_inputs"][basis]}
+    result = {}
+    for key, component in inputs.items():
+        amount, currency = component["amount"], component["currency"]
+        supplied = None
+        edited = bool({"currency", "price_kind" if key == "base_price" else key} & authored)
+        if key == "base_price" and basis == "buy_it_now":
+            supplied = offer.get("buy_now")
+            edited = False
+        elif key == "base_price" and basis == "listing_observation" and "price" not in authored:
+            supplied = offer.get("price")
+        elif key == "shipping":
+            supplied = offer.get("shipping")
+        if amount is None:
+            source = "unknown"
+        elif key == "tax" and value.get("tax_rate"):
+            source = "rate_estimate"
+        elif supplied and not edited and (amount, currency) == (supplied["amount"], supplied["currency"]):
+            source = "seller_reported"
+        else:
+            source = "your_entry"
+        result[key] = dict(amount=amount, currency=currency, source=source)
     return result

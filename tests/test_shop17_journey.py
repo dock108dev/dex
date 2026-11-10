@@ -360,7 +360,7 @@ def journey(page, base, goal, cx, report, width, zoom, exercise_changes):
         edit("grader " + name, grader, lambda: grader.select_option("PSA"), "PSA")
     shipping = loc("#review-shipping")
     edit("shipping", shipping, lambda: shipping.fill("2"), "2")
-    page.get_by_text("Bid, budget and purchase costs", exact=True).press("Enter")
+    page.get_by_text("Bid, budget and listing details", exact=True).press("Enter")
     for field, value in (("tax", "1"), ("other_costs", "0"), ("planned_bid", "12")):
         control = loc("#review-" + field)
         edit(field, control, lambda: control.fill(value), value)

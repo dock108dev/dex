@@ -692,7 +692,7 @@ def validate_review(actor, value):
         if value.get(key):
             shopping.math.amount(value[key])
     if value.get("tax_rate") and (value.get("tax") or shopping.math.amount(value["tax_rate"]) > 100):
-        raise ValueError("Choose either fixed tax or a rate on bid plus shipping up to 100%.")
+        raise ValueError("Choose either fixed tax or a rate on offer price plus shipping up to 100%.")
     if not isinstance(value["currency"], str) or not re.fullmatch(r"[A-Z]{3}", value["currency"]):
         raise ValueError("Use a three-letter currency.")
     if value.get("detail_run") is not None:
@@ -901,16 +901,8 @@ def compare(actor, value, *, offers=(), _checks=None):
             for basis in shopping.math.BASES
         },
     )
-    if value.get("tax_rate") and value.get("shipping"):
-        for basis in shopping.math.BASES:
-            if raw[basis]["amount"] is not None:
-                tax = lot_assessment.tax_due(
-                    *(
-                        shopping.math.amount(v)
-                        for v in (raw[basis]["amount"], value["shipping"], value["tax_rate"])
-                    )
-                )
-                raw["delivery_cost_inputs"][basis]["tax"].update(amount=str(tax), status="known")
+    for basis in shopping.math.BASES:
+        _estimate_tax(raw[basis], raw["delivery_cost_inputs"][basis], value.get("tax_rate"))
     with lot.price_snapshots.selected(p["id"] for p in selected):
         records = lot.retained_records()
     from .read_diagnostics import phase
@@ -958,6 +950,20 @@ def compare(actor, value, *, offers=(), _checks=None):
     return result
 
 
+def _estimate_tax(base, costs, rate):
+    if not rate:
+        return
+    percent = shopping.math.amount(rate)
+    shipping = costs["shipping"]
+    if not percent:
+        costs["tax"].update(amount="0", status="known")
+    elif base["amount"] is not None and shipping["amount"] is not None:
+        tax = lot_assessment.tax_due(
+            shopping.math.amount(base["amount"]), shopping.math.amount(shipping["amount"]), percent
+        )
+        costs["tax"].update(amount=str(tax), status="known")
+
+
 def _assessed(actor, value, selected, raw, records, now, offers, *, evidence_entries=None):
     payload = lot.prepare(
         actor,
@@ -974,15 +980,46 @@ def _assessed(actor, value, selected, raw, records, now, offers, *, evidence_ent
         scenarios[g] = dict(
             result=scenario["result"], references=[dc._reference(r) for r in scenario["references"]]
         )
+    comparisons = scenarios["raw"]["result"]["comparisons"]
+    cost_request = raw
+    # Keep the checked seller's fixed-price option separate from the observed
+    # bid and the user's planned bid. Compare each against the same review inputs.
+    offer = offers[-1] if offers else {}
+    buy_now = offer.get("buy_now", {})
+    if value.get("price_kind") == "current_bid" and "FIXED_PRICE" in offer.get("buying_options", []):
+        base = dict(
+            raw["listing_observation"],
+            amount=buy_now.get("amount"),
+            currency=buy_now.get("currency") or value["currency"],
+            status="known" if buy_now.get("amount") is not None else "unknown",
+            price_kind="current_asking_price",
+        )
+        costs = deepcopy(raw["delivery_cost_inputs"]["listing_observation"])
+        if value.get("tax_rate"):
+            costs["tax"].update(amount=None, status="unknown")
+        # Keep the original currencies so the USD calculation can reject a mismatch.
+        if base["currency"] == costs["shipping"]["currency"]:
+            _estimate_tax(base, costs, value.get("tax_rate"))
+        cost_request = dict(raw, buy_it_now=base)
+        cost_request["delivery_cost_inputs"] = dict(raw["delivery_cost_inputs"], buy_it_now=costs)
+        extra = shopping.math.comparisons(
+            dict(cost_request, evaluation_date=now.date().isoformat()),
+            None,
+            None,
+            None,
+            None,
+            bases=("buy_it_now",),
+        )
+        comparisons = comparisons | extra
     return dict(
         assessment=lot_assessment.assess(
             value,
             {p["id"]: p for p in (evidence_entries if evidence_entries is not None else selected)},
             records,
             now.date(),
-            scenarios["raw"]["result"]["comparisons"],
+            comparisons,
             offers,
-            raw,
+            cost_request,
         ),
         scenarios=scenarios,
         save_allowed=False,
