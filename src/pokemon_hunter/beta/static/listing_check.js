@@ -430,12 +430,14 @@
       lane.append(node('h4',labels[basis]),list);lanes.append(lane);
       const missing=cost.unknown_or_ineligible_components;
       for(const [key,label] of Object.entries(costLabels)){
-        const {amount,currency,source}=cost.components[key];
+        const component=cost.components?.[key];
+        if(!component)continue;
+        const {amount,currency,source}=component;
         const display=amount==null?'Unknown':currency==='USD'?usd(amount):`${amount} ${currency}`;
         const free=key==='shipping' && amount!=null && /^0(?:\.0+)?$/.test(amount);
         const origin={seller_reported:'Seller-reported',your_entry:'Your entry',rate_estimate:`Your ${data.tax_rate}% estimate on price plus shipping`}[source];
         let note=origin || '';
-        if(cost.cost_component_eligibility[key]==='unsupported_or_missing_currency')note+=`${note?' · ':''}USD required for totals`;
+        if(cost.cost_component_eligibility?.[key]==='unsupported_or_missing_currency')note+=`${note?' · ':''}USD required for totals`;
         else if(key==='tax' && amount==null && data.tax_rate)note='Rate estimate needs the offer amount and shipping';
         const details=node('dd',free?`Free (${display})`:display);
         if(note){const small=node('small',note);details.append(small);}
@@ -443,7 +445,8 @@
       }
       if(cost.base_plus_shipping!=null)lane.append(node('p',`Price plus shipping ${usd(cost.base_plus_shipping)} · before tax and other charges`));
       if(cost.full_delivered_cost!=null)lane.append(node('strong',`All-in ${usd(cost.full_delivered_cost)}`));
-      else lane.append(node('p',`All-in unavailable · check ${missing.map(key=>costLabels[key].toLowerCase()).join(', ')}.`));
+      else if(missing.length)lane.append(node('p',`All-in unavailable · check ${missing.map(key=>costLabels[key].toLowerCase()).join(', ')}.`));
+      else lane.append(node('p','All-in total unavailable.'));
       if(basis==='listing_observation' && assessment.auction)lane.append(node('p','The current bid can rise before the auction ends.'));
     }
     section.append(node('p','Verify your entered charges and estimates at checkout. Percentage tax rounds up to the next cent when needed.'));
@@ -454,7 +457,7 @@
     section.append(node('h3','Market comparison'),node('p',assessment.value!=null
       ? `${usd(assessment.value)} condition-specific whole-lot reference. Verify the seller’s cards and condition.`
       : 'Near-market comparison unavailable. Dex needs a reference for the exact printing and reviewed condition of each included card.'));
-    if(assessment.market_issues.length){
+    if(assessment.market_issues?.length){
       const reasons=node('ul');
       for(const reason of assessment.market_issues)reasons.append(node('li',reason));
       section.append(reasons);
@@ -465,12 +468,34 @@
         section.append(node('p',`${labels[basis]} · condition-specific reference minus all-in cost ${usd(cost.reference_difference)}`));
       }
     }
+    if(benchmark){
+      const part=node('section');part.className='review-benchmark';
+      part.append(node('h4','Before-tax benchmark · reviewed contents'));
+      if(benchmark.unavailable)part.append(node('p',benchmark.unavailable));
+      else {
+        const {full_lot_total:total,known_selected_subtotal:subtotal}=benchmark.result;
+        part.append(node('p',`${benchmark.basis_label || 'No normalized reference'} · ${benchmark.priced_card_quantity} normalized-priced cards · ${benchmark.unpriced_card_quantity} identified cards without normalized prices`));
+        part.append(node('p',total!=null ? `${usd(total)} comparable lot reference` : subtotal!=null ? `${usd(subtotal)} comparable subtotal; other cards lack comparable references` : 'Comparable value unavailable.'));
+        for(const [lane,cost] of Object.entries(benchmark.benchmark_costs || {})){
+          if(cost.base==null && cost.delivered_before_tax==null)continue;
+          part.append(node('p',`${lane==='auction'?'Observed current bid':'Observed Buy It Now'} ${usd(cost.base)} · Shipping ${usd(cost.shipping)} · Delivered before tax ${usd(cost.delivered_before_tax)}`));
+          if(cost.difference!=null)part.append(node('p',`Reference minus delivered cost: ${usd(cost.difference)} before tax`));
+          if(cost.subtotal_difference!=null)part.append(node('p',`Identified-card subtotal minus delivered cost: ${usd(cost.subtotal_difference)} before tax. Other cards lack comparable references.`));
+        }
+        for(const ref of benchmark.references || []){
+          const card=cards.find(c=>c.printing_id===ref.printing_id)?.identity;
+          part.append(node('p',`${card?.name || ref.printing_id} · ${ref.basis==='sold_estimate'?'Sold estimate':'Guide'} ${usd(ref.amount)} · ${ref.condition || 'condition unspecified'} · reference ${ref.as_of} · source ${ref.source_url || 'unavailable'} · valuation ${ref.valuation_as_of || 'unknown'} · publisher build ${ref.publisher_built_at || 'unknown'}${ref.sample ? ' · '+ref.sample.unique_sales+' sales · '+ref.sample.sold_from+' through '+ref.sample.sold_through+' · method '+ref.method?.method : ''}`));
+        }
+        for(const gap of benchmark.gaps || [])part.append(node('p',gap));
+      }
+      section.append(part);
+    }
     if(benchmark?.native_guides?.length){
       section.append(node('h4','Dated publisher guides'),node('p','Publisher guide amounts have unspecified condition and unknown shipping and tax basis. They are shown separately from market comparison.'));
       for(const group of benchmark.native_guides){
-        section.append(node('p',`${group.provider} · ${group.date_basis==='publisher_build'?'Build date':'Reference date'} ${group.reference_date} · ${usd(group.total ?? group.subtotal)} guide ${group.complete?'total':'subtotal'} for ${group.priced_quantity} cards`));
+        section.append(node('p',`${usd(group.total ?? group.subtotal)} publisher guide ${group.complete?'total':'subtotal'} · ${group.priced_quantity} guide-priced cards · ${group.provider} · ${group.date_basis==='publisher_build'?'Build date':'Reference date'} ${group.reference_date}`));
         const items=node('ul');
-        for(const ref of group.references){
+        for(const ref of group.references || []){
           const card=cards.find(c=>c.printing_id===ref.printing_id)?.identity;
           items.append(node('li',`${card ? printingLabel(card) : ref.printing_id} · ${usd(ref.amount)} per card`));
         }
@@ -584,7 +609,7 @@
         if(a.value_limit!==undefined)out.append(node('p',`At whole cents, delivered cost must fit the ${usd(a.value)} reference total and ${usd(a.budget)} budget. Reference bid limit ${usd(a.value_limit)} · Budget bid limit ${usd(a.budget_limit)} · Binding limit: ${a.binding}.`));
         if(a.maximum!==null)out.append(node('p',`${a.price_above===null?'Observed bid unknown':a.price_above?'Observed bid already exceeds ceiling':'Observed bid is within ceiling'}. Next required bid unknown. ${a.planned_bid_above===null?'':a.planned_bid_above?'Your planned bid exceeds the ceiling.':'Your planned bid fits the ceiling.'} Verify the reviewed contents and condition before bidding.`));
       }
-      for(const reason of a.issues.slice(a.market_issues.length))out.append(node('p',reason));
+      for(const reason of a.issues.slice(a.market_issues?.length ?? 0))out.append(node('p',reason));
       addHandoff(shell,a,value.authority.generation,value.benchmark);shell.hidden=false;shell.querySelector('h2').tabIndex=-1;shell.querySelector('h2').focus();say('Lot summary updated.');
       });
     }catch(e){if($('check-results').childElementCount)pendingEvidence('lease');else say(e.message,true);$('check-compare').focus();}finally{foreground=false;$('check-compare').disabled=!active;}
@@ -700,7 +725,7 @@
     const id=event.target.id, focus=costFields.has(id) ? id : null;
     if((history.state?.reviewCostFocus || null)!==focus)history.replaceState({...history.state,reviewCostFocus:focus},'');
   });
-  const reloadFocus=performance.getEntriesByType('navigation')[0]?.type==='reload' ? history.state?.reviewCostFocus : null;
+  const reloadFocus=globalThis.performance?.getEntriesByType?.('navigation')[0]?.type==='reload' ? history.state?.reviewCostFocus : null;
   $('check-reload').addEventListener('click',()=>{if(sellerAway && handoff)validateReturn();else if(validationPending && (preview?.discovery_origin || discoveryOrigin || detailRun)){leaseFailures=0;ticks=4;say('Checking your review…');}else if(sourcePending){sourceFailures=0;ticks=1;say('Checking your evidence…');}else restoreSection();});
   restoreSection().then(()=>{
     if(active && costFields.has(reloadFocus) && document.activeElement===document.body && !$('check-status').matches('[role=alert]')){
