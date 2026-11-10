@@ -320,3 +320,39 @@ def test_family_split_survives_compare_and_reload(browser_app):
         "3 individually identified cards · unrecognized contents: 1"
     )
     assert run.counts["total"] == 0 and not errors
+
+
+def test_opening_another_offer_preserves_review_until_user_applies_it(browser_app):
+    from playwright.sync_api import expect
+
+    from pokemon_hunter.beta import discovery, discovery_listing
+
+    state, page, base, requests, errors = browser_app
+    page.goto(base + "/shopping/check/")
+    binding = page.locator("#check-binding").evaluate("e=>JSON.parse(e.textContent)")
+    runs = []
+    for number, name in (("123456789012", "Ivysaur"), ("123456789013", "Venusaur")):
+        run = discovery.Run(
+            str(uuid.uuid4()),
+            (str(state["root"]), state["actor"].user_id, binding),
+            discovery.Choices(query=name, product_type="mixed_lots"),
+            None,
+            [name],
+            state="complete",
+            raws=[
+                dict(itemId=f"v1|{number}|0", title=f"{name} lot of 2 cards", buyingOptions=["FIXED_PRICE"])
+            ],
+        )
+        discovery._runs[run.id] = run
+        runs.append((run, discovery_listing.result_handle(run.id, run.raws[0]["itemId"])))
+    first, second = runs
+    page.goto(base + f"/shopping/check/?discovery_run={first[0].id}&item_id={first[1]}")
+    page.locator("#use-listing").click()
+    page.locator("#review-price").fill("12.34")
+    expect(page.locator("#review-save-status")).to_contain_text("saved")
+    page.goto(base + f"/shopping/check/?discovery_run={second[0].id}&item_id={second[1]}")
+    expect(page.locator("#listing-preview")).to_be_visible()
+    expect(page.locator("#review-price")).to_have_value("12.34")
+    page.locator("#use-listing").click()
+    expect(page.locator("#offer-summary")).to_contain_text("Venusaur")
+    assert all(run.counts["total"] == 0 for run, _ in runs) and not errors

@@ -371,6 +371,9 @@ def test_exact_goal_uses_missing_printing_not_same_species(visual, monkeypatch):
     assert [p["id"] for p in saved["context"]["collection_fit"]["included_printings"]] == [target]
     listing_check.saved_comparison(actor, "session", saved["revision"], opened["lease"])
     listing_check.validate_lease(actor, "session", opened["lease"], run.id, handle)
+    other_run = received(actor, run.choices, scope=goal_hunts.snapshot(actor, goal["id"]))
+    other_handle = discovery.discovery_listing.result_handle(other_run.id, other_run.raws[0]["itemId"])
+    listing_check.validate_lease(actor, "session", opened["lease"], other_run.id, other_handle)
     assert run.counts["total"] == 0
     apply(visual, "add", {"printing_id": other, "duplicate_policy": "allow"})
     with pytest.raises(collection.Conflict):
