@@ -106,7 +106,7 @@ def test_original_assessment_across_return_failures(cx):
         original = path.read_text()
         seller = leave()
         expect(page.get_by_role("button", name="Verify comparison")).to_be_visible()
-        expect(status).to_contain_text("Verify on return")
+        expect(status).to_contain_text("Lot summary updated")
         seller.close()
         page.bring_to_front()
         # The control remains a recovery path even when the browser does not

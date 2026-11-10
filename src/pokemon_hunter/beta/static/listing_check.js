@@ -409,7 +409,6 @@
       sellerAway=true;handoff={assessment,benchmark,link,retry,generation};
       out.dataset.pending='true';
       retry.hidden=false;
-      say('Verify on return.');
     });
     retry.type='button';retry.className='secondary';retry.hidden=true;retry.addEventListener('click',validateReturn);
     section.append(link,retry);out.append(section);
@@ -442,7 +441,6 @@
       validationPending=false;sourcePending=false;$('check-results').hidden=false;
       handoff=null;
       trip.retry.hidden=true;
-      say('Comparison verified.');
       trip.link.focus({preventScroll:true});
     } catch(e) {
       if(expected!==version || handoff!==trip || !active)return;
