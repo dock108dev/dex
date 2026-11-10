@@ -105,14 +105,14 @@ def test_original_assessment_across_return_failures(cx):
         path = root / "parity-evidence/market_values.json"
         original = path.read_text()
         seller = leave()
-        expect(page.locator("#check-reload")).to_be_visible()
-        expect(status).to_contain_text("Return here to verify your comparison")
+        expect(page.get_by_role("button", name="Verify comparison")).to_be_visible()
+        expect(status).to_contain_text("Verify on return")
         seller.close()
         page.bring_to_front()
         # The control remains a recovery path even when the browser does not
         # deliver the expected focus event after opening a background tab.
         if result.get_attribute("data-pending"):
-            page.locator("#check-reload").click()
+            page.get_by_role("button", name="Verify comparison").click()
         expect(result).not_to_have_attribute("data-pending", "true")
         expect(result).to_contain_text("Lot summary")
         now = datetime.now(ZoneInfo("America/New_York"))

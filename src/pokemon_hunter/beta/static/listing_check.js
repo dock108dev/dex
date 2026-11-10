@@ -398,7 +398,7 @@
   function addHandoff(out, assessment, generation, benchmark) {
     const url=offerLink(assessment.seller_url);
     if(!url)return;
-    const section=node('section'), link=node('a','Open listing on eBay (new tab)');
+    const section=node('section'), link=node('a','Open listing on eBay (new tab)'), retry=node('button','Verify comparison');
     section.append(node('h3','eBay listing'),node('p',url));
     if(assessment.auction)section.append(node('p',window.DexAuctionTime(assessment.ends_at)));
     link.href=url;link.target='_blank';link.rel='noopener noreferrer';
@@ -406,11 +406,13 @@
       if(!active || Date.now()>=retentionDeadline || Date.parse(assessment.ends_at)<=Date.now()){
         event.preventDefault();invalidate();say('The auction or review expired. Reopen Shopping to check the listing.');return;
       }
-      sellerAway=true;handoff={assessment,benchmark,link,generation};
+      sellerAway=true;handoff={assessment,benchmark,link,retry,generation};
       out.dataset.pending='true';
-      say('Return here to verify your comparison. If it does not refresh, select Reload this section.',true);
+      retry.hidden=false;
+      say('Verify on return.');
     });
-    section.append(link);out.append(section);
+    retry.type='button';retry.className='secondary';retry.hidden=true;retry.addEventListener('click',validateReturn);
+    section.append(link,retry);out.append(section);
   }
   async function validateReturn() {
     const trip=handoff;
@@ -439,6 +441,7 @@
       delete $('check-results').dataset.pending;
       validationPending=false;sourcePending=false;$('check-results').hidden=false;
       handoff=null;
+      trip.retry.hidden=true;
       say('Comparison verified.');
       trip.link.focus({preventScroll:true});
     } catch(e) {
