@@ -356,3 +356,26 @@ def test_exact_goal_uses_missing_printing_not_same_species(visual, monkeypatch):
         listing_check.validate_lease(actor, "session", opened["lease"], run.id, handle)
     with pytest.raises(collection.Conflict):
         listing_check.saved_comparison(actor, "session", saved["revision"], opened["lease"])
+
+
+def test_exact_goal_does_not_match_a_now_unresolved_catalog_identity(visual, monkeypatch):
+    from pokemon_hunter.beta import shopping_index
+
+    target = "shop04-base-alakazam"
+    collection.execute("UPDATE printings SET unresolved_fields='[]' WHERE id=%s", [target])
+    goal = apply(
+        visual, "goal", dict(name="Exact", goal_kind="custom", policy="exact", printing_ids=[target])
+    )["changes"][0]["after"]
+    collection.execute("UPDATE printings SET unresolved_fields='[\"edition\"]' WHERE id=%s", [target])
+    enable_read_fixture(visual, monkeypatch)
+
+    @shopping_index.indexed
+    def check(actor):
+        return shopping_intent.fit(
+            actor,
+            dict(focus="all", goal_id=goal["id"], goal_version=goal["version"]),
+            "Alakazam",
+            dict(cards=[dict(printing_id=target, quantity=1)], unknown_contents=None),
+        )
+
+    assert check(visual["actor"])["included_printings"] == []

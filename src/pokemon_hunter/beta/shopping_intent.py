@@ -135,6 +135,8 @@ def fit(actor, choices, title, review=None):
                         or not account_read_build.decode(r).get("unresolved")
                     )
                 }
+                if targets["goal_policy"] == "exact":
+                    eligible &= {p["id"] for p in rows if not p.get("unresolved_fields")}
                 included_printings = [
                     dict(
                         id=p["id"],
