@@ -231,6 +231,7 @@ const passed=[];async function test(name,fn){await fn();passed.push(name);}
     return payload;
   }});await flush();await t.get('check-compare').onclick();await flush();
   const text=t.get('check-results').textContent;
+  assert.match(text,/Seller-stated total: Unknown · Identified copies: 3 · Condition-specific priced copies: 0 · Unresolved remainder: Unknown/);
   assert.match(text,/25.00 publisher guide total · 3 guide-priced cards/);
   assert.match(text,/0 of 3 included cards have condition-specific references/);
   assert.doesNotMatch(text,/remaining cards are unvalued|0 of 3 included cards priced/);
@@ -252,6 +253,13 @@ const passed=[];async function test(name,fn){await fn();passed.push(name);}
   assert.match(t.get('review-cards').textContent,/2 × Checked card/);
   assert.match(t.get('review-save-status').textContent,/Review saved/);
   assert.match(t.get('review-cards').textContent,/Find a different printing/);
+ });
+ await test('title-only candidate is visible without adding a copy',async()=>{
+  const t=setup({contents:[{key:'title-candidate',name:'Checked card',quantity:null,candidates:[identity],reasons:['Unconfirmed title mention'],evidence:[{provenance:'Official summary · seller claim',source_field:'title',text:'Checked card lot'}]}],proposals:[],seller_lot_size:3,unknown_contents:3});
+  await flush();await t.get('use-listing').onclick();await flush();
+  assert.match(t.get('review-cards').textContent,/Unconfirmed candidate · seller title mention/);
+  assert.match(t.get('review-cards').textContent,/Not included/);
+  assert.match(t.get('review-count').textContent,/0 individually identified cards · unrecognized contents: 3/);
  });
  await test('shared-trait confirmation previews quantities and leaves ambiguous entries unresolved',async()=>{
   const a={...identity,id:'a',language:'en',edition:'unlimited',finish:'holo'},b={...a,id:'b',collector_number:'2',finish:'normal'},c={...b,id:'c',collector_number:'3'};

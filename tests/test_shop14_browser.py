@@ -251,3 +251,72 @@ def test_contents_keyboard_layout_correction_and_failed_save(browser_app):
     page.evaluate("window.dispatchEvent(new Event('dex:authority-revoked'))")
     assert page.locator("#review-cards").inner_text() == ""
     assert not errors
+
+
+def test_family_split_survives_compare_and_reload(browser_app):
+    import json
+    from concurrent.futures import ThreadPoolExecutor
+
+    from playwright.sync_api import expect
+
+    from pokemon_hunter.beta import (
+        account_read_build,
+        catalog_read_build,
+        collection,
+        discovery,
+        discovery_listing,
+    )
+
+    state, page, base, requests, errors = browser_app
+    first, second = state["by_legacy"]["a"]["id"], state["by_legacy"]["b"]["id"]
+
+    def prepare_family():
+        collection.execute(
+            "UPDATE printings SET attributes=%s WHERE id=%s",
+            [json.dumps(dict(name="Ivysaur", pokemon_dex=2, dex_eligible=True, supertype="Pokémon")), second],
+        )
+        catalog_read_build.activate(catalog_read_build.prepare())
+        account_read_build.prepare(state["actor"])
+
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        pool.submit(prepare_family).result()
+    page.goto(base + "/shopping/check/")
+    binding = page.locator("#check-binding").evaluate("e=>JSON.parse(e.textContent)")
+    run = discovery.Run(
+        str(uuid.uuid4()),
+        (str(state["root"]), state["actor"].user_id, binding),
+        discovery.Choices(query="Ivysaur", product_type="mixed_lots"),
+        None,
+        ["Ivysaur"],
+        state="complete",
+        raws=[
+            dict(
+                itemId="v1|123456789012|0",
+                title="Lot of 4 cards",
+                shortDescription="4x Ivysaur",
+                buyingOptions=["FIXED_PRICE"],
+            )
+        ],
+    )
+    discovery._runs[run.id] = run
+    handle = discovery_listing.result_handle(run.id, run.raws[0]["itemId"])
+    page.goto(base + f"/shopping/check/?discovery_run={run.id}&item_id={handle}")
+    page.locator("#use-listing").click()
+    page.locator("#review-cards summary").filter(has_text="Correct identity").first.click()
+    picker = page.locator("#review-cards select").first
+    for key in (first, second):
+        picker.select_option(key)
+        page.locator(f'input[data-printing="{key}"]').check()
+    page.locator(f'input[data-quantity="{second}"]').fill("2")
+    expect(page.locator("#review-count")).to_contain_text(
+        "3 individually identified cards · unrecognized contents: 1"
+    )
+    expect(page.locator("#review-save-status")).to_contain_text("saved")
+    page.locator("#check-compare").click()
+    expect(page.locator("#check-results")).to_contain_text("Identified copies: 3")
+    expect(page.locator("#check-results")).to_contain_text("Unresolved remainder: 1")
+    page.reload()
+    expect(page.locator("#review-count")).to_contain_text(
+        "3 individually identified cards · unrecognized contents: 1"
+    )
+    assert run.counts["total"] == 0 and not errors

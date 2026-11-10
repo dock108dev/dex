@@ -88,6 +88,17 @@ def test_two_named_title_mentions_are_two_unconfirmed_entries(entries):
     assert all(any(e["source_field"] == "title" for e in g["evidence"]) for g in explicit)
 
 
+def test_structured_identity_does_not_hide_other_title_mentions(entries):
+    summary = raw(title="Charizard Blastoise Pokemon lot of 3 cards", shortDescription="")
+    detail = dict(summary, localizedAspects=[dict(name="Card Name", value="Charizard")])
+    value = listing_details.details(summary["itemId"], detail, source_kind="official_detail")
+    result = shopping_contents.project(value, entries, summary=summary)
+    other = next(g for g in result if g["name"] == "blastoise")
+    assert other["quantity"] is None
+    assert any(e["source_field"].endswith("title") for e in other["evidence"])
+    assert not any(p["included_quantity"] for p in value["seller_contents"]["proposals"])
+
+
 def test_conflicting_repetitions_remain_one_unresolved_group(entries):
     result = project(entries, shortDescription="2x Charizard Base Set #4; 3x Charizard Base Set #4")
     assert len(result) == 1 and result[0]["quantity"] is None

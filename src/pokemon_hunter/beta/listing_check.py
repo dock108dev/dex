@@ -481,6 +481,12 @@ def validate_lease(actor, session, lease, run_id, result_id):
             detail = d._lookup(actor, session, current[1]["detail_run"])
             if detail.cancel.is_set() or detail.operation != "detail" or detail.state != "complete":
                 raise ValueError("Loaded details expired or were stopped.")
+        if current[1] and current[1].get("discovery_origin"):
+            origin = current[1]["discovery_origin"]
+            if origin != {"run_id": run_id, "result_id": result_id}:
+                raise ValueError("The selected offer differs from the saved review.")
+            run = d._lookup_owned(owner, run_id)
+            d._context_current(actor, run.choices)
         source = d.summary_lease(actor, session, run_id, result_id)
         revision = shopping.digest(current[1])
         source_revision = _source_revision(source)

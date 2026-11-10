@@ -297,3 +297,62 @@ def test_review_correction_outside_frozen_printings_cannot_claim_goal_gain(visua
     assert fit["included_species"] == []
     assert fit["outside_scope_ids"] == ["shop04-base-alakazam"]
     assert fit["unknown_contents"] is None
+
+
+def test_exact_goal_uses_missing_printing_not_same_species(visual, monkeypatch):
+    from pokemon_hunter.beta import goal_hunts, shopping_index
+
+    target = "shop04-base-alakazam"
+    other = "shop04-base2-variant"
+    collection.execute("UPDATE printings SET unresolved_fields='[]' WHERE id=%s", [target])
+    goal = apply(
+        visual, "goal", dict(name="Exact", goal_kind="custom", policy="exact", printing_ids=[target])
+    )["changes"][0]["after"]
+    enable_read_fixture(visual, monkeypatch)
+    actor = visual["actor"]
+    listing_check._reviews.pop(discovery._owner(actor, "session"), None)
+    raw = {"goal": goal["id"], "version": goal["version"], "scope": "all"}
+    assert any(row["species"] == 65 for row in shopping_intent.targets(actor, raw)["targets"])
+
+    @shopping_index.indexed
+    def check(actor, pid):
+        return shopping_intent.fit(
+            actor,
+            dict(focus="all", goal_id=goal["id"], goal_version=goal["version"]),
+            "Alakazam",
+            dict(cards=[dict(printing_id=pid, quantity=1)], unknown_contents=2),
+        )
+
+    assert check(actor, other)["included_printings"] == []
+    assert [p["id"] for p in check(actor, target)["included_printings"]] == [target]
+    with pytest.raises(collection.Conflict):
+        shopping_intent.targets(actor, dict(raw, version="0" * 64))
+
+    run = received(
+        actor,
+        selected(actor, goal_id=goal["id"], goal_version=goal["version"]),
+        scope=goal_hunts.snapshot(actor, goal["id"]),
+    )
+    handle = discovery.discovery_listing.result_handle(run.id, run.raws[0]["itemId"])
+    assert (
+        listing_check.candidate(actor, "session", run.id, handle)["context"]["collection_fit"]["goal_policy"]
+        == "exact"
+    )
+    opened = listing_check.review(actor, "session")
+    review = dict(
+        currency="USD",
+        price_kind="current_asking_price",
+        unknown_contents=1,
+        discovery_origin=dict(run_id=run.id, result_id=handle),
+        cards=[dict(printing_id=target, quantity=1)],
+    )
+    saved = listing_check.review(actor, "session", review, opened["lease"])
+    assert [p["id"] for p in saved["context"]["collection_fit"]["included_printings"]] == [target]
+    listing_check.saved_comparison(actor, "session", saved["revision"], opened["lease"])
+    listing_check.validate_lease(actor, "session", opened["lease"], run.id, handle)
+    assert run.counts["total"] == 0
+    apply(visual, "add", {"printing_id": other, "duplicate_policy": "allow"})
+    with pytest.raises(collection.Conflict):
+        listing_check.validate_lease(actor, "session", opened["lease"], run.id, handle)
+    with pytest.raises(collection.Conflict):
+        listing_check.saved_comparison(actor, "session", saved["revision"], opened["lease"])

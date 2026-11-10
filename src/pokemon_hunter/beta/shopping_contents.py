@@ -3,7 +3,7 @@
 import hashlib
 import re
 
-from . import hunter_lot_parser, shopping, store
+from . import discovery_matching, hunter_lot_evidence, hunter_lot_parser, shopping, store
 from .account_read_build import encode
 from .account_read_select import search_ranks
 
@@ -145,6 +145,11 @@ def project(value, entries, *, summary=None):
                 evidence=[
                     dict(
                         m,
+                        source_field=(
+                            "Seller item specific · " + parsed["aspect_names"][m["source_field"]]
+                            if m["source_field"] in parsed["aspect_names"]
+                            else m["source_field"]
+                        ),
                         provenance=(
                             "Official detail · seller claim"
                             if kind == "official_detail" or m["source_field"].startswith("official_")
@@ -204,6 +209,58 @@ def project(value, entries, *, summary=None):
                 evidence=[dict(m, provenance="Seller claim") for m in claim["mentions"]],
             )
         )
+    # Reconciliation can fold a multi-name title into a narrower structured
+    # identity. Recover names lost in that fold as title-only possibilities;
+    # these annotations never enter the parser's selected quantities.
+    represented = {p["name"].casefold() for group in result for p in group["candidates"]}
+    for field in ("title", "detail_title"):
+        title = parsed["source_fields"].get(field, "")
+        if (
+            not title
+            or hunter_lot_evidence.noncontents(title, entries)
+            or hunter_lot_evidence.unsupported(title, entries)
+        ):
+            continue
+        names = {}
+        for p in entries:
+            if p["name"].casefold() not in represented and discovery_matching.name_spans(p, title):
+                names.setdefault(p["name"].casefold(), []).append(p)
+        for name, candidates in names.items():
+            if len(result) >= 200:
+                break
+            result.append(
+                dict(
+                    key="title-" + hashlib.sha256(name.encode()).hexdigest()[:24],
+                    name=name,
+                    candidates=[
+                        {
+                            k: p.get(k)
+                            for k in (
+                                "id",
+                                "name",
+                                "set_name",
+                                "collector_number",
+                                "language",
+                                "edition",
+                                "finish",
+                                "variant",
+                            )
+                        }
+                        for p in candidates
+                    ],
+                    quantity=None,
+                    reasons=["Unconfirmed title mention; identity and quantity need review"],
+                    evidence=[
+                        dict(
+                            hunter_lot_evidence.mention(field, title),
+                            provenance="Official summary · seller claim"
+                            if field == "title"
+                            else "Official detail · seller claim",
+                        )
+                    ],
+                )
+            )
+            represented.add(name)
     return result or [
         dict(
             key="unresolved",

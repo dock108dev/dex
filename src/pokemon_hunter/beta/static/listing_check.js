@@ -66,8 +66,17 @@
   }
   function showContext(context) {
     collectionContext=context;
-    const fit=context?.collection_fit, names=fit?.included_names || [];
-    $('check-context').textContent=names.length ? `Potential collection additions: ${names.join(', ')}. Verify the seller’s cards.` : context?.selected_target ? `Looking for ${context.selected_target.name}` : '';
+    const fit=context?.collection_fit, names=fit?.included_names || [], possible=(fit?.mentioned_names || []).filter(n=>!names.includes(n));
+    const parts=[];
+    if(context?.selected_target)parts.push(`Looking for ${context.selected_target.name}.`);
+    if(fit?.included_names){
+      if(fit.goal_policy==='exact' || fit.goal_policy==='catalog'){
+        const printings=fit.included_printings || [];
+        parts.push(printings.length ? `Reviewed goal printing matches: ${printings.map(printingLabel).join(', ')}. Seller contents remain unverified.` : 'No reviewed goal printing matches yet.');
+      }else parts.push(names.length ? `Reviewed collection matches: ${names.join(', ')}. Seller contents remain unverified.` : 'No reviewed collection matches yet.');
+    }
+    if(possible.length)parts.push(`Possible additions mentioned in the title, not included in the review: ${possible.join(', ')}.`);
+    $('check-context').textContent=parts.join(' ');
     $('check-context').hidden=!$('check-context').textContent;
   }
 
@@ -103,7 +112,7 @@
     if(remainderAuto && sellerCardCount!==null)$('review-unknown').value=n<=sellerCardCount?sellerCardCount-n:'';
     $('review-source-counts').hidden=sellerCardCount===null && lotUnits===null && stockQuantity===null;
     $('review-source-counts').textContent=`Seller-stated card count: ${sellerCardCount ?? 'Unknown'} · eBay lot units: ${lotUnits ?? 'Unknown'} · Listing stock: ${stockQuantity ?? 'Unknown'}. ${remainderAuto?(n>sellerCardCount?'Included quantity exceeds the stated count; remainder is unknown.':'Remainder follows the stated count until you edit it.'):''}`;
-    $('review-count').textContent = `${n} individually identified cards · unrecognized contents: ${$('review-unknown').value === '' ? 'Unknown' : $('review-unknown').value}. Whole-lot price is counted once.`;
+    $('review-count').textContent = `${n} individually identified cards · unrecognized contents: ${$('review-unknown').value === '' ? 'Unknown' : $('review-unknown').value}. Seller-stated total: ${sellerCardCount ?? 'Unknown'} · Priced copies: compare to check. Whole-lot price is counted once.`;
   }
   async function persist(keepalive = false) {
     clearTimeout(saveTimer);
@@ -181,6 +190,7 @@
   const printingLabel=p=>[p.name || 'Selected card',`${p.set_name || 'Set unknown'} #${p.collector_number || '?'}`,printingTraits(p)].filter(Boolean).join(' · ');
   function contentsSummary(host, entry) {
     host.append(node('h3',entry.candidates.length===1?printingLabel(entry.candidates[0]):entry.candidates[0]?.name || entry.name),node('p',`Seller quantity: ${entry.quantity ?? 'Unknown'} · ${entry.candidates.length} printing alternatives · contents unverified`));
+    if(entry.key.startsWith('title-'))host.append(node('p','Unconfirmed candidate · seller title mention'));
     if(entry.reasons.length)host.append(node('p',entry.reasons.join('; ')));
     const sources=node('details');sources.append(node('summary','Source evidence'));
     entry.evidence.forEach(e=>sources.append(node('p',`${e.provenance} · ${e.source_field}: ${e.text}`)));
@@ -595,6 +605,7 @@
       const a=value.assessment;
       assessmentEnd=a.ends_at;references=[...a.evidence.flatMap(r=>[r,...r.conflicts.map(c=>({...c,name:r.name}))]),...(value.benchmark?.references || []),...(value.benchmark?.native_guides || []).flatMap(g=>g.references || [])];
       const shell=$('check-results');shell.replaceChildren(node('h2','Compare reviewed lot'));
+      shell.append(node('p',`Seller-stated total: ${sellerCardCount ?? 'Unknown'} · Identified copies: ${a.units} · Condition-specific priced copies: ${a.priced} · Unresolved remainder: ${data.unknown_contents ?? 'Unknown'}. Guide coverage is shown separately below.`));
       renderCosts(shell,a,data);
       renderMarket(shell,a,value.benchmark,data);
       const out=node('details');out.append(node('summary','Reference details, budget and bid limits'));shell.append(out);
