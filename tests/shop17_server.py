@@ -71,15 +71,26 @@ def application():
         dict(EBAY_CLIENT_ID="engineering", EBAY_CLIENT_SECRET="engineering"),
     )
     admission = discovery.review_candidate
+    lease = discovery.summary_lease
 
     def counted(*args, **kwargs):
+        value = admission(*args, **kwargs)
         record = read_diagnostics.current.get()
         if record is not None:
             with (root / "assessment-admissions.jsonl").open("a") as log:
-                print(json.dumps(dict(id=record["id"])), file=log)
-        return admission(*args, **kwargs)
+                print(json.dumps(dict(id=record["id"], kind="admission")), file=log)
+        return value
+
+    def counted_lease(*args, **kwargs):
+        value = lease(*args, **kwargs)
+        record = read_diagnostics.current.get()
+        if record is not None:
+            with (root / "assessment-admissions.jsonl").open("a") as log:
+                print(json.dumps(dict(id=record["id"], kind="lease")), file=log)
+        return value
 
     discovery.review_candidate = counted
+    discovery.summary_lease = counted_lease
     emit = read_diagnostics.emit
 
     def record(row):

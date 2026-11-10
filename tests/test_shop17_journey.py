@@ -505,9 +505,9 @@ def test_integrated_journey(cx, count, copies):
         )
         for request in report["requests"]:
             if request["route"] == "api/shopping/listing/candidate/" and request["status"] == 200:
-                observed = sum(r["id"] == request["id"] for r in report["assessment_admissions"])
-                if observed != 2:
-                    report["failures"].append(f"candidate assessment admissions: {observed}")
+                observed = [r["kind"] for r in report["assessment_admissions"] if r["id"] == request["id"]]
+                if observed != ["admission", "lease"]:
+                    report["failures"].append(f"candidate admission and final lease: {observed}")
         for name, values in report["samples"].items():
             p95 = sorted(values)[math.ceil(0.95 * len(values)) - 1]
             report.setdefault("metrics", {})[name] = dict(n=len(values), p95=p95, worst=max(values))
