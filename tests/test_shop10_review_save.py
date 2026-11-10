@@ -89,7 +89,7 @@ def test_save_revalidates_origin_once_and_each_read_revalidates_again(workspace,
         calls.append(True)
         if not available[0]:
             raise ValueError("Origin unavailable")
-        return dict(created=created, choices={"intent": "deals"}, scope=None)
+        return dict(created=created, choices={"intent": "deals"}, scope=None, raw={"title": ""})
 
     monkeypatch.setattr(discovery, "review_candidate", source)
     opened = listing_check.review(who, "session")
