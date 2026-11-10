@@ -75,7 +75,6 @@ def received_rows(raws):
                 item_url=ebay_url(raw.get("itemWebUrl")),
                 seller_image=seller_image(raw.get("image")),
                 listing_price=price,
-                buying_options=observed["buying_options"],
                 current_bid=price if auction else None,
                 buy_now_price=observed["buy_now"]["amount"],
                 buy_now_delivered_total=costs["buy_it_now"]["delivered_before_tax"],
@@ -96,4 +95,7 @@ def received_rows(raws):
                 save_reason="Temporary received listing; not saved research.",
             )
         )
+        # Ordinary lanes follow price_kind; retain explicit options where needed.
+        if len(observed["buying_options"]) > 1 or (not auction and price is None):
+            rows[-1]["buying_options"] = observed["buying_options"]
     return rows

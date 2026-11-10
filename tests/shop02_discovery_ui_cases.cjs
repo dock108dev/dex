@@ -108,7 +108,7 @@ const passed=[];
   await check('local filter and choice edits do not fetch; next uses captured choices',async()=>{
     const t=setup([{goals:[]},complete(),complete(nextId)]);await flush();await t.get('discovery-form').emit('submit');await flush();
     t.get('discovery-filter').value='below';await t.get('discovery-filter').emit('change');
-    assert.equal(t.calls.length,2);assert.match(t.get('discovery-cards').innerHTML,/No results match this filter/);
+    assert.equal(t.calls.length,2);assert.match(t.get('discovery-cards').innerHTML,/No results match these filters/);
     t.get('discovery-query').value='changed';await t.get('discovery-form').emit('input');
     assert.equal(t.get('discovery-next').disabled,true);assert.equal(t.calls.length,2);
     t.get('discovery-query').value='';await t.get('discovery-form').emit('input');

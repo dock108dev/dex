@@ -459,6 +459,10 @@ def test_local_refresh_preserves_expansion_focus_and_clears_changed_authority(ui
     control["hold"] = True
     page.evaluate("window.dispatchEvent(new Event('focus'))")
     expect(page.get_by_text("$40.00 ungraded lot value", exact=True)).to_have_count(0)
+    for _ in range(40):
+        if pending:
+            break
+        page.wait_for_timeout(50)
     assert pending
     handler, value = pending.pop()
     handler.fulfill(json=value)
