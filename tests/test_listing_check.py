@@ -660,6 +660,7 @@ def test_discovery_handoff_preserves_original_lease_and_local_only_projection(wo
         )
 
     monkeypatch.setattr(d, "review_candidate", source)
+    monkeypatch.setattr(d, "summary_lease", source)
     monkeypatch.setattr(c, "start", lambda *args: pytest.fail("No detail operation on handoff"))
     preview = c.candidate(actor, "session", **origin)
     assert preview["listing"]["discovery_origin"] == origin
@@ -681,6 +682,30 @@ def test_discovery_handoff_preserves_original_lease_and_local_only_projection(wo
         c.review(actor, "session")
     assert c.review(actor, "session")["review"] is None
     assert calls
+
+
+def test_lightweight_review_validation_keeps_lease_and_revision(workspace, monkeypatch):
+    from django.http import Http404
+
+    actor = workspace["actor"]
+    c._reviews.clear()
+    source = dict(raw=raw(), created=time.monotonic(), content_revision=1)
+    monkeypatch.setattr(d, "summary_lease", lambda *args: source)
+    monkeypatch.setattr(d, "review_candidate", lambda *args: pytest.fail("must not project a candidate"))
+    opened = c.review(actor, "session")
+    first = c.validate_lease(actor, "session", opened["lease"], "run", "result")
+    assert first["revision"] == opened["revision"]
+    source["content_revision"] = 2
+    assert (
+        c.validate_lease(actor, "session", opened["lease"], "run", "result")["source_revision"]
+        != first["source_revision"]
+    )
+    with pytest.raises(ValueError):
+        c.validate_lease(actor, "other", opened["lease"], "run", "result")
+    monkeypatch.setattr(d, "summary_lease", lambda *args: (_ for _ in ()).throw(Http404()))
+    with pytest.raises(Http404):
+        c.validate_lease(actor, "session", opened["lease"], "run", "result")
+    assert c.review(actor, "session")["lease"] == opened["lease"]
 
 
 @pytest.mark.parametrize("large_family,stop_during_restore", [(False, False), (True, False), (False, True)])
@@ -715,6 +740,7 @@ def test_candidate_restore_includes_contents_identities_without_clipping_or_bypa
         return result
 
     monkeypatch.setattr(d, "review_candidate", admitted)
+    monkeypatch.setattr(d, "summary_lease", admitted)
     monkeypatch.setattr(c, "_proposals", project)
     monkeypatch.setattr(c, "catalog", restore)
     if stop_during_restore:
@@ -770,6 +796,7 @@ def test_structured_card_count_and_checked_mixed_lot_remain_unconfirmed(workspac
         result=dict(discovery_kind="mixed_lot"),
     )
     monkeypatch.setattr(d, "review_candidate", lambda *args, **kwargs: source)
+    monkeypatch.setattr(d, "summary_lease", lambda *args, **kwargs: source)
     candidate = c.candidate(actor, "session", str(uuid.uuid4()), "a" * 24)["listing"]
     assert candidate["proposals"][0]["quantity"] == 0 and candidate["unknown_contents"] is None
 
@@ -791,6 +818,7 @@ def test_checked_exact_target_survives_conflicting_sibling_contents(workspace, m
         result=dict(discovery_kind="single", identity_candidates=[dict(printing_id=target["id"])]),
     )
     monkeypatch.setattr(d, "review_candidate", lambda *args, **kwargs: source)
+    monkeypatch.setattr(d, "summary_lease", lambda *args, **kwargs: source)
     candidate = c.candidate(actor, "session", str(uuid.uuid4()), "a" * 24)
     proposals = candidate["listing"]["proposals"]
     assert {row["id"] for row in proposals} == {target["id"], sibling["id"]}

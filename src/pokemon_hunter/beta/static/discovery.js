@@ -59,7 +59,9 @@
     const controller=window.AbortController ? new window.AbortController() : null;
     const timeout=controller ? setTimeout(()=>controller.abort(),timeoutMs) : null;
     let response;
-    try { response = await fetch(url, {...(controller ? {signal:controller.signal} : {}),method:body === undefined ? 'GET' : 'POST',credentials:'same-origin',redirect:'manual',cache:'no-store',headers:{'X-Dex-Shopping-Binding':binding,...(action ? {'X-Dex-Shopping-Action':action} : {}),...(generation == null ? {} : {'X-Dex-Shopping-Generation':String(generation)}),...(body === undefined ? {} : {'Content-Type':'application/json','X-CSRFToken':csrf()})},...(body === undefined ? {} : {body:JSON.stringify(body)})});
+    try {
+    const perform = async () => {
+    response = await fetch(url, {...(controller ? {signal:controller.signal} : {}),method:body === undefined ? 'GET' : 'POST',credentials:'same-origin',redirect:'manual',cache:'no-store',headers:{'X-Dex-Shopping-Binding':binding,...(action ? {'X-Dex-Shopping-Action':action} : {}),...(generation == null ? {} : {'X-Dex-Shopping-Generation':String(generation)}),...(body === undefined ? {} : {'Content-Type':'application/json','X-CSRFToken':csrf()})},...(body === undefined ? {} : {body:JSON.stringify(body)})});
     if (response.status === 403 || response.status === 401 || response.type === 'opaqueredirect') {
       window.discardNavigationAuthority?.();if (!revoked) invalidate();
       throw new Error('Your session is unavailable. Sign in again to continue.');
@@ -75,6 +77,9 @@
       invalidate();throw new Error('Your session changed. Reload Shopping to continue.');
     }
     return data;
+    };
+    const localStatus=body===undefined && ((url.startsWith(api+'?') && (url.includes('run_id=') || url.includes('request_id='))) || url==='/api/shopping/price-source-status/');
+    return localStatus && window.navigator?.locks ? await window.navigator.locks.request('dex-shopping-status',controller ? {signal:controller.signal} : {},perform) : await perform();
     } catch (error) {
       if (error.name === 'AbortError') throw new Error('Local status did not respond in time. Reload this section to check; no acquisition was retried.');
       throw error;
@@ -465,7 +470,16 @@
     bindReviewLinks();
   }
   function bindReviewLinks() {
-    $('discovery-cards').querySelectorAll('[data-review-id]').forEach(anchor => {if (anchor.dataset.reviewBound) return;anchor.dataset.reviewBound = '1';anchor.addEventListener('click',() => {anchor.href = '/shopping/check/?' + new URLSearchParams({discovery_run:run.run_id,item_id:anchor.dataset.reviewId,return:reviewReturn(anchor.dataset.reviewId)});});});
+    $('discovery-cards').querySelectorAll('[data-review-id]').forEach(anchor => {if (anchor.dataset.reviewBound) return;anchor.dataset.reviewBound = '1';anchor.addEventListener('click',async event => {
+      const active=run, token=sequence;
+      anchor.href = '/shopping/check/?' + new URLSearchParams({discovery_run:active.run_id,item_id:anchor.dataset.reviewId,return:reviewReturn(anchor.dataset.reviewId)});
+      if(!window.navigator?.locks || !window.AbortController || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button!==0)return;
+      event.preventDefault();status('Opening your review…');
+      const controller=new window.AbortController(), timeout=setTimeout(()=>controller.abort(),10000);
+      try{await window.navigator.locks.request('dex-shopping-status',{signal:controller.signal},()=>{if(currentAuthority() && run===active && sequence===token)location.href=anchor.href;});}
+      catch{status('Dex is still checking the search. Try opening this offer again.',true);anchor.focus();}
+      finally{clearTimeout(timeout);}
+    });});
   }
   function render(value) {
     window.DexLotValues?.unpack(value);
@@ -655,7 +669,7 @@
   window.addEventListener('focus',()=>revalidateRun(true));
   window.addEventListener('popstate',() => location.reload());
   document.addEventListener('visibilitychange',() => {if (pruneLocal()) renderCards();if (!document.hidden) {checkSources();revalidateRun(true);}});
-  lifecycleTimer = setInterval(() => {const minute = Math.floor(Date.now() / 60000);if (pruneLocal() || window.DexLotValues && run && minute !== windowMinute) {windowMinute = minute;renderCards();}window.DexDiscoveryDisplay?.tick($('discovery-cards'));if (!document.hidden && Date.now()-lastRunCheck>=5000) revalidateRun();else checkSources();},1000);
+  lifecycleTimer = setInterval(() => {const minute = Math.floor(Date.now() / 60000);if (pruneLocal() || window.DexLotValues && run && minute !== windowMinute) {windowMinute = minute;renderCards();}window.DexDiscoveryDisplay?.tick($('discovery-cards'));if (!document.hidden) {if(Date.now()-lastRunCheck>=5000) revalidateRun();else checkSources();}},1000);
   for (const [field,id] of Object.entries({q:'discovery-query',scope:'discovery-focus',missing_basis:'discovery-missing-basis',budget:'discovery-budget',budget_mode:'discovery-budget-mode',budget_rule:'discovery-budget-rule',budget_value_basis:'discovery-budget-value-basis',product_type:'discovery-product-type',sort:'discovery-sort'})) if (initial[field] !== undefined) $(id).value = initial[field];
   if (intent === 'missing' && !initial.scope && !initial.goal) $('discovery-focus').value = 'kanto';
   if (initial.prefer_vintage !== undefined) $('discovery-prefer-vintage').checked = initial.prefer_vintage === '1';

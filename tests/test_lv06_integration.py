@@ -25,7 +25,16 @@ def test_automatic_evidence_remains_in_original_lease_and_no_read_acquires(env, 
         assert all(card["name"] for card in value["cards"])
         assert row["evidence_kind"] == "seller_details"
         assert row["observed_at"] and row["expires_at"]
+    assessed_sizes = []
+    original_assess = lot_hunt._assess
+
+    def counted(actor, selected_run, raws):
+        assessed_sizes.append(len(raws))
+        return original_assess(actor, selected_run, raws)
+
+    monkeypatch.setattr(lot_hunt, "_assess", counted)
     preview = listing_check.candidate(env.actor, "session", run.id, result["results"][0]["id"])
+    assert assessed_sizes == [1]
     assert "proposals" not in preview["listing"]["seller_contents"]
     assert sum(p["quantity"] for p in preview["listing"]["proposals"]) == 3
     assert {p["id"] for line in preview["listing"]["contents"] for p in line["candidates"]} == {

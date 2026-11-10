@@ -60,6 +60,21 @@ def candidate(request):
 
 @endpoint
 @require_GET
+def validate_lease(request):
+    who, session = discovery_views.principal(request)
+    raw = query(request, {"discovery_run", "item_id"})
+    if set(raw) != {"discovery_run", "item_id"}:
+        raise ValueError("Choose one checked temporary offer.")
+    return shopping_views.private_json(
+        checks.validate_lease(
+            who, session, request.headers.get("X-Dex-Review-Lease"), raw["discovery_run"], raw["item_id"]
+        ),
+        request,
+    )
+
+
+@endpoint
+@require_GET
 def catalog(request):
     who, _ = discovery_views.principal(request)
     if "restore" in request.GET:

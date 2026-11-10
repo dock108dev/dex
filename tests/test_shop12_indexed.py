@@ -283,6 +283,42 @@ def test_complete_alias_and_sibling_candidates(visual, monkeypatch):
 
     assert read(visual["actor"])["found"] == expected
 
+    @shopping_index.indexed
+    def sequential(actor):
+        indexed = shopping_index.current(actor)
+        calls = []
+        original = store.rows
+
+        def counted(sql, *args, **kwargs):
+            if "ar_shopping_names" in sql:
+                calls.append(sql)
+            return original(sql, *args, **kwargs)
+
+        with monkeypatch.context() as patch:
+            patch.setattr(store, "rows", counted)
+            rows = [[p["id"] for p in indexed.proposals(text)] for text in texts]
+        return {"rows": rows, "queries": len(calls)}
+
+    @shopping_index.indexed
+    def batch(actor):
+        indexed = shopping_index.current(actor)
+        calls = []
+        original = store.rows
+
+        def counted(sql, *args, **kwargs):
+            if "ar_shopping_names" in sql:
+                calls.append(sql)
+            return original(sql, *args, **kwargs)
+
+        with monkeypatch.context() as patch:
+            patch.setattr(store, "rows", counted)
+            rows = [[p["id"] for p in group] for group in indexed.proposals_many(texts)]
+        return {"rows": rows, "queries": len(calls)}
+
+    old, new = sequential(visual["actor"]), batch(visual["actor"])
+    assert new["rows"] == old["rows"]
+    assert new["queries"] == 2 and old["queries"] > new["queries"]
+
 
 @pytest.mark.parametrize("change", ["account", "generation", "catalog", "goal"])
 def test_final_authority_change_prevents_publication(visual, monkeypatch, change):

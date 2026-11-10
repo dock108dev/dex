@@ -4,7 +4,7 @@ import asyncio
 import re
 from time import perf_counter
 
-from .asgi import BoundedBodyApplication
+from .asgi import BROWSER_HEADERS, BoundedBodyApplication
 
 REQUEST_SLOTS = 1
 QUEUE_SECONDS = 0.5
@@ -46,6 +46,31 @@ class LimitedApplication:
         try:
             await asyncio.wait_for(slots.acquire(), timeout=QUEUE_SECONDS)
         except TimeoutError:
+            accepts_html = any(
+                key.lower() == b"accept" and b"text/html" in value.lower()
+                for key, value in scope.get("headers", [])
+            )
+            if (
+                scope.get("method") == "GET"
+                and scope.get("path") in {"/shopping/", "/shopping/check/"}
+                and accepts_html
+            ):
+                body = (
+                    b'<!doctype html><html lang="en"><meta charset="utf-8">'
+                    b"<title>Dex is busy</title><main><h1>Dex is busy</h1>"
+                    b"<p>This page did not start. Your destination is preserved.</p>"
+                    b'<a href="" autofocus>Try again</a></main></html>'
+                )
+                headers = [(k.lower().encode("ascii"), v.encode("ascii")) for k, v in BROWSER_HEADERS.items()]
+                headers.extend(
+                    [
+                        (b"content-type", b"text/html; charset=utf-8"),
+                        (b"content-length", str(len(body)).encode()),
+                        (b"cache-control", b"no-store"),
+                    ]
+                )
+                await send({"type": "http.response.start", "status": 503, "headers": headers})
+                return await send({"type": "http.response.body", "body": body})
             return await BoundedBodyApplication.refuse(send, 503, b'{"error":"runtime_busy"}')
         wait = (perf_counter() - started) * 1000
         try:

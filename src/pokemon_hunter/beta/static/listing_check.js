@@ -19,9 +19,17 @@
   }
   let cards = [], preview = null, run = null, stopped = false, active = true, version = 0, loadVersion = 0;
   let reviewRevision=null, assessmentEnd=null, handoff=null, sellerAway=false;
+  let sourceRevision=null, validationPending=false, sourcePending=false, foreground=false, leaseFailures=0, sourceFailures=0;
   let lease = null, detailRun = null, discoveryOrigin = null, sourceOrigin = null, sourceItem = null, buyNowPrice = '', buyNowCurrency = '', correcting = null, sellerCardCount = null, lotUnits = null, stockQuantity = null, remainderAuto = false, leaseChecking = false, ticks = 0, references = [], retentionDeadline = null, previewDeadline = null, offerDeadline = null, sourceDeadline = null, searchVersion = 0, saveTimer, loading = false;
   const node = (tag, text) => {const n = document.createElement(tag); if(text !== undefined) n.textContent = text; return n;};
   const identityOnly = p => Object.fromEntries(['id','name','set_name','collector_number','language','edition','finish','variant','artwork'].map(k=>[k,p[k]]));
+  async function coordinate(work) {
+    if(!window.navigator?.locks || !window.AbortController)return work();
+    const controller=new window.AbortController(), timeout=setTimeout(()=>controller.abort(),10000);
+    try{return await window.navigator.locks.request('dex-shopping-status',{signal:controller.signal},work);}
+    catch(error){if(error.name==='AbortError')throw Error('Dex is still checking the search. Your review remains; try again.');throw error;}
+    finally{clearTimeout(timeout);}
+  }
   const say = (text, error = false) => { if($('check-reload')) $('check-reload').hidden = !error; $('check-status').textContent = text; $('check-status').setAttribute('role', error ? 'alert' : 'status'); };
   function revoke() {
     authoredCards.clear();for(const key of Object.keys(authoredFields))delete authoredFields[key];
@@ -36,7 +44,10 @@
   window.addEventListener('dex:authority-revoked', revoke);
   async function request(url, data, keepalive = false, action = null, headers = {}) {
     if(!active) throw Error('This page is no longer active.');
-    const response = await fetch(url, {credentials:'same-origin', cache:'no-store', keepalive, headers:{...headers,'X-Dex-Shopping-Binding':binding, ...(action ? {'X-Dex-Shopping-Action':action} : {}), ...(data === undefined ? {} : {'Content-Type':'application/json','X-CSRFToken':csrf})}, ...(data === undefined ? {} : {method:'POST',body:JSON.stringify(data)})});
+    const controller=data===undefined && !keepalive && window.AbortController ? new window.AbortController() : null;
+    const timeout=controller ? setTimeout(()=>controller.abort(),5000) : null;
+    try {
+    const response = await fetch(url, {credentials:'same-origin', cache:'no-store', keepalive, ...(controller ? {signal:controller.signal} : {}), headers:{...headers,'X-Dex-Shopping-Binding':binding, ...(action ? {'X-Dex-Shopping-Action':action} : {}), ...(data === undefined ? {} : {'Content-Type':'application/json','X-CSRFToken':csrf})}, ...(data === undefined ? {} : {method:'POST',body:JSON.stringify(data)})});
     if(response.redirected || [401,403].includes(response.status)) {revoke(); throw Error('Sign in again to continue.');}
     if(!response.headers.get('content-type')?.includes('application/json')) throw Object.assign(Error('The request could not finish. Your edits remain.'),{status:response.status});
     const value = await response.json();
@@ -45,6 +56,10 @@
     if(!active) throw Error('This page is no longer active.');
     if(value.authority?.binding !== binding || value.authority?.account_id !== account) {revoke(); throw Error('Your session changed.');}
     return value;
+    } catch(error) {
+      if(error.name==='AbortError')throw Error('The local check timed out. Your edits remain; retry the check.');
+      throw error;
+    } finally {if(timeout)clearTimeout(timeout);}
   }
   function showContext(context) {
     collectionContext=context;
@@ -56,7 +71,17 @@
   function read() {
     return {...Object.fromEntries(fields.map(f => [f === 'url' ? 'listing_url' : f, $('review-'+f).value])), detail_run: detailRun, discovery_origin: discoveryOrigin, price_kind:$('review-price-kind').value, buy_now_price:buyNowPrice, buy_now_currency:buyNowCurrency, seller_card_count:sellerCardCount, lot_units:lotUnits, stock_quantity:stockQuantity, remainder_auto:remainderAuto, unknown_contents: $('review-unknown').value === '' ? null : Number($('review-unknown').value), contents, authored_fields:Object.keys(authoredFields), cards:cards.filter(r=>r.quantity!==0 || authoredCards.has(r.printing_id)).map(({identity,...r}) => ({...r,authored_fields:Object.keys(authoredCards.get(r.printing_id) || {}).filter(k=>k!=='printing_id')}))};
   }
-  function invalidate() {handoff=null;references=[];assessmentEnd=null;delete $('check-results').dataset.pending;++version;if(collectionContext?.collection_fit) showContext({...collectionContext,collection_fit:null}); $('check-results').hidden = true; $('check-results').replaceChildren(); count();}
+  function invalidate() {handoff=null;references=[];assessmentEnd=null;validationPending=false;sourcePending=false;leaseFailures=0;sourceFailures=0;delete $('check-results').dataset.pending;++version;if(collectionContext?.collection_fit) showContext({...collectionContext,collection_fit:null}); $('check-results').hidden = true; $('check-results').replaceChildren(); count();}
+  function pendingEvidence(kind) {
+    if(kind==='lease'){validationPending=true;leaseFailures++;}else{sourcePending=true;sourceFailures++;}
+    if($('check-results').childElementCount)$('check-results').hidden=true;
+    say('Verification is pending. Your review is retained; retry to check the evidence.',true);
+  }
+  function verifiedEvidence(kind) {
+    const wasPending=validationPending || sourcePending;
+    if(kind==='lease'){validationPending=false;leaseFailures=0;}else{sourcePending=false;sourceFailures=0;}
+    if(wasPending && !validationPending && !sourcePending && $('check-results').childElementCount && !handoff){$('check-results').hidden=false;say('Review evidence verified.');}
+  }
   function count() {
     const baseline=$('review-budget').value, flexible=$('review-budget_mode').value==='flexible';
     $('review-budget-policy').textContent=`Active review ${flexible?'baseline':'budget limit'}: ${baseline ? baseline+' USD all-in' : 'not set'}. ${flexible?'Higher-priced options require explicit evidence review; no automatic exception or spending authorization. ':''}${$('review-budget_rule').value ? 'Your rule: '+$('review-budget_rule').value+'. ' : ''}${flexible?'Value basis: '+($('review-budget_value_basis').value==='resale'?'net resale proceeds after selling costs':'estimated collectible value')+'.':''}`;
@@ -99,7 +124,7 @@
     const job=drain();saving=job;
     try{await job;}finally{if(saving===job)saving=null;}
   }
-  function changed() {resetBatch();$('review-save-status').textContent='Saving your changes…';reviewDirty=true;invalidate(); clearTimeout(saveTimer); saveTimer = setTimeout(() => {persist().catch(e => say(e.message,true));},400);}
+  function changed() {resetBatch();$('review-save-status').textContent='Saving your changes…';reviewDirty=true;invalidate(); clearTimeout(saveTimer); saveTimer = setTimeout(() => {coordinate(()=>persist()).catch(e => say(e.message,true));},400);}
   function rememberControl(control,label,value){
     const key={'Condition claim':'condition','Language code (en, ja…)':'language','Edition claim':'edition','Finish claim':'finish','Value basis':'grade','Literal grader':'grader'}[label];
     const id=control.closest('.review-card')?.dataset.printing,row=cards.find(r=>r.printing_id===id);
@@ -396,10 +421,11 @@
       catch(e){if(active && ![400,404,409,410].includes(e.status))say(e.message,true);}
       return;
     }
-    const headers={'X-Dex-Review-Lease':lease,'X-Dex-Review-Revision':reviewRevision,'X-Dex-Shopping-Generation':String(trip.generation)};
+    const expected=version, headers={'X-Dex-Review-Lease':lease,'X-Dex-Review-Revision':reviewRevision,'X-Dex-Shopping-Generation':String(trip.generation)};
     try {
-      const {assessment,benchmark}=await request('/api/shopping/listing/return/',undefined,false,null,headers);
-      if(handoff!==trip)return;
+      const value=await coordinate(()=>expected!==version ? null : request('/api/shopping/listing/return/',undefined,false,null,headers));
+      if(!value || expected!==version || handoff!==trip)return;
+      const {assessment,benchmark}=value;
       if(!trip.assessment){handoff=null;return;} // Reference cleanup already removed the decision.
       if(JSON.stringify(assessment)!==JSON.stringify(trip.assessment) || JSON.stringify(benchmark)!==JSON.stringify(trip.benchmark)){
         const missing=trip.assessment.evidence.filter(r=>!assessment.evidence.some(now=>JSON.stringify(now)===JSON.stringify(r)));
@@ -409,10 +435,14 @@
         return;
       }
       delete $('check-results').dataset.pending;
+      validationPending=false;sourcePending=false;$('check-results').hidden=false;
       handoff=null;
       trip.link.focus({preventScroll:true});
     } catch(e) {
-      if(handoff!==trip || !active)return;
+      if(expected!==version || handoff!==trip || !active)return;
+      if(![400,404,409,410].includes(e.status)){
+        sellerAway=true;pendingEvidence('lease');return;
+      }
       invalidate();
       const recoveryVersion=version;
       if([400,404,409,410].includes(e.status)){
@@ -434,17 +464,21 @@
         }catch{if(!active || version!==recoveryVersion)return;}
         await expireEvidence();
         say('The original offer or review is no longer available. Reopen Shopping to check the listing.',true);
-      }else say(e.message,true);
+      }
       $('check-compare').focus();
     }
   }
   window.addEventListener('focus',validateReturn);
   document.addEventListener('visibilitychange',validateReturn);
   $('check-compare').onclick=async()=>{
-    const expected=version;$('check-results').hidden=true;$('check-compare').disabled=true;
+    const expected=++version;foreground=true;$('check-results').hidden=true;$('check-compare').disabled=true;
+    say('Checking your review…');
     try{
+      await coordinate(async()=>{
+      if(expected!==version || !active)return;
       const data=read();await persist();const value=await request('/api/shopping/listing/compare/',{revision:reviewRevision,lease});
       if(expected!==version || !active)return;
+      validationPending=false;sourcePending=false;leaseFailures=0;sourceFailures=0;
       const a=value.assessment;
       assessmentEnd=a.ends_at;references=[...a.evidence.flatMap(r=>[r,...r.conflicts.map(c=>({...c,name:r.name}))]),...(value.benchmark?.references || []),...(value.benchmark?.native_guides || []).flatMap(g=>g.references || [])];
       const usd=v=>v==null?'Unavailable':`$${v}`;
@@ -499,7 +533,8 @@
       }
       for(const reason of a.issues)out.append(node('p',reason));
       addHandoff(shell,a,value.authority.generation,value.benchmark);shell.hidden=false;shell.querySelector('h2').tabIndex=-1;shell.querySelector('h2').focus();say('Lot summary updated.');
-    }catch(e){say(e.message,true);}finally{$('check-compare').disabled=!active;}
+      });
+    }catch(e){if($('check-results').childElementCount)pendingEvidence('lease');else say(e.message,true);$('check-compare').focus();}finally{foreground=false;$('check-compare').disabled=!active;}
   };
   $('clear-review').onclick=async()=>{authoredCards.clear();for(const key of Object.keys(authoredFields))delete authoredFields[key];clearOffer();preview=null;$('listing-preview').hidden=true;await applyReview({currency:'USD',cards:[],unknown_contents:null});changed();say('Review cleared. Collection and wanted targets remain unchanged.');};
   for(const f of fields)$('review-'+f).addEventListener('input',()=>{authoredFields[f==='url'?'listing_url':f]=$('review-'+f).value;changed();});
@@ -515,17 +550,25 @@
   }
   let checking=false;
   setInterval(async()=>{
-    if(!active)return;
+    if(!active || foreground || document.hidden)return;
     window.DexDiscoveryDisplay?.tick($('offer-summary'));
-    if(!handoff && ++ticks%5===0 && !leaseChecking && (detailRun || discoveryOrigin || preview?.discovery_origin)){leaseChecking=true;try{
-      if(preview?.discovery_origin)await request('/api/shopping/listing/candidate/?'+new URLSearchParams({discovery_run:preview.discovery_origin.run_id,item_id:preview.discovery_origin.result_id}));
-      if(detailRun || discoveryOrigin){const current=await request('/api/shopping/listing/review/',undefined,false,null,{'X-Dex-Review-Lease':lease});if(!handoff && !reviewDirty && !saving && ! $('check-results').hidden && current.revision!==reviewRevision){invalidate();say('The saved review changed. Reopen it to compare again.');}}
-    }catch(e){if(![400,404,410].includes(e.status)){invalidate();say(e.message,true);return;}if(detailRun || discoveryOrigin)await expireEvidence();preview=null;clearOffer();sourceOrigin=null;sourceItem=null;$('listing-preview').hidden=true;$('listing-details').replaceChildren();say(e.message,true);}finally{leaseChecking=false;}}
+    ++ticks;
+    const origin=preview?.discovery_origin || discoveryOrigin;
+    if(!handoff && ticks%5===0 && (!validationPending || leaseFailures<3) && !leaseChecking && !checking && !saving && !reviewDirty && (origin || detailRun)){leaseChecking=true;const expected=version;try{
+      const current=await coordinate(()=>expected!==version || foreground ? null : origin
+        ? request('/api/shopping/listing/validate/?'+new URLSearchParams({discovery_run:origin.run_id,item_id:origin.result_id}),undefined,false,null,{'X-Dex-Review-Lease':lease})
+        : request('/api/shopping/listing/review/',undefined,false,null,{'X-Dex-Review-Lease':lease}));
+      if(!current || expected!==version || foreground)return;
+      if(origin && sourceRevision!==null && current.source_revision!==sourceRevision){await expireEvidence();say('The offer evidence changed. Reopen Shopping to review it again.',true);return;}
+      if(current.revision!==reviewRevision){invalidate();say('The saved review changed. Reopen it to compare again.',true);return;}
+      if(origin && sourceRevision===null)sourceRevision=current.source_revision;
+      verifiedEvidence('lease');
+    }catch(e){if(expected!==version || foreground)return;if(![400,404,410].includes(e.status)){pendingEvidence('lease');return;}await expireEvidence();preview=null;clearOffer();sourceOrigin=null;sourceItem=null;$('listing-preview').hidden=true;$('listing-details').replaceChildren();say(e.message,true);}finally{leaseChecking=false;}}
     if(offerDeadline && Date.now()>=offerDeadline){clearOffer();preview=null;$('listing-preview').hidden=true;$('listing-details').replaceChildren();}
     if(preview && Date.now()>=previewDeadline){preview=null;$('listing-preview').hidden=true;$('listing-details').replaceChildren();}
     if(retentionDeadline && Date.now()>=retentionDeadline){retentionDeadline=null;await expireEvidence();say('Temporary review expired. Seller evidence was cleared; your authored corrections remain on screen. The original time limit was not renewed.');}
     if(assessmentEnd && Date.parse(assessmentEnd)<=Date.now() && !$('check-results').hidden){invalidate();say('The listing ended.');}
-    if(checking || $('check-results').hidden)return;
+    if(ticks%5!==2 || (sourcePending && sourceFailures>=3) || checking || leaseChecking || ! $('check-results').childElementCount || validationPending)return;
     const expected=version;
     const expired=references.filter(r=>Date.parse(r.expires_at)<=Date.now() ||
       (r.as_of && new Date().toLocaleDateString('en-CA',{timeZone:'America/New_York'})>
@@ -534,16 +577,17 @@
     if(handoff && !references.some(r=>r.snapshot_version || r.source_contract))return;
     checking=true;
     try{
-      const state=await request('/api/shopping/price-source-status/',undefined,false,null,{'X-Dex-Review-Lease':lease});
-      if(expected!==version)return;
+      const state=await coordinate(()=>expected!==version || foreground ? null : request('/api/shopping/price-source-status/',undefined,false,null,{'X-Dex-Review-Lease':lease}));
+      if(!state || expected!==version)return;
       const withdrawn=references.filter(r=>
         (r.snapshot_version && !state.versions.includes(r.snapshot_version)) ||
         (r.source_contract && !state.sources.includes(r.source_contract)));
       if(withdrawn.length)clearReferences(withdrawn,'withdrawn');
-    }catch(e){if(active && expected===version){invalidate();say(e.message,true);}}finally{checking=false;}
+      else verifiedEvidence('source');
+    }catch(e){if(active && expected===version && !foreground)pendingEvidence('source');}finally{checking=false;}
   },1000);
   // Persist only inputs to bounded server memory before ordinary navigation.
-  document.addEventListener('click',async event=>{const a=event.target.closest('a[href]');if(!a || a.hash || !active || a.target==='_blank' || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)return;event.preventDefault();try{await persist();location.href=a.href;}catch(e){say(e.message,true);}});
+  document.addEventListener('click',async event=>{const a=event.target.closest('a[href]');if(!a || a.hash || !active || a.target==='_blank' || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)return;event.preventDefault();foreground=true;const expected=++version;try{await coordinate(async()=>{if(expected!==version || !active)return;await persist();location.href=a.href;});}catch(e){foreground=false;say(e.message,true);a.focus?.();}});
   addEventListener('pagehide',()=>{clearOffer();if(active){persist(true).catch(()=>{});if(run && loading){request(`/api/shopping/listing/${run}/stop/`,{},true).catch(()=>{});}++loadVersion;}});
   addEventListener('pageshow',event=>{if(event.persisted)location.reload();});
   $('manual-entry').addEventListener('click',()=>{$('review-editor').open=true;});
@@ -556,6 +600,7 @@
   }
   async function restoreSection(){
     try{
+      await coordinate(async()=>{
       if(reviewDirty){await persist();if(detailUnknown){await reconcileDetails();return;}say('Your latest edits are retained.');return;}
       let selected=null;
       if(!lease){
@@ -585,6 +630,7 @@
         // Identity restoration cannot extend the received offer's remaining life.
         if(Date.now()>=selected.deadline)throw Error('The temporary offer expired. Reopen Shopping to continue.');
         const picked=selected.value;previewDeadline=selected.deadline;sourceDeadline=previewDeadline;
+        sourceRevision=picked.source_revision;
         sourceOrigin=picked.listing.discovery_origin;sourceItem=picked.listing.item_id;
         $('listing-identifier').value=sourceItem;$('load-listing').textContent='Load full seller details';
         showPreview(picked.listing);showContext(picked.context);say('');
@@ -594,8 +640,9 @@
           $('review-editor').open=true;say('This lot’s temporary review and decision were restored. Original expiry is unchanged.');
         }
       }
+      });
     }catch(e){say(e.message,true);}finally{if(active){root.querySelectorAll('input,button,select,textarea').forEach(n=>n.disabled=false);setLoading(loading || detailUnknown);}}
   }
-  $('check-reload').addEventListener('click',restoreSection);
+  $('check-reload').addEventListener('click',()=>{if(sellerAway && handoff)validateReturn();else if(validationPending && (preview?.discovery_origin || discoveryOrigin || detailRun)){leaseFailures=0;ticks=4;say('Checking your review…');}else if(sourcePending){sourceFailures=0;ticks=1;say('Checking your evidence…');}else restoreSection();});
   restoreSection();
 })();

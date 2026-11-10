@@ -92,6 +92,7 @@ class Read:
         self.species_rows = {}
         self._release_dates = None
         self._release_mappings = None
+        self._goal_printings = None
 
     def release_dates(self):
         """Reuse release mappings only inside this authorized catalog snapshot."""
@@ -165,12 +166,71 @@ class Read:
 
         return self.supported(self.matching(text))
 
+    def proposals_many(self, texts):
+        """Resolve a batch in one snapshot while keeping each seller's matches separate."""
+        texts = [discovery_matching.literal(text) for text in texts]
+        missing = list(dict.fromkeys(text for text in texts if text not in self.named))
+        orders = {}
+        if missing:
+            anchors_by_text = {text: set(words(text)) | {""} for text in missing}
+            anchors = sorted(set().union(*anchors_by_text.values()))
+            names = store.rows(
+                "SELECT DISTINCT 'name' AS kind,anchor,name AS id,name AS value FROM ar_shopping_names WHERE build=%s AND anchor IN (SELECT value FROM json_each(%s))"
+                + (
+                    " UNION ALL SELECT kind,NULL AS anchor,id,value FROM (" + _COMMON_SQL + ")"
+                    if self._games is None
+                    else ""
+                ),
+                [self.build, builds.encode(anchors)],
+            )
+            if self._games is None:
+                self._common(names)
+            by_anchor = {}
+            for row in names:
+                if row["kind"] == "name":
+                    by_anchor.setdefault(row["anchor"], set()).add(row["value"])
+            matches = {
+                text: {
+                    name
+                    for anchor in anchors_by_text[text]
+                    for name in by_anchor.get(anchor, ())
+                    if discovery_matching.name_spans({"name": name}, text)
+                }
+                for text in missing
+            }
+            all_names = sorted(set().union(*matches.values()))
+            found = (
+                store.rows(
+                    "SELECT n.name,a.id,a.payload,a.sha,MIN(n.ordinal) AS ordinal FROM ar_shopping_names n INDEXED BY ar_shopping_name JOIN ar_catalog a ON a.build=n.build AND a.id=n.printing_id WHERE n.build=%s AND n.name IN (SELECT value FROM json_each(%s)) GROUP BY n.name,a.id ORDER BY ordinal",
+                    [self.build, builds.encode(all_names)],
+                )
+                if all_names
+                else []
+            )
+            by_name = {}
+            for row in found:
+                if row["id"] not in self.metadata:
+                    self.metadata[row["id"]] = builds.decode(row)
+                by_name.setdefault(row["name"], []).append((row["id"], row["ordinal"]))
+            for text in missing:
+                ordering = {}
+                for name in matches[text]:
+                    for key, ordinal in by_name.get(name, ()):
+                        ordering[key] = min(ordering.get(key, ordinal), ordinal)
+                ordered = sorted(ordering, key=lambda key: (ordering[key], key))
+                orders[text] = ordering
+                self.named[text] = [self.metadata[key] for key in ordered]
+        result = []
+        for text in texts:
+            self.order.update(orders.get(text, {}))
+            result.append(self.supported(self.named[text]))
+        return result
+
     def supported(self, rows):
         from .lot_calculator import SETS, current_species_printing
 
         rows = self.published(rows)
         games = self.games
-        goals = None
         result = []
         for row in rows:
             if row["game_id"] not in games:
@@ -178,15 +238,15 @@ class Read:
             if row["set_name"] in SETS or current_species_printing(row):
                 result.append(row)
             else:
-                if goals is None:
-                    goals = {
+                if self._goal_printings is None:
+                    self._goal_printings = {
                         r["printing_id"]
                         for r in store.rows(
                             "SELECT DISTINCT printing_id FROM ar_goal_printings WHERE user_id=%s",
                             [self.actor.user_id],
                         )
                     }
-                if row["id"] in goals:
+                if row["id"] in self._goal_printings:
                     result.append(row)
         # Preserve catalog order across the complete matching family.
         return sorted(result, key=lambda p: self.order.get(p["id"], 0))

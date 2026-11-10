@@ -21,6 +21,98 @@ from test_shop13_browser import (
 pytestmark = pytest.mark.allow_hosts(["127.0.0.1"])
 
 
+def test_finished_search_waits_before_compare_without_replaying(browser_app):
+    from playwright.sync_api import expect
+
+    from pokemon_hunter.beta import discovery, discovery_listing
+
+    state, page, base, requests, errors = browser_app
+    page.goto(base + "/shopping/check/")
+    binding = page.locator("#check-binding").evaluate("e=>JSON.parse(e.textContent)")
+    run = discovery.Run(
+        str(uuid.uuid4()),
+        (str(state["root"]), state["actor"].user_id, binding),
+        discovery.Choices(query="Ivysaur", product_type="mixed_lots"),
+        None,
+        ["Ivysaur"],
+        state="complete",
+        raws=[
+            dict(itemId="v1|123456789012|0", title="Ivysaur lot of 2 cards", buyingOptions=["FIXED_PRICE"])
+        ],
+    )
+    discovery._runs[run.id] = run
+    handle = discovery_listing.result_handle(run.id, run.raws[0]["itemId"])
+    page.goto(base + f"/shopping/check/?discovery_run={run.id}&item_id={handle}")
+    page.locator("#use-listing").click()
+    page.locator("#review-price").fill("17.25")
+    expect(page.locator("#review-save-status")).to_contain_text("saved")
+    other = page.context.new_page()
+    pending = []
+    sent = []
+    page.on("request", lambda req: sent.append((req.method, req.url)))
+
+    def hold(route):
+        if "run_id=" in route.request.url:
+            pending.append(route)
+        else:
+            route.continue_()
+
+    other.route("**/api/shopping/discovery/**", hold)
+    other.goto(base + f"/shopping/?run_id={run.id}&q=Ivysaur", wait_until="domcontentloaded")
+    expect(other.locator("#discovery-form")).to_be_visible()
+    page.wait_for_timeout(500)
+    assert pending
+    page.locator("#check-compare").click()
+    page.wait_for_timeout(600)
+    assert not any(method == "POST" and "/listing/compare/" in url for method, url in sent)
+    pending.pop(0).continue_()
+    expect(page.locator("#check-results")).to_be_visible(timeout=15000)
+    assert sum(method == "POST" and "/listing/compare/" in url for method, url in sent) == 1
+    assert not any(method == "POST" and "/discovery/" in url for method, url in sent)
+    assert not errors
+    other.close()
+
+
+def test_comparison_recovers_from_temporary_background_failure(browser_app):
+    from playwright.sync_api import expect
+
+    from pokemon_hunter.beta import discovery, discovery_listing
+
+    state, page, base, requests, errors = browser_app
+    page.goto(base + "/shopping/check/")
+    binding = page.locator("#check-binding").evaluate("e=>JSON.parse(e.textContent)")
+    run = discovery.Run(
+        str(uuid.uuid4()),
+        (str(state["root"]), state["actor"].user_id, binding),
+        discovery.Choices(query="Ivysaur", product_type="mixed_lots"),
+        None,
+        ["Ivysaur"],
+        state="complete",
+        raws=[
+            dict(itemId="v1|123456789012|0", title="Ivysaur lot of 2 cards", buyingOptions=["FIXED_PRICE"])
+        ],
+    )
+    discovery._runs[run.id] = run
+    handle = discovery_listing.result_handle(run.id, run.raws[0]["itemId"])
+    page.goto(base + f"/shopping/check/?discovery_run={run.id}&item_id={handle}")
+    page.locator("#use-listing").click()
+    page.locator("#review-price").fill("17.25")
+    page.locator("#check-compare").click()
+    expect(page.locator("#check-results")).to_be_visible()
+    page.route(
+        "**/api/shopping/price-source-status/",
+        lambda route: route.fulfill(status=503, json={"error": "runtime_busy"}),
+    )
+    expect(page.locator("#check-results")).to_be_hidden(timeout=12000)
+    expect(page.locator("#check-status")).to_contain_text("Verification is pending")
+    assert page.locator("#review-price").input_value() == "17.25"
+    page.unroute("**/api/shopping/price-source-status/")
+    page.locator("#check-reload").click()
+    expect(page.locator("#check-results")).to_be_visible(timeout=12000)
+    assert page.locator("#review-price").input_value() == "17.25"
+    assert not errors
+
+
 def test_contents_keyboard_layout_correction_and_failed_save(browser_app):
     from playwright.sync_api import expect
 

@@ -41,6 +41,14 @@ def test_shopping_busy_is_predispatch_and_cancellation_releases_slot():
         assert output[0]["status"] == 503
         assert output[1]["body"] == b'{"error":"runtime_busy"}'
         assert "/api/shopping/discovery/" not in calls
+        await limited(
+            dict(type="http", method="GET", path="/shopping/check/", headers=[(b"accept", b"text/html")]),
+            None,
+            send,
+        )
+        assert output[-2]["status"] == 503
+        assert b'<a href="" autofocus>Try again</a>' in output[-1]["body"]
+        assert "/shopping/check/" not in calls
         stop_path = "/api/shopping/discovery/11111111-1111-4111-8111-111111111111/stop/"
         await limited(dict(type="http", method="POST", path=stop_path), None, send)
         assert output[-2]["status"] == 503 and stop_path not in calls

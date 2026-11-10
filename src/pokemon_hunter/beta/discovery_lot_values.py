@@ -31,12 +31,23 @@ def project(actor, raws, rows, *, details=None, summaries=None, _checks=None):
     # Unioning inventories before parsing makes evidence depend on the other lot
     # in the batch, so an expanded single-offer read can have a different hash.
     catalogs = (
-        {
-            raw["itemId"]: indexed.proposals(
-                hunter_lot_parser.catalog_text(summaries.get(raw["itemId"], raw), details.get(raw["itemId"]))
+        dict(
+            zip(
+                (raw["itemId"] for raw in raws),
+                (
+                    getattr(indexed, "proposals_many", None)
+                    or (lambda texts: [indexed.proposals(text) for text in texts])
+                )(
+                    [
+                        hunter_lot_parser.catalog_text(
+                            summaries.get(raw["itemId"], raw), details.get(raw["itemId"])
+                        )
+                        for raw in raws
+                    ]
+                ),
+                strict=True,
             )
-            for raw in raws
-        }
+        )
         if indexed
         else {}
     )
@@ -50,10 +61,14 @@ def project(actor, raws, rows, *, details=None, summaries=None, _checks=None):
         records = lot_calculator.retained_records()
     sources = {raw.get("itemId"): raw for raw in raws}
     release_dates = indexed.release_dates() if indexed else species_scope.release_dates()
+    indexes = {}
     for row in rows:
         raw = sources[row["item_id"]]
         entries = catalogs[raw["itemId"]] if indexed else fallback
-        index = hunter_catalog.IdentityIndex(entries)
+        identity = tuple(p["id"] for p in entries)
+        if identity not in indexes:
+            indexes[identity] = hunter_catalog.IdentityIndex(entries)
+        index = indexes[identity]
         unavailable = dict(
             native_guides=[],
             assessment_version="dex-lot-value-v3",

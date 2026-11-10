@@ -443,8 +443,11 @@ def candidate(actor, session, run_id, result_id):
     restore_cards = catalog(actor, restore=restore_ids)["cards"] if 0 < len(restore_ids) <= 40 else []
     # Recheck the source after image/catalog projection so Stop cannot publish
     # a summary whose original lease ended while local work was running.
-    current_source = d.review_candidate(actor, session, run_id, result_id)
-    if any(current_source.get(k) != source.get(k) for k in ("raw", "detail", "content_revision", "created")):
+    current_source = d.summary_lease(actor, session, run_id, result_id)
+    if any(
+        current_source.get(k) != source.get(k)
+        for k in ("raw", "detail", "summary", "content_revision", "created")
+    ):
         raise ValueError("Listing evidence changed during review; reopen the current assessment")
     retained = _retained_reviews(actor, session, (run_id, result_id)).get((run_id, result_id))
     return dict(
@@ -453,10 +456,56 @@ def candidate(actor, session, run_id, result_id):
         if retained
         else None,
         listing=value,
+        source_revision=_source_revision(source),
         restore_cards=restore_cards,
         expires_in_seconds=source["expires_in_seconds"],
         context=_context(source, actor),
     )
+
+
+def _source_revision(source):
+    return shopping.digest(
+        {key: source.get(key) for key in ("raw", "detail", "summary", "content_revision", "created")}
+    )
+
+
+@shopping_index.indexed
+def validate_lease(actor, session, lease, run_id, result_id):
+    """Recheck an existing review and selected offer without admitting a candidate."""
+    owner = d._owner(actor, session)
+    with d._lock:
+        current = _reviews.get(owner)
+        if not current or current[2] != lease or time.monotonic() - current[0] >= d.EPHEMERAL_SECONDS:
+            raise ValueError("The original review lease is unavailable.")
+        if current[1] and current[1].get("detail_run"):
+            detail = d._lookup(actor, session, current[1]["detail_run"])
+            if detail.cancel.is_set() or detail.operation != "detail" or detail.state != "complete":
+                raise ValueError("Loaded details expired or were stopped.")
+        source = d.summary_lease(actor, session, run_id, result_id)
+        revision = shopping.digest(current[1])
+        source_revision = _source_revision(source)
+        indexed = shopping_index.current(actor)
+        if indexed:
+
+            def final_authority():
+                with d._lock:
+                    final = _reviews.get(owner)
+                    if (
+                        not final
+                        or final[2] != lease
+                        or time.monotonic() - final[0] >= d.EPHEMERAL_SECONDS
+                        or shopping.digest(final[1]) != revision
+                        or _source_revision(d.summary_lease(actor, session, run_id, result_id))
+                        != source_revision
+                    ):
+                        raise Http404
+                    if final[1] and final[1].get("detail_run"):
+                        final_detail = d._lookup(actor, session, final[1]["detail_run"])
+                        if final_detail.cancel.is_set() or final_detail.state != "complete":
+                            raise Http404
+
+            indexed.publication_checks.append(final_authority)
+        return dict(revision=revision, source_revision=source_revision)
 
 
 def stop(actor, session, key):

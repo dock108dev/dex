@@ -98,6 +98,7 @@ if settings.B2_ENABLED:
         path("shopping/check/", listing_views.home),
         path("api/shopping/listing/", listing_views.loads),
         path("api/shopping/listing/candidate/", listing_views.candidate),
+        path("api/shopping/listing/validate/", listing_views.validate_lease),
         path("api/shopping/listing/catalog/", listing_views.catalog),
         path("api/shopping/listing/<uuid:run>/stop/", listing_views.stop),
         path("api/shopping/listing/review/", listing_views.review),

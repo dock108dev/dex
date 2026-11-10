@@ -654,7 +654,7 @@ def _complete(value):
     )
 
 
-def status(actor, session, key):
+def status(actor, session, key, *, selected_result=None):
     with _lock:
         run = _runs.get(str(key))
     if run is None:
@@ -663,11 +663,11 @@ def status(actor, session, key):
     # page/detail completion must not invalidate its own concurrent status read.
     # Stop/expiry and revision checks still run inside this bounded local read.
     with run.lock:
-        return _status(actor, session, run)
+        return _status(actor, session, run, selected_result=selected_result)
 
 
 @shopping_index.indexed
-def _status(actor, session, run):
+def _status(actor, session, run, *, selected_result=None):
     if run.owner != d._owner(actor, session):
         raise Http404
     if run.state in RUNNING and time.monotonic() >= run.deadline:
@@ -684,7 +684,17 @@ def _status(actor, session, run):
         if run.state in ERASED:
             return result
         revision = run.content_revision
-        raws = deepcopy([r for r in run.raws if contract.lanes(r)])
+        raws = deepcopy(
+            [
+                r
+                for r in run.raws
+                if contract.lanes(r)
+                and (
+                    selected_result is None
+                    or discovery_listing.result_handle(run.id, r["itemId"]) == selected_result
+                )
+            ]
+        )
         assessed = set(run.assessed)
     # Read current references every time. No amounts/derivatives are persisted.
     rows = discovery_listing.received_rows(raws)

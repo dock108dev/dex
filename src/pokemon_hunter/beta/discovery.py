@@ -424,6 +424,8 @@ def status(actor, session_key, run_id, *, selected_result=None, received=False, 
     if (existing is not None and existing.operation == "lot_hunt") or (
         existing is None and lot_hunt.owns(actor, session_key, run_id)
     ):
+        if selected_result is not None:
+            return lot_hunt.status(actor, session_key, run_id, selected_result=selected_result)
         return lot_hunt.status(actor, session_key, run_id)
     return _legacy_status(
         actor, session_key, run_id, selected_result=selected_result, received=received, values=values
@@ -596,6 +598,13 @@ def summary_lease(actor, session_key, run_id, result_id):
     """
     run = _lookup(actor, session_key, run_id)
     with run.lock:
+        if run.operation == "lot_hunt":
+            from . import lot_hunt
+
+            try:
+                lot_hunt._guard(run, actor, acquiring=False)
+            except lot_hunt.Halt as exc:
+                raise Http404 from exc
         return _summary_lease(run, result_id)
 
 
