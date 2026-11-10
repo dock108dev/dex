@@ -69,7 +69,7 @@ window.DexLotValues = (() => {
       const end = Date.parse(row.ends_at);
       const lanes = row.value_order?.lanes;
       const bid = (lanes ? Boolean(lanes.auction) : auction(row)) && Number.isFinite(end) && end > now && end <= cutoff;
-      const bin = (lanes ? Boolean(lanes.buy_it_now) : number(row.buy_now_price) !== null) && (!Number.isFinite(end) || end > now);
+      const bin = (lanes ? Boolean(lanes.buy_it_now) : row.buying_options?.includes('FIXED_PRICE') || number(row.buy_now_price) !== null) && (!Number.isFinite(end) || end > now);
       const summary = glance(row, mode);
       return (mode === 'auction' ? bid : mode === 'buy_now' ? bin : bid || bin) &&
         (estimate === 'all' || estimate === 'estimated' && summary.amount !== null || estimate === 'below' && summary.ratio !== null && summary.ratio < 1) &&

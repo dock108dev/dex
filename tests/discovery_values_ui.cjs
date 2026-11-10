@@ -12,6 +12,8 @@ const ids = options => Array.from(display.select(rows,{now,hours:'48',...options
 assert.deepEqual(ids({}),['bin','higher','lower','unknown']);
 assert.deepEqual(ids({mode:'auction'}),['higher','lower','unknown']);
 assert.deepEqual(ids({mode:'buy_now'}),['bin']);
+const unpriced = row('unpriced',3,null,{price_kind:'fixed_price',buy_now_price:null,buying_options:['FIXED_PRICE']});
+assert.deepEqual(Array.from(display.select([unpriced],{now,mode:'buy_now'}),r=>r.id),['unpriced']);
 assert.deepEqual(ids({hours:'24',mode:'auction'}),['lower','unknown']);
 assert.deepEqual(ids({sort:'ending',mode:'auction'}),['unknown','lower','higher']);
 assert.deepEqual(ids({hours:'all',mode:'auction'}),['higher','late','lower','unknown']);

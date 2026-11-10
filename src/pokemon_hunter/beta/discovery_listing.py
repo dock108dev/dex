@@ -75,6 +75,7 @@ def received_rows(raws):
                 item_url=ebay_url(raw.get("itemWebUrl")),
                 seller_image=seller_image(raw.get("image")),
                 listing_price=price,
+                buying_options=observed["buying_options"],
                 current_bid=price if auction else None,
                 buy_now_price=observed["buy_now"]["amount"],
                 buy_now_delivered_total=costs["buy_it_now"]["delivered_before_tax"],

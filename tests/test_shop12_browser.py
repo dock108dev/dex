@@ -49,6 +49,68 @@ def received(run_id, account, binding):
     )
 
 
+@pytest.mark.parametrize("dual", [False, True])
+def test_received_lot_shows_costs_and_review_action_at_narrow_width(browser_app, monkeypatch, dual):
+    from playwright.sync_api import expect
+
+    from pokemon_hunter.beta import discovery
+
+    state, page, base, requests, errors = browser_app
+    monkeypatch.setattr(discovery.ebay_hunts, "status", lambda: dict(enabled=True, configured=True))
+    run_id = str(uuid.uuid4())
+    calls = []
+
+    def route(request):
+        calls.append(request.request.method)
+        binding = request.request.header_value("X-Dex-Shopping-Binding")
+        if urlsplit(request.request.url).query:
+            value = received(run_id, state["actor"].user_id, binding)
+            value["results"][0].update(
+                buying_options=["FIXED_PRICE"],
+                price_kind="fixed_price",
+                buy_now_price="10.00",
+                shipping="2.00",
+                delivered_total="12.00",
+                buy_now_delivered_total="12.00",
+            )
+            if dual:
+                value["results"][0].update(
+                    buying_options=["FIXED_PRICE", "AUCTION"],
+                    price_kind="current_bid",
+                    current_bid="7.00",
+                    listing_price="7.00",
+                    delivered_total="9.00",
+                )
+            request.fulfill(json=value)
+        else:
+            request.continue_()
+
+    page.route("**/api/shopping/discovery/**", route)
+    page.goto(base + f"/shopping/?run_id={run_id}&q=Venusaur")
+    row = page.locator(".compact-lot").first
+    expect(row).to_contain_text("Buy It Now · delivered")
+    expect(row).to_contain_text("Asking price: $10.00 · Shipping: $2.00")
+    if dual:
+        expect(row).to_contain_text("Auction current bid: $7.00 · Bid + shipping before tax: $9.00")
+        page.locator(".result-settings > summary").click()
+        page.locator("#lot-buying-mode").select_option("auction")
+        expect(row).to_contain_text("Auction · bid + shipping")
+        expect(row).to_contain_text("$9.00")
+        expect(row).to_contain_text("Current bid: $7.00 · Shipping: $2.00")
+        page.locator("#lot-buying-mode").select_option("buy_now")
+        expect(row).to_contain_text("Buy It Now · delivered")
+        expect(row).to_contain_text("$12.00")
+        page.locator("#lot-buying-mode").select_option("both")
+    expect(row.get_by_role("link", name="Assess lot")).to_be_visible()
+    expect(row.get_by_role("link", name="Open seller listing on eBay")).to_be_visible()
+    for width in (320, 390, 1280):
+        page.set_viewport_size(dict(width=width, height=900))
+        page.add_style_tag(content="html { font-size: 200% !important; }")
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1")
+    assert all(method == "GET" for method in calls)
+    assert not errors
+
+
 def test_options_failure_and_keyboard_recovery_preserve_results_at_narrow_sizes(browser_app, monkeypatch):
     from playwright.sync_api import expect
 

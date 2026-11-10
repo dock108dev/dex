@@ -191,6 +191,7 @@ def test_contents_keyboard_layout_correction_and_failed_save(browser_app):
     assert disclosure.evaluate("e=>e.parentElement.open")
     page.locator("#use-listing").click()
     expect(page.locator("#review-cards .contents-entry")).to_have_count(2)
+    assert '{"edition"' not in page.locator("#review-cards").inner_text()
     correction = page.locator("#review-cards summary").filter(has_text="Correct identity").first
     correction.focus()
     correction.press("Enter")

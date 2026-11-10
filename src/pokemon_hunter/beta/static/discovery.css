@@ -193,6 +193,7 @@
 .discovery-cards { grid-template-columns:minmax(0,1fr); gap:12px; }
 .discovery .compact-lot { display:grid; grid-template-columns:120px minmax(0,1fr) 260px; gap:12px 20px; align-items:start; border-radius:14px; }
 .compact-lot .offer-image { aspect-ratio:1; }
+.discovery .compact-lot .offer-image:has(img:not([hidden])) .offer-image-label { display:block; }
 .compact-lot .lot-summary h3 { font-size:1.05rem; margin:0 0 6px; }
 .compact-lot .lot-contents { color:var(--muted); }
 .compact-lot .lot-reason { margin-top:8px; }

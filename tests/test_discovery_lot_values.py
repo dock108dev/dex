@@ -26,6 +26,7 @@ def test_bid_and_buy_now_have_independent_delivered_comparisons(local):
         itemEndDate=(datetime.now(UTC) + timedelta(hours=12)).isoformat(),
         price=dict(value="20.00", currency="USD"),
     )
+    assert row["buying_options"] == ["AUCTION", "FIXED_PRICE"]
     assert row["delivered_total"] == "3.00"
     assert row["buy_now_delivered_total"] == "21.00"
     value = row["lot_value"]

@@ -154,7 +154,22 @@
     const allocated=rows.reduce((n,r)=>n+(Number(r.quantity)||0),0);
     return `Allocated: ${allocated} · Remaining in this entry: ${entry.quantity === null ? 'Unknown' : Math.max(0,entry.quantity-allocated)}${entry.quantity !== null && allocated>entry.quantity ? ' · Exceeds seller quantity; reconcile before comparing.' : ''}`;
   }
-  const printingLabel=p=>`${p.name} · ${p.set_name} #${p.collector_number} · ${[p.language,p.edition,p.finish,p.variant].filter(Boolean).join(' / ')}`;
+  function printingTraits(p) {
+    const labels={en:'English',ja:'Japanese',first_edition:'First edition',unlimited:'Unlimited',standard:'Standard',normal:'Non-holo',holo:'Holo','reverse-holo':'Reverse holo'};
+    const label=value=>labels[value] || String(value).replace(/[_-]+/g,' ');
+    let variant=p.variant;
+    if(typeof variant==='string' && variant.trim().startsWith('{')){try{variant=JSON.parse(variant);}catch{variant=null;}}
+    const attributes=variant && typeof variant==='object' ? variant : {};
+    const traits=[p.language,p.edition || attributes.edition,p.finish || attributes.finish || attributes.type].filter(Boolean).map(label);
+    if(variant && typeof variant==='object'){
+      for(const [key,value] of Object.entries(variant)){
+        if(!value || ['edition','type','finish'].includes(key))continue;
+        const text=`${label(key)}: ${label(value)}`;if(!traits.includes(text))traits.push(text);
+      }
+    }else if(variant && !['normal','standard',p.edition,p.finish].includes(variant))traits.push(label(variant));
+    return traits.join(' · ');
+  }
+  const printingLabel=p=>[p.name || 'Selected card',`${p.set_name || 'Set unknown'} #${p.collector_number || '?'}`,printingTraits(p)].filter(Boolean).join(' · ');
   function contentsSummary(host, entry) {
     host.append(node('h3',entry.candidates.length===1?printingLabel(entry.candidates[0]):entry.candidates[0]?.name || entry.name),node('p',`Seller quantity: ${entry.quantity ?? 'Unknown'} · ${entry.candidates.length} printing alternatives · contents unverified`));
     if(entry.reasons.length)host.append(node('p',entry.reasons.join('; ')));
@@ -194,7 +209,7 @@
     rows.forEach(r => {
       const index=cards.indexOf(r);
       const box=node('div');box.className='review-card';box.dataset.printing=r.printing_id;
-      const p=r.identity || {}, heading=node('h3', `${p.name || 'Selected card'} · ${p.set_name || ''} #${p.collector_number || ''} · ${[p.edition,p.finish,p.variant].filter(Boolean).join(' / ')}`);
+      const p=r.identity || {}, heading=node('h3',printingLabel(p));
       artwork(box,p);const content=node('div');content.className='review-card-content';content.append(heading);const grid=node('div');grid.className='traits';
       const includeLabel=node('label'), include=node('input');include.type='checkbox';include.dataset.printing=r.printing_id;include.checked=r.quantity>0;includeLabel.className='review-include';includeLabel.append(include,node('span',r.quantity>0?'Included':'Include this proposed card'));grid.append(includeLabel);
       include.onchange=()=>{r.quantity=include.checked?Math.max(1,r.quantity):0;rememberCard(r,'quantity',r.quantity);renderCards();changed();[...$('review-cards').querySelectorAll('.review-include input')].find(i=>i.dataset.printing===r.printing_id)?.focus();};
@@ -297,7 +312,7 @@
     const d=node('details');d.append(node('summary','Seller-stated item specifics'));
     value.aspects.forEach(a=>d.append(node('p',a.name+': '+a.value)));out.append(d);
     const entries=$('contents-preview');entries.replaceChildren(node('p',`Seller-stated card count: ${value.seller_lot_size ?? 'Unknown'} · Unconfirmed remainder: ${value.unknown_contents ?? 'Unknown'} · Condition claim: ${value.condition || 'Unknown'}`));
-    (value.contents || []).forEach(entry=>{const box=node('section');box.className='contents-entry';contentsSummary(box,entry);const alternatives=node('details');alternatives.append(node('summary',`Printing alternatives (${entry.candidates.length})`));alternatives.addEventListener('toggle',()=>{if(alternatives.open && alternatives.childElementCount===1)entry.candidates.forEach(p=>alternatives.append(node('p',`${p.name} · ${p.set_name} #${p.collector_number} · ${[p.language,p.edition,p.finish,p.variant].filter(Boolean).join(' / ')}`)));});box.append(alternatives);entries.append(box);});
+    (value.contents || []).forEach(entry=>{const box=node('section');box.className='contents-entry';contentsSummary(box,entry);const alternatives=node('details');alternatives.append(node('summary',`Printing alternatives (${entry.candidates.length})`));alternatives.addEventListener('toggle',()=>{if(alternatives.open && alternatives.childElementCount===1)entry.candidates.forEach(p=>alternatives.append(node('p',printingLabel(p))));});box.append(alternatives);entries.append(box);});
     $('listing-preview').hidden=false;
   }
   function setLoading(value) {loading=value;$('load-listing').disabled=value;$('stop-listing').disabled=!value;}
@@ -383,7 +398,7 @@
       const value=await request('/api/shopping/listing/catalog/?q='+encodeURIComponent($('check-query').value));
       if(!active || expected!==searchVersion)return;
       $('check-matches').replaceChildren(node('p',`${value.total} matching printings. Refine the search if needed; showing up to 40.`));
-      value.cards.map(identityOnly).forEach(p=>{const b=node('button');artwork(b,p);b.append(node('span',`${p.name} · ${p.set_name} #${p.collector_number} · ${[p.language,p.edition,p.finish,p.variant].filter(Boolean).join(' / ')}`));b.type='button';b.className='secondary check-match';b.onclick=()=>{
+    value.cards.map(identityOnly).forEach(p=>{const b=node('button');artwork(b,p);b.append(node('span',printingLabel(p)));b.type='button';b.className='secondary check-match';b.onclick=()=>{
         const existing=cards.find(r=>r.printing_id===p.id), replacement=correcting!==null?cards[correcting]:null;
         if(replacement){authoredCards.delete(replacement.printing_id);if(existing && existing!==replacement){existing.quantity+=replacement.quantity;cards.splice(correcting,1);}else cards[correcting]={...replacement,printing_id:p.id,identity:p};correcting=null;}
         else if(existing)existing.quantity+=1;
