@@ -124,7 +124,9 @@ def test_removed_results_are_not_reported_as_an_empty_provider_batch(browser_app
         binding = handler.request.header_value("X-Dex-Shopping-Binding")
         if urlsplit(handler.request.url).query:
             value = received(run_id, state["actor"].user_id, binding)
-            value.update(state="unauthorized", results=[], error="Authority changed; previous results were removed")
+            value.update(
+                state="unauthorized", results=[], error="Authority changed; previous results were removed"
+            )
             handler.fulfill(json=value)
         else:
             handler.continue_()
