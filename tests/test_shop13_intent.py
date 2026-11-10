@@ -231,6 +231,27 @@ def test_fit_counts_unique_included_species_without_claiming_contents(visual, mo
     assert run.counts["total"] == 0
 
 
+def test_deals_review_shows_current_collection_fit(visual, monkeypatch):
+    enable_read_fixture(visual, monkeypatch)
+    actor = visual["actor"]
+    listing_check._reviews.pop(discovery._owner(actor, "session"), None)
+    choice = discovery.Choices(intent="deals", query="Alakazam", generation=collection.generation(actor))
+    run = received(actor, choice, "Alakazam lot")
+    handle = discovery.discovery_listing.result_handle(run.id, run.raws[0]["itemId"])
+    fit = listing_check.candidate(actor, "session", run.id, handle)["context"]["collection_fit"]
+    assert 65 in fit["mentioned_species"] and fit["included_species"] is None
+    opened = listing_check.review(actor, "session")
+    review = dict(
+        currency="USD",
+        unknown_contents=None,
+        discovery_origin=dict(run_id=run.id, result_id=handle),
+        cards=[dict(printing_id="shop04-base-alakazam", quantity=1)],
+    )
+    fit = listing_check.review(actor, "session", review, opened["lease"])["context"]["collection_fit"]
+    assert fit["included_species"] == [65]
+    assert run.counts["total"] == 0
+
+
 def test_empty_and_locally_filtered_receipts_preserve_counts(visual, monkeypatch):
     enable_read_fixture(visual, monkeypatch)
     actor = visual["actor"]
