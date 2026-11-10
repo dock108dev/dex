@@ -7,6 +7,8 @@ def _targets(actor, raw, build=None):
     from .shopping_index import current
 
     indexed = current(actor)
+    if indexed is None and build is None:
+        return _legacy_targets(actor, raw)
     build = indexed.build if indexed else build
     key = tuple(sorted(raw.items()))
     if indexed and key in getattr(indexed, "intent_targets", {}):
@@ -16,6 +18,8 @@ def _targets(actor, raw, build=None):
     scope = raw.get("scope", "all")
     if scope not in {"all", "kanto", "johto"}:
         raise ValueError("Choose a species region")
+    if not raw.get("goal") and raw.get("version"):
+        raise ValueError("Goal version requires a goal")
     if raw.get("goal") and not raw.get("version"):
         raise ValueError("Keep the frozen goal version")
     goal_key = raw.get("goal")
@@ -71,6 +75,63 @@ def _targets(actor, raw, build=None):
     return result
 
 
+def _legacy_targets(actor, raw):
+    """Apply the same missing-goal rules on roots without prepared reads."""
+    from django.http import Http404
+
+    from . import canonical_species, effective_collection
+
+    if set(raw) - {"goal", "version", "scope", "generation"}:
+        raise ValueError("Choose supported collection intent fields")
+    if not raw.get("goal") and raw.get("version"):
+        raise ValueError("Goal version requires a goal")
+    scope = raw.get("scope", "all")
+    if scope not in {"all", "kanto", "johto"}:
+        raise ValueError("Choose a species region")
+    names = canonical_species.registry()
+    policy = "species"
+    if raw.get("goal"):
+        if not raw.get("version"):
+            raise ValueError("Keep the frozen goal version")
+        goals = collection.goals(actor, goal_id=raw["goal"], include_updates=False)
+        if not goals:
+            raise Http404
+        goal = goals[0]
+        if raw["version"] != goal["version"]:
+            raise collection.Conflict("Frozen goal version changed")
+        policy = goal["definition"]["policy"]
+        by_id = {p["id"]: p for p in collection.catalog(actor, include_archived=True)}
+        numbers = set()
+        for item in goal["progress"]:
+            if item["status"] == "owned":
+                continue
+            if item.get("pokemon_dex") is not None:
+                numbers.add(item["pokemon_dex"])
+            else:
+                numbers.update(
+                    by_id[pid]["attributes"].get("pokemon_dex")
+                    for pid in item["printing_ids"]
+                    if pid in by_id
+                )
+    else:
+        current = effective_collection.project(actor)
+        numbers = {int(n) for n, row in current["species"].items() if not row["present"]}
+    numbers = sorted(
+        n
+        for n in numbers
+        if type(n) is int
+        and n in names
+        and 1 <= n <= 251
+        and (scope == "all" or scope == "kanto" and n <= 151 or scope == "johto" and n > 151)
+    )
+    return dict(
+        targets=[dict(species=n, name=names[n]["name"]) for n in numbers],
+        scope=scope,
+        goal_version=raw.get("version"),
+        goal_policy=policy,
+    )
+
+
 @account_read_context.read
 def targets(actor, build, state, raw):
     return _targets(actor, raw, build)
@@ -110,31 +171,64 @@ def fit(actor, choices, title, review=None):
     frozen_species = {}
     included_printings = None
     if review is not None:
-        rows = current(actor).printings([r["printing_id"] for r in review["cards"] if r["quantity"] > 0])
+        ids = [r["printing_id"] for r in review["cards"] if r["quantity"] > 0]
+        indexed = current(actor)
+        rows = indexed.printings(ids) if indexed else collection.catalog_entries(printing_ids=ids)
         if choices.get("goal_id") and rows:
-            frozen_species = {
-                r["printing_id"]: r["species"]
-                for r in store.rows(
-                    "SELECT p.printing_id,i.species FROM ar_goal_printings p JOIN ar_goal_items i ON i.user_id=p.user_id AND i.id=p.item_id WHERE p.user_id=%s AND p.goal_id=%s AND p.printing_id IN (SELECT value FROM json_each(%s))",
-                    [actor.user_id, choices["goal_id"], account_read_build.encode([p["id"] for p in rows])],
-                )
-            }
+            legacy_items = None
+            if not indexed:
+                legacy_items = collection.goals(actor, goal_id=choices["goal_id"], include_updates=False)[0][
+                    "progress"
+                ]
+            frozen_species = (
+                {
+                    r["printing_id"]: r["species"]
+                    for r in store.rows(
+                        "SELECT p.printing_id,i.species FROM ar_goal_printings p JOIN ar_goal_items i ON i.user_id=p.user_id AND i.id=p.item_id WHERE p.user_id=%s AND p.goal_id=%s AND p.printing_id IN (SELECT value FROM json_each(%s))",
+                        [
+                            actor.user_id,
+                            choices["goal_id"],
+                            account_read_build.encode([p["id"] for p in rows]),
+                        ],
+                    )
+                }
+                if indexed
+                else {pid: item.get("pokemon_dex") for item in legacy_items for pid in item["printing_ids"]}
+            )
             outside_scope = [p["id"] for p in rows if p["id"] not in frozen_species]
             rows = [p for p in rows if p["id"] in frozen_species]
             if targets["goal_policy"] in {"exact", "catalog"}:
-                candidates = store.rows(
-                    "SELECT p.printing_id,i.payload,i.sha,i.status FROM ar_goal_printings p JOIN ar_goal_items i ON i.user_id=p.user_id AND i.id=p.item_id WHERE p.user_id=%s AND p.goal_id=%s AND p.printing_id IN (SELECT value FROM json_each(%s))",
-                    [actor.user_id, choices["goal_id"], account_read_build.encode([p["id"] for p in rows])],
-                )
-                eligible = {
-                    r["printing_id"]
-                    for r in candidates
-                    if r["status"] != "owned"
-                    and (
-                        targets["goal_policy"] != "exact"
-                        or not account_read_build.decode(r).get("unresolved")
+                candidates = (
+                    store.rows(
+                        "SELECT p.printing_id,i.payload,i.sha,i.status FROM ar_goal_printings p JOIN ar_goal_items i ON i.user_id=p.user_id AND i.id=p.item_id WHERE p.user_id=%s AND p.goal_id=%s AND p.printing_id IN (SELECT value FROM json_each(%s))",
+                        [
+                            actor.user_id,
+                            choices["goal_id"],
+                            account_read_build.encode([p["id"] for p in rows]),
+                        ],
                     )
-                }
+                    if indexed
+                    else []
+                )
+                eligible = (
+                    {
+                        r["printing_id"]
+                        for r in candidates
+                        if r["status"] != "owned"
+                        and (
+                            targets["goal_policy"] != "exact"
+                            or not account_read_build.decode(r).get("unresolved")
+                        )
+                    }
+                    if indexed
+                    else {
+                        pid
+                        for item in legacy_items
+                        if item["status"] != "owned"
+                        and (targets["goal_policy"] != "exact" or not item.get("unresolved"))
+                        for pid in item["printing_ids"]
+                    }
+                )
                 if targets["goal_policy"] == "exact":
                     eligible &= {p["id"] for p in rows if not p.get("unresolved_fields")}
                 included_printings = [

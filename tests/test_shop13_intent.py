@@ -382,6 +382,45 @@ def test_exact_goal_uses_missing_printing_not_same_species(visual, monkeypatch):
         listing_check.saved_comparison(actor, "session", saved["revision"], opened["lease"])
 
 
+@pytest.mark.parametrize("frozen", [False, True])
+def test_review_fit_matches_before_and_after_read_preparation(visual, monkeypatch, frozen):
+    from pokemon_hunter.beta import shopping_index
+
+    target, other = "shop04-base-alakazam", "shop04-base2-variant"
+    collection.execute("UPDATE printings SET unresolved_fields='[]' WHERE id=%s", [target])
+    goal = apply(
+        visual, "goal", dict(name="Exact", goal_kind="custom", policy="exact", printing_ids=[target])
+    )["changes"][0]["after"]
+    choices = dict(focus="all", goal_id=goal["id"] if frozen else None, goal_version=goal["version"])
+    actor = visual["actor"]
+
+    def fit(pid):
+        return shopping_intent.fit(
+            actor, choices, "Alakazam", dict(cards=[dict(printing_id=pid, quantity=1)], unknown_contents=2)
+        )
+
+    before = [fit(pid) for pid in (target, other)]
+    enable_read_fixture(visual, monkeypatch)
+    after = [shopping_index.indexed(fit_for_actor)(actor, choices, pid) for pid in (target, other)]
+    for result in after:
+        for key in (
+            "read_version",
+            "public",
+            "catalog_revision",
+            "account_revision",
+            "account_id",
+            "generation",
+        ):
+            result.pop(key, None)
+    assert after == before
+
+
+def fit_for_actor(actor, choices, pid):
+    return shopping_intent.fit(
+        actor, choices, "Alakazam", dict(cards=[dict(printing_id=pid, quantity=1)], unknown_contents=2)
+    )
+
+
 def test_exact_goal_does_not_match_a_now_unresolved_catalog_identity(visual, monkeypatch):
     from pokemon_hunter.beta import shopping_index
 

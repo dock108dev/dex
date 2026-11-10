@@ -364,11 +364,7 @@ def _context(source, actor=None, review=None):
     fit_choices = dict(source["choices"])
     if fit_choices.get("focus") not in {"all", "kanto", "johto"}:
         fit_choices["focus"] = "all"
-    fit = (
-        shopping_intent.fit(actor, fit_choices, source["raw"].get("title", ""), review)
-        if actor and (source["choices"].get("collection_intent") or shopping_index.current(actor))
-        else None
-    )
+    fit = shopping_intent.fit(actor, fit_choices, source["raw"].get("title", ""), review) if actor else None
     label = source.get("scope_label") or (
         "Find deals · owned cards included"
         if source["choices"].get("intent") == "deals"
