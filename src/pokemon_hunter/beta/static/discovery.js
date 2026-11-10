@@ -471,13 +471,15 @@
   }
   function bindReviewLinks() {
     $('discovery-cards').querySelectorAll('[data-review-id]').forEach(anchor => {if (anchor.dataset.reviewBound) return;anchor.dataset.reviewBound = '1';anchor.addEventListener('click',async event => {
-      const active=run, token=sequence;
-      anchor.href = '/shopping/check/?' + new URLSearchParams({discovery_run:active.run_id,item_id:anchor.dataset.reviewId,return:reviewReturn(anchor.dataset.reviewId)});
+      const active=run, token=sequence, resultId=anchor.dataset.reviewId;
+      anchor.href = '/shopping/check/?' + new URLSearchParams({discovery_run:active.run_id,item_id:resultId,return:reviewReturn(resultId)});
       if(!window.navigator?.locks || !window.AbortController || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button!==0)return;
       event.preventDefault();status('Opening your review…');
       const controller=new window.AbortController(), timeout=setTimeout(()=>controller.abort(),10000);
-      try{await window.navigator.locks.request('dex-shopping-status',{signal:controller.signal},()=>{if(currentAuthority() && run===active && sequence===token)location.href=anchor.href;});}
-      catch{status('Dex is still checking the search. Try opening this offer again.',true);anchor.focus();}
+      const destination=anchor.href;
+      const recover=()=>{status('The search changed or is still being checked. Try opening this offer again.',true);const current=[...$('discovery-cards').querySelectorAll('[data-review-id]')].find(link=>link.dataset.reviewId===resultId);(current || $('discovery-reload')).focus();};
+      try{await window.navigator.locks.request('dex-shopping-status',{signal:controller.signal},()=>{if(currentAuthority() && sequence===token && run?.run_id===active.run_id && !stopWanted && !['stopped','expired'].includes(run.state) && run.results?.some(result=>result.id===resultId && !result.unavailable && !(result.ends_at && Date.parse(result.ends_at)<=Date.now())))location.href=destination;else recover();});}
+      catch{recover();}
       finally{clearTimeout(timeout);}
     });});
   }

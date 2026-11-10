@@ -408,6 +408,7 @@
       }
       sellerAway=true;handoff={assessment,benchmark,link,generation};
       out.dataset.pending='true';
+      say('Return here to verify your comparison. If it does not refresh, select Reload this section.',true);
     });
     section.append(link);out.append(section);
   }
@@ -424,7 +425,8 @@
     const expected=version, headers={'X-Dex-Review-Lease':lease,'X-Dex-Review-Revision':reviewRevision,'X-Dex-Shopping-Generation':String(trip.generation)};
     try {
       const value=await coordinate(()=>expected!==version ? null : request('/api/shopping/listing/return/',undefined,false,null,headers));
-      if(!value || expected!==version || handoff!==trip)return;
+      if(handoff!==trip || !active)return;
+      if(!value || expected!==version){sellerAway=true;pendingEvidence('lease');return;}
       const {assessment,benchmark}=value;
       if(!trip.assessment){handoff=null;return;} // Reference cleanup already removed the decision.
       if(JSON.stringify(assessment)!==JSON.stringify(trip.assessment) || JSON.stringify(benchmark)!==JSON.stringify(trip.benchmark)){
@@ -437,6 +439,7 @@
       delete $('check-results').dataset.pending;
       validationPending=false;sourcePending=false;$('check-results').hidden=false;
       handoff=null;
+      say('Comparison verified.');
       trip.link.focus({preventScroll:true});
     } catch(e) {
       if(expected!==version || handoff!==trip || !active)return;

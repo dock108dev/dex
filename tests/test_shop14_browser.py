@@ -21,6 +21,41 @@ from test_shop13_browser import (
 pytestmark = pytest.mark.allow_hosts(["127.0.0.1"])
 
 
+def test_open_survives_same_run_refresh_while_waiting_for_status(browser_app):
+    from playwright.sync_api import expect
+
+    from pokemon_hunter.beta import discovery, discovery_listing
+
+    state, page, base, requests, errors = browser_app
+    page.goto(base + "/shopping/check/")
+    binding = page.locator("#check-binding").evaluate("e=>JSON.parse(e.textContent)")
+    run = discovery.Run(
+        str(uuid.uuid4()),
+        (str(state["root"]), state["actor"].user_id, binding),
+        discovery.Choices(query="Ivysaur", product_type="mixed_lots"),
+        None,
+        ["Ivysaur"],
+        state="complete",
+        raws=[
+            dict(itemId="v1|123456789012|0", title="Ivysaur lot of 2 cards", buyingOptions=["FIXED_PRICE"])
+        ],
+    )
+    discovery._runs[run.id] = run
+    handle = discovery_listing.result_handle(run.id, run.raws[0]["itemId"])
+    page.goto(base + f"/shopping/?run_id={run.id}&q=Ivysaur")
+    expect(page.locator(f'[data-review-id="{handle}"]').first).to_be_attached()
+    pending = []
+    page.route("**/api/shopping/discovery/**", lambda route: pending.append(route))
+    page.wait_for_timeout(6500)
+    assert pending
+    page.locator(f'[data-review-id="{handle}"]').first.evaluate("e=>e.click()")
+    expect(page.locator("#discovery-status")).to_contain_text("Opening your review")
+    pending.pop(0).continue_()
+    page.wait_for_url("**/shopping/check/**", timeout=15000)
+    expect(page.locator("#listing-preview")).to_be_visible()
+    assert not errors
+
+
 def test_finished_search_waits_before_compare_without_replaying(browser_app):
     from playwright.sync_api import expect
 
