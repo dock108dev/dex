@@ -87,7 +87,7 @@ async function check(name,run){await run();cases.push({name,status:'passed'});}
     assert(!owned.content.innerHTML.includes('Choose a variant below to record a physical copy.'));
     const unowned=setup('/card-groups/dg1-card-a/',()=>detail({group:{...group,present:false},variants:[{id:'available',available:true}]}));await unowned.render();
     assert(unowned.content.innerHTML.includes('No individual copies recorded. Use Add to collection to record ownership.'));
-    assert(unowned.content.innerHTML.includes('Variants and adding a copy'));assert.equal(unowned.calls.length,1);
+    assert(unowned.content.innerHTML.includes('Choose edition and finish'));assert.equal(unowned.calls.length,1);
     assert(!unowned.content.innerHTML.includes('Your ownership is recorded separately'));
     const unresolved=setup('/card-groups/dg1-card-a/',()=>detail({group:{...group,present:false,identity_status:'unresolved'}}));await unresolved.render();
     assert(unresolved.content.innerHTML.includes('Card identity needs review'));
