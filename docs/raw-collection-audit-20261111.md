@@ -254,3 +254,8 @@ graph without jobs or logs; its Tests run was still queued at this observation.
 Tests, CodeQL and dependency graph for `198d455` were also queued. Hosted CI was
 therefore not verified as passing, and these statuses must not be treated as local
 test failures or a passing hosted result. No cause was exposed by the run details.
+Subsequently CodeQL for `198d455` also ended in `startup_failure` with no jobs;
+GitHub rejected a failed-job retry as unavailable. Tests remained queued. The
+documentation-only follow-up is a separate commit, and its hosted runs are not
+assumed to validate the installed code. The rc41 wheel also passed the isolated
+Python 3.15 installed smoke. No additional source or provider activity occurred.
