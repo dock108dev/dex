@@ -56,6 +56,18 @@ def test_automatic_evidence_remains_in_original_lease_and_no_read_acquires(env, 
     assert env.calls == before_calls
 
 
+def test_completed_offer_can_be_opened_after_pause_without_provider_calls(env, entries, monkeypatch):
+    configure(env, entries, monkeypatch)
+    run, result = env.execute()
+    calls = list(env.calls)
+    env.choose(enabled=False)
+    preview = listing_check.candidate(env.actor, "session", run.id, result["results"][0]["id"])
+    assert preview["listing"]["contents"]
+    assert listing_check.review(env.actor, "session")["expires_in_seconds"] <= preview["expires_in_seconds"]
+    assert lot_hunt.status(env.actor, "session", run.id)["results"]
+    assert env.calls == calls
+
+
 @pytest.mark.parametrize("basis", ["all", "guide", "sold_estimate", "mixed", "native"])
 def test_local_basis_filter_is_supported_return_state(basis):
     discovery_catalog.validate_page(dict(value_basis=basis, buying_mode="buy_now", time_window="72"))

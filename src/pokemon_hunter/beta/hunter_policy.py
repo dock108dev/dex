@@ -346,13 +346,13 @@ def _period(state, now):
     return start, end
 
 
-def _reason(state, now, *, package=True):
+def _reason(state, now, *, package=True, allow_paused=False):
     policy = state["policy"]
     if now < state["last"]:
         return "The clock moved backwards. Acquisition is paused until it catches up."
     if package and state["package"] != _digest():
         return "This update needs a qualified compatibility binding before acquisition."
-    if not policy["enabled"]:
+    if not policy["enabled"] and not allow_paused:
         return "Hunter acquisition is paused."
     if policy["expires_at"] and now >= _stamp(policy["expires_at"]):
         return "The selected Hunter policy has expired."
@@ -591,7 +591,9 @@ def _parent(state, allowance, now):
     return parent
 
 
-def _check(run):
+@contextmanager
+def checked(run, *, allow_paused=False):
+    """Hold policy authority across a bounded local publication transition."""
     allowance = getattr(run, "allowance", None)
     if run.operation == "detail" and type(allowance) is not OrdinaryAllowance:
         from . import hunter
@@ -605,7 +607,9 @@ def _check(run):
     with _locked(_root(allowance.root)):
         state = _load(_root(allowance.root))
         now = _now()
-        if tuple(run.owner[:2]) != (allowance.root, allowance.account_id) or _reason(state, now):
+        if tuple(run.owner[:2]) != (allowance.root, allowance.account_id) or _reason(
+            state, now, allow_paused=allow_paused
+        ):
             raise ValueError("The selected Hunter policy is unavailable")
         parent = _parent(state, allowance, now)
         used = sum(row["data"]["run_id"] == allowance.parent_id for row in state["operations"])
@@ -614,11 +618,17 @@ def _check(run):
             or _public(state, now, checked=True)["used"] > state["policy"]["daily_limit"]
         ):
             raise ValueError("Hunter limits were reduced below consumed usage")
+        yield
 
 
-def check(run):
+def _check(run, *, allow_paused=False):
+    with checked(run, allow_paused=allow_paused):
+        pass
+
+
+def check(run, *, allow_paused=False):
     try:
-        _check(run)
+        _check(run, allow_paused=allow_paused)
     except (OSError, TypeError, KeyError):
         raise ValueError("Hunter policy or accounting is unavailable") from None
 

@@ -130,6 +130,25 @@ def test_one_action_automatically_details_and_assesses_without_prices(env):
     assert "Charizard" not in content and "authored-secret" not in content and "fixture-secret" not in content
 
 
+def test_pause_retains_completed_review_without_acquisition_until_original_expiry(env):
+    run, before = env.execute()
+    result_id = before["results"][0]["id"]
+    used = policy.status(env.actor)["used"]
+    env.choose(enabled=False)
+
+    after = hunt.status(env.actor, "session", run.id)
+    assert [row["id"] for row in after["results"]] == [row["id"] for row in before["results"]]
+    assert d.summary_lease(env.actor, "session", run.id, result_id)["expires_in_seconds"] > 0
+    assert policy.status(env.actor)["used"] == used == len(env.calls)
+    with pytest.raises(ValueError):
+        policy.check(run)
+
+    run.created -= contract.LEASE_SECONDS
+    assert hunt.status(env.actor, "session", run.id)["state"] == "expired"
+    with pytest.raises(Http404):
+        d.summary_lease(env.actor, "session", run.id, result_id)
+
+
 def test_bin_not_starved_by_twenty_auctions_and_unique_cap(env):
     env.auction = [offer(i, lane="auction") for i in range(1, 21)]
     run, result = env.execute()
@@ -206,6 +225,39 @@ def test_stop_during_detail_prevents_late_publication(env):
     assert result["state"] == "stopped" and result["results"] == []
     assert len(env.calls) == policy.status(env.actor)["used"] == 4
     assert run.raws == [] and run.details == {}
+
+
+def test_pause_during_detail_does_not_publish_partial_results(env):
+    run = env.start()
+
+    async def hook(stage, request):
+        if stage == "detail":
+            env.choose(enabled=False)
+
+    env.hook = hook
+    _, result = env.execute(run)
+    assert result["results"] == []
+    assert run.acquired_at is None
+    assert len(env.calls) == policy.status(env.actor)["used"] == 4
+
+
+def test_pause_after_last_guard_before_publication_withholds_results(env, monkeypatch):
+    run = env.start()
+    original = hunt._guard
+    paused = False
+
+    def guard(selected, actor, *, acquiring=True):
+        nonlocal paused
+        original(selected, actor, acquiring=acquiring)
+        if acquiring and selected.progress["assessed"] == 2 and not paused:
+            paused = True
+            env.choose(enabled=False)
+
+    monkeypatch.setattr(hunt, "_guard", guard)
+    _, result = env.execute(run)
+    assert paused and run.acquired_at is None
+    assert result["results"] == []
+    assert len(env.calls) == policy.status(env.actor)["used"] == 5
 
 
 def test_stop_during_assessment_cannot_restore_success(env, monkeypatch):

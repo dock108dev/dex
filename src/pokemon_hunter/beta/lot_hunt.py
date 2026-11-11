@@ -79,7 +79,12 @@ def _guard(run, actor, *, acquiring=True):
     if acquiring and time.monotonic() >= run.deadline:
         raise Halt("exhausted", "Hunt deadline reached; no late publication")
     d._authorize(actor, run.auth_session)
-    hunter_policy.check(run)
+    # Pausing prevents acquisition and late publication, but an already completed
+    # Hunt may be reviewed within its original, otherwise valid authority.
+    hunter_policy.check(
+        run,
+        allow_paused=(not acquiring and run.state in {"success", "partial"} and run.acquired_at is not None),
+    )
     d._context_current(actor, run.choices)
     if _revision(actor)["binding"] != run.binding:
         raise Halt("conflict", "Account or catalog revision changed; start a new Hunt explicitly")
@@ -577,8 +582,26 @@ async def _acquire(run, actor, credentials):
         state = "partial" if run.raws else "failed"
     else:
         state = "success"
-    run.acquired_at = time.monotonic()
-    _finish(run, state)
+    # Serialize the final transition with policy changes. Progress journaling
+    # reacquires the policy lock, so do it after releasing that lock while the
+    # run lock still prevents readers or Stop from observing a partial transition.
+    with run.lock:
+        previous_state = run.state
+        with hunter_policy.checked(run):
+            if run.cancel.is_set():
+                raise Halt("stopped", "Hunt stopped")
+            if time.monotonic() >= run.created + contract.LEASE_SECONDS:
+                raise Halt("expired", "Original seller-content lease expired")
+            if time.monotonic() >= run.deadline:
+                raise Halt("exhausted", "Hunt deadline reached; no late publication")
+            run.acquired_at = time.monotonic()
+            run.state, run.error = state, None
+        try:
+            _progress(run)
+        except Exception:
+            run.acquired_at = None
+            run.state = previous_state
+            raise
 
 
 def _record_assessment(actor, run, key):

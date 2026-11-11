@@ -320,6 +320,78 @@ def test_keyboard_card_return_restores_focus_and_scroll(browser_app):
     assert not errors, errors
 
 
+@pytest.mark.parametrize("width", [1280, 390])
+def test_card_shopping_return_keeps_search_and_focus(browser_app, width):
+    from playwright.sync_api import expect
+
+    _, page, base, _, errors = browser_app
+    dispatches = []
+    page.on(
+        "request",
+        lambda request: (
+            dispatches.append(request.url)
+            if request.method == "POST" and "/api/shopping/discovery/" in request.url
+            else None
+        ),
+    )
+    page.set_viewport_size({"width": width, "height": 800})
+    page.route(
+        "**/collection-assets/**/*",
+        lambda route: route.abort() if "image" in route.request.resource_type else route.continue_(),
+    )
+    page.goto(base + "/card-library/?q=Ivysaur")
+    expect(page.locator(".owned-card-tile").first).to_be_visible()
+    if width == 390:
+        page.evaluate("document.documentElement.style.fontSize='200%'")
+        assert page.evaluate("document.documentElement.scrollWidth<=innerWidth")
+    page.locator(".owned-card-tile").first.focus()
+    page.keyboard.press("Enter")
+    expect(page.locator("#group-variants summary")).to_contain_text("Choose edition and finish")
+    page.locator("#card-shopping").focus()
+    page.keyboard.press("Enter")
+    expect(page.locator("#shopping-back")).to_be_visible()
+    page.locator("#shopping-back").click()
+    expect(page.locator("#card-shopping")).to_be_focused()
+    page.locator("#card-back").click()
+    expect(page.locator("#cards-query")).to_have_value("Ivysaur")
+    assert not dispatches
+    assert not errors, errors
+
+
+@pytest.mark.parametrize("width", [1280, 390])
+def test_missing_species_shopping_return_restores_filters_and_focus(browser_app, width):
+    from playwright.sync_api import expect
+
+    _, page, base, _, errors = browser_app
+    dispatches = []
+    page.on(
+        "request",
+        lambda r: (
+            dispatches.append(r.url) if r.method == "POST" and "/api/shopping/discovery/" in r.url else None
+        ),
+    )
+    page.set_viewport_size({"width": width, "height": 800})
+    page.goto(base + "/pokedex/?q=Venusaur&region=kanto&owned=missing")
+    tile = page.locator('[data-dex-species="3"]')
+    expect(tile).to_be_visible()
+    tile.focus()
+    before = page.evaluate("scrollY")
+    page.keyboard.press("Enter")
+    expect(page.locator("#species-shopping")).to_be_visible()
+    page.locator("#species-shopping").focus()
+    page.keyboard.press("Enter")
+    expect(page.locator("#discovery-query")).to_have_value("Venusaur")
+    page.locator("#shopping-back").click()
+    expect(page.locator("#species-shopping")).to_be_focused()
+    page.locator(".browse-return").click()
+    expect(page.locator("#dex-search")).to_have_value("Venusaur")
+    expect(page.locator("#dex-region")).to_have_value("kanto")
+    expect(page.locator("#dex-owned")).to_have_value("missing")
+    expect(page.locator('[data-dex-species="3"]')).to_be_focused()
+    assert abs(page.evaluate("scrollY") - before) < 3
+    assert not dispatches and not errors
+
+
 def test_progressive_artwork_visible_and_bounded_fanout(browser_app):
     import base64
 
@@ -453,6 +525,24 @@ def test_selected_child_preview_uses_exact_printing(browser_app):
     expect(page.locator("#review")).to_be_visible()
     assert captured[-1]["request"]["printing_id"] == child
     expect(page.locator("#review-body")).to_contain_text(child)
+    assert not errors, errors
+
+
+def test_recorded_copy_offers_its_printing_without_loading_variants(browser_app):
+    from playwright.sync_api import expect
+
+    _, page, base, _, errors = browser_app
+    page.goto(base + "/cards/")
+    expect(page.locator(".owned-card-tile").first).to_be_visible()
+    page.locator(".owned-card-tile").first.click()
+    copies = page.locator("#group-copy-records")
+    expect(copies.locator("summary")).to_be_visible()
+    copies.locator("summary").click()
+    expect(copies).to_contain_text("Printing recorded; details not loaded")
+    link = copies.get_by_role("link", name="View recorded printing").first
+    expect(link).to_be_visible()
+    link.click()
+    expect(page.locator("#canonical-card")).not_to_have_attribute("data-selected-child", "")
     assert not errors, errors
 
 

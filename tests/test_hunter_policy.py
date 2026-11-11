@@ -109,6 +109,24 @@ def test_admission_counts_consumed_usage_without_reserving_more(everyday):
     assert journal.read_bytes() == before
 
 
+def test_paused_review_still_checks_original_expiry_and_package(everyday):
+    e = everyday
+    expiry = (e.clock.now + timedelta(minutes=5)).isoformat()
+    e.choose(expires_at=expiry)
+    run = e.parent()
+    e.choose(enabled=False, expires_at=expiry)
+    policy.check(run, allow_paused=True)
+    with pytest.raises(ValueError):
+        policy.check(run)
+    e.monkeypatch.setattr(installed, "package_digest", lambda: "b" * 64)
+    with pytest.raises(ValueError):
+        policy.check(run, allow_paused=True)
+    e.monkeypatch.setattr(installed, "package_digest", lambda: "a" * 64)
+    e.clock.now += timedelta(minutes=5)
+    with pytest.raises(ValueError):
+        policy.check(run, allow_paused=True)
+
+
 @pytest.mark.parametrize("invalid", ["paused", "expired", "package", "account", "journal"])
 def test_admission_fails_closed(everyday, invalid):
     e = everyday

@@ -11,8 +11,14 @@ from test_listing_check import review_value
 from test_lv03_hunt import env as env
 from test_lv03_hunt import offer
 
+from pokemon_hunter.beta import (
+    collection,
+    effective_collection,
+    image_bindings,
+    listing_check,
+    shopping_index,
+)
 from pokemon_hunter.beta import discovery as discovery
-from pokemon_hunter.beta import image_bindings, listing_check, shopping_index
 from pokemon_hunter.beta import lot_calculator as calculator
 from pokemon_hunter.beta import lot_hunt as hunt
 
@@ -23,6 +29,18 @@ def configure(env, entries, monkeypatch):
     for row in env.bin + env.auction:
         env.details[row["itemId"]] = dict(row, description=TEXT)
     monkeypatch.setattr(calculator, "catalog", lambda *a, **kw: deepcopy(entries))
+    # This controlled worker has no Django database; supply collection-fit inputs
+    # while exercising the real projection consumer and review lease.
+    monkeypatch.setattr(effective_collection, "project", lambda actor: {"species": {"6": {"present": False}}})
+    monkeypatch.setattr(
+        collection,
+        "catalog_entries",
+        lambda *a, printing_ids=(), **kw: [
+            {**p, "attributes": {"pokemon_dex": 6 if p["id"] == "charizard" else 9, "supertype": "Pokémon"}}
+            for p in deepcopy(entries)
+            if p["id"] in printing_ids
+        ],
+    )
     monkeypatch.setattr(image_bindings, "catalog_images", lambda *a: {})
     listing_check._reviews.clear()
 

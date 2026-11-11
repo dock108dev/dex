@@ -245,6 +245,12 @@ sends and publication. Timezone changes preserve prior usage conservatively;
 day boundaries account for daylight saving. Clock rollback or invalid accounting
 blocks acquisition. See [policy operations](operations.md#everyday-hunter-policy).
 
+Pausing acquisition does not itself withdraw an already completed automatic lot
+Hunt. Local review remains available only while its original seller-content lease,
+captured policy authority, account and session remain valid. Pause still prevents
+new requests and late publication; Stop, expiry, withdrawal and applicable policy
+or account changes continue to remove or withhold content.
+
 ## Hunter service and temporary review
 
 `/shopping/hunter/` is the authenticated Hunter page. The service supports Singles,
