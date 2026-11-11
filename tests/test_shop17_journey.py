@@ -2,6 +2,7 @@
 
 import json
 import math
+import os
 import subprocess
 import sys
 import time
@@ -450,6 +451,9 @@ def test_integrated_journey(cx, count, copies):
     )
     proc = subprocess.Popen(
         [sys.executable, "tests/shop17_server.py", str(root), "0"],
+        # This journey verifies a PSA 8 reference and deliberately exercises
+        # the optional grading mode; other browser checks cover the default.
+        env={**os.environ, "DEX_GRADING_ENABLED": "1"},
         stdout=subprocess.PIPE,
         stderr=subprocess.DEVNULL,
         text=True,
