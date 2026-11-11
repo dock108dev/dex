@@ -239,3 +239,18 @@ an indexed lookup. A new 5,000-card renderer check verifies set counts; its firs
 run failed only because the enclosing suite expected the previous test count. After
 updating that count, 71 SSOT and parity tests passed. Installed rc41 verification
 and hosted checks remain separate and were not established by that local test.
+
+The rc41 wheel built from `198d455` was byte-identical on rebuild, passed the
+Python 3.14 installed smoke and the rc40-to-rc41 same-schema rollback rehearsal.
+After a second stopped-server backup with matching database checksums, the private
+configuration and append-only usage binding were preserved and rc41 was selected
+on the existing root. The ordinary runtime reported ready. The real overview
+eventually rendered with purchase costs, guide date and age rule, and an unavailable
+estimate. It still took tens of seconds to load its full catalog, so this is not a
+performance qualification. The earlier browser stall remains recorded above.
+
+Hosted runs for `6158cc1` showed GitHub startup failures for CodeQL and dependency
+graph without jobs or logs; its Tests run was still queued at this observation.
+Tests, CodeQL and dependency graph for `198d455` were also queued. Hosted CI was
+therefore not verified as passing, and these statuses must not be treated as local
+test failures or a passing hosted result. No cause was exposed by the run details.
