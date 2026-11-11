@@ -5,6 +5,9 @@ import re
 
 def status(raw, text):
     """Return raw, graded or unknown; contradictory claims remain unknown."""
+    # A negated "ungraded" is ambiguous and must not establish a raw price basis.
+    if re.search(r"\b(?:not|non|no)[ -]+ungraded\b", text, re.I):
+        return "unknown"
     negative_pattern = (
         r"\b(?:ungraded|(?:not|non|no)[ -]+(?:professionally[ -]+)?graded|graded\s*:\s*(?:no|false))\b"
     )

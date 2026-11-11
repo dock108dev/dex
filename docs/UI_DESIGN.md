@@ -68,8 +68,8 @@ variant or quantity. Exact copy creation requires an explicit supported printing
 Known card facts and value evidence have separate areas. Omit absent nonessential
 rows and empty removed-copy history. Record details exposes internal references,
 image diagnostics, relevant history and operation/undo access. The editor retains
-binder, purchases, dates, grading, certificates and notes; closing advanced fields
-preserves their stored values.
+binder, purchases, dates and notes. Grading and certificate controls are available
+when grading is enabled; existing details remain preserved when it is off.
 
 Unknown totals stay unknown, independently of recorded copy counts. A card total is
 not a variant quantity or valuation multiplier. Reference scans, exact-child assets

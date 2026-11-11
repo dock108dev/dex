@@ -58,7 +58,8 @@ before changes; never reseed an existing installation.
   comparisons. Listings and checked seller links appear immediately; new results
   are temporary, while existing saved hunt research remains available.
 - Vintage Shopping lots with separate included quantities and wanted targets,
-  four independent guide-value scenarios and rights-permitted saved comparisons.
+  an ungraded guide scenario and rights-permitted saved comparisons. Optional
+  grading mode adds separate graded scenarios.
 - Automatic lot Hunts with up to 40 received summaries, two detailed assessments,
   and separate native-guide subtotals and normalized cost comparisons where supported.
 

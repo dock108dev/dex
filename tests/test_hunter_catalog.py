@@ -317,6 +317,19 @@ def test_unknown_or_conflicting_singles_have_no_raw_comparison(local, monkeypatc
     assert "grading status" in row["reason"].lower()
 
 
+def test_negated_ungraded_claim_has_no_raw_comparison(local, monkeypatch):
+    p = printing("negated")
+    monkeypatch.setattr(collection, "catalog", lambda *a, **k: [p])
+    monkeypatch.setattr(lot_calculator, "retained_records", lambda: [])
+    raw = listing(p, localizedAspects=[])
+    raw["title"] += " not ungraded"
+    row = hunter_catalog.compare(local, [raw], now=OBSERVED)[0]
+    assert row["grading_status"] == "unknown"
+    assert row["ungraded_single"] is False
+    assert row["reference"] is None
+    assert row["comparison"]["below_reference"] is None
+
+
 def test_raw_status_cannot_select_a_graded_reference_when_legacy_clues_disagree(local, monkeypatch):
     p = printing("disagreement")
     monkeypatch.setattr(collection, "catalog", lambda *a, **k: [p])

@@ -9,6 +9,8 @@ from pokemon_hunter.beta.listing_grading import status
     [
         ("Pikachu card", [], "unknown"),
         ("Pikachu ungraded", [], "raw"),
+        ("Pikachu not ungraded", [], "unknown"),
+        ("Pikachu not ungraded", [{"name": "Graded", "value": "No"}], "unknown"),
         ("Pikachu not graded", [], "raw"),
         ("Pikachu not professionally graded", [], "raw"),
         ("Pikachu no slab", [], "unknown"),
