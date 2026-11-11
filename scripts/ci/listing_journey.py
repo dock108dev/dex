@@ -191,7 +191,8 @@ def exercise(page, base, output):
         assert saves[-1]["price"] == "3.00"
         assert saves[-1]["price_kind"] == "current_bid"
         assert saves[-1]["planned_bid"] == "4"
-        assert saves[-1]["cards"][0]["grade"] == "raw"
+        # The replay supplies no per-card grading claim: never infer raw status.
+        assert saves[-1]["cards"][0]["grade"] == ""
         assert saves[-1]["unknown_contents"] == 10
         expect(page.locator("#check-results")).to_contain_text("Whole-lot reference Unavailable")
         passed(

@@ -6,7 +6,7 @@ parallel readers, validators or mutation paths.
 
 ## Current product direction
 
-The November 11 [raw-collection direction and impact audit](raw-collection-direction-20261111.md) records the planned raw-first collecting and shopping focus and default-off graded-experience flag. It is a plan, not a claim that the flag or redesigned flows are implemented. Existing contracts below describe current behavior until delivery.
+The [raw-collection direction and impact audit](raw-collection-direction-20261111.md) records the raw-first collecting and shopping focus. The graded experience is implemented as a default-off process setting; see [local development](local-development.md) for configuration. The audit also records work and verification that remain open.
 
 ## Entry points and storage
 

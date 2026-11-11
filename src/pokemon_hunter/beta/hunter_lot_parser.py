@@ -216,8 +216,15 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
         # Only this card's scoped text may establish its status in a mixed lot.
         from . import listing_grading
 
-        if listing_grading.status({}, scoped_text) == "unknown":
+        grading_status = listing_grading.status({}, scoped_text)
+        if grading_status == "unknown":
             clues["grade"] = ""
+        elif grading_status == "graded" and not clues["graded"]:
+            # The status classifier recognizes claims such as plural "slabs"
+            # that the older price-selection parser does not recognize.
+            clues["grade"] = ""
+            clues["graded"] = True
+            clues["conflicts"].append("No supported literal grader and grade combination")
         # Retain a per-card condition category only when this scoped segment
         # states exactly one. The literal source spans remain available below.
         if len(clues["condition_claims"]) == 1:

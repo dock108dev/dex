@@ -339,7 +339,8 @@ def run(root, base, output):
             row = page.locator("#selections .selection").first
             expect(row).to_have_attribute("data-printing", printing_id)
             expect(row.get_by_label("In this lot", exact=True)).to_have_value("2")
-            expect(row.locator(".value-cell")).to_have_count(4)
+            expect(row.locator(".value-cell")).to_have_count(1)
+            expect(row.locator('.value-cell[data-grade="raw"]')).to_be_visible()
             row.get_by_label("Wanted quantity", exact=True).fill("3")
             with page.expect_response(lambda response: "/api/shopping/wants/" in response.url) as lock_write:
                 row.get_by_label("Lock wanted card", exact=True).check()
@@ -351,25 +352,16 @@ def run(root, base, output):
                 page.get_by_role("button", name="Compare", exact=True).click()
             payload = compared.value.json()
             assert compared.value.status == 200 and payload["schema"] == "dex-lot-v2"
-            assert set(payload["scenarios"]) == {"raw", "8", "9", "10"}
+            assert set(payload["scenarios"]) == {"raw"}
             assert all(
                 scenario["result"]["coverage"]["selected_units"] == 2
                 for scenario in payload["scenarios"].values()
             )
-            visible_grades = [
-                grade
-                for grade in ("raw", "8", "9", "10")
-                if grade == "raw" or payload["scenarios"][grade]["result"]["coverage"]["priced_units"] > 0
-            ]
-            expect(page.locator("#summary .scenario")).to_have_count(len(visible_grades))
-            for grade in ("raw", "8", "9", "10"):
-                cell = row.locator(f'.value-cell[data-grade="{grade}"]')
-                if grade in visible_grades:
-                    expect(cell).to_be_visible()
-                    expect(page.locator(f'#summary [data-scenario="{grade}"]')).to_be_visible()
-                else:
-                    expect(cell).to_be_hidden()
-                    expect(page.locator(f'#summary [data-scenario="{grade}"]')).to_have_count(0)
+            expect(page.locator("#summary .scenario")).to_have_count(1)
+            expect(page.locator('#summary [data-scenario="raw"]')).to_be_visible()
+            for grade in ("8", "9", "10"):
+                expect(row.locator(f'.value-cell[data-grade="{grade}"]')).to_have_count(0)
+                expect(page.locator(f'#summary [data-scenario="{grade}"]')).to_have_count(0)
             capture(page, width, "member-shopping-compared")
             if width == 1280:
                 page.add_style_tag(content="body { zoom: 2; }")

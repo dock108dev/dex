@@ -638,3 +638,20 @@ def test_mixed_lot_status_corrections_guard_both_reference_paths(local, monkeypa
     assert corrected["comparison"]["priced_card_quantity"] == 2
     assert corrected["comparison"]["native_guides"][0]["subtotal"] == "14.00"
     assert corrected["review"]["cards"][1]["grade"] == "9"
+
+
+def test_plural_slabs_claim_does_not_become_raw_lot_value(local):
+    actor, state = local
+    state["raw"] = raw(
+        title="Lot of 1 cards",
+        shortDescription="1x Charizard Base Set 4/102 English Unlimited Non Holo slabs",
+    )
+    result = lots.analyze(actor, "session", "run", "result")
+    corrected = lots.correct(
+        actor,
+        "session",
+        result["review_id"],
+        dict(revision=1, unknown_contents=0, cards=[dict(printing_id="charizard", quantity=1)]),
+    )
+    assert corrected["review"]["cards"][0]["grade"] != "raw"
+    assert corrected["comparison"]["priced_card_quantity"] == 0
