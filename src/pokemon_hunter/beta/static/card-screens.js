@@ -313,8 +313,8 @@
   window.renderCardScreens = async route => {
     const match=route.match(/^\/card-groups\/([^/]+)\/$/);
     if(!listPaths.includes(route)&&!match)return false;
-    const id=++generation, authority=data, url=location.href, principal=account();
-    const active=()=>id===generation&&data===authority&&(!principal||account()===principal)&&location.href===url&&!window.navigationAuthorityDiscarded;
+    const id=++generation, authority=data, url=location.pathname+location.search, principal=account();
+    const active=()=>id===generation&&data===authority&&(!principal||account()===principal)&&location.pathname+location.search===url&&!window.navigationAuthorityDiscarded;
     reader?.stop();reader=new BoundedReads.Reader({active,seed:data.read_state||null});
     try {
       if(principal&&data.read_state?.account_id&&principal!==data.read_state.account_id){const error=Error('Account changed. Reload current cards.');error.status=403;throw error;}

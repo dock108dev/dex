@@ -4,7 +4,7 @@
   for(const key of [...params.keys()])if(!params.get(key))params.delete(key);
   const listReturn=()=>location.pathname+(params.size?'?'+params:'');
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const route=location.href,reader=new BoundedReads.Reader({publicRead:true,active:()=>location.href===route});
+  const route=location.pathname+location.search,reader=new BoundedReads.Reader({publicRead:true,active:()=>location.pathname+location.search===route});
   addEventListener('pagehide',()=>reader.stop());
   const safeBack=()=>{try{const u=new URL(params.get('return')||(location.pathname.startsWith('/pokedex/')?'/pokedex/':'/card-library/'),location.origin);return u.origin===location.origin&&/^\/(pokedex|card-library)\//.test(u.pathname)?u.pathname+u.search:'/card-library/';}catch{return '/card-library/';}};
   const tile=g=>g.oversized?`<p>${BoundedReads.overflow(g)}</p>`:`<a class="owned-card-tile" data-group-id="${esc(g.id)}" href="/card-groups/${encodeURIComponent(g.id)}/?${esc(new URLSearchParams({return:listReturn()}))}"><span class="card-artwork image-frame compact unavailable" aria-hidden="true"></span><span class="card-tile-text"><strong>${esc(g.name)}</strong><span>${esc(g.set_name)} · #${esc(g.collector_number)}</span></span></a>`;

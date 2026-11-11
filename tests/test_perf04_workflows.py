@@ -546,6 +546,23 @@ def test_recorded_copy_offers_its_printing_without_loading_variants(browser_app)
     assert not errors, errors
 
 
+def test_skip_link_keeps_recorded_copy_read_available(browser_app):
+    from playwright.sync_api import expect
+
+    _, page, base, _, errors = browser_app
+    page.goto(base + "/cards/")
+    page.locator(".owned-card-tile").first.click()
+    copies = page.locator("#group-copy-records")
+    expect(copies.locator("summary")).to_be_visible()
+    page.get_by_role("link", name="Skip to content").focus()
+    page.keyboard.press("Enter")
+    assert page.url.endswith("#main")
+    copies.locator("summary").focus()
+    page.keyboard.press("Enter")
+    expect(copies.get_by_role("link", name="View recorded printing").first).to_be_visible()
+    assert not errors, errors
+
+
 @pytest.mark.parametrize("browser_app", ["labels"], indirect=True)
 def test_off_page_set_and_binder_labels(browser_app):
     from playwright.sync_api import expect
@@ -718,4 +735,19 @@ def test_guest_filtered_card_detail_and_retained_label(browser_app):
     page.reload()
     expect(page.locator("#browse-set option:checked")).to_have_text(label)
     assert not any("/api/v2/my-" in url for url in requests)
+    assert not errors, errors
+
+
+def test_guest_skip_link_keeps_filter_choices_available(browser_app):
+    from playwright.sync_api import expect
+
+    _, page, base, _, errors = browser_app
+    page.context.clear_cookies()
+    page.goto(base + "/card-library/")
+    expect(page.locator(".owned-card-tile").first).to_be_visible()
+    page.get_by_role("link", name="Skip to content").focus()
+    page.keyboard.press("Enter")
+    page.get_by_role("button", name="Browse set choices", exact=True).focus()
+    page.keyboard.press("Enter")
+    expect(page.locator("[data-option-value]").first).to_be_visible()
     assert not errors, errors
