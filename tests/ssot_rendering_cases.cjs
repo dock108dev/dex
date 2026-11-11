@@ -119,6 +119,21 @@ function setup(route) {
     assert.match(content.innerHTML, /1 \/ 1/);
     assert.doesNotMatch(content.innerHTML, /42 \/ 251/);
   });
+  await check('overview assigns cards to the right set without repeated catalog scans', async () => {
+    const content = {innerHTML: ''};
+    const cards = {}, catalog = [];
+    for (let i = 0; i < 5000; i++) {
+      const id = 'p' + i;
+      cards[id] = {printing_id: id, supertype: 'Pokémon', rarity: 'Common', effective_card_present: i % 2 === 0};
+      catalog.push({id, set_id: i % 2 ? 'b' : 'a'});
+    }
+    const context = {window: {parityData: {totals: {}, owner_collection: {basis: 'effective-current-collection', total: 0}, cards, catalog}}, data: {sets: [{id:'a', name:'Set A'}, {id:'b', name:'Set B'}]}, $: () => content, esc: String};
+    vm.createContext(context); vm.runInContext(script('parity.js'), context);
+    vm.runInContext("valueSummary=()=>''", context);
+    assert.equal(context.window.renderParity('/overview/'), true);
+    assert.match(content.innerHTML, /Set A · 2500 \/ 2500 owned/);
+    assert.match(content.innerHTML, /Set B · 0 \/ 2500 owned/);
+  });
   for (const route of ['/overview/', '/hunt/', '/missing/', '/finds/']) {
     await check(route + ' retains the supported parity entry', async () => {
       const t = setup(route);

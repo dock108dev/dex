@@ -113,7 +113,7 @@ def test_authoritative_browser_renderers_and_removed_paths():
         timeout=30,
     )
     report = json.loads(result.stdout)
-    assert report["passed"] == 31
+    assert report["passed"] == 32
     assert report["customer_data"] is False and report["provider_calls"] == 0
 
 

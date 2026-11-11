@@ -218,3 +218,24 @@ verified that both readers remain ready on the shared schema, preserved 40
 authoritative tables and the consumed usage prefix, rebound package identity,
 rolled back using current authority, and re-upgraded with zero provider calls.
 It passed. This does not itself install or validate the customer runtime.
+
+The rc40 customer installation used the existing root and preserved the independent
+Hunter usage journal. The initial launch did not see eBay configuration because
+the private runtime-local configuration had not been copied; copying the same
+private configuration from rc39 restored the configured state. One bounded,
+nonrecurring two-operation window preserved six earlier operations and used an
+OAuth and one Browse operation. Acquisition was paused afterward with all eight
+operations retained. The real browser went from a missing Pokédex entry to singles,
+reviewed a received offer and displayed asking price, shipping, unknown tax and
+an unavailable condition-matched comparison. The seller link opened; Back and
+reload restored the offer, filters and focus. A narrow view was inspected. No
+purchase, detail request or source admission occurred. The original lease-expiry
+behavior is covered by isolated checks, not by waiting out this real offer.
+
+The real collection overview then stalled while loading a large existing catalog.
+The server returned its data, and the browser remained busy. The renderer repeatedly
+searched the catalog for each card while grouping sets; the rc41 continuation uses
+an indexed lookup. A new 5,000-card renderer check verifies set counts; its first
+run failed only because the enclosing suite expected the previous test count. After
+updating that count, 71 SSOT and parity tests passed. Installed rc41 verification
+and hosted checks remain separate and were not established by that local test.
