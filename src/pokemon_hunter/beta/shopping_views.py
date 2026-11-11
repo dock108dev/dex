@@ -1,5 +1,6 @@
 """Authenticated, CSRF-protected shopping routes; listing URLs are never fetched."""
 
+from django.conf import settings
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_GET, require_POST
 
@@ -280,11 +281,39 @@ def saved(request, key):
     who = actor(request)
     captured = shopping.reopen(who, str(key))
     modern = captured["schema"] == "dex-lot-v2"
+    if modern and not getattr(settings, "GRADING_ENABLED", False):
+        # Project a read-only view; the authenticated, integrity-checked save is unchanged.
+        captured["scenarios"] = {"raw": captured["scenarios"]["raw"]}
+        captured.pop("request", None)
+    unavailable = (
+        not modern
+        and not getattr(settings, "GRADING_ENABLED", False)
+        and (
+            any(
+                s.get("grade") not in (None, "", "raw") or s.get("grader")
+                for s in captured["context"]["selected_cards"]
+            )
+            or any(
+                r.get("grade") not in (None, "", "raw")
+                or (r.get("raw_record") or {}).get("grade") not in (None, "", "raw")
+                for r in captured["context"]["value_references"]
+            )
+        )
+    )
+    if not modern and not getattr(settings, "GRADING_ENABLED", False):
+        # Historical raw comparisons can contain unused graded guide alternatives.
+        # Remove those from the view only, retaining the authenticated snapshot.
+        candidates = captured["context"].get("candidate_references", {})
+        captured["context"]["candidate_references"] = {
+            key: [r for r in rows if (r.get("raw_record") or {}).get("grade") in (None, "", "raw")]
+            for key, rows in candidates.items()
+        }
     return render(
         request,
         "beta/lot_calculator.html" if modern else "beta/shopping.html",
         dict(
             captured=captured,
+            grading_unavailable=unavailable,
             research_enabled=shopping.available(),
             items=shopping.listing(who),
         ),

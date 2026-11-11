@@ -144,7 +144,7 @@
   }
   function changed() {resetBatch();$('review-save-status').textContent='Saving your changes…';reviewDirty=true;invalidate(); clearTimeout(saveTimer); saveTimer = setTimeout(() => {coordinate(()=>persist()).catch(e => say(e.message,true));},400);}
   function rememberControl(control,label,value){
-    const key={'Condition claim':'condition','Language code (en, ja…)':'language','Edition claim':'edition','Finish claim':'finish','Value basis':'grade','Literal grader':'grader'}[label];
+    const key={'Condition claim':'condition','Language code (en, ja…)':'language','Edition claim':'edition','Finish claim':'finish','Value basis':'grade','Card status':'grade','Literal grader':'grader'}[label];
     const id=control.closest('.review-card')?.dataset.printing,row=cards.find(r=>r.printing_id===id);
     if(key && row)rememberCard(row,key,value);
   }
@@ -201,7 +201,7 @@
     for(const entry of contents){
       const box=node('section');box.className='contents-entry';box.dataset.key=entry.key;contentsSummary(box,entry);
       const sharedLabel=node('label',''),shared=node('input');shared.type='checkbox';sharedLabel.className='review-include';shared.dataset.sharedEntry=entry.key;shared.onchange=resetBatch;sharedLabel.append(shared,node('span',' Include this entry in shared-trait confirmation'));box.append(sharedLabel);
-      const rows=entry.candidates.map(p=>{let r=byId.get(p.id);if(!r){r={printing_id:p.id,quantity:0,grade:'raw',identity:identityOnly(p)};cards.push(r);byId.set(p.id,r);}return r;});rows.forEach(r=>grouped.add(r));
+      const rows=entry.candidates.map(p=>{let r=byId.get(p.id);if(!r){r={printing_id:p.id,quantity:0,grade:'',identity:identityOnly(p)};cards.push(r);byId.set(p.id,r);}return r;});rows.forEach(r=>grouped.add(r));
       const included=rows.filter(r=>r.quantity>0);
       const includedText=node('p',includedSummary(rows));includedText.dataset.included=entry.key;box.append(includedText);
       const allocation=node('p',allocationStatus(entry,rows));allocation.dataset.allocation=entry.key;box.append(allocation);
@@ -233,14 +233,20 @@
       const includeLabel=node('label'), include=node('input');include.type='checkbox';include.dataset.printing=r.printing_id;include.checked=r.quantity>0;includeLabel.className='review-include';includeLabel.append(include,node('span',r.quantity>0?'Included':'Include this proposed card'));grid.append(includeLabel);
       include.onchange=()=>{r.quantity=include.checked?Math.max(1,r.quantity):0;rememberCard(r,'quantity',r.quantity);renderCards();changed();[...$('review-cards').querySelectorAll('.review-include input')].find(i=>i.dataset.printing===r.printing_id)?.focus();};
       const q=input(grid,'Cards inside this one lot',r.quantity,v=>{r.quantity=v;rememberCard(r,'quantity',v);include.checked=v>0;includeLabel.lastChild.textContent=v>0?'Included':'Include this proposed card';for(const entry of contents){const status=[...$('review-cards').querySelectorAll('[data-allocation]')].find(n=>n.dataset.allocation===entry.key);if(status)status.textContent=allocationStatus(entry,cards.filter(c=>entry.candidates.some(p=>p.id===c.printing_id)));}},'number');q.min='0';q.max='100000';q.dataset.quantity=r.printing_id;
-      const attributes=node('details'), attributeGrid=node('div');attributeGrid.className='traits';attributes.append(node('summary',`${r.grade==='raw'?'Ungraded':r.grade?('Grade '+r.grade):'Unpriced'} · optional card details`),attributeGrid);
-      select(attributeGrid,'Value basis',r.grade,[['raw','Ungraded'],['','Unknown / unpriced'],['8','Grade 8'],['9','Grade 9'],['10','Grade 10']],v=>{r.grade=v;attributes.querySelector('summary').textContent=`${v==='raw'?'Ungraded':v?('Grade '+v):'Unpriced'} · optional card details`;});
-      select(attributeGrid,'Literal grader',r.grader,[['','Unknown / not graded'],['PSA','PSA'],['BGS','BGS'],['CGC','CGC'],['SGC','SGC']],v=>r.grader=v);
+      const attributes=node('details'), attributeGrid=node('div');attributeGrid.className='traits';attributes.append(node('summary',`${r.grade==='raw'?'Ungraded':r.grade && r.grade!=='unknown'?('Grade '+r.grade):'Unpriced'} · optional card details`),attributeGrid);
+      if (document.body.dataset.gradingEnabled === 'true') {
+        select(attributeGrid,'Value basis',r.grade,[['raw','Ungraded'],['','Unknown / unpriced'],['8','Grade 8'],['9','Grade 9'],['10','Grade 10']],v=>{r.grade=v;attributes.querySelector('summary').textContent=`${v==='raw'?'Ungraded':v?('Grade '+v):'Unpriced'} · optional card details`;});
+        select(attributeGrid,'Literal grader',r.grader,[['','Unknown / not graded'],['PSA','PSA'],['BGS','BGS'],['CGC','CGC'],['SGC','SGC']],v=>r.grader=v);
+      } else if (r.grade && r.grade !== 'raw' && r.grade !== 'unknown') {
+        attributes.append(node('p','A grading claim is retained; its calculation is unavailable while grading is off.'));
+      } else {
+        select(attributeGrid,'Card status',r.grade === 'raw' ? 'raw' : '',[['','Unknown / unpriced'],['raw','Ungraded']],v=>{r.grade=v;attributes.querySelector('summary').textContent=`${v==='raw'?'Ungraded':'Unpriced'} · optional card details`;});
+      }
       input(attributeGrid,'Condition claim',r.condition,v=>r.condition=v);
       input(attributeGrid,'Language code (en, ja…)',r.language,v=>r.language=v);
       select(attributeGrid,'Edition claim',r.edition,[['','Unknown'],['unlimited','Unlimited'],['first_edition','First edition']],v=>r.edition=v);
       select(attributeGrid,'Finish claim',r.finish,[['','Unknown'],['normal','Non-holo'],['holo','Holo'],['reverse_holo','Reverse holo']],v=>r.finish=v);
-      attributes.append(node('p','Claims remain unverified. Generic guides are independent scenarios, not exact slab matches.'));content.append(grid,attributes);
+      attributes.append(node('p',document.body.dataset.gradingEnabled === 'true' ? 'Claims remain unverified. Generic guides are independent scenarios, not exact slab matches.' : 'Claims remain unverified; check the seller details.'));content.append(grid,attributes);
       const actions=node('div');actions.className='discovery-actions';const correct=node('button','Find a different printing');correct.type='button';correct.className='secondary';correct.onclick=()=>{correcting=index;correctingEntry=contents.find(e=>e.candidates.some(c=>c.id===r.printing_id))?.key || null;$('check-query').value=[p.name,p.set_name,p.collector_number].filter(Boolean).join(' ');$('check-query').focus();say('Quantity and detail edits save automatically. Search below to replace this printing.');};actions.append(correct);
       const remove=node('button','Remove card');remove.type='button';remove.className='secondary';remove.onclick=()=>{if(contents.some(e=>e.candidates.some(p=>p.id===r.printing_id))){r.quantity=0;rememberCard(r,'quantity',0);}else cards.splice(index,1);renderCards();changed();$('check-query').focus();};actions.append(remove);content.append(actions);box.append(content);host.append(box);
     });count();
@@ -407,7 +413,7 @@
     const p=preview;
     // Ambiguous identities remain excluded. Stock is deliberately never used here.
     const currency=p.price.currency || p.shipping.currency || p.buy_now?.currency || 'USD';
-    const value={budget:$('review-budget').value || collectionContext?.choices?.budget || '',budget_mode:collectionContext?.choices?.budget_mode || $('review-budget_mode').value || 'limit',budget_rule:$('review-budget_rule').value || collectionContext?.choices?.budget_rule || '',budget_value_basis:collectionContext?.choices?.budget_value_basis || $('review-budget_value_basis').value || 'collectible',contents:p.contents || [],seller_card_count:p.seller_lot_size ?? null,lot_units:p.api_lot_size===null || p.api_lot_size===undefined?null:Number(p.api_lot_size),stock_quantity:p.stock_quantity ?? null,remainder_auto:p.seller_lot_size!==null && p.seller_lot_size!==undefined,detail_run:p.detail_run || null,discovery_origin:p.discovery_origin || null,price_kind:p.price_kind || 'current_asking_price',planned_bid:'',buy_now_price:p.price_kind==='current_bid' ? p.buy_now?.amount || '' : '',buy_now_currency:p.buy_now?.currency || '',title:p.title,listing_url:p.item_url,price:p.price.amount || '',currency,shipping:p.shipping.currency===currency ? p.shipping.amount || '' : '',tax:'',other_costs:'',unknown_contents:'unknown_contents' in p ? p.unknown_contents : p.seller_lot_size,cards:(p.proposals || []).filter(row=>row.quantity>0).map(row=>({printing_id:row.id,quantity:row.quantity,grade:row.grade || 'raw',grader:row.grader || '',condition:row.condition || '',language:row.language || '',edition:row.edition || '',finish:row.finish || ''}))};
+    const value={budget:$('review-budget').value || collectionContext?.choices?.budget || '',budget_mode:collectionContext?.choices?.budget_mode || $('review-budget_mode').value || 'limit',budget_rule:$('review-budget_rule').value || collectionContext?.choices?.budget_rule || '',budget_value_basis:collectionContext?.choices?.budget_value_basis || $('review-budget_value_basis').value || 'collectible',contents:p.contents || [],seller_card_count:p.seller_lot_size ?? null,lot_units:p.api_lot_size===null || p.api_lot_size===undefined?null:Number(p.api_lot_size),stock_quantity:p.stock_quantity ?? null,remainder_auto:p.seller_lot_size!==null && p.seller_lot_size!==undefined,detail_run:p.detail_run || null,discovery_origin:p.discovery_origin || null,price_kind:p.price_kind || 'current_asking_price',planned_bid:'',buy_now_price:p.price_kind==='current_bid' ? p.buy_now?.amount || '' : '',buy_now_currency:p.buy_now?.currency || '',title:p.title,listing_url:p.item_url,price:p.price.amount || '',currency,shipping:p.shipping.currency===currency ? p.shipping.amount || '' : '',tax:'',other_costs:'',unknown_contents:'unknown_contents' in p ? p.unknown_contents : p.seller_lot_size,cards:(p.proposals || []).filter(row=>row.quantity>0).map(row=>({printing_id:row.id,quantity:row.quantity,grade:row.grade || '',grader:row.grader || '',condition:row.condition || '',language:row.language || '',edition:row.edition || '',finish:row.finish || ''}))};
     await applyReview(value,p.proposals);preview=null;$('listing-preview').hidden=true;$('review-editor').open=true;$('review-heading').focus({preventScroll:true});$('review-editor').scrollIntoView({block:'start'});
     try{reviewDirty=true;await persist();say('Details applied. Correct the cards and quantities, then compare.');}catch(e){say(e.message,true);}
   };
@@ -421,9 +427,9 @@
         const existing=cards.find(r=>r.printing_id===p.id), replacement=correcting!==null?cards[correcting]:null;
         if(replacement){authoredCards.delete(replacement.printing_id);if(existing && existing!==replacement){existing.quantity+=replacement.quantity;cards.splice(correcting,1);}else cards[correcting]={...replacement,printing_id:p.id,identity:p};correcting=null;}
         else if(existing)existing.quantity+=1;
-        else cards.push({printing_id:p.id,quantity:1,grade:'raw',grader:'',condition:'',language:'',edition:'',finish:'',identity:p});
+        else cards.push({printing_id:p.id,quantity:1,grade:'',grader:'',condition:'',language:'',edition:'',finish:'',identity:p});
         const entry=contents.find(e=>e.key===correctingEntry);if(entry){if(!entry.candidates.some(c=>c.id===p.id))entry.candidates.push(Object.fromEntries(Object.entries(identityOnly(p)).filter(([k])=>k!=='artwork')));entry.evidence.push({provenance:'User correction',source_field:'local selection',text:`Selected ${p.name} · ${p.set_name} #${p.collector_number}`});}const chosen=cards.find(r=>r.printing_id===p.id);rememberCard(chosen,'quantity',chosen.quantity);correctingEntry=null;
-        renderCards();changed();say('Card included with Ungraded value basis. Review its quantity and optional details.');};$('check-matches').append(b);});
+        renderCards();changed();say('Card included. Review its quantity and card status; unknown status remains unpriced.');};$('check-matches').append(b);});
     }catch(e){say(e.message,true);}
   };
   function evidenceLabel(r) {

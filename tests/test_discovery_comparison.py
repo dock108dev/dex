@@ -23,6 +23,7 @@ def listing(p, **changes):
         itemId="fixture-item-1",
         title=f"{p['set_name']} {p['name']} {p['collector_number']} English Unlimited Non Holo",
         condition="Near Mint",
+        localizedAspects=[{"name": "Graded", "value": "No"}],
         buyingOptions=["FIXED_PRICE"],
         price=dict(value="1.00", currency="USD"),
         shippingOptions=[dict(shippingCostType="FIXED", shippingCost=dict(value="0.50", currency="USD"))],
@@ -85,6 +86,7 @@ def test_generic_grade_scenario_and_literal_grader_match_are_distinct(setup, mon
     _, p = active(setup)
     raw = listing(p)
     raw["title"] += " PSA 8"
+    raw["localizedAspects"] = [{"name": "Graded", "value": "Yes"}]
     generic = compare(setup, raw)
     assert generic["classification"] == "conditional"
     assert generic["reference"]["grade"] == "8"
@@ -212,7 +214,7 @@ def test_condition_conflicts_unknown_condition_and_literal_grader_are_not_equiva
     assert unknown["classification"] == "conditional"
     matching = compare(setup, listing(p, condition="Lightly Played (Excellent)"))
     assert matching["classification"] == "comparable"
-    grader = compare(setup, listing(p, title=listing(p)["title"] + " PSA 8"))
+    grader = compare(setup, listing(p, title=listing(p)["title"] + " PSA 8", localizedAspects=[]))
     assert grader["classification"] == "unpriced" and "grader conflicts" in grader["reason"]
 
 

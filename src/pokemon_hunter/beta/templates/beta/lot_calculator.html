@@ -12,13 +12,14 @@
 {{ captured|json_script:'captured-lot' }}
 <section class="saved-context" aria-label="Saved comparison actions">
   <p>These are the original cards, prices and results.</p>
+  {% if not grading_enabled %}<p>Saved graded scenarios are retained but their calculations are unavailable while grading is off.</p>{% endif %}
   <form method="post" action="/shopping/saved/{{ captured.saved.id }}/current/">{% csrf_token %}
     <button class="secondary">Compare with current references</button>
     <span class="muted">Creates a separate saved comparison.</span>
   </form>
 </section>
 <section id="results" class="lot-results" aria-label="Available value scenarios">
-  <div class="section-heading"><h2>Value comparison</h2><span class="muted">Separate grade scenarios · USD</span></div>
+  <div class="section-heading"><h2>Value comparison</h2><span class="muted">{% if grading_enabled %}Separate grade scenarios{% else %}Ungraded guide{% endif %} · USD</span></div>
   <div id="summary" class="scenarios"></div>
 </section>
 <div id="captured-rows"></div>
@@ -69,7 +70,7 @@
   </form>
   <p id="status" role="status" tabindex="-1"></p>
 <section id="results" class="lot-results" aria-label="Available value scenarios" hidden>
-  <div class="section-heading"><h2>Value comparison</h2><span class="muted">Separate grade scenarios · USD</span></div>
+  <div class="section-heading"><h2>Value comparison</h2><span class="muted">{% if grading_enabled %}Separate grade scenarios{% else %}Ungraded guide{% endif %} · USD</span></div>
   <div id="summary" class="scenarios"></div>
 </section>
   <div id="selections"></div>

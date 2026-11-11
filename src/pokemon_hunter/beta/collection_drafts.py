@@ -4,6 +4,7 @@ import json
 import uuid
 from datetime import timedelta
 
+from django.conf import settings
 from django.db import connection
 from django.http import Http404
 from django.utils import timezone
@@ -91,11 +92,26 @@ def save(actor, raw, key=None, revision=None, new_batch=False, batch_identity=No
     if type(new_batch) is not bool:
         raise ValueError("New physical batch must be explicit")
     data = bulk_input.envelope(raw)
-    fp = bulk_input.fingerprint(data)
     if key:
         draft = get(actor, key)
         mutable(draft, revision)
-    elif not new_batch:
+        if not getattr(settings, "GRADING_ENABLED", False):
+            # Existing authored values are read-only in this mode, even for an
+            # old client submitting blank fields. New rows can still carry a
+            # full-fidelity imported record.
+            original = draft["input_json"]
+            previous = {row["row_id"]: row for row in original["rows"]}
+            pairs = [(data["defaults"], original["defaults"])] + [
+                (row, previous[row["row_id"]]) for row in data["rows"] if row["row_id"] in previous
+            ]
+            for current, stored in pairs:
+                for field in ("grading_company", "grade", "certificate"):
+                    if field in stored:
+                        current[field] = stored[field]
+                    else:
+                        current.pop(field, None)
+    fp = bulk_input.fingerprint(data)
+    if not key and not new_batch:
         replay = store.rows(
             "SELECT draft_id FROM collection_replays WHERE user_id=%s AND fingerprint=%s", [actor.user_id, fp]
         )

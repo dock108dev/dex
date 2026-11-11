@@ -267,6 +267,15 @@ def build(
             raise conflict_error("This copy has already been removed")
         if kind == "edit":
             attrs = request.get("attributes", {})
+            if not isinstance(attrs, dict):
+                raise ValueError("Copy attributes must be an object")
+            from django.conf import settings
+
+            if not getattr(settings, "GRADING_ENABLED", False):
+                # Old clients may still submit blank or outdated hidden controls.
+                attrs = {
+                    k: v for k, v in attrs.items() if k not in {"grading_company", "grade", "certificate"}
+                }
             after = {
                 **before,
                 **attributes(actor, {**{k: before[k] for k in FIELDS}, **attrs}),

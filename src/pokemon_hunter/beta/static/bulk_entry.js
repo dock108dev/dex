@@ -15,6 +15,8 @@
   const draftLabels = {editing:'In progress', ready:'Ready to review', previewed:'Reviewed', confirmed:'Saved', cancelled:'Cancelled', expired:'Expired'};
   const fields = ['condition','grading_company','grade','certificate','binder_id','location','notes',
     'purchase_amount','purchase_currency','purchase_date','purchase_basis'];
+  const gradingFields = new Set(['grading_company','grade','certificate']);
+  const gradingEnabled = root.dataset.gradingEnabled === 'true';
   const labels = {condition:'Condition', grading_company:'Grading company', grade:'Grade', certificate:'Certificate',
     binder_id:'Binder', location:'Location', notes:'Notes',
     purchase_amount:'Per-copy purchase amount', purchase_currency:'Purchase currency', purchase_date:'Purchase date',
@@ -144,8 +146,12 @@
       control.addEventListener('input',()=>control.dataset.explicitClear='false');
       if(values[key]===null)control.placeholder='Unknown · explicitly cleared';
       label.append(control); container.append(label);
+      if (!gradingEnabled && gradingFields.has(key)) label.hidden=true;
       if(key==='binder_id'&&readClient){const host=node('div',null);label.after(host);BoundedReads.paged(host,{reader:readClient,url:'/api/v2/binders/',field:'binders',active:()=>control.isConnected,render:b=>'<button type="button" data-entry-binder="'+html(b.id)+'">'+html(b.name)+'</button>',bind:rows=>rows.querySelectorAll('[data-entry-binder]').forEach(b=>b.onclick=()=>{if(!optionsContain(control,b.dataset.entryBinder))control.add(new Option(b.textContent,b.dataset.entryBinder));control.value=b.dataset.entryBinder;control.dispatchEvent(new Event('input',{bubbles:true}));control.dispatchEvent(new Event('change',{bubbles:true}));})});}
     });
+    if (!gradingEnabled && [...gradingFields].some(key => values[key])) {
+      container.append(node('p','Grading details are retained but cannot be edited while grading is off.'));
+    }
   }
   function matches() {return pageGroups;}
   async function loadCatalog(){
@@ -277,7 +283,7 @@
     include.dataset.kind='include';
     const na=node('p','Copy-only fields are Not applicable to this action. Clear supplied copy values or change the action before Review.');
     const clear=node('button','Clear copy-only values for this row',{type:'button'});
-    clear.onclick=()=>{fields.forEach(k=>{const c=$('bulk-row-'+k);c.value=c.tagName==='SELECT'?'unknown':'';c.dataset.explicitClear='true';});$('bulk-row-quantity').value='';state.edit.clearCopy=true;};
+    clear.onclick=()=>{fields.filter(k=>gradingEnabled||!gradingFields.has(k)).forEach(k=>{const c=$('bulk-row-'+k);c.value=c.tagName==='SELECT'?'unknown':'';c.dataset.explicitClear='true';});$('bulk-row-quantity').value='';state.edit.clearCopy=true;};
     const applicability=()=>{const disabled=rowAction.value!=='add_copies';fields.forEach(k=>$('bulk-row-'+k).disabled=disabled);$('bulk-row-quantity').disabled=disabled;na.hidden=!disabled;clear.hidden=!disabled;};
     container.prepend(...prepend);container.append(na,clear);rowAction.onchange=applicability;applicability();
     $('bulk-drawer-title').textContent=g?`Edit ${g.name} #${g.collector_number}`:'Edit card row';

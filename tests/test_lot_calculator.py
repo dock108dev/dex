@@ -4,6 +4,7 @@ import copy
 import json
 
 import pytest
+from django.test import override_settings
 from test_b1 import env as env
 from test_b2 import apply
 from test_b2 import b2 as b2
@@ -84,6 +85,13 @@ def test_explicit_save_and_calculation_only_behavior(workspace, modern, save):
 
 
 def test_independent_quantity_totals_rounding_unknown_delivery_and_zero(workspace):
+    from django.test import override_settings
+
+    with override_settings(GRADING_ENABLED=True):
+        _independent_quantity_totals(workspace)
+
+
+def _independent_quantity_totals(workspace):
     before = collection.export_data(workspace["actor"])
     raw = request(workspace)
     payload = lot.prepare(workspace["actor"], raw, NOW)
@@ -113,6 +121,47 @@ def test_independent_quantity_totals_rounding_unknown_delivery_and_zero(workspac
     assert partial["8"]["result"]["known_selected_subtotal"] == "14.00"
     assert partial["10"]["result"]["full_selected_total"] == "0.00"
     assert collection.export_data(workspace["actor"]) == before
+
+
+def test_grading_transition_preserves_saved_lot_without_off_mode_calculations(workspace):
+    from django.test import override_settings
+
+    raw = request(workspace)
+    with override_settings(GRADING_ENABLED=True):
+        original = lot.prepare(workspace["actor"], raw, NOW)
+        key = shopping.store_payload(workspace["actor"], original, "Retained scenarios")
+        snapshot = shopping.one(workspace["actor"], key)["snapshot"]
+    with override_settings(GRADING_ENABLED=False):
+        off = lot.prepare(workspace["actor"], raw, NOW)
+        assert set(off["scenarios"]) == {"raw"}
+        assert off["request"] == raw
+        page = workspace["a"].get(f"/shopping/saved/{key}/")
+        assert page.status_code == 200
+        assert b"Saved graded scenarios are retained" in page.content
+        assert b'"8":' not in page.content
+        assert b'"request":' not in page.content
+        direct = post(workspace, "/api/shopping/lot-compare/", {"inputs": raw})
+        assert direct.status_code == 200
+        assert set(direct.json()["scenarios"]) == {"raw"}
+        assert workspace["a"].get("/shopping/calculator/").status_code == 200
+        current = shopping.reevaluate(workspace["actor"], key)
+        projected = shopping.reopen(workspace["actor"], current)
+        assert set(projected["scenarios"]) == {"raw"}
+        assert projected["request"] == raw
+        assert projected["saved"]["parent_id"] == key
+        assert shopping.one(workspace["actor"], key)["snapshot"] == snapshot
+        current_page = workspace["a"].post(
+            f"/shopping/saved/{key}/current/",
+            {},
+            HTTP_X_CSRFTOKEN=workspace["a"].cookies["dex_b1_csrf"].value,
+        )
+        assert current_page.status_code == 302
+        assert b'"8":' not in workspace["a"].get(current_page.url).content
+    with override_settings(GRADING_ENABLED=True):
+        assert shopping.reopen(workspace["actor"], key)["scenarios"] == original["scenarios"]
+        restored = shopping.reevaluate(workspace["actor"], current)
+        assert set(shopping.reopen(workspace["actor"], restored)["scenarios"]) == set(lot.COLUMNS)
+        assert shopping.one(workspace["actor"], key)["snapshot"] == snapshot
 
 
 def test_wants_absent_units_session_isolation_and_no_storage_requirement(workspace):
@@ -271,6 +320,7 @@ def test_bad_ingress_rejected(workspace, mutation):
         lot.prepare(workspace["actor"], raw, NOW)
 
 
+@override_settings(GRADING_ENABLED=True)
 def test_guide_columns_quantity_and_saved_provenance(workspace, monkeypatch):
     p = next(
         p for p in collection.catalog(workspace["actor"]) if json.loads(p["provenance"])["legacy_id"] == "b"

@@ -2,11 +2,13 @@ const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('nod
 const context={window:{}};vm.createContext(context);vm.runInContext(fs.readFileSync(process.argv[2]||'src/pokemon_hunter/beta/static/hunter-net.js','utf8'),context);
 const estimate=context.window.DexHunterNet.estimate;
 const inputs={purchaseTax:'0',resaleTax:'0',feeRate:'13.25',postage:'5',supplies:'0.50',extra:'0'};
-const row={ungraded_single:true,listing_price:'33',shipping:'5',price_kind:'current_bid',reference_eligibility:'eligible',reference:{grade:'raw',currency:'USD'},opportunity:{scenarios:[{kind:'current_bid',reference_amount:'62'}]}};
+const row={ungraded_single:true,grading_status:'raw',listing_price:'33',shipping:'5',price_kind:'current_bid',reference_eligibility:'eligible',reference:{grade:'raw',currency:'USD'},opportunity:{scenarios:[{kind:'current_bid',reference_amount:'62'}]}};
 assert.equal(estimate(row,inputs).fees,862);assert.equal(estimate(row,inputs).net,988);
 assert.equal(estimate(row,{...inputs,purchaseTax:'8',resaleTax:'8'}).net,619);
 assert.equal(estimate({...row,shipping:null},inputs).reason,'Shipping unknown');
 assert.equal(estimate({...row,ungraded_single:false},inputs).net,undefined);
+assert.equal(estimate({...row,grading_status:'unknown'},inputs).net,undefined);
+assert.equal(estimate({...row,grading_status:undefined},inputs).net,undefined);
 assert.equal(estimate({...row,reference:{grade:'10',currency:'USD'}},inputs).net,undefined);
 assert.equal(estimate({...row,opportunity:{scenarios:[]}},inputs).net,undefined);
 assert.equal(estimate({...row,reference:{...row.reference,expires_at:'2020-01-01T00:00:00Z'}},inputs).net,undefined);

@@ -188,8 +188,8 @@ which does not restore capacity. Keep this accounting outside restore and price 
 Provider accounting stays separate: these offline reservations spend zero provider
 operations and cannot replenish historical capture allowances.
 
-The read-only `scripts/lot_value_readiness.py` now defaults to `--version 2`; explicit
-`--version 1` and the v1 Python default preserve older consumers. V2 separates eligible
+The read-only `scripts/lot_value_readiness.py` defaults to `--version 3`; explicit
+`--version 1` or `--version 2` and the v1 Python default preserve older consumers. V2 separates eligible
 broad sold/guide coverage, condition-scoped references, condition-specific ceiling
 applicability, exact catalog metadata, variant/set denominators and runtime compatibility.
 Its top-level `ready` requires complete broad catalog benchmark coverage with actual

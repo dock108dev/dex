@@ -41,7 +41,8 @@
     const values=node('div');
     c.selected_cards.forEach(s => {
       const p=s.captured_identity, box=node('div',undefined,'card');
-      box.append(node('strong',`${p.name} · ${p.set_name} #${p.collector_number} × ${s.quantity}`),node('p',`Assumptions: ${s.assumptions || 'Unspecified'} · edition ${s.edition || 'unknown'}, condition ${s.condition || 'unknown'}, grade ${s.grade || 'raw/unknown'} ${s.grader || ''}`), node('p',s.completion_identity_basis));
+      const grading = document.body.dataset.gradingEnabled === 'true' ? `, grade ${s.grade || 'raw/unknown'} ${s.grader || ''}` : '';
+      box.append(node('strong',`${p.name} · ${p.set_name} #${p.collector_number} × ${s.quantity}`),node('p',`Assumptions: ${s.assumptions || 'Unspecified'} · edition ${s.edition || 'unknown'}, condition ${s.condition || 'unknown'}${grading}`), node('p',s.completion_identity_basis));
       const ref=c.value_references.find(v => v.reference_id === s.chosen_value_reference);
       if (ref) {
         box.append(node('p', `${ref.provenance} · ${ref.currency || 'unknown currency'} ${ref.amount ?? 'unknown'} ${ref.value_scope === 'selection_group_total' ? 'group total, counted once' : 'per card'} · original date ${ref.as_of || 'unknown'} · ${r.reference_eligibility[ref.reference_id] || 'inactive alternative'}`));
@@ -84,12 +85,13 @@
     box.dataset.selection=sid;
     box.append(node('h3',`${p.name} · ${p.set_name} #${p.collector_number}`),node('p',`Selection ${sid} · catalog edition ${p.edition || 'unresolved'} · ${p.unresolved_fields.length ? `Unresolved: ${p.unresolved_fields.join(', ')}` : 'Resolved catalog metadata; physical fit needs confirmation'}`));
     const q=input(controls,'Quantity','1','number',{min:'1',max:'100000'}), assumptions=input(controls,'Identity / value assumptions','','text',{placeholder:'Describe recognized identity, edition and condition'});
-    const advanced=node('details');advanced.append(node('summary','Edition, condition and grade assumptions'));
+    const gradingEnabled=document.body.dataset.gradingEnabled==='true';
+    const advanced=node('details');advanced.append(node('summary',gradingEnabled?'Edition, condition and grade assumptions':'Edition and condition assumptions'));
     const advancedControls=node('div',undefined,'controls');advanced.append(advancedControls);controls.append(advanced);advanced.className='wide';
     const edition=input(advancedControls,'Reference edition assumption',new FormData($('research')).get('value_edition'));
     const condition=input(advancedControls,'Raw condition assumption',new FormData($('research')).get('condition'));
-    const grade=input(advancedControls,'Grade assumption',new FormData($('research')).get('grade'));
-    const grader=input(advancedControls,'Grader assumption',new FormData($('research')).get('grader'));
+    const grade=gradingEnabled?input(advancedControls,'Grade assumption',new FormData($('research')).get('grade')):{value:''};
+    const grader=gradingEnabled?input(advancedControls,'Grader assumption',new FormData($('research')).get('grader')):{value:''};
     const completion=input(controls,'Physical identity confirmed for selected policy','','checkbox');completion.parentElement.className='check';
     const included=input(controls,'Include in group','','checkbox');included.parentElement.className='check';
     const mode=select(controls,'Chosen value',[['none','Unpriced'],['manual','Separate manual per-card estimate'],...p.candidates.map(r=>[r.reference_id,`${r.provenance} ${r.currency || '?'} ${r.amount ?? '?'} · ${r.as_of || '?'} · ${r.eligibility}`])]);

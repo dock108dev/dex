@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo
 import pytest
 from django.db import connection
 from django.http import Http404
+from django.test import override_settings
 from test_b1 import env as env
 from test_b2 import apply
 from test_b2 import b2 as b2
@@ -136,6 +137,67 @@ def test_all_card_owned_research_search_sort_and_private_filters(shop):
     with pytest.raises(ValueError, match="policy"):
         shopping.browse(shop["actor"], dict(missing="species"))
     assert shop["client"]().get("/shopping/").status_code == 302
+
+
+def test_saved_graded_legacy_comparison_survives_off_and_on(shop):
+    from django.test import override_settings
+
+    raw = inputs(shop)
+    raw["selected_cards"][0]["grade"] = "9"
+    raw["selected_cards"][0]["grader"] = "PSA"
+    with override_settings(GRADING_ENABLED=True):
+        key = shopping.save(shop["actor"], raw, "Graded research", now=NOW)
+        original = shopping.one(shop["actor"], key)["snapshot"]
+    with override_settings(GRADING_ENABLED=False):
+        with pytest.raises(ValueError, match="unavailable"):
+            shopping.prepare(shop["actor"], raw, now=NOW)
+        page = shop["a"].get(f"/shopping/saved/{key}/")
+        assert b"graded calculations are unavailable" in page.content
+        assert b"captured-shopping" not in page.content
+        assert post(shop, {"inputs": raw}).status_code == 400
+        with pytest.raises(ValueError, match="unavailable"):
+            shopping.reevaluate(shop["actor"], key)
+        response = shop["a"].post(
+            f"/shopping/saved/{key}/current/",
+            {},
+            HTTP_X_CSRFTOKEN=shop["a"].cookies["dex_b1_csrf"].value,
+        )
+        assert response.status_code == 400
+        assert shopping.one(shop["actor"], key)["snapshot"] == original
+    with override_settings(GRADING_ENABLED=True):
+        assert shopping.reopen(shop["actor"], key)["context"]["selected_cards"][0]["grade"] == "9"
+        current = shopping.reevaluate(shop["actor"], key)
+        assert shopping.reopen(shop["actor"], current)["context"]["selected_cards"][0]["grade"] == "9"
+        assert shopping.one(shop["actor"], key)["snapshot"] == original
+
+
+def test_raw_legacy_history_hides_graded_alternatives_only_while_off(shop, monkeypatch):
+    graded = dict(
+        shop["guides"][0],
+        card_id=json.loads(shop["catalog"][0]["provenance"])["legacy_id"],
+        grade="9",
+        grader="PSA",
+        value="999",
+        source_url="https://example.test/exclusive-graded-marker",
+    )
+    shop["guides"].append(graded)
+    monkeypatch.setattr(
+        lot_calculator, "admitted_hashes", lambda: {shopping.digest(r) for r in shop["guides"]}
+    )
+    with override_settings(GRADING_ENABLED=True):
+        key = shopping.save(shop["actor"], inputs(shop), "Raw with alternatives", now=NOW)
+        snapshot = shopping.one(shop["actor"], key)["snapshot"]
+        assert '"grade":"9"' in snapshot
+        assert b"exclusive-graded-marker" in shop["a"].get(f"/shopping/saved/{key}/").content
+    with override_settings(GRADING_ENABLED=False):
+        page = shop["a"].get(f"/shopping/saved/{key}/")
+        assert page.status_code == 200 and b"exclusive-graded-marker" not in page.content
+        assert all(
+            r["raw_record"].get("grade") != "9"
+            for card in shopping.browse(shop["actor"], today=NOW.date())["cards"]
+            for r in card["candidates"]
+        )
+        assert shopping.one(shop["actor"], key)["snapshot"] == snapshot
 
 
 def test_private_save_reopen_separate_current_and_preservation(shop):

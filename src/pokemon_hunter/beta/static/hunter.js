@@ -255,13 +255,14 @@
     const head=h('div',null,{class:'hunter-card-head'}), info=h('div');
     head.append(image(identity?.artwork,identity?.name,()=>active(token)),info);
     info.append(h('h3',identity?.name || row.title || 'Unmatched card'));
+    info.append(h('p', row.grading_status === 'raw' ? 'Seller claims ungraded; verify the card.' : row.grading_status === 'graded' ? 'Seller claims graded; verify the card.' : 'Grading status unknown or conflicting; verify the card.'));
     if (identity) info.append(h('p',[identity.set_name,identity.collector_number && '#'+identity.collector_number,identity.finish,identity.edition].filter(Boolean).join(' · ')));
     info.append(h('p',countdown(row),{'data-countdown':row.id}));article.append(head);
     const amounts=h('dl',null,{class:'hunter-amounts'});
     field(amounts,row.price_kind==='current_bid'?'Current bid':'Buy It Now',money(row.listing_price),'hunter-metric-primary');
     field(amounts,'Shipping to you',money(row.shipping));
     const result=window.DexHunterNet.estimate(row,netInputs());
-    const raw=ref?.grade==='raw' && row.opportunity?.scenarios?.some(s=>s.reference_amount!=null);
+    const raw=row.grading_status==='raw' && row.ungraded_single===true && ref?.grade==='raw' && row.opportunity?.scenarios?.some(s=>s.reference_amount!=null);
     field(amounts,'Ungraded reference',raw?money(ref.amount):'Unavailable');
     field(amounts,result.conditional?'Conditional net estimate':'Potential net',result.net===undefined?'Unavailable':money(result.net/100),result.net===undefined?'hunter-metric-unavailable':'hunter-metric-net');article.append(amounts);
     const evidence=h('details',null,{class:'hunter-cost-breakdown'});
@@ -345,7 +346,7 @@
     retainFocus();
     const target = $('hunter-cards'), filter = $('hunter-filter').value;
     target.replaceChildren();
-    const selected = rows.filter(row => !simple || row.ungraded_single === true).filter(row => simple || filter === 'all' || filter === 'priced' && row.reference != null || filter === 'unpriced' && row.reference == null || row.discovery_kind === filter);
+    const selected = rows.filter(row => !simple || row.discovery_kind === 'single').filter(row => simple || filter === 'all' || filter === 'priced' && row.reference != null || filter === 'unpriced' && row.reference == null || row.discovery_kind === filter);
     for (const row of selected) target.append(card(row));
     if (!selected.length) target.append(h('p', rows.length ? 'No received results match this local view. Show all results to continue browsing.' : 'No eligible results were received in these captured pages. Coverage is limited; an empty batch does not authorize more requests.'));
     $('hunter-results').hidden = view !== 'results'; buttons(); restoreFocus();

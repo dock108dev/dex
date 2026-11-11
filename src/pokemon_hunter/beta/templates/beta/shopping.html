@@ -8,11 +8,16 @@
   <p id="status" role="status" tabindex="-1"></p>
   {% if captured %}
     <h2>{{ captured.saved.name }}</h2>
+    {% if grading_unavailable %}
+    <p>This saved comparison is retained, but its graded calculations are unavailable while grading is off.</p>
+    <a href="/shopping/">New comparison</a>
+    {% else %}
     <p>Captured history · {{ captured.context.evaluation_date }} · America/New_York. Ownership and values at evaluation time.</p>
     {% if captured.saved.parent_id %}<a href="/shopping/saved/{{ captured.saved.parent_id }}/">Original comparison</a>{% endif %}
     <form method="post" action="/shopping/saved/{{ captured.saved.id }}/current/">{% csrf_token %}<button>Evaluate current in a separate saved comparison</button></form>
     <a href="/shopping/">New comparison</a>
     {{ captured|json_script:'captured-shopping' }}
+    {% endif %}
   {% else %}
   <section aria-labelledby="research-title">
     <h2 id="research-title">1. Find cards</h2>
@@ -27,7 +32,7 @@
       <details class="wide"><summary>Guide valuation assumptions</summary><div class="controls">
         <label>Reference edition<select name="value_edition" aria-label="Reference edition"><option value="standard">Standard scenario</option><option value="first_edition">First-edition scenario</option></select></label>
         <label>Raw condition<select name="condition" aria-label="Raw condition"><option value="">Unknown raw condition</option><option value="NM">NM scenario</option><option value="LP">LP scenario</option></select></label>
-        <label>Grade<input name="grade" placeholder="Empty for raw"></label><label>Grader<input name="grader" placeholder="For example PSA"></label>
+        {% if grading_enabled %}<label>Grade<input name="grade" placeholder="Empty for raw"></label><label>Grader<input name="grader" placeholder="For example PSA"></label>{% endif %}
       </div><p>Condition is a value assumption, separate from catalog metadata. Guide fit and physical identity can remain unresolved.</p></details>
       <button>Search indexed cards</button>
     </form>
@@ -39,7 +44,7 @@
     <div id="selections"></div><p id="empty-lot">No cards selected. Add a card above.</p>
     <details><summary>One total for a selected group</summary>
       <p>Check “Include in group” on the cards, then capture their current quantities. The amount counts once and supplies no individual values. Changing membership or quantity requires a new reviewed estimate.</p>
-      <div class="controls"><label>Group total, USD<input id="group-amount" inputmode="decimal" placeholder="14.00"></label><label>Estimate date<input id="group-date" type="date"></label><label>Assumptions<input id="group-assumptions" placeholder="Identity, edition, condition or grade basis"></label></div>
+      <div class="controls"><label>Group total, USD<input id="group-amount" inputmode="decimal" placeholder="14.00"></label><label>Estimate date<input id="group-date" type="date"></label><label>Assumptions<input id="group-assumptions" placeholder="Identity, edition or condition basis"></label></div>
       <button id="capture-group" type="button">Capture group estimate</button><p id="group-status"></p>
     </details>
     <label>Unknown / unselected remainder quantity<input id="remainder" type="number" min="0" max="100000" placeholder="Unknown"></label>
@@ -61,5 +66,5 @@
   <section id="results" aria-labelledby="results-title" tabindex="-1" hidden><h2 id="results-title">Reference comparison</h2><div id="result-content"></div></section>
   <details><summary>Saved private comparisons</summary><ul>{% for item in items %}<li><a href="/shopping/saved/{{ item.id }}/">{{ item.name }}</a> · {{ item.created_at }}</li>{% empty %}<li>No saved comparisons.</li>{% endfor %}</ul></details>
 </div>
-<script src="/collection-assets/shopping.js" defer></script>
+{% if not grading_unavailable %}<script src="/collection-assets/shopping.js" defer></script>{% endif %}
 {% endblock %}

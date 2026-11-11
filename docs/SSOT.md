@@ -4,6 +4,10 @@ This map identifies the owner of each shared policy. Domain guides define the
 full contracts; callers should delegate to these owners rather than create
 parallel readers, validators or mutation paths.
 
+## Current product direction
+
+The November 11 [raw-collection direction and impact audit](raw-collection-direction-20261111.md) records the planned raw-first collecting and shopping focus and default-off graded-experience flag. It is a plan, not a claim that the flag or redesigned flows are implemented. Existing contracts below describe current behavior until delivery.
+
 ## Entry points and storage
 
 | Entry point | Storage and runtime | Guide |

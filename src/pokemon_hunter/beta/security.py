@@ -87,4 +87,5 @@ def profile_context(request):
         "collection_enabled": settings.B2_ENABLED,
         "scans": settings.B3_ENABLED,
         "expansion": settings.B4_ENABLED,
+        "grading_enabled": getattr(settings, "GRADING_ENABLED", False),
     }

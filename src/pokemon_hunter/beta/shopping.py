@@ -26,6 +26,7 @@ from . import (
     transactions,
 )
 from . import shopping_math as math
+from .grading_config import grading_enabled
 
 # Preserve the established service imports while keeping validation independent.
 from .shopping_inputs import fields as fields
@@ -88,6 +89,8 @@ def observations(p, records, raw_values, edition, condition, grade, grader, toda
     candidates = []
     for index, row in enumerate(records):
         if not isinstance(row, dict) or row.get("card_id") != key:
+            continue
+        if not grading_enabled() and row.get("grade") not in (None, "", "raw"):
             continue
         oid = "guide-" + digest(dict(index=index, record=row))
         g = (grader, grade) if grade else None
@@ -229,6 +232,8 @@ def goal_context(actor, key, version=""):
 def browse(actor, filters=None, today=None):
     store.verified(actor)
     f = filters or {}
+    if not grading_enabled() and (f.get("grade") not in (None, "", "raw") or f.get("grader")):
+        raise ValueError("Graded comparisons are unavailable while grading is off")
     today = today or datetime.now(TZ).date()
     entries = collection.catalog(actor, f.get("q", ""), f.get("set", ""))
     active = collection.copies(actor)
@@ -299,6 +304,10 @@ def browse(actor, filters=None, today=None):
 def prepare(actor, raw, now=None, retained=None):
     actor = store.verified(actor)
     validate_request(raw)
+    if not grading_enabled() and any(
+        line.get("grade") not in (None, "", "raw") or line.get("grader") for line in raw["selected_cards"]
+    ):
+        raise ValueError("Graded comparisons are unavailable while grading is off")
     now = now or datetime.now(TZ)
     today = now.astimezone(TZ).date()
     goal = goal_context(actor, raw.get("goal_id", ""), raw.get("goal_version", ""))

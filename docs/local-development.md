@@ -104,6 +104,7 @@ not the authenticated collection app.
 | --- | --- |
 | `DEX_PROFILE` | `local` by default; `staging` selects PostgreSQL/HTTPS settings |
 | `DEX_B1_ROOT` | Private root set by the local CLI |
+| `DEX_GRADING_ENABLED` | Set to `1` at process startup to enable the graded experience; absent or any other value keeps it off. Existing grading data and saved scenarios remain stored. |
 | `ollama.json` | Optional owner-only listing-text gateway configuration; see [listing interpretation](hunts.md#local-text-adapter-and-listing-review) |
 | `scan-config.json` | Photo admission and retained historical settings; see [photo entry](photo-entry.md) |
 | `hunter-policy.json` | Owner-selected ordinary Hunter policy marker; use Hunter's Usage settings |

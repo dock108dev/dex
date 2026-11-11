@@ -6,6 +6,7 @@ import uuid
 from unittest.mock import patch
 
 import pytest
+from django.test import override_settings
 from test_b1 import env as env
 from test_b2 import b2 as b2
 from test_b2 import post
@@ -134,11 +135,12 @@ def test_review_partial_copy_metadata_edit_preserves_closed_advanced_fields_and_
         "grade": "9",
         "certificate": "PRIVATE-CERTIFICATE",
     }
-    apply(
-        cx["actor"],
-        "edit",
-        {"id": copy_row["id"], "revision": copy_row["revision"], "attributes": advanced},
-    )
+    with override_settings(GRADING_ENABLED=True):
+        apply(
+            cx["actor"],
+            "edit",
+            {"id": copy_row["id"], "revision": copy_row["revision"], "attributes": advanced},
+        )
     confirm(cx, preview(cx, group, "card_quantity", {"established_total_quantity": 2}))
     current = inv.one(cx["actor"], "copy", copy_row["id"])
     saved = confirm(
@@ -157,6 +159,51 @@ def test_review_partial_copy_metadata_edit_preserves_closed_advanced_fields_and_
     for field in advanced:
         assert edited[field] == current[field]
     assert groups.detail(cx["actor"], group["id"])["group"]["established_total_quantity"] == 2
+
+
+def test_disabled_grading_preserves_existing_fields_from_old_editor_and_reenable(cx):
+    group = find(cx)
+    row = groups.detail(cx["actor"], group["id"])["copies"][0]
+    grading = {"grading_company": "PSA", "grade": "9", "certificate": "fixture-cert"}
+    with override_settings(GRADING_ENABLED=True):
+        apply(cx["actor"], "edit", {"id": row["id"], "revision": row["revision"], "attributes": grading})
+    current = inv.one(cx["actor"], "copy", row["id"])
+    with override_settings(GRADING_ENABLED=False):
+        page = cx["a"].get("/collection/")
+        assert b'data-grading-enabled="false"' in page.content
+        confirm(
+            cx,
+            preview(
+                cx,
+                group,
+                "edit",
+                {
+                    "id": row["id"],
+                    "revision": current["revision"],
+                    "attributes": {"condition": "LP", **dict.fromkeys(grading, "")},
+                },
+                child=current["printing_id"],
+            ),
+        )
+        edited = inv.one(cx["actor"], "copy", row["id"])
+        assert edited["condition"] == "LP"
+        assert {k: edited[k] for k in grading} == grading
+        stale = preview(
+            cx,
+            group,
+            "edit",
+            {
+                "id": row["id"],
+                "revision": current["revision"],
+                "attributes": {"notes": "old"},
+            },
+            child=current["printing_id"],
+        )
+        assert stale.status_code == 409
+    with override_settings(GRADING_ENABLED=True):
+        assert b'data-grading-enabled="true"' in cx["a"].get("/collection/").content
+        restored = groups.detail(cx["actor"], group["id"])["copies"][0]
+        assert {k: restored[k] for k in grading} == grading
 
 
 def test_review_copy_remove_card_remove_and_new_addition_have_distinct_authority(cx):

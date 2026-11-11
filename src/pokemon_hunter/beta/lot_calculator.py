@@ -13,6 +13,7 @@ from pokemon_hunter.runtime_data import root as runtime_root
 from . import canonical_species, collection, effective_collection, price_snapshots, shopping, store
 from . import price_snapshot_contract as snapshot_rules
 from . import shopping_math as math
+from .grading_config import grading_enabled
 from .lot_guides import cell_details as cell_details
 from .lot_guides import cells as cells
 from .lot_guides import legacy_cells as legacy_cells
@@ -255,6 +256,9 @@ def priced_cards(actor, printings):
     result = []
     for p in printings:
         values, reasons = cell_details(p, rows, today)
+        if not grading_enabled():
+            values = {k: v for k, v in values.items() if k == "raw"}
+            reasons = {k: v for k, v in reasons.items() if k == "raw"}
         result.append(
             dict(
                 shopping.identity(p),
@@ -361,7 +365,8 @@ def prepare(
         )
     }
     records = retained_records() if reference_records is None else reference_records
-    identities, by_column, seen = [], {g: [] for g in COLUMNS}, set()
+    active_columns = COLUMNS if grading_enabled() else ("raw",)
+    identities, by_column, seen = [], {g: [] for g in active_columns}, set()
     selections = []
     for line in raw["cards"]:
         shopping.fields(line, {"printing_id", "quantity", "values"}, {"printing_id", "quantity", "values"})
@@ -403,6 +408,8 @@ def prepare(
         selections.append(selection)
         for grade, value in line["values"].items():
             shopping.fields(value, {"mode", "amount", "date", "notes"}, {"mode"})
+            if grade not in active_columns:
+                continue
             if value["mode"] == "guide":
                 ref = guides[grade]
                 if ref is None:
@@ -447,7 +454,7 @@ def prepare(
     )
     shopping.validate_request(validation)
     scenarios = {}
-    for grade in COLUMNS:
+    for grade in active_columns:
         refs = by_column[grade]
         ids = {r["reference_id"] for r in refs}
         context = dict(

@@ -17,6 +17,7 @@ from . import (
     discovery_matching,
     discovery_singles,
     image_bindings,
+    listing_grading,
     listing_prices,
     lot_calculator,
     lot_guides,
@@ -161,6 +162,12 @@ def _reference_claim_issue(printing, clues, ref):
     """Seller claims narrow admitted observations, never establish admission."""
     if _identity_conflicts(printing, clues):
         return "Claimed attributes conflict with the selected printing"
+    if (
+        clues.get("grade") is not None
+        and ref.get("grade") is not None
+        and str(ref["grade"]) != str(clues["grade"])
+    ):
+        return "Reference grade conflicts with the seller's claimed status"
     provider, evidence = ref.get("provider_identity") or {}, ref.get("raw_record") or {}
     for key in ("language", "edition", "finish"):
         known = provider.get(key) or evidence.get(key)
@@ -485,6 +492,7 @@ def _project(
         kind = product_kind(claim_text)
         if raw.get("_discovery_category") == "183455" and kind != "unsupported":
             kind = "mixed_lot"
+        grading_status = listing_grading.status(raw, claim_text) if kind == "single" else None
         if kind == "unsupported" and not include_unsupported:
             continue
         matched = _matches(candidates, clues)
@@ -530,6 +538,7 @@ def _project(
             item_url=ebay_url(raw.get("itemWebUrl")),
             label="Loose mixed-lot candidate" if kind == "mixed_lot" else "Single-card candidate",
             discovery_kind=kind,
+            grading_status=grading_status,
             proposed_identity=_identity(p, clues, artwork.get(p["id"])) if p else None,
             identity_candidates=[_identity(c, clues, artwork.get(c["id"])) for c in approximate[:40]],
             identity_candidates_total=len(approximate),
@@ -568,6 +577,14 @@ def _project(
             )
         elif kind == "unsupported":
             issues.append("Unsupported product cannot use a single-card reference")
+        elif grading_status == "unknown":
+            issues.append("Seller grading status is unknown or conflicting; no raw comparison is established")
+        elif grading_status == "graded" and not clues["graded"]:
+            issues.append("Seller indicates a graded card; grade and grader need review")
+        elif grading_status == "raw" and clues["graded"]:
+            issues.append(
+                "Seller grading status and price-selection clues disagree; no comparison is established"
+            )
         count = extract_count(clues["text"]).denominator
         if (
             count is not None

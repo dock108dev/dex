@@ -155,9 +155,9 @@ def projection(actor, *, include_presentation=True):
     return data
 
 
-def summarize(rows, owned):
+def summarize(rows, owned, *, grading_enabled=True):
     result = {}
-    for grade in ("raw", "7", "8", "9", "10"):
+    for grade in ("raw", "7", "8", "9", "10") if grading_enabled else ("raw",):
         priced = [r[grade] for r in rows if grade in r]
         subtotal = str(sum((Decimal(r["value"]) for r in priced), Decimal(0))) if priced else None
         result[grade] = {
@@ -171,10 +171,22 @@ def summarize(rows, owned):
 
 
 def estimates(active, catalog):
+    grading_enabled = getattr(settings, "GRADING_ENABLED", False)
     records = evidence("market_values.json", [])
+    if not grading_enabled:
+        records = [record for record in records if record.get("grade") == "raw"]
     by_id = {p["id"]: p for p in catalog}
     scenarios, confirmed, conditional = {}, [], []
     for copy in active:
+        if not grading_enabled and any(
+            copy.get(field) for field in ("grading_company", "grade", "certificate")
+        ):
+            scenarios[copy["id"]] = {
+                "conditional": {},
+                "confirmed": {},
+                "reason": "Recorded graded copy; excluded from raw estimates",
+            }
+            continue
         p = by_id.get(copy["printing_id"])
         if not p:
             scenarios[copy["id"]] = {"conditional": {}, "confirmed": {}, "reason": "Identity unresolved"}
@@ -186,6 +198,8 @@ def estimates(active, catalog):
         prices = valuation_records({"cards": {key: {"owned": True, "first_edition": selected}}}, records)[
             "cards"
         ].get(key, {})
+        if not grading_enabled:
+            prices = {grade: value for grade, value in prices.items() if grade == "raw"}
         unresolved = set(p["unresolved_fields"]) | set(identity.get("unresolved_fields", []))
         if selected:
             unresolved.discard("edition")
@@ -210,8 +224,8 @@ def estimates(active, catalog):
             costs[currency] = str(Decimal(costs.get(currency, "0")) + Decimal(c["purchase_amount"]))
     return {
         "copies": scenarios,
-        "confirmed": summarize(confirmed, len(active)),
-        "conditional": summarize(conditional, len(active)),
+        "confirmed": summarize(confirmed, len(active), grading_enabled=grading_enabled),
+        "conditional": summarize(conditional, len(active), grading_enabled=grading_enabled),
         "max_age_days": 30,
         "purchase_subtotals": costs,
         "purchase_known": sum(c["purchase_amount"] is not None for c in active),

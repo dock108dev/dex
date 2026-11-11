@@ -51,7 +51,7 @@ def raw(**changes):
     result = dict(
         itemId="v1|123456789012|0",
         title="Pokemon lot of 3 cards",
-        shortDescription="2x Charizard Base Set 4/102 English Unlimited Non Holo; 1x Blastoise Base Set 2/102 English Unlimited Non Holo",
+        shortDescription="2x Charizard Base Set 4/102 English Unlimited Non Holo ungraded; 1x Blastoise Base Set 2/102 English Unlimited Non Holo ungraded",
         condition="Near Mint",
         buyingOptions=["FIXED_PRICE"],
         price=dict(value="3.00", currency="USD"),
@@ -68,6 +68,7 @@ def entries():
 @pytest.fixture
 def local(monkeypatch, entries):
     actor = SimpleNamespace(user_id="a")
+    monkeypatch.setattr(lot, "settings", SimpleNamespace(GRADING_ENABLED=False))
     monkeypatch.setattr(discovery, "_owner", lambda a, session: ("test", a.user_id, session))
     state = dict(raw=raw(), active=True, references=True, created=time.monotonic() - 60)
     monkeypatch.setattr(store, "verified", lambda a: a)
@@ -124,7 +125,7 @@ def test_all_era_trainer_energy_identity_adapter(local, monkeypatch):
     ]
     monkeypatch.setattr(collection, "catalog", lambda *a, **kw: cards)
     state["raw"] = raw(
-        shortDescription="2x Professor Turo's Scenario Paradox Rift 171/182 English Unlimited Non Holo; 1x Basic Lightning Energy Scarlet & Violet #004 English Unlimited Non Holo"
+        shortDescription="2x Professor Turo's Scenario Paradox Rift 171/182 English Unlimited Non Holo ungraded; 1x Basic Lightning Energy Scarlet & Violet #004 English Unlimited Non Holo ungraded"
     )
     result = lots.analyze(actor, "session", "run", "result")
     assert {c["printing_id"] for c in result["review"]["cards"]} == {"trainer", "energy"}
@@ -477,7 +478,7 @@ def test_condition_conflict_requires_explicit_attribute_correction(local):
     actor, state = local
     state["raw"] = raw(
         title="Lot of 1 cards",
-        shortDescription="1x Charizard Base Set 4/102 English Unlimited Non Holo HP",
+        shortDescription="1x Charizard Base Set 4/102 English Unlimited Non Holo HP ungraded",
         condition="Near Mint",
     )
     result = lots.analyze(actor, "session", "run", "result")
@@ -551,10 +552,89 @@ def test_literal_trainer_name_is_removed_before_unsupported_product_classificati
     monkeypatch.setattr(collection, "catalog", lambda *a, **kw: [card])
     state["raw"] = raw(
         title="Pokemon lot of 2 cards",
-        shortDescription="2x Booster Shake Base Set 142/203 English Unlimited Non Holo",
+        shortDescription="2x Booster Shake Base Set 142/203 English Unlimited Non Holo ungraded",
     )
     result = lots.analyze(actor, "session", "run", "result")
     assert result["comparison"]["priced_card_quantity"] == 2
     state["raw"]["title"] = "Sealed Pokemon lot of 2 cards"
     with pytest.raises(ValueError, match="Unsupported"):
         lots.analyze(actor, "session", "run", "other")
+
+
+def test_mixed_lot_status_corrections_guard_both_reference_paths(local, monkeypatch):
+    from pokemon_hunter.beta import lot_guides, valuation_evidence
+
+    actor, state = local
+    cards = [
+        printing("charizard"),
+        printing("blastoise", "Blastoise", number="2/102"),
+        printing("venusaur", "Venusaur", number="15/102"),
+    ]
+    monkeypatch.setattr(collection, "catalog", lambda *a, **kw: deepcopy(cards))
+    state["raw"] = raw(
+        title="Lot of 3 cards",
+        shortDescription="1x Charizard Base Set 4/102 English Unlimited Non Holo ungraded; "
+        "1x Blastoise Base Set 2/102 English Unlimited Non Holo PSA 9; "
+        "1x Venusaur Base Set 15/102 English Unlimited Non Holo",
+    )
+
+    def native(p, records, today):
+        return dict(
+            printing_id=p["id"],
+            amount="7.00",
+            currency="USD",
+            as_of=today.isoformat(),
+            grade="raw",
+            value_scope="per_card",
+            match_status="exact",
+            cohort="fixture",
+            basis=valuation_evidence.NATIVE,
+            amount_basis=valuation_evidence.NATIVE_AMOUNT,
+            native_money=valuation_evidence.NATIVE_MONEY,
+            provider="Fixture",
+            date_basis="valuation",
+            source_url="https://example.test/guide",
+            field="market",
+            capabilities={},
+        )
+
+    monkeypatch.setattr(lot_guides, "native_cell", native)
+    result = lots.analyze(actor, "session", "run", "result")
+    # Explicitly select all three, preserving inherited seller claims.
+    corrected = lots.correct(
+        actor,
+        "session",
+        result["review_id"],
+        dict(
+            revision=1,
+            unknown_contents=0,
+            cards=[dict(printing_id=p["id"], quantity=1) for p in cards],
+            costs=dict(tax="0", other_costs="0"),
+        ),
+    )
+    review = {c["printing_id"]: c for c in corrected["review"]["cards"]}
+    assert review["charizard"]["grade"] == "raw"
+    assert review["blastoise"]["grade"] == "9"
+    assert review["venusaur"]["grade"] == ""
+    comparison = corrected["comparison"]
+    assert comparison["priced_card_quantity"] == 1
+    assert comparison["native_guides"][0]["priced_quantity"] == 1
+    assert comparison["native_guides"][0]["subtotal"] == "7.00"
+    corrected = lots.correct(
+        actor,
+        "session",
+        result["review_id"],
+        dict(
+            revision=2,
+            unknown_contents=0,
+            cards=[
+                dict(printing_id="charizard", quantity=1),
+                dict(printing_id="blastoise", quantity=1),
+                dict(printing_id="venusaur", quantity=1, grade="raw"),
+            ],
+            costs=dict(tax="0", other_costs="0"),
+        ),
+    )
+    assert corrected["comparison"]["priced_card_quantity"] == 2
+    assert corrected["comparison"]["native_guides"][0]["subtotal"] == "14.00"
+    assert corrected["review"]["cards"][1]["grade"] == "9"

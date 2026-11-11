@@ -1013,3 +1013,54 @@ def test_split_family_allocations_reconcile_without_exclusivity(monkeypatch):
         [offer], {p["id"]: p for p in candidates}, included, 5
     )
     assert issues and disputed == {"a", "b"}
+
+
+def test_direct_mixed_lot_status_correction_only_prices_explicit_raw(workspace, monkeypatch):
+    from pokemon_hunter.beta import lot_calculator as lot
+
+    monkeypatch.setattr(c, "datetime", SimpleNamespace(now=lambda tz: NOW))
+    selected = workspace["catalog"][:3]
+
+    # Reference cells are admitted fixture projections; seller attributes still pass
+    # the real listing-review applicability and arithmetic boundary.
+    def cells(p, records, today):
+        return {
+            "raw": dict(
+                reference_id=p["id"] + ":guide",
+                kind="guide",
+                value_scope="per_card",
+                amount="4.00",
+                currency="USD",
+                as_of=today.isoformat(),
+                grade="raw",
+                grader="Guide",
+                match_status="exact",
+                provenance="admitted_fixture",
+                source_url="https://example.test/guide",
+                raw_record={},
+            )
+        }
+
+    monkeypatch.setattr(lot, "cells", cells)
+    value = review_value(selected[0], unknown_contents=0, shipping="0", tax="0", other_costs="0")
+    value["cards"] = [
+        dict(
+            printing_id=p["id"],
+            quantity=1,
+            grade=g,
+            grader=grader,
+            condition="",
+            language="",
+            edition="",
+            finish="",
+        )
+        for p, g, grader in zip(selected, ("raw", "9", ""), ("", "PSA", ""), strict=True)
+    ]
+    result = c.compare(workspace["actor"], value)["scenarios"]["raw"]["result"]
+    assert result["coverage"]["priced_units"] == 1
+    assert result["known_selected_subtotal"] == "4.00"
+    value["cards"][2]["grade"] = "raw"
+    result = c.compare(workspace["actor"], value)["scenarios"]["raw"]["result"]
+    assert result["coverage"]["priced_units"] == 2
+    assert result["known_selected_subtotal"] == "8.00"
+    assert value["cards"][1]["grade"] == "9"

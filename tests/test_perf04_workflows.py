@@ -39,6 +39,22 @@ def browser_app(prepared, request):
         )
         catalogs.activate(catalogs.prepare())
         accounts.prepare(prepared["actor"])
+        prepared["graded_bulk"] = collection_drafts.save(
+            prepared["actor"],
+            {
+                "rows": [
+                    {
+                        "row_id": "graded",
+                        "printing_id": prepared["by_legacy"]["c"]["id"],
+                        "action": "add_copies",
+                        "grading_company": "PSA",
+                        "grade": "9",
+                        "certificate": "fixture-cert-42",
+                    }
+                ],
+                "defaults": {"action": "add_copies"},
+            },
+        )
     if mode == "photo":
         from photo_batch_helpers import cropped
 
@@ -166,6 +182,58 @@ def test_goals_create_progress_rename_and_undo(browser_app):
     assert not errors, errors
     assert "/api/collection/" not in requests
     assert "/api/catalog/" not in requests
+
+
+@pytest.mark.parametrize("browser_app", ["bulk"], indirect=True)
+def test_bulk_hides_grading_controls_when_disabled(browser_app):
+    from playwright.sync_api import expect
+
+    _, page, base, _, errors = browser_app
+    page.goto(base + "/add-many/")
+    expect(page.locator("#bulk-catalog-rows .bulk-card").first).to_be_visible()
+    expect(page.locator("#bulk-default-grade")).to_be_hidden()
+    expect(page.locator("#bulk-default-grading_company")).to_be_hidden()
+    expect(page.locator("#bulk-default-certificate")).to_be_hidden()
+    assert not errors, errors
+
+
+@pytest.mark.parametrize("browser_app", ["bulk"], indirect=True)
+def test_bulk_saved_graded_row_survives_off_mode_edit_confirm_and_undo(browser_app):
+    from playwright.sync_api import expect
+
+    cx, page, base, _, errors = browser_app
+    grading = {"grading_company": "PSA", "grade": "9", "certificate": "fixture-cert-42"}
+    draft = cx["graded_bulk"]
+    page.goto(base + "/add-many/?draft=" + draft["id"])
+    expect(page.locator("#bulk-tray button[data-row-id]").first).to_be_visible()
+    page.locator("#bulk-tray button[data-row-id]").first.click()
+    expect(page.locator("#bulk-row-grade")).to_be_hidden()
+    expect(page.locator("#bulk-row-fields")).to_contain_text("Grading details are retained")
+    page.locator("#bulk-row-notes").fill("Unrelated edit")
+    page.locator("#bulk-row-save").click()
+    page.locator("#bulk-save").click()
+    expect(page.locator("#bulk-status")).to_contain_text("Draft saved")
+    saved = page.request.get(base + "/api/bulk/drafts/" + draft["id"] + "/").json()["draft"]
+    assert {k: saved["input_json"]["rows"][0][k] for k in grading} == grading
+    page.locator("#bulk-review").click()
+    expect(page.locator("#bulk-confirm")).to_be_enabled()
+    page.locator("#bulk-confirm").click()
+    expect(page.locator("#bulk-receipt")).to_be_visible()
+    from concurrent.futures import ThreadPoolExecutor
+
+    from pokemon_hunter.beta import collection
+
+    with ThreadPoolExecutor() as pool:
+
+        def copies():
+            return pool.submit(collection.copies, cx["actor"]).result()
+
+        copy = next(c for c in copies() if c.get("certificate") == grading["certificate"])
+        assert {k: copy[k] for k in grading} == grading
+        page.locator("#bulk-undo").click()
+        expect(page.locator("#bulk-receipt")).to_contain_text("undone")
+        assert all(c["id"] != copy["id"] for c in copies())
+    assert not errors, errors
 
 
 @pytest.mark.parametrize("browser_app", ["bulk"], indirect=True)

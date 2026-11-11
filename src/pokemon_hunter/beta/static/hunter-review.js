@@ -106,15 +106,36 @@
     }
     function cardTraits(row, parent) {
       const details = h('details', undefined, 'hunter-card-details');
-      details.append(h('summary', 'Printing, condition and grading corrections'));
+      const gradingEnabled = document.body.dataset.gradingEnabled === 'true';
+      details.append(h('summary', gradingEnabled ? 'Printing, condition and grading corrections' : 'Printing, condition and card status'));
       details.append(h('p', 'Seller claims remain unverified. Only an attribute you explicitly edit or confirm resolves its conflict.'));
       const traits = h('div', undefined, 'hunter-fields');
       const conflicting = new Set((value.proposal?.proposals || []).filter(p =>
         (p.candidates || []).some(candidate => candidate.id === row.printing_id)
       ).flatMap(p => p.conflicting_fields || []));
       for (const key of ATTRIBUTES) {
+        if (!gradingEnabled && key === 'grader') continue;
+        if (!gradingEnabled && key === 'grade') {
+          if (row.grade && row.grade !== 'raw' && row.grade !== 'unknown') {
+            traits.append(h('p', 'A grading claim is retained; its calculation is unavailable while grading is off.'));
+          } else {
+            const label = h('label', 'Card status');
+            const select = h('select');
+            for (const [v, text] of [['', 'Unknown / unpriced'], ['raw', 'Ungraded']]) {
+              const option = h('option', text); option.value = v; select.append(option);
+            }
+            select.value = row.grade === 'raw' ? 'raw' : '';
+            select.addEventListener('change', () => {
+              row.grade = select.value;
+              if (!explicit.has(row.printing_id)) explicit.set(row.printing_id, new Set());
+              explicit.get(row.printing_id).add('grade'); invalidate();
+            });
+            label.append(select); traits.append(label);
+          }
+          continue;
+        }
         const group = h('div');
-        const field = input(group, LABELS[key], row[key] ?? (key === 'grade' ? 'raw' : ''), content => {
+        const field = input(group, LABELS[key], row[key] ?? '', content => {
           row[key] = content;
           if (!explicit.has(row.printing_id)) explicit.set(row.printing_id, new Set());
           explicit.get(row.printing_id).add(key);

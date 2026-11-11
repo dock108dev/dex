@@ -1,7 +1,9 @@
 /* Four independent scenarios. All amounts and eligibility come from the server. */
 (() => {
   const $ = id => document.getElementById(id), rows = new Map();
-  const columns = [['raw', 'Ungraded'], ['8', 'Grade 8'], ['9', 'Grade 9'], ['10', 'Grade 10']];
+  const gradingEnabled = document.body.dataset.gradingEnabled === 'true';
+  const allColumns = [['raw', 'Ungraded'], ['8', 'Grade 8'], ['9', 'Grade 9'], ['10', 'Grade 10']];
+  const columns = gradingEnabled ? allColumns : allColumns.slice(0, 1);
   const today = new Intl.DateTimeFormat('en-CA', {timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit'}).format(new Date());
   let offset = 0, total = 0, busy = false, searchVersion = 0, lockWrites = Promise.resolve(), statusTimer;
   const context = $('shopping-context') ? JSON.parse($('shopping-context').textContent) : null;
@@ -66,12 +68,12 @@
   }
   function priceNotes(sources) {
     const notes = node('div'); notes.className = 'price-notes';
-    notes.append(node('p', 'References depend on edition and condition. Graded values retain the source’s grader.'));
+    notes.append(node('p', gradingEnabled ? 'References depend on edition and condition. Graded values retain the source’s grader.' : 'References depend on edition and condition.'));
     for (const [title, ref] of Object.entries(sources)) {
       if (!hasValue(ref?.amount)) continue;
       notes.append(node('p', ref.date_basis === 'publisher_build'
         ? `${title}: publisher build ${ref.as_of}; provider valuation date unavailable.`
-        : `${title}: ${ref.as_of} · ${ref.grader || 'No certified grader'}`));
+        : `${title}: ${ref.as_of}${gradingEnabled ? ` · ${ref.grader || 'No certified grader'}` : ''}`));
       if (ref.match_status === 'conditional') notes.append(node('p', ref.assumptions.join(' ')));
       if (ref.source_url) { const link = node('a', `${title} source`); link.href = ref.source_url; link.target = '_blank'; link.rel = 'noopener noreferrer'; notes.append(link); }
     }
@@ -169,7 +171,7 @@
         }
         box.append(grid, priceDetails(sources)); $('captured-rows').append(box);
       }
-      details($('captured-rows'), 'Original inputs, results and provenance', payload);
+      if (gradingEnabled) details($('captured-rows'), 'Original inputs, results and provenance', payload);
     }
   }
   if ($('captured-lot')) { render(JSON.parse($('captured-lot').textContent)); return; }
@@ -384,7 +386,7 @@
     costs[key] = {amount, date, components}; $('costs').append(box);
   }
   function inputs() {
-    return {cards: [...rows.values()].filter(r => Number(r.q.value) !== 0).map(r => ({printing_id: r.p.id, quantity: Number(r.q.value), values: Object.fromEntries(columns.map(([g]) => [g, {mode: r.values[g].mode}]))})),
+    return {cards: [...rows.values()].filter(r => Number(r.q.value) !== 0).map(r => ({printing_id: r.p.id, quantity: Number(r.q.value), values: Object.fromEntries(allColumns.map(([g]) => [g, {mode: r.values[g]?.mode || 'none'}]))})),
       ...Object.fromEntries(Object.entries(costs).map(([key, f]) => [key, {amount: f.amount.value || null, currency: 'USD', status: f.amount.value === '' ? 'unknown' : 'known', date: f.date.value, price_kind: key === 'listing_observation' ? 'current_asking_price' : 'personal_planned_bid', source_url: key === 'listing_observation' ? $('listing-url').value || null : null}])),
       delivery_cost_inputs: Object.fromEntries(Object.entries(costs).map(([key, f]) => [key, Object.fromEntries(Object.entries(f.components).map(([name, a]) => [name, {amount: a.value || null, currency: 'USD', status: a.value === '' ? 'unknown' : 'known', date: f.date.value, notes: 'Manually supplied; independent costs'}]))]))};
   }

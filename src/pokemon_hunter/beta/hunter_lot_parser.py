@@ -212,6 +212,12 @@ def parse(raw, printings, *, detail=None, _index=None, complete_candidates=False
         identity_text = re.sub(r"(?<![\w/#.])[1-9][0-9]{0,5}\s*[x×](?!\w)", " ", identity_text, flags=re.I)
         scoped_text = " ".join([identity_text, *evidence.scoped_claims(identity_text, scopes, aspects)])
         clues = dc._clues(dict(title=scoped_text, condition=raw.get("condition", "")))
+        # A missing grade claim is not a claim that this particular card is raw.
+        # Only this card's scoped text may establish its status in a mixed lot.
+        from . import listing_grading
+
+        if listing_grading.status({}, scoped_text) == "unknown":
+            clues["grade"] = ""
         # Retain a per-card condition category only when this scoped segment
         # states exactly one. The literal source spans remain available below.
         if len(clues["condition_claims"]) == 1:

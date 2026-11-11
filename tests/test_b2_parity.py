@@ -125,7 +125,32 @@ def test_projection_matches_same_snapshot_and_scope(restored, snapshot):
     assert projected["pokedex"]["152"]["eligible_cards"] == ["c"]
     assert projected["valuation"]["conditional"]["raw"]["subtotal"] == "30.00"
     assert projected["valuation"]["confirmed"]["raw"]["subtotal"] is None
-    assert projected["valuation"]["conditional"]["7"]["estimated"] == 2
+    assert set(projected["valuation"]["conditional"]) == {"raw"}
+    from django.test import override_settings
+
+    with override_settings(GRADING_ENABLED=True):
+        enabled = a.get("/api/parity/").json()
+    assert enabled["valuation"]["conditional"]["7"]["estimated"] == 2
+
+
+def test_graded_copy_excluded_from_raw_estimates_when_disabled(restored):
+    from django.test import override_settings
+
+    actor = restored["actor"]
+    copies = service.copies(actor)
+    graded = dict(copies[0], grading_company="PSA", grade="9", certificate="123")
+    catalog = service.catalog(actor)
+    with override_settings(GRADING_ENABLED=False):
+        off = parity.estimates([graded], catalog)
+    assert set(off["conditional"]) == {"raw"}
+    assert off["conditional"]["raw"]["priced"] == 0
+    assert off["conditional"]["raw"]["owned"] == 1
+    assert off["copies"][graded["id"]]["conditional"] == {}
+    with override_settings(GRADING_ENABLED=True):
+        on = parity.estimates([graded], catalog)
+    assert "9" in on["conditional"]
+    assert on["copies"][graded["id"]]["conditional"]
+    assert (graded["grading_company"], graded["grade"], graded["certificate"]) == ("PSA", "9", "123")
 
 
 def test_edition_duplicate_undo_and_export_roundtrip(restored):

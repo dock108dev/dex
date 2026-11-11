@@ -10,7 +10,7 @@ window.DexHunterNet = (() => {
   function rate(value) {const n=cents(value);return n !== null && n <= 10000 ? n : null;}
   const portion = (amount,basisPoints) => Math.round(amount*basisPoints/10000);
   function estimate(row, inputs, now=Date.now()) {
-    if (row.ungraded_single !== true) return {reason:'Ungraded singles only'};
+    if (row.ungraded_single !== true || row.grading_status !== 'raw') return {reason:'Seller grading status needs verification'};
     if (row.ends_at && Number.isFinite(Date.parse(row.ends_at)) && Date.parse(row.ends_at)<=now) return {reason:'Listing ended'};
     const ref=row.reference, scenario=row.opportunity?.scenarios?.find(s=>s.kind === row.price_kind || s.kind === 'buy_it_now');
     if (!ref || ref.grade !== 'raw' || ref.currency !== 'USD' || !scenario || scenario.reference_amount == null || !['eligible','conditional'].includes(row.reference_eligibility)) return {reason:'No applicable ungraded price'};

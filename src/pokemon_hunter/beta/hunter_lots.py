@@ -248,7 +248,7 @@ def _compare(actor, raw, proposal, corrections, entries, records=None, *, _check
         ):
             continue
         row = traits[p["id"]]
-        if row.get("grade") not in {"", "raw", None} or discovery_matching.unavailable(p):
+        if row.get("grade") != "raw" or discovery_matching.unavailable(p):
             continue
         if any(not row.get(k) for k in ("language", "edition", "finish") if p.get(k) != "not_applicable"):
             continue

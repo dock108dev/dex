@@ -46,6 +46,7 @@ def listing(p, **changes):
         itemId="offer-" + p["id"],
         title=f"{p['set_name']} {p['name']} {p['collector_number']} English Unlimited Non Holo",
         condition="Near Mint",
+        localizedAspects=[{"name": "Graded", "value": "No"}],
         buyingOptions=["FIXED_PRICE"],
         price=dict(value="1.00", currency="USD"),
         shippingOptions=[dict(shippingCostType="FIXED", shippingCost=dict(value="0.50", currency="USD"))],
@@ -295,3 +296,34 @@ def test_poc_ungraded_single_disposition(local, monkeypatch, kind):
         raw["localizedAspects"] = [{"name": "Graded", "value": "Yes"}]
     rows = hunter_catalog.compare(local, [raw], now=OBSERVED)
     assert rows[0]["ungraded_single"] is (kind == "raw")
+
+
+@pytest.mark.parametrize("aspects", [[], [{"name": "Graded", "value": "Yes"}]])
+def test_unknown_or_conflicting_singles_have_no_raw_comparison(local, monkeypatch, aspects):
+    p = printing("uncertain")
+    monkeypatch.setattr(collection, "catalog", lambda *a, **k: [p])
+    monkeypatch.setattr(lot_calculator, "retained_records", lambda: [])
+    monkeypatch.setattr(
+        discovery_comparison.lot_guides, "cell_details", lambda *a: ({"raw": reference(p)}, {})
+    )
+    raw = listing(p, localizedAspects=aspects)
+    if aspects:
+        raw["title"] += " ungraded"
+    row = hunter_catalog.compare(local, [raw], now=OBSERVED)[0]
+    assert row["grading_status"] == "unknown"
+    assert row["ungraded_single"] is False
+    assert row["reference"] is None
+    assert row["comparison"]["below_reference"] is None
+    assert "grading status" in row["reason"].lower()
+
+
+def test_raw_status_cannot_select_a_graded_reference_when_legacy_clues_disagree(local, monkeypatch):
+    p = printing("disagreement")
+    monkeypatch.setattr(collection, "catalog", lambda *a, **k: [p])
+    monkeypatch.setattr(lot_calculator, "retained_records", lambda: [])
+    raw = listing(p)
+    raw["title"] += " ungraded no slab"
+    row = hunter_catalog.compare(local, [raw], now=OBSERVED)[0]
+    assert row["grading_status"] == "raw"
+    assert row["reference"] is None
+    assert "disagree" in row["reason"]

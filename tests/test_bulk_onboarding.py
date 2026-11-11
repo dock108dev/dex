@@ -59,6 +59,90 @@ def test_bulk_single_transaction_projection_and_replay(bulk):
     assert not card(effective_collection.project(cx["actor"]), "Venusaur", "18")["present"]
 
 
+def test_graded_bulk_draft_off_mode_stale_and_full_export_import_roundtrip(bulk, monkeypatch):
+    from django.conf import settings
+
+    cx = bulk
+    grading = {"grading_company": "PSA", "grade": "9", "certificate": "roundtrip-cert"}
+    monkeypatch.setattr(settings, "GRADING_ENABLED", True, raising=False)
+    original = save(cx, [row(cx, action="add_copies", **grading)])
+    monkeypatch.setattr(settings, "GRADING_ENABLED", False)
+    reopened = drafts.get(cx["actor"], original["id"])
+    revised_row = {**reopened["input_json"]["rows"][0], "notes": "changed unrelated detail"}
+    revised = save(cx, [revised_row], key=original["id"], revision=original["revision"])
+    with pytest.raises(inv.Conflict):
+        save(
+            cx,
+            [row(cx, action="add_copies", grade="", grading_company="", certificate="")],
+            key=original["id"],
+            revision=original["revision"],
+        )
+    with pytest.raises(inv.Conflict):
+        drafts.confirm(cx["actor"], original["id"], original["revision"])
+    # An old/direct client with the current revision cannot erase hidden values.
+    direct = save(
+        cx,
+        [{**revised_row, "grade": "", "grading_company": "", "certificate": ""}],
+        key=revised["id"],
+        revision=revised["revision"],
+    )
+    assert {k: direct["input_json"]["rows"][0][k] for k in grading} == grading
+    revised = direct
+    preview = drafts.review(cx["actor"], revised["id"], revised["revision"])["operation"]
+    assert not preview["plan"]["errors"]
+    done = drafts.confirm(cx["actor"], revised["id"], revised["revision"])
+    copy = next(c for c in inv.copies(cx["actor"]) if c.get("certificate") == grading["certificate"])
+    assert {k: copy[k] for k in grading} == grading
+    exported = inv.export_data(cx["actor"])
+    exported_copy = next(c for c in exported["copies"] if c.get("certificate") == grading["certificate"])
+    assert {k: exported_copy[k] for k in grading} == grading
+    monkeypatch.setattr(settings, "GRADING_ENABLED", True)
+    assert {k: drafts.get(cx["actor"], revised["id"])["input_json"]["rows"][0][k] for k in grading} == grading
+    inv.undo(cx["actor"], done["id"])
+    assert all(c["id"] != copy["id"] for c in inv.copies(cx["actor"]))
+
+
+def test_graded_full_export_import_roundtrip_off_and_on(b2, monkeypatch):
+    from django.conf import settings
+
+    grading = {"grading_company": "PSA", "grade": "9", "certificate": "roundtrip-cert"}
+    monkeypatch.setattr(settings, "GRADING_ENABLED", True, raising=False)
+    copy = inv.copies(b2["actor"])[0]
+    apply(b2["actor"], "edit", {"id": copy["id"], "revision": copy["revision"], "attributes": grading})
+    monkeypatch.setattr(settings, "GRADING_ENABLED", False)
+    exported = inv.export_data(b2["actor"])
+    imported = apply(
+        b2["member"], "import", {"format": "json", "text": json.dumps(exported), "duplicate_policy": "allow"}
+    )
+    assert imported["state"] == "confirmed"
+    imported_copy = next(
+        c for c in inv.export_data(b2["member"])["copies"] if c.get("certificate") == grading["certificate"]
+    )
+    assert {k: imported_copy[k] for k in grading} == grading
+    monkeypatch.setattr(settings, "GRADING_ENABLED", True)
+    assert {k: inv.one(b2["member"], "copy", imported_copy["id"])[k] for k in grading} == grading
+
+
+def test_off_mode_bulk_retains_saved_grading_defaults(bulk, monkeypatch):
+    from django.conf import settings
+
+    grading = {"grading_company": "CGC", "grade": "8", "certificate": "default-cert"}
+    original = save(bulk, [row(bulk)], defaults={"action": "add_copies", **grading})
+    monkeypatch.setattr(settings, "GRADING_ENABLED", False, raising=False)
+    revised = save(
+        bulk,
+        [row(bulk, notes="edited")],
+        defaults={"action": "add_copies", "grade": ""},
+        key=original["id"],
+        revision=original["revision"],
+    )
+    assert {k: revised["input_json"]["defaults"][k] for k in grading} == grading
+    preview = drafts.review(bulk["actor"], revised["id"], revised["revision"])["operation"]
+    assert not preview["plan"]["errors"]
+    done = drafts.confirm(bulk["actor"], revised["id"], revised["revision"])
+    assert {k: done["changes"][0]["after"][k] for k in grading} == grading
+
+
 def test_provisional_binding_resolution_removal_and_untrusted_import(bulk):
     cx = bulk
     select(cx)

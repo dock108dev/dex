@@ -93,6 +93,8 @@ LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/pokedex/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 USE_TZ = True
+# Process-wide product switch. Existing records and import/export remain intact.
+GRADING_ENABLED = os.environ.get("DEX_GRADING_ENABLED") == "1"
 PARITY_ENABLED = (ROOT / "B2_PARITY_ISOLATED").is_file()
 B2_ENABLED = (ROOT / "B2_ISOLATED").is_file()
 DATA_UPLOAD_MAX_MEMORY_SIZE = 2_000_000 if B2_ENABLED else 16384
