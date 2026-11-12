@@ -38,7 +38,7 @@ def test_missing_picker_edits_options_failure_and_keyboard(browser_app, monkeypa
     value = page.locator("#discovery-target option").nth(1).get_attribute("value")
     page.locator("#discovery-target").select_option(value)
     page.locator("#discovery-budget").fill("86.75")
-    page.locator("#discovery-prefer-vintage").check()
+    page.locator("#discovery-listing-years").select_option("through2000")
     assert len(options) == 1
     options[0].fulfill(status=503, json=dict(error="runtime_busy"))
     expect(page.locator("#discovery-options-reload")).to_be_visible()
@@ -93,18 +93,18 @@ def test_collection_lost_response_keeps_later_edits_and_never_reposts(browser_ap
     species = page.locator("#discovery-target option").nth(1).get_attribute("value")
     page.locator("#discovery-target").select_option(species)
     page.locator("#discovery-budget").fill("64.25")
-    page.locator("#discovery-prefer-vintage").check()
+    page.locator("#discovery-listing-years").select_option("through2000")
     page.locator("#discovery-search").evaluate("e=>{e.click();e.click()}")
     expect(page.locator("#discovery-reload")).to_be_visible()
     assert len(posted) == 1
     assert posted[0]["species"] == int(species) and posted[0]["collection_intent"]
-    assert posted[0]["budget"] == "64.25" and posted[0]["prefer_vintage"]
+    assert posted[0]["budget"] == "64.25" and posted[0]["listing_years"] == "through2000"
     page.locator("#discovery-budget").fill("72.50")
     page.locator("#discovery-reload").click()
     expect(page.get_by_text("Engineering received lot", exact=True)).to_be_visible()
     assert page.locator("#discovery-target").input_value() == species
     assert page.locator("#discovery-budget").input_value() == "72.50"
-    assert page.locator("#discovery-prefer-vintage").is_checked()
+    assert page.locator("#discovery-listing-years").input_value() == "through2000"
     assert len(posted) == 1
     assert not errors
 

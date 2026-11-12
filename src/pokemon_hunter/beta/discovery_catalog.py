@@ -10,6 +10,7 @@ from . import (
     canonical_species,
     card_groups,
     collection,
+    discovery_paging,
     image_bindings,
     image_mappings,
     lot_calculator,
@@ -42,6 +43,7 @@ PAGE_FIELDS = shopping_context.FIELDS | {
     "era_filter",
     "single_buying",
     "single_release",
+    "listing_years",
     "scroll",
     "focus",
 }
@@ -79,6 +81,7 @@ def validate_page(raw):
         ("era_filter", {"all", "pre2000"}),
         ("single_buying", {"both", "auction", "buy_now"}),
         ("single_release", {"all", "through2000"}),
+        ("listing_years", discovery_paging.LISTING_YEARS),
     ):
         if field in raw and raw[field] not in options:
             raise ValueError("Choose a supported Shopping option")

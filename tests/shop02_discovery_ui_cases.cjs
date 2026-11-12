@@ -57,8 +57,9 @@ const passed=[];
     t.get('discovery-query').value='Venusaur';t.get('discovery-set').value='Base Set';
     t.get('discovery-product-type').value='singles';t.get('discovery-budget').value='1';
     t.get('discovery-focus').value='bulk';
+    t.get('discovery-listing-years').value='through2000';
     await t.get('discovery-form').emit('submit');await flush();
-    assert.deepEqual(t.calls[1].body,{...baseChoices,query:'Venusaur',set_id:'Base Set',product_type:'mixed_lots',english_vintage:false,budget:'1',focus:'bulk',collection_intent:false,prefer_vintage:false,currency:'USD',acquisition_contract:'dex-lot-hunt-v2'});
+    assert.deepEqual(t.calls[1].body,{...baseChoices,query:'Venusaur',set_id:'Base Set',product_type:'mixed_lots',english_vintage:false,budget:'1',focus:'bulk',collection_intent:false,listing_years:'through2000',currency:'USD',acquisition_contract:'dex-lot-hunt-v2'});
     assert.equal(t.get('discovery-stop').hidden,true);
   });
   await check('lot finder preserves provider order without guessing a single-card identity',async()=>{

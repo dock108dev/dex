@@ -317,7 +317,7 @@ def test_lot_values_arrive_automatically_and_controls_stay_local(browser_app):
     assert not errors
 
 
-def test_singles_filter_review_back_reload_and_expired_receipt_are_local(browser_app):
+def test_singles_year_choice_keeps_received_scope_and_returns_to_review(browser_app):
     from playwright.sync_api import expect
 
     state, page, base, _, errors = browser_app
@@ -343,7 +343,11 @@ def test_singles_filter_review_back_reload_and_expired_receipt_are_local(browser
             handler.fulfill(status=404, body="Expired")
             return
         result["choices"].update(
-            query="Lapras", product_type="singles", single_buying="auction", sort="best_match"
+            query="Lapras",
+            product_type="singles",
+            single_buying="auction",
+            sort="best_match",
+            listing_years="through2000",
         )
         result["scope_label"] = "Singles · Lapras"
         result["counts"]["summary_count"] = 2
@@ -363,14 +367,15 @@ def test_singles_filter_review_back_reload_and_expired_receipt_are_local(browser
     page.route("**/api/shopping/discovery/**", route)
     page.goto(
         base
-        + f"/shopping/?run_id={run_id}&q=Lapras&product_type=singles&single_buying=auction&single_release=through2000"
+        + f"/shopping/?run_id={run_id}&q=Lapras&product_type=singles&single_buying=auction&listing_years=through2000"
     )
-    expect(page.get_by_text("2 received · 1 eligible in this view")).to_be_visible()
-    assert not page.get_by_text("Controlled later Lapras").count()
-    page.locator("#single-release").select_option("all")
+    expect(page.get_by_text("2 received · 2 eligible in this view")).to_be_visible()
+    expect(page.locator("#discovery-scope")).to_contain_text("eBay year filter: Through 2000")
+    page.locator("#discovery-listing-years").select_option("all")
     expect(page.get_by_text("Controlled later Lapras")).to_be_visible()
-    page.locator("#single-release").select_option("through2000")
-    page.get_by_role("link", name="Review listing").click()
+    expect(page.locator("#discovery-scope")).to_contain_text("eBay year filter: Through 2000")
+    page.locator("#discovery-listing-years").select_option("through2000")
+    page.locator("#offer-engineering-result").get_by_role("link", name="Review listing").click()
     page.get_by_role("link", name="Back to search").click()
     offer = page.locator("#offer-engineering-result")
     expect(offer).to_be_focused()
@@ -378,7 +383,7 @@ def test_singles_filter_review_back_reload_and_expired_receipt_are_local(browser
     expect(offer).to_be_focused()
     expect(page.locator("#discovery-query")).to_have_value("Lapras")
     expect(page.locator("#single-buying")).to_have_value("auction")
-    expect(page.locator("#single-release")).to_have_value("through2000")
+    expect(page.locator("#discovery-listing-years")).to_have_value("through2000")
     expired = True
     page.reload()
     expect(page.get_by_text("Your inputs are ready for a new search.", exact=False)).to_be_visible()

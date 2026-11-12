@@ -101,6 +101,15 @@ with the Pokémon/name as the keyword query, rather than merely appending the se
 keywords. Named continuation preserves the facet. Other catalog set labels may differ from seller taxonomy; no fallback broadening is
 performed. A selected set is seller metadata, not physical content verification.
 
+**Year manufactured** is a search filter for lots and singles. **Before 2000**
+sends eBay the years 1996–1999. **Through 2000** includes 2000. Dex sends the
+category's `Year Manufactured` aspect with every Browse page and combines it
+with the other aspects on that page. Changing years requires a new explicit
+search. Listings without those seller-entered years can be omitted. A year on a
+mixed lot describes the seller's listing. Individual card printings may still
+need review. On a missing-species Hunt, rows flag other missing species named
+in seller titles so the collector can check the contents.
+
 The automatic auction page is ending-soonest and the independent BIN page uses
 provider best match. The default local auction view is 72 hours, with BIN available
 independently. Local filters and sorts only rearrange received results; they cannot
@@ -130,17 +139,15 @@ in Base Set, Fossil and Neo Genesis. That request uses `Pokemon` and the
 verified Game and Set aspects. An explicitly selected catalog set uses
 keywords because seller taxonomy can use a different name. Counts describe the
 received pages, including duplicates and other exclusions. Seller metadata can
-omit listings and admit incorrect matches. The release cutoff remains local.
+omit listings and admit incorrect matches.
 
-**Through 2000** locally screens the received offers through December 31, 2000
-using the retained catalog's language-specific release evidence. A dated set
-can support its original numbered issue when seller name, set and number agree.
-Special releases and reprints need their own dated evidence. Later releases,
-unknown dates and conflicting claims have separate counts. Original numbered
-English Fossil Lapras #10 and #25 carry distinct holo and non-holo identities.
-Edition remains unresolved when the listing does not distinguish it. The
-existing **Pre-2000** filter still ends December 31, 1999. Local filtering and
-opening or returning from review use zero provider operations.
+Singles still show the retained catalog's language-specific release evidence.
+A dated set can support its original numbered issue when seller name, set and
+number agree. Special releases and reprints need their own dated evidence.
+Later releases, unknown dates and conflicting claims have separate counts.
+Original numbered English Fossil Lapras #10 and #25 carry distinct holo and
+non-holo identities. Edition remains unresolved when the listing does not
+distinguish it. Opening or returning from review uses zero provider operations.
 
 ## Named search and continuation (legacy explicit contract)
 
@@ -1195,12 +1202,7 @@ unknown shipping and partial contents never produce a discount badge. Green mean
 at most 90% of the estimate, amber is above 90% but below 100%, and muted red is
 100% or more. These are ungraded reference comparisons, before tax, not profits.
 
-Pre-2000 only requires all seller-stated physical contents to be identified with
-reconciled quantities and retained catalog evidence for set releases before 2000.
-Unknown dates, mixed eras, unresolved contents, special reprints and rolling promo
-series without individual release evidence are excluded. Set release evidence is
-not authentication or a guarantee of a particular printing's manufacture date.
-Both quick filters operate on received results without acquiring more listings,
-and survive navigation through temporary review. Details retain the full evidence;
-rows show three card names, a count of remaining names, seller photo, price,
+Value filters operate on received results without acquiring more listings and
+survive navigation through temporary review. Details retain the full evidence.
+Rows show three card names, a count of remaining names, seller photo, price,
 estimated value and a badge. Response compaction preserves seller image URLs.

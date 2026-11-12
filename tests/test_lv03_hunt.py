@@ -102,11 +102,16 @@ def env(everyday, entries, monkeypatch):
     return e
 
 
-def test_one_action_automatically_details_and_assesses_without_prices(env):
-    run, result = env.execute()
+def test_one_action_automatically_details_and_assesses_without_prices(env, monkeypatch):
+    monkeypatch.setattr(d, "_sets", lambda actor: {"fossil": "Fossil"})
+    run, result = env.execute(env.start(listing_years="through2000", set_id="Fossil"))
     assert result["state"] == "partial"
     assert result["counts"]["total"] == policy.status(env.actor)["used"] == len(env.calls) == 5
     assert [r.url.path.rsplit("/", 1)[-1] for r in env.calls[:3]] == ["token", "search", "search"]
+    assert result["choices"]["listing_years"] == "through2000"
+    assert [r.url.params["aspect_filter"] for r in env.calls[1:3]] == [
+        "categoryId:183455,Set:{Fossil},Year Manufactured:{1996|1997|1998|1999|2000}"
+    ] * 2
     assert result["progress"] == dict(
         searched=2,
         received=2,

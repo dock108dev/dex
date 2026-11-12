@@ -97,6 +97,28 @@ def test_review_and_original_lease_keep_intent_then_reject_changed_generation(vi
     assert run.created == created
 
 
+def test_lot_mentions_count_only_other_missing_species(visual, monkeypatch):
+    from pokemon_hunter.beta import shopping_index
+
+    enable_read_fixture(visual, monkeypatch)
+    actor = visual["actor"]
+    choices = selected(actor)
+    missing = shopping_intent.targets(actor, {"scope": "kanto"})["targets"]
+    name = next(row["name"] for row in missing if row["species"] != choices.species)
+    rows = [{"title": f"Alakazam {name} {name} lot"}, {"title": f"Alakazam and {name}ish cards"}]
+
+    @shopping_index.indexed
+    def annotate(who):
+        shopping_intent.annotate_lot_mentions(who, choices, rows)
+        return {}
+
+    annotate(actor)
+    assert [row["additional_missing_mentions"] for row in rows] == [
+        {"names": [name], "count": 1},
+        {"names": [], "count": 0},
+    ]
+
+
 def test_invalid_collection_intent_cannot_dispatch():
     for change in (
         {"species": None},

@@ -155,6 +155,23 @@ def validate(actor, choices):
         )
 
 
+def annotate_lot_mentions(actor, choices, rows):
+    """Show other missing species named in seller titles on a species Hunt."""
+    from . import discovery_matching
+
+    raw = dict(scope=choices.focus)
+    if choices.goal_id:
+        raw.update(goal=choices.goal_id, version=choices.goal_version)
+    targets = _targets(actor, raw)
+    if targets["goal_policy"] != "species":
+        return
+    missing = [r["name"] for r in targets["targets"] if r["species"] != choices.species]
+    for row in rows:
+        title = row.get("title", "")[:500]
+        names = [name for name in missing if discovery_matching.name_spans({"name": name}, title)]
+        row["additional_missing_mentions"] = {"names": names[:5], "count": len(names)}
+
+
 def fit(actor, choices, title, review=None):
     """Unique possible additions, never confirmation of seller contents or value."""
     from . import discovery_matching

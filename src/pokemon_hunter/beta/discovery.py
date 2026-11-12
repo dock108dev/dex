@@ -353,8 +353,11 @@ def _scope_label(run):
             if c.budget is not None
             else "All-in budget not set"
         )
-        return f"{basis} · {c.focus} · {registry()[c.species]['name']} · {budget} · " + (
-            "Vintage preferred; any qualifying era" if c.prefer_vintage else "Any qualifying era"
+        label = f"{basis} · {c.focus} · {registry()[c.species]['name']} · {budget}"
+        if c.listing_years != "all":
+            return label
+        return label + (
+            " · Vintage preferred; any qualifying era" if c.prefer_vintage else " · Any qualifying era"
         )
     if run.choices.intent == "deals":
         return (
@@ -882,16 +885,25 @@ def start(actor, session_key, raw, *, auth_session=None):
             run.single_vintage_sample = not (query or set_name)
             run.queries = [submitted_query(query or "Pokemon", set_name=set_name)]
             run.named_pages = discovery_paging.singles_pages(
-                run.queries[0], choices.single_buying, vintage_sample=run.single_vintage_sample
+                run.queries[0],
+                choices.single_buying,
+                vintage_sample=run.single_vintage_sample,
+                listing_years=choices.listing_years,
             )
             run.action_counts = {}
             _singles_capacity(actor, run, bind=True)
             run.admit = lambda stage: _admit_singles(run, stage)
         elif choices.query:
             run.named_pages = discovery_paging.first_pages(
-                run.queries[0], choices.product_type, choices.sort, set_name=set_name
+                run.queries[0],
+                choices.product_type,
+                choices.sort,
+                set_name=set_name,
+                listing_years=choices.listing_years,
             )
             run.action_counts = {}
+        elif choices.listing_years != "all":
+            raise ValueError("Enter a card name to search by listing year")
     with _lock:
         for old in _runs.values():
             if (

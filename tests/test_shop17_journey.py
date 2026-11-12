@@ -297,8 +297,8 @@ def journey(page, base, goal, cx, report, width, zoom, exercise_changes):
     edit("choose target", target, lambda: target.select_option("3"), "3")
     budget = loc("#discovery-budget")
     edit("budget", budget, lambda: budget.fill("20"), "20")
-    vintage = loc("#discovery-prefer-vintage")
-    measure("vintage preference", vintage.check, lambda: expect(vintage).to_be_checked())
+    vintage = loc("#discovery-listing-years")
+    edit("listing years", vintage, lambda: vintage.select_option("through2000"), "through2000")
 
     def hunt_ready():
         loc(".compact-lot").first.wait_for()
@@ -424,9 +424,9 @@ def journey(page, base, goal, cx, report, width, zoom, exercise_changes):
     start += time.perf_counter() - excluded
     measure("back", lambda: loc("#check-back").press("Enter"), lambda: loc(".compact-lot").first.wait_for())
     assert loc("#discovery-target").input_value() == "3" and loc("#discovery-budget").input_value() == "20"
-    assert loc("#discovery-prefer-vintage").is_checked() and loc("#discovery-goal").input_value() == (
-        goal["id"] if goal else ""
-    )
+    assert loc("#discovery-listing-years").input_value() == "through2000" and loc(
+        "#discovery-goal"
+    ).input_value() == (goal["id"] if goal else "")
     samples.setdefault("complete journey", []).append((time.perf_counter() - start) * 1000)
     return dict(scope=scope, result=result, contents=preview, comparison=content)
 

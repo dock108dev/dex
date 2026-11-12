@@ -18,16 +18,17 @@
     {% csrf_token %}
     <div class="discovery-controls">
       <label for="discovery-product-type">Listing type<select id="discovery-product-type"><option value="mixed_lots">Lots</option><option value="singles">Singles</option></select></label>
+      <label for="discovery-listing-years">Year manufactured<select id="discovery-listing-years" aria-describedby="listing-years-help"><option value="all">Any year</option><option value="pre2000">Before 2000</option><option value="through2000">Through 2000</option></select></label>
     </div>
+    <p id="listing-years-help" class="field-help" hidden>Uses the years sellers entered on eBay. Check individual cards in mixed lots.</p>
     <select id="discovery-sort" hidden aria-label="Search order"><option value="ending_soonest">Ending soon</option><option value="best_match">Best match</option></select>
     <div class="discovery-searchbox"><label for="discovery-query">Pokémon or card name<input id="discovery-query" name="query" type="search" maxlength="200" placeholder="e.g. Venusaur" autocomplete="off"></label><label for="discovery-budget" data-lots-only>Budget, USD <span class="optional">optional</span><input id="discovery-budget" name="budget" type="number" min="0" max="10000" step="0.01" placeholder="Any budget"></label><div class="search-actions"><button id="discovery-search" type="submit" disabled>Find lots</button><button id="discovery-stop" type="button" class="secondary" disabled>Stop</button></div></div>
     <p class="field-help" data-lots-only>Find the strongest matches for your collection and budget.</p>
     <div id="single-controls" hidden>
       <div class="discovery-controls">
         <label for="single-buying">Buying option<select id="single-buying"><option value="both">Buy It Now and auction</option><option value="buy_now">Buy It Now</option><option value="auction">Auction</option></select></label>
-        <label for="single-release">Release date<select id="single-release" aria-describedby="single-help"><option value="all">Any release date</option><option value="through2000">Through 2000</option></select></label>
       </div>
-      <p id="single-help" class="field-help">Through 2000 includes December 31, 2000 and filters the batch locally. Leave the name blank to sample Pokémon TCG singles from Base Set, Fossil and Neo Genesis, or choose a set.</p>
+      <p class="field-help">Leave the name blank to sample Pokémon TCG singles from Base Set, Fossil and Neo Genesis, or choose a set.</p>
       <p id="single-target" class="field-help" hidden></p>
     </div>
     <div id="discovery-suggestions" role="status" aria-live="polite" hidden></div>
@@ -51,7 +52,6 @@
       <label hidden id="missing-basis-label" for="discovery-missing-basis">Ownership basis<select id="discovery-missing-basis" name="missing_basis"><option value="species">Missing Pokémon species</option><option value="printing">Missing exact printings</option></select></label>
       <p id="missing-policy" class="field-help full"></p>
     </div>
-    <label class="discovery-checkbox" data-lots-only><input id="discovery-prefer-vintage" type="checkbox"> Prefer vintage; any qualifying era can fill the gap</label>
     <label hidden class="discovery-checkbox"><input id="discovery-english-vintage" type="checkbox"> English · vintage · US listings</label>
 
     </details>
@@ -72,8 +72,6 @@
     <div class="results-notes"><p class="browse-note">Ranked within this search. Prices exclude tax; auction bids can rise.</p><details class="results-guidance"><summary>About these results</summary><p id="discovery-limitation"></p></details></div>
     <div class="lot-quick-filters" data-lot-results aria-label="Filter buying options">
       <label for="lot-estimate-filter">Value<select id="lot-estimate-filter"><option value="all">All lots</option><option value="estimated">With estimates</option><option value="below">Below estimated value</option></select></label>
-      <label class="lot-era-toggle" for="lot-era-filter"><input type="checkbox" id="lot-era-filter" aria-describedby="lot-era-help">Pre-2000 only</label>
-      <span id="lot-era-help" class="field-help">Known contents from sets released before 2000.</span>
     </div>
     <details class="result-settings" data-lot-results><summary>More filters</summary><div class="discovery-controls lot-result-controls">
       <label for="lot-time-window">Auctions ending within<select id="lot-time-window"><option value="24">24 hours</option><option value="48">48 hours</option><option value="72" selected>3 days</option></select></label>
@@ -96,5 +94,5 @@
 <script src="/collection-assets/listing-time.js?v=20261109-singles-vintage" defer></script>
 <script src="/collection-assets/discovery-display.js?v=20261109-singles-vintage" defer></script>
 <script src="/collection-assets/discovery-values.js?v=20261109-singles-vintage" defer></script>
-<script src="/collection-assets/discovery.js?v=20261109-singles-compat" defer></script>
+<script src="/collection-assets/discovery.js?v=20261112-listing-years" defer></script>
 {% endblock %}

@@ -12,6 +12,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, StrictBool, StrictInt, field_validator, model_validator
 
+from .discovery_paging import ListingYears
+
 MAX_BROWSE = 4
 
 
@@ -20,6 +22,7 @@ class Choices(BaseModel):
 
     collection_intent: StrictBool = False
     prefer_vintage: StrictBool = False
+    listing_years: ListingYears = "all"
     currency: Literal["USD"] = "USD"
     intent: Literal["deals", "missing"] = "deals"
     missing_basis: Literal["printing", "species"] = "species"

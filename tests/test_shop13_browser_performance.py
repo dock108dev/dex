@@ -57,7 +57,7 @@ def test_collection_intent_action_to_usable(cx, count, copies, frozen):
         species=3,
         generation=collection.generation(cx["member"]),
         budget="87.25",
-        prefer_vintage=True,
+        listing_years="through2000",
     )
     goal_query = ""
     if goal:
@@ -147,7 +147,7 @@ def test_collection_intent_action_to_usable(cx, count, copies, frozen):
             for _ in range(20):
                 page.goto(
                     base
-                    + f"/shopping/?run_id={run_id}&q=Venusaur&species=3&intent=missing&budget=87.25&prefer_vintage=1{goal_query}",
+                    + f"/shopping/?run_id={run_id}&q=Venusaur&species=3&intent=missing&budget=87.25&listing_years=through2000{goal_query}",
                     wait_until="domcontentloaded",
                 )
                 # Navigation origin is the entry boundary; previous action marks
@@ -155,7 +155,7 @@ def test_collection_intent_action_to_usable(cx, count, copies, frozen):
                 page.evaluate("sessionStorage.removeItem('shop12-clock')")
                 take("restored_results")
                 assert page.locator("#discovery-budget").input_value() == "87.25"
-                assert page.locator("#discovery-prefer-vintage").is_checked()
+                assert page.locator("#discovery-listing-years").input_value() == "through2000"
                 page.locator("#discovery-target:not(:disabled)").wait_for()
                 page.locator("#find-missing").evaluate(
                     "(e)=>{window.shopMark('targets','#discovery-target:not(:disabled)');e.click();}"

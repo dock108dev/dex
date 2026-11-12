@@ -8,6 +8,7 @@ No returned next URL is fetched, persisted or accepted from the client.
 
 import re
 from dataclasses import dataclass, replace
+from typing import Literal
 
 PAGE_SIZE = 20
 MAX_PAGES = 4
@@ -15,6 +16,12 @@ CATEGORIES = {"mixed_lots": ("183455",), "singles": ("183454",), "both": ("18345
 BUYING = {"buy_it_now": "FIXED_PRICE", "auction": "AUCTION"}
 # eBay US lists these Set values and the Pokémon TCG Game in Single Cards.
 VINTAGE_SAMPLE_SETS = ("Base Set", "Fossil", "Neo Genesis")
+ListingYears = Literal["all", "pre2000", "through2000"]
+LISTING_YEARS = {
+    "all": (),
+    "pre2000": ("1996", "1997", "1998", "1999"),
+    "through2000": ("1996", "1997", "1998", "1999", "2000"),
+}
 
 
 @dataclass(frozen=True)
@@ -26,6 +33,7 @@ class NamedPage:
     set_name: str | None = None
     lane: str | None = None
     vintage_sample: bool = False
+    listing_years: ListingYears = "all"
 
 
 def checked_params(page):
@@ -35,6 +43,8 @@ def checked_params(page):
         or not page.query.strip()
         or len(page.query) > 200
         or page.category not in CATEGORIES["both"]
+        or not isinstance(page.listing_years, str)
+        or page.listing_years not in LISTING_YEARS
         or page.sort not in {"best_match", "ending_soonest"}
         or type(page.offset) is not int
         or page.offset < 0
@@ -62,37 +72,53 @@ def checked_params(page):
         "offset": page.offset,
         "fieldgroups": "EXTENDED",
     }
+    aspects = []
     if page.vintage_sample:
         sets = "|".join(VINTAGE_SAMPLE_SETS)
-        result["aspect_filter"] = f"categoryId:183454,Game:{{Pokémon TCG}},Set:{{{sets}}}"
+        aspects.extend(("Game:{Pokémon TCG}", f"Set:{{{sets}}}"))
     elif page.set_name:
-        result["aspect_filter"] = f"categoryId:{page.category},Set:{{{page.set_name}}}"
+        aspects.append(f"Set:{{{page.set_name}}}")
+    if years := LISTING_YEARS[page.listing_years]:
+        aspects.append("Year Manufactured:{" + "|".join(years) + "}")
+    if aspects:
+        result["aspect_filter"] = ",".join((f"categoryId:{page.category}", *aspects))
     if page.sort == "ending_soonest":
         result["sort"] = "endingSoonest"
     return result
 
 
-def first_pages(query, product_type, sort, *, set_name=None):
+def first_pages(query, product_type, sort, *, set_name=None, listing_years="all"):
     # Selected set is a seller aspect, not an extra keyword requirement. Keep
     # the name query like the owner's eBay search; never silently widen a facet.
     if set_name:
         query = " ".join(re.sub(re.escape(set_name), " ", query, flags=re.I).split())
         if not query:
             query = "Pokemon"
-    pages = [NamedPage(query, category, sort, set_name=set_name) for category in CATEGORIES[product_type]]
+    pages = [
+        NamedPage(query, category, sort, set_name=set_name, listing_years=listing_years)
+        for category in CATEGORIES[product_type]
+    ]
     for page in pages:
         checked_params(page)
     return pages
 
 
-def singles_pages(query, buying, *, vintage_sample=False):
+def singles_pages(query, buying, *, vintage_sample=False, listing_years="all"):
     lanes = (
         ("buy_it_now", "auction")
         if buying == "both"
         else ("buy_it_now" if buying == "buy_now" else "auction",)
     )
     pages = [
-        NamedPage(query, "183454", "best_match", lane=lane, vintage_sample=vintage_sample) for lane in lanes
+        NamedPage(
+            query,
+            "183454",
+            "best_match",
+            lane=lane,
+            vintage_sample=vintage_sample,
+            listing_years=listing_years,
+        )
+        for lane in lanes
     ]
     for page in pages:
         checked_params(page)

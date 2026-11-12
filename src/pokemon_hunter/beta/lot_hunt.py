@@ -287,7 +287,13 @@ def start(actor, session, raw, request_id, *, auth_session=None):
     if provider.environment != "production" or not all(credentials):
         raise ValueError("Saved Production configuration is unavailable")
     set_name = prepared["set_name"]
-    page = discovery_paging.first_pages(choices.query, "mixed_lots", "ending_soonest", set_name=set_name)[0]
+    page = discovery_paging.first_pages(
+        choices.query,
+        "mixed_lots",
+        "ending_soonest",
+        set_name=set_name,
+        listing_years=choices.listing_years,
+    )[0]
     run = d.Run(
         journal.run_id(owner, request_id),
         owner,
@@ -742,6 +748,10 @@ def _status(actor, session, run, *, selected_result=None):
         except (ValueError, RuntimeError):
             result["error"] = "Local assessment is unavailable; supported listing facts remain visible"
     rows = [row for row in rows if d.within_budget(row, run.choices)]
+    if rows and run.choices.collection_intent:
+        from . import shopping_intent
+
+        shopping_intent.annotate_lot_mentions(actor, run.choices, rows)
     discovery_lot_values.rank(rows, raws)
     from . import lot_recommendations
 

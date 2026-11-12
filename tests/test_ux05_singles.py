@@ -112,7 +112,7 @@ def test_singles_use_named_pages_and_shared_durable_allowance(env, monkeypatch):
     env.bin = [offer(title="Fossil Lapras #25/62 English")]
     env.auction = [offer(1, lane="auction", title="Fossil Lapras #10/62 English")]
     request_id = str(uuid.uuid4())
-    raw = dict(product_type="singles", single_buying="both", query="Lapras")
+    raw = dict(product_type="singles", single_buying="both", query="Lapras", listing_years="pre2000")
     receipt = discovery.start_action(env.actor, "session", raw, request_id)
     run = discovery._runs[receipt["run_id"]]
     original = run.created
@@ -133,6 +133,9 @@ def test_singles_use_named_pages_and_shared_durable_allowance(env, monkeypatch):
     assert {r["release"]["finish"] for r in final["results"]} == {"holo", "normal"}
     params = [r.url.params for r in env.calls[1:]]
     assert all(p["q"] == "Lapras" and p["category_ids"] == "183454" for p in params)
+    assert [p["aspect_filter"] for p in params] == [
+        "categoryId:183454,Year Manufactured:{1996|1997|1998|1999}"
+    ] * 2
     assert [p["filter"].split(",")[0] for p in params] == [
         "buyingOptions:{FIXED_PRICE}",
         "buyingOptions:{AUCTION}",
