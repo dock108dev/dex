@@ -37,7 +37,7 @@ function setup(overrides={},control={}){
   const get=id=>{if(!nodes.has(id))nodes.set(id,new Element());return nodes.get(id);};
   get('check-binding').textContent='"binding"';get('check-account').textContent='"account"';get('check-entry').textContent=JSON.stringify({discovery_run:'engineering-run',item_id:'engineering-result'});
   const window={addEventListener:(name,fn)=>events[name]=fn,DexAuctionTime:()=> 'Auction · end time unknown'};
-  const context={crypto:require('node:crypto').webcrypto,history:{replaceState(){}},window,document:{getElementById:get,createElement:tag=>new Element(tag),addEventListener:(name,fn)=>events[name]=fn},addEventListener:(name,fn)=>events[name]=fn,Date:{now:()=>now,parse:Date.parse},URL,URLSearchParams,Intl,setTimeout:fn=>{timeouts.push(fn);return timeouts.length;},clearTimeout(){},setInterval:fn=>intervals.push(fn),location:{reload(){},href:'http://local.test/shopping/check/'},fetch:async(url,options)=>{
+  const context={crypto:require('node:crypto').webcrypto,history:{replaceState(){}},window,document:{body:{dataset:{gradingEnabled:String(control.gradingEnabled ?? false)}},getElementById:get,createElement:tag=>new Element(tag),addEventListener:(name,fn)=>events[name]=fn},addEventListener:(name,fn)=>events[name]=fn,Date:{now:()=>now,parse:Date.parse},URL,URLSearchParams,Intl,setTimeout:fn=>{timeouts.push(fn);return timeouts.length;},clearTimeout(){},setInterval:fn=>intervals.push(fn),location:{reload(){},href:'http://local.test/shopping/check/'},fetch:async(url,options)=>{
     calls.push({url,method:options.method||'GET',body:options.body});let payload;
     if(url.includes('/candidate/'))payload={listing:structuredClone({...sample,...overrides}),restore_cards:structuredClone(control.restoreCards || []),expires_in_seconds:30,context:{scope_label:'Named engineering search'}};
     else payload={review:null,lease:'lease',expires_in_seconds:30,context:null};
@@ -62,7 +62,7 @@ const passed=[];async function test(name,fn){await fn();passed.push(name);}
  const savedReview={title:'My saved review',currency:'USD',unknown_contents:null,cards:[{printing_id:identity.id,quantity:2,grade:'8',grader:'PSA'}]};
  const restore=(url,payload,review=savedReview)=>url==='/api/shopping/listing/review/'?{...payload,review}:url.includes('/catalog/')?{cards:[identity]}:payload;
  await test('selected admitted identities restore authored cards without a duplicate catalog read',async()=>{
-  const t=setup({proposals:[{...identity,quantity:99}]},{restoreCards:[identity],request:async(url,options,payload)=>restore(url,payload)});await flush();
+  const t=setup({proposals:[{...identity,quantity:99}]},{gradingEnabled:true,restoreCards:[identity],request:async(url,options,payload)=>restore(url,payload)});await flush();
   assert.ok(!t.calls.some(c=>c.url.includes('/catalog/')));
   assert.match(t.get('review-cards').textContent,/Checked card/);
   assert.match(t.get('review-count').textContent,/2 individually identified cards/);

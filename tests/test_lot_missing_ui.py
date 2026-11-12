@@ -84,11 +84,11 @@ def test_current_missing_picker_and_existing_lot_draft_boundaries(tmp_path):
             str(root / "src/pokemon_hunter/beta/static/lot_calculator.js"),
             str(trees),
         ],
-        check=True,
         capture_output=True,
         text=True,
         timeout=30,
     )
+    assert result.returncode == 0, result.stderr or result.stdout
     report = json.loads(result.stdout)
     assert report["passed"] == len(report["cases"]) >= 7
     assert report["provider_calls"] == 0

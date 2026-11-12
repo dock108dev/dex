@@ -27,10 +27,13 @@ def test_forty_offers_preserve_assessments_and_expand_locally(env, prices):
         row["shippingOptions"][0]["shippingCostType"] = "FIXED"
         env.details[row["itemId"]] = dict(
             row,
-            description="<p>2x Charizard Base Set 4/102 English Unlimited Non Holo</p>"
+            description="<p>2x Charizard Base Set 4/102 English Unlimited Non Holo ungraded</p>"
             + ("<p>" + description + "</p>") * 38,
             localizedAspects=[
-                dict(name="Cards Included", value="1x Blastoise Base Set 2/102 English Unlimited Non Holo")
+                dict(
+                    name="Cards Included",
+                    value="1x Blastoise Base Set 2/102 English Unlimited Non Holo ungraded",
+                )
             ],
         )
     env.details[env.auction[8]["itemId"]]["shippingOptions"] = []

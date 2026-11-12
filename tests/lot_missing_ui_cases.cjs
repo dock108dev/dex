@@ -93,6 +93,7 @@ async function flush() { for (let index = 0; index < 80; index++) await Promise.
 function setup({template = 'default', saved} = {}) {
   const document = build(trees[template]), calls = [], events = {}, memory = new Map();
   const get = id => document.querySelector('#' + id);
+  document.body = document.querySelector('body');
   document.getElementById = get; document.createElement = tag => new Element(tag);
   const context = JSON.parse(get('shopping-context').textContent);
   const sessionStorage = {getItem: key => memory.get(key) ?? null, setItem: (key, value) => memory.set(key, String(value)), removeItem: key => memory.delete(key)};

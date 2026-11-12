@@ -682,7 +682,7 @@ def test_find_lots_forty_rows_worker_and_local_evidence(browser_app, monkeypatch
                 + "</p>",
             )
             if guide:
-                body["description"] += "<p>2x Ivysaur Base Set 2 #44 English Unlimited Non Holo</p>"
+                body["description"] += "<p>2x Ivysaur Base Set 2 #44 English Unlimited Non Holo ungraded</p>"
         return httpx.Response(200, stream=Stream(json.dumps(body).encode()))
 
     monkeypatch.setattr(lot_hunt, "Transport", lambda: Transport(transport=httpx.MockTransport(respond)))

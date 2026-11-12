@@ -22,7 +22,9 @@ from pokemon_hunter.beta import discovery as discovery
 from pokemon_hunter.beta import lot_calculator as calculator
 from pokemon_hunter.beta import lot_hunt as hunt
 
-TEXT = "All cards are Base Set English Unlimited Non Holo. Two Charizard 4/102 and one Blastoise 2/102"
+TEXT = (
+    "All cards are ungraded Base Set English Unlimited Non Holo. Two Charizard 4/102 and one Blastoise 2/102"
+)
 
 
 def configure(env, entries, monkeypatch):

@@ -292,6 +292,7 @@ def listing(printing, **changes):
             "English Unlimited Non Holo"
         ),
         condition="Near Mint",
+        localizedAspects=[dict(name="Graded", value="No")],
         buyingOptions=["FIXED_PRICE"],
         price=dict(value="1.00", currency="USD"),
         shippingOptions=[dict(shippingCost=dict(value="0.50", currency="USD"))],
@@ -335,10 +336,11 @@ def test_prepared_lot_values_only_included_applicable_units(reference_case, monk
     raw = listing(
         case["entries"]["trainer"],
         title="Pokemon lot of 4 cards",
+        localizedAspects=[],
         shortDescription=(
-            "2x Professor Turo's Scenario Synthetic Modern Set 171/182 English Unlimited Non Holo; "
-            "1x Basic Lightning Energy Synthetic Modern Set 004/182 English Unlimited Non Holo; "
-            "1x Raichu Synthetic Modern Set 050/182 English Unlimited Non Holo"
+            "2x Professor Turo's Scenario Synthetic Modern Set 171/182 English Unlimited Non Holo ungraded; "
+            "1x Basic Lightning Energy Synthetic Modern Set 004/182 English Unlimited Non Holo ungraded; "
+            "1x Raichu Synthetic Modern Set 050/182 English Unlimited Non Holo ungraded"
         ),
     )
     entries = list(case["entries"].values())

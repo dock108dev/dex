@@ -7,6 +7,7 @@ from uuid import uuid4
 
 import pytest
 from django.conf import settings
+from django.test import override_settings
 from price_snapshot_helpers import (
     NOW,
     inputs,
@@ -123,6 +124,7 @@ def test_multisource_competing_cells_deterministic_and_not_averaged(setup):
     assert prepared["scenarios"]["raw"]["result"]["full_selected_total"] == "198.00"
 
 
+@override_settings(GRADING_ENABLED=True)
 def test_multisource_save_rights_history_and_account_isolation(setup):
     old_key = shopping.save(setup["actor"], inputs(setup), "Old history", now=NOW)
     old = shopping.one(setup["actor"], old_key)
@@ -280,6 +282,7 @@ def test_source_restriction_in_competing_observation_cannot_borrow_save_rights(s
         shopping.store_payload(setup["actor"], payload, "Restricted conflict cannot be embedded")
 
 
+@override_settings(GRADING_ENABLED=True)
 def test_multisource_partial_coverage_and_old_new_format_rollback(setup):
     old = package(setup)
     prices.activate(stage(old), None, now=NOW)

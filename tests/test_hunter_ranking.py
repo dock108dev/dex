@@ -252,6 +252,7 @@ def test_catalog_integration_clears_derived_rank_on_real_snapshot_lifecycle(setu
         itemId="fixture-offer",
         title=f"{printing['set_name']} {printing['name']} {printing['collector_number']} English Unlimited Non Holo",
         condition="Near Mint",
+        localizedAspects=[dict(name="Graded", value="No")],
         buyingOptions=["FIXED_PRICE"],
         price=dict(value="1", currency="USD"),
         shippingOptions=[dict(shippingCostType="FIXED", shippingCost=dict(value="0", currency="USD"))],

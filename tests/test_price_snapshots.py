@@ -6,6 +6,7 @@ from datetime import timedelta
 
 import pytest
 from django.conf import settings
+from django.test import override_settings
 from price_snapshot_helpers import (
     NOW,
     inputs,
@@ -173,6 +174,7 @@ def test_remove_before_expiry_prevents_rollback_and_restore(setup):
         prices.activate(stage(first), second["version"], now=NOW)
 
 
+@override_settings(GRADING_ENABLED=True)
 def test_restricted_display_arithmetic_refuses_saves_and_preserves_history(setup):
     old_key = shopping.save(setup["actor"], inputs(setup), "Old independent inputs", now=NOW)
     old = shopping.one(setup["actor"], old_key)
@@ -198,6 +200,7 @@ def test_restricted_display_arithmetic_refuses_saves_and_preserves_history(setup
     assert not shopping.listing(setup["member"])
 
 
+@override_settings(GRADING_ENABLED=True)
 def test_new_permitted_history_integrity_isolation_and_no_owner_mutations(setup):
     before = collection.export_data(setup["actor"])
     value = package(setup)

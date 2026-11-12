@@ -401,7 +401,7 @@ def test_native_cohort_order_is_separate_and_partial_never_wins(priced, entries)
         raw(
             itemId="c",
             title="1-card lot",
-            shortDescription="1x Charizard Base Set 4/102 English Unlimited Non Holo",
+            shortDescription="1x Charizard Base Set 4/102 English Unlimited Non Holo ungraded",
         ),
     ]
     rows = project(actor, sources)

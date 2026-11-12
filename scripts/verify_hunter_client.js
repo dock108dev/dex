@@ -126,13 +126,20 @@ const cases = [];
 async function check(name, run) {await run(); cases.push({name, status: 'passed'});}
 const ordinary = (url, body) => body && url.endsWith('/stop/') ? projection({state: 'stopped'}) : body ? projection() : url.endsWith('/hunter/') ? META : projection({results: [row()]});
 (async () => {
-  await check('simple POC submits singles and shows raw net without graded rows or reveal controls', async()=>{
-    const raw=row('raw',{ungraded_single:true,listing_price:'33',shipping:'5',price_kind:'current_bid',reference_eligibility:'eligible',reference:{amount:'62',currency:'USD',grade:'raw',as_of:'2026-10-26',captured_at:'2026-10-26T12:00:00Z'},opportunity:{scenarios:[{kind:'current_bid',reference_amount:'62'}]}});
-    const t=setup((url,body)=>body?projection():url.endsWith('/hunter/')?META:projection({results:[raw,row('graded',{ungraded_single:false})]}),{simple:true});
+  await check('simple POC submits singles and shows net only for seller-claimed raw listings', async()=>{
+    const raw=row('raw',{ungraded_single:true,grading_status:'raw',listing_price:'33',shipping:'5',price_kind:'current_bid',reference_eligibility:'eligible',reference:{amount:'62',currency:'USD',grade:'raw',as_of:'2026-10-26',captured_at:'2026-10-26T12:00:00Z'},opportunity:{scenarios:[{kind:'current_bid',reference_amount:'62'}]}});
+    const graded={...raw,id:'graded',ungraded_single:false,grading_status:'graded'};
+    const unknown={...raw,id:'unknown',ungraded_single:false,grading_status:'unknown'};
+    const t=setup((url,body)=>body?projection():url.endsWith('/hunter/')?META:projection({results:[raw,graded,unknown]}),{simple:true});
     await t.ready();await t.start();await t.ready();
     assert.equal(t.calls.find(c=>c.body && c.url.endsWith('/hunter/')).body.scope,'singles');
-    assert(t.nodes.get('hunter-cards').textContent.includes('$9.88'));
-    assert(!t.doc.getElementById('hunter-result-graded'));
+    assert.match(t.doc.getElementById('hunter-result-raw').textContent, /\$9\.88/);
+    for (const id of ['graded', 'unknown']) {
+      const text = t.doc.getElementById('hunter-result-' + id).textContent;
+      assert.match(text, id === 'graded' ? /Seller claims graded/ : /Grading status unknown or conflicting/);
+      assert.match(text, /Ungraded referenceUnavailablePotential netUnavailable/);
+      assert.doesNotMatch(text, /\$62\.00|\$9\.88/);
+    }
     assert(!t.nodes.get('hunter-cards').textContent.includes('Reveal seller'));
     t.nodes.get('net-postage').value='6';await t.nodes.get('hunter-net-inputs').emit('input');
     assert(t.nodes.get('hunter-cards').textContent.includes('$8.88'));

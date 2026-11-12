@@ -60,7 +60,7 @@ function response(changes = {}) {
 function setup(responder) {
   const container = new Element('section'), calls = [], messages = [], imageGuards = [], timers = new Map();
   let active = true, time = 1000000, timerId = 0, detailStarts = 0, backs = 0;
-  const document = {createElement: tag => {const element = new Element(tag); element.ownerDocument = document; return element;}, visibilityState: 'visible'};
+  const document = {body: {dataset: {gradingEnabled: 'false'}}, createElement: tag => {const element = new Element(tag); element.ownerDocument = document; return element;}, visibilityState: 'visible'};
   container.ownerDocument = document;
   const context = {window: {}, document,
     Date: {now: () => time}, setTimeout: (fn, ms) => {timers.set(++timerId, {fn, ms}); return timerId;},
@@ -211,7 +211,8 @@ async function check(name, run) {await run(); cases.push({name, status: 'passed'
   });
   await check('repeated seller mentions never multiply an already included printing', async () => {
     const t = setup(() => response()); t.client.open(response());
-    const choice = t.nodes().find(node => node.tagName === 'SELECT'); choice.value = identity.id; await emit(choice, 'change');
+    const choice = t.nodes().find(node => node.tagName === 'SELECT' && node.children.some(option => option.value === identity.id));
+    choice.value = identity.id; await emit(choice, 'change');
     await t.button('Include selected printing').click();
     assert.equal(t.input('Included cards inside this one lot').value, 2);
     assert(t.container.textContent.includes('already included')); assert(!t.client.isDirty());

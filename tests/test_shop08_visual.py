@@ -117,8 +117,8 @@ def test_inspection_browser_adapter_cleanup_and_explicit_editor():
         ],
         capture_output=True,
         text=True,
-        check=True,
         timeout=30,
     )
+    assert result.returncode == 0, result.stderr or result.stdout
     report = json.loads(result.stdout)
     assert report["passed"] >= 7 and report["provider_calls"] == 0 and report["customer_data"] is False

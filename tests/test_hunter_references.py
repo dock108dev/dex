@@ -40,7 +40,7 @@ def modern(setup, monkeypatch):
     return setup
 
 
-def listing(printing, **changes):
+def listing(printing, *, graded="No", **changes):
     result = dict(
         itemId="engineering-reference-offer",
         title=(
@@ -48,6 +48,7 @@ def listing(printing, **changes):
             "English Unlimited Non Holo"
         ),
         condition="Near Mint",
+        localizedAspects=[dict(name="Graded", value=graded)],
         buyingOptions=["FIXED_PRICE"],
         price=dict(value="1.00", currency="USD"),
         shippingOptions=[dict(shippingCostType="FIXED", shippingCost=dict(value="0.50", currency="USD"))],
@@ -314,7 +315,8 @@ def test_literal_grader_is_selected_before_newest_source_without_equating_grades
     p = modern["entries"][value["records"][0]["printing_id"]]
     title = listing(p)["title"]
     raw_rows = [
-        listing(p, title=title + " " + claim, itemId=claim) for claim in ("PSA 8", "CGC 8", "BGS 8", "PSA 9")
+        listing(p, graded="Yes", title=title + " " + claim, itemId=claim)
+        for claim in ("PSA 8", "CGC 8", "BGS 8", "PSA 9")
     ]
     rows = {row["item_id"]: row for row in hunter_catalog.compare(modern["actor"], raw_rows, now=NOW)}
     assert rows["PSA 8"]["reference"]["grader"] == "PSA"

@@ -17,11 +17,11 @@ def test_hunter_review_renderer_contracts():
     result = subprocess.run(
         [node, str(ROOT / "scripts/verify_hunter_review.js")],
         cwd=ROOT,
-        check=True,
         capture_output=True,
         text=True,
         timeout=30,
     )
+    assert result.returncode == 0, result.stderr or result.stdout
     evidence = json.loads(result.stdout)
     assert evidence["kind"] == "hunter-review-renderer-contracts"
     assert evidence["engineering_fixtures_only"] is True
