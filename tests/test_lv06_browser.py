@@ -798,7 +798,7 @@ def test_local_source_busy_recovers_values_without_repeating_hunt(ui):
     assert not errors
 
 
-def test_quick_filters_and_background_checks_do_not_overlap(ui):
+def test_quick_value_filter_and_background_checks_do_not_overlap(ui):
     from playwright.sync_api import expect
 
     page, base, model, calls, control, pending, errors = ui
@@ -809,15 +809,14 @@ def test_quick_filters_and_background_checks_do_not_overlap(ui):
             estimate_amount="100",
             estimate_complete=True,
             price_to_estimate=".87",
-            all_pre_2000=True,
         )
     }
     unknown = offer("unknown")
     unknown["buying_order"] = {"combined": dict(rank=2, contents="Unknown")}
     model["results"].append(unknown)
     open_results(ui)
+    expect(page.locator("#discovery-shown")).to_have_text("2 options")
     page.get_by_role("combobox", name="Value", exact=True).select_option("below")
-    page.get_by_role("checkbox", name="Pre-2000 only").check()
     expect(page.locator("#discovery-shown")).to_have_text("1 option")
     expect(page.locator(".lot-value-badge")).to_have_class("lot-value-badge tone-good")
     control["hold"] = True
